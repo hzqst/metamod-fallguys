@@ -39,15 +39,28 @@
 
 #include <detours.h>
 
-trace_t *(*g_pfnSV_PushEntity)(trace_t * trace, edict_t *ent, float * push) = NULL;
+bool IsEntitySuperPusher(edict_t *ent)
+{
+	return ent && ent->v.sequence == 114514;
+}
 
-void (*g_pfnSV_PushMove)(edict_t *pusher, float movetime) = NULL;
+bool IsEntityPushee(edict_t *ent)
+{
+	return (ent->v.solid == SOLID_SLIDEBOX || ent->v.solid == SOLID_BBOX) && (ent->v.movetype == MOVETYPE_STEP || ent->v.movetype == MOVETYPE_WALK);
+}
 
-void(*g_pfnSV_PushRotate)(edict_t *pusher, float movetime) = NULL;
+bool IsEntityLever(edict_t *ent)
+{
+	return ent && ent->v.sequence == 114515;
+}
+
+static trace_t *(*g_pfnSV_PushEntity)(trace_t * trace, edict_t *ent, float * push) = NULL;
+static void (*g_pfnSV_PushMove)(edict_t *pusher, float movetime) = NULL;
+static void(*g_pfnSV_PushRotate)(edict_t *pusher, float movetime) = NULL;
 
 static bool g_bIsPushMove = false;
 static bool g_bIsPushRotate = false;
-static edict_t *g_PusherEntity;
+static edict_t *g_PusherEntity = NULL;
 
 void NewSV_PushMove(edict_t *pusher, float movetime)
 {
@@ -97,9 +110,9 @@ trace_t *NewSV_PushEntity(trace_t * trace, edict_t *ent, float *push)
 
 	g_bIsPushEntity = false;
 
-	if ((g_bIsPushMove || g_bIsPushRotate) && g_PusherEntity && g_PusherEntity->v.sequence == 114514)
+	if ((g_bIsPushMove || g_bIsPushRotate) && IsEntitySuperPusher(g_PusherEntity))
 	{
-		if ((ent->v.solid == SOLID_SLIDEBOX || ent->v.solid == SOLID_BBOX) && (ent->v.movetype == MOVETYPE_STEP || ent->v.movetype == MOVETYPE_WALK))
+		if (IsEntityPushee(ent))
 		{
 			vec3_t dir;
 			dir.x = push[0];
@@ -108,7 +121,8 @@ trace_t *NewSV_PushEntity(trace_t * trace, edict_t *ent, float *push)
 			dir = dir.Normalize();
 
 			ent->v.velocity = dir * g_PusherEntity->v.armorvalue;
-			ent->v.flags |= FL_BASEVELOCITY;
+			if(ent->v.velocity.z < 150)
+				ent->v.velocity.z = 150;
 		}
 	}
 
@@ -119,37 +133,41 @@ void NewTouch(edict_t *pentTouched, edict_t *pentOther) {
 
 	if (g_bIsPushEntity && pentTouched == g_PushEntity && g_NumPendingEntities < 512)
 	{
-		if ((pentTouched->v.solid == SOLID_SLIDEBOX || pentTouched->v.solid == SOLID_BBOX) && (pentTouched->v.movetype == MOVETYPE_STEP || pentTouched->v.movetype == MOVETYPE_WALK))
+		if (IsEntityPushee(pentTouched) && IsEntityPushee(pentOther))
 		{
-			if ((pentOther->v.solid == SOLID_SLIDEBOX || pentOther->v.solid == SOLID_BBOX) && (pentOther->v.movetype == MOVETYPE_STEP || pentOther->v.movetype == MOVETYPE_WALK))
+			//Don't append same entity twice
+			for (int i = 0; i < g_NumPendingEntities; ++i)
 			{
-				//Don't append same entity twice
-				for (int i = 0; i < g_NumPendingEntities; ++i)
+				if (g_PendingEntities[i] == pentOther)
 				{
-					if (g_PendingEntities[i] == pentOther)
-					{
-						SET_META_RESULT(MRES_IGNORED);
-						return;
-					}
+					SET_META_RESULT(MRES_IGNORED);
+					return;
 				}
-
-				g_PendingEntities[g_NumPendingEntities] = pentOther;
-				g_NumPendingEntities++;
-
-				SET_META_RESULT(MRES_HANDLED);
 			}
+
+			g_PendingEntities[g_NumPendingEntities] = pentOther;
+			g_NumPendingEntities++;
+
+			SET_META_RESULT(MRES_HANDLED);
+			return;
 		}
 	}
+
 	SET_META_RESULT(MRES_IGNORED);
+}
+
+void NewThink(edict_t *pent)
+{
+	
 }
 
 static DLL_FUNCTIONS gFunctionTable = 
 {
 	NULL,					// pfnGameInit
 	NULL,					// pfnSpawn
-	NULL,					// pfnThink
+	NewThink,					// pfnThink
 	NULL,					// pfnUse
-	NewTouch,					// pfnTouch
+	NewTouch,				// pfnTouch
 	NULL,					// pfnBlocked
 	NULL,					// pfnKeyValue
 	NULL,					// pfnSave
