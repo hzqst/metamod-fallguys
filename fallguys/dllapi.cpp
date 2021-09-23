@@ -41,17 +41,17 @@
 
 bool IsEntitySuperPusher(edict_t *ent)
 {
-	return ent && ent->v.sequence == 114514;
+	return ent && (ent->v.sequence == 114514 || ent->v.sequence == 114515);
+}
+
+bool IsEntitySuperPusherFlexible(edict_t *ent)
+{
+	return ent && ent->v.sequence == 114515;
 }
 
 bool IsEntityPushee(edict_t *ent)
 {
 	return (ent->v.solid == SOLID_SLIDEBOX || ent->v.solid == SOLID_BBOX) && (ent->v.movetype == MOVETYPE_STEP || ent->v.movetype == MOVETYPE_WALK);
-}
-
-bool IsEntityLever(edict_t *ent)
-{
-	return ent && ent->v.sequence == 114515;
 }
 
 static trace_t *(*g_pfnSV_PushEntity)(trace_t * trace, edict_t *ent, float * push) = NULL;
@@ -112,7 +112,7 @@ trace_t *NewSV_PushEntity(trace_t * trace, edict_t *ent, float *push)
 
 	if ((g_bIsPushMove || g_bIsPushRotate) && IsEntitySuperPusher(g_PusherEntity))
 	{
-		if (IsEntityPushee(ent))
+		if (IsEntityPushee(ent) && ent->v.groundentity != g_PusherEntity)
 		{
 			vec3_t dir;
 			dir.x = push[0];
@@ -120,9 +120,34 @@ trace_t *NewSV_PushEntity(trace_t * trace, edict_t *ent, float *push)
 			dir.z = push[2];
 			dir = dir.Normalize();
 
-			ent->v.velocity = dir * g_PusherEntity->v.armorvalue;
-			if(ent->v.velocity.z < 150)
-				ent->v.velocity.z = 150;
+			if (g_PusherEntity->v.armorvalue > 0)
+			{
+				if (IsEntitySuperPusherFlexible(g_PusherEntity))
+				{
+					ent->v.velocity = dir * g_PusherEntity->v.armorvalue * g_PusherEntity->v.speed;
+					if (g_PusherEntity->v.avelocity[1] != 0 && g_PusherEntity->v.armortype > 0)
+					{
+						vec3_t dir2 = ent->v.origin - g_PusherEntity->v.origin;
+						dir2.z = 0;
+						dir2 = dir2.Normalize();
+						ent->v.velocity = ent->v.velocity + dir2 * g_PusherEntity->v.armortype * g_PusherEntity->v.speed;
+					}
+				}
+				else
+				{
+					ent->v.velocity = dir * g_PusherEntity->v.armorvalue;
+					if (ent->v.velocity.z < 150)
+						ent->v.velocity.z = 150;
+
+					if (g_PusherEntity->v.avelocity[1] != 0 && g_PusherEntity->v.armortype > 0)
+					{
+						vec3_t dir2 = ent->v.origin - g_PusherEntity->v.origin;
+						dir2.z = 0;
+						dir2 = dir2.Normalize();
+						ent->v.velocity = ent->v.velocity + dir2 * g_PusherEntity->v.armortype;
+					}
+				}
+			}
 		}
 	}
 
