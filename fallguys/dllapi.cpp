@@ -41,12 +41,17 @@
 
 bool IsEntitySuperPusher(edict_t *ent)
 {
-	return ent && (ent->v.sequence == 114514 || ent->v.sequence == 114515);
+	return ent && (ent->v.sequence <= 114514 || ent->v.sequence <= 114515);
 }
 
 bool IsEntitySuperPusherFlexible(edict_t *ent)
 {
 	return ent && ent->v.sequence == 114515;
+}
+
+bool IsEntitySuperRotator(edict_t *ent)
+{
+	return ent && ent->v.sequence == 114516;
 }
 
 bool IsEntityPushee(edict_t *ent)
@@ -106,56 +111,67 @@ trace_t *NewSV_PushEntity(trace_t * trace, edict_t *ent, float *push)
 		g_pfnSV_PushEntity(&temp, pPendingEntity, push);
 	}
 
-	g_NumPendingEntities = 0;
-
-	g_bIsPushEntity = false;
+	if (g_NumPendingEntities < 512)
+	{
+		g_PendingEntities[g_NumPendingEntities] = ent;
+		g_NumPendingEntities++;
+	}
 
 	if ((g_bIsPushMove || g_bIsPushRotate) && IsEntitySuperPusher(g_PusherEntity))
 	{
-		if (IsEntityPushee(ent) && ent->v.groundentity != g_PusherEntity)
+		for (int i = 0; i < g_NumPendingEntities; ++i)
 		{
-			vec3_t dir;
-			dir.x = push[0];
-			dir.y = push[1];
-			dir.z = push[2];
-			dir = dir.Normalize();
-
-			if (g_PusherEntity->v.armorvalue > 0)
+			auto pPendingEntity = g_PendingEntities[i];
+		
+			if (IsEntityPushee(pPendingEntity) && pPendingEntity->v.groundentity != g_PusherEntity)
 			{
-				if (IsEntitySuperPusherFlexible(g_PusherEntity))
-				{
-					ent->v.velocity = dir * g_PusherEntity->v.armorvalue * g_PusherEntity->v.speed;
-					if (g_PusherEntity->v.avelocity[1] != 0 && g_PusherEntity->v.armortype > 0)
-					{
-						vec3_t dir2 = ent->v.origin - g_PusherEntity->v.origin;
-						dir2.z = 0;
-						dir2 = dir2.Normalize();
-						ent->v.velocity = ent->v.velocity + dir2 * g_PusherEntity->v.armortype * g_PusherEntity->v.speed;
-					}
-				}
-				else
-				{
-					ent->v.velocity = dir * g_PusherEntity->v.armorvalue;
-					if (ent->v.velocity.z < 150)
-						ent->v.velocity.z = 150;
+				vec3_t dir;
+				dir.x = push[0];
+				dir.y = push[1];
+				dir.z = push[2];
+				dir = dir.Normalize();
 
-					if (g_PusherEntity->v.avelocity[1] != 0 && g_PusherEntity->v.armortype > 0)
+				if (g_PusherEntity->v.armorvalue > 0)
+				{
+					if (IsEntitySuperPusherFlexible(g_PusherEntity))
 					{
-						vec3_t dir2 = ent->v.origin - g_PusherEntity->v.origin;
-						dir2.z = 0;
-						dir2 = dir2.Normalize();
-						ent->v.velocity = ent->v.velocity + dir2 * g_PusherEntity->v.armortype;
+						pPendingEntity->v.velocity = dir * g_PusherEntity->v.armorvalue * g_PusherEntity->v.speed;
+						if (g_PusherEntity->v.avelocity[1] != 0 && g_PusherEntity->v.armortype > 0)
+						{
+							vec3_t dir2 = pPendingEntity->v.origin - g_PusherEntity->v.origin;
+							dir2.z = 0;
+							dir2 = dir2.Normalize();
+							pPendingEntity->v.velocity = pPendingEntity->v.velocity + dir2 * g_PusherEntity->v.armortype * g_PusherEntity->v.speed;
+						}
+					}
+					else
+					{
+						pPendingEntity->v.velocity = dir * g_PusherEntity->v.armorvalue;
+						if (pPendingEntity->v.velocity.z < 150)
+							pPendingEntity->v.velocity.z = 150;
+
+						if (g_PusherEntity->v.avelocity[1] != 0 && g_PusherEntity->v.armortype > 0)
+						{
+							vec3_t dir2 = pPendingEntity->v.origin - g_PusherEntity->v.origin;
+							dir2.z = 0;
+							dir2 = dir2.Normalize();
+							pPendingEntity->v.velocity = pPendingEntity->v.velocity + dir2 * g_PusherEntity->v.armortype;
+						}
 					}
 				}
 			}
 		}
 	}
 
+	g_NumPendingEntities = 0;
+
+	g_bIsPushEntity = false;
+
 	return r;
 }
 
-void NewTouch(edict_t *pentTouched, edict_t *pentOther) {
-
+void NewTouch(edict_t *pentTouched, edict_t *pentOther)
+{
 	if (g_bIsPushEntity && pentTouched == g_PushEntity && g_NumPendingEntities < 512)
 	{
 		if (IsEntityPushee(pentTouched) && IsEntityPushee(pentOther))
@@ -181,19 +197,44 @@ void NewTouch(edict_t *pentTouched, edict_t *pentOther) {
 	SET_META_RESULT(MRES_IGNORED);
 }
 
-void NewThink(edict_t *pent)
+void NewBlocked(edict_t *pentBlocked, edict_t *pentOther)
 {
-	
+	if (IsEntitySuperRotator(pentBlocked) && IsEntityPushee(pentOther))
+	{
+		if (pentBlocked->v.avelocity[0] > 1 || pentBlocked->v.avelocity[0] < -1)
+		{
+			vec3_t vecPlayer = pentOther->v.origin;
+			vec3_t vecPusher = pentBlocked->v.origin;
+			vecPusher.y = vecPlayer.y;
+			vec3_t dir2 = vecPlayer - vecPusher;
+			dir2 = dir2.Normalize();
+
+			pentOther->v.velocity = pentOther->v.velocity + dir2 * pentBlocked->v.armorvalue;
+		}
+		else if (pentBlocked->v.avelocity[1] > 1 || pentBlocked->v.avelocity[1] < -1)
+		{
+			vec3_t vecPlayer = pentOther->v.origin;
+			vec3_t vecPusher = pentBlocked->v.origin;
+			vecPusher.x = vecPlayer.x;
+			vec3_t dir2 = vecPlayer - vecPusher;
+			dir2 = dir2.Normalize();
+
+			pentOther->v.velocity = pentOther->v.velocity + dir2 * pentBlocked->v.armorvalue;
+		}
+		SET_META_RESULT(MRES_SUPERCEDE);
+	}
+
+	SET_META_RESULT(MRES_IGNORED);
 }
 
 static DLL_FUNCTIONS gFunctionTable = 
 {
 	NULL,					// pfnGameInit
 	NULL,					// pfnSpawn
-	NewThink,					// pfnThink
+	NULL,					// pfnThink
 	NULL,					// pfnUse
 	NewTouch,				// pfnTouch
-	NULL,					// pfnBlocked
+	NewBlocked,				// pfnBlocked
 	NULL,					// pfnKeyValue
 	NULL,					// pfnSave
 	NULL,					// pfnRestore
