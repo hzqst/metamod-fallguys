@@ -136,6 +136,13 @@ trace_t *NewSV_PushEntity(trace_t * trace, edict_t *ent, float *push)
 					if (IsEntitySuperPusherFlexible(g_PusherEntity))
 					{
 						pPendingEntity->v.velocity = dir * g_PusherEntity->v.armorvalue * g_PusherEntity->v.speed;
+
+						if (g_PusherEntity->v.max_health > 0)
+						{
+							if (pPendingEntity->v.velocity.z < g_PusherEntity->v.max_health * g_PusherEntity->v.speed)
+								pPendingEntity->v.velocity.z = g_PusherEntity->v.max_health * g_PusherEntity->v.speed;
+						}
+
 						if (g_PusherEntity->v.avelocity[1] != 0 && g_PusherEntity->v.armortype > 0)
 						{
 							vec3_t dir2 = pPendingEntity->v.origin - g_PusherEntity->v.origin;
@@ -147,8 +154,12 @@ trace_t *NewSV_PushEntity(trace_t * trace, edict_t *ent, float *push)
 					else
 					{
 						pPendingEntity->v.velocity = dir * g_PusherEntity->v.armorvalue;
-						if (pPendingEntity->v.velocity.z < 150)
-							pPendingEntity->v.velocity.z = 150;
+						
+						if (g_PusherEntity->v.max_health > 0)
+						{
+							if (pPendingEntity->v.velocity.z < g_PusherEntity->v.max_health)
+								pPendingEntity->v.velocity.z = g_PusherEntity->v.max_health;
+						}
 
 						if (g_PusherEntity->v.avelocity[1] != 0 && g_PusherEntity->v.armortype > 0)
 						{
@@ -223,6 +234,21 @@ void NewBlocked(edict_t *pentBlocked, edict_t *pentOther)
 		}
 		SET_META_RESULT(MRES_SUPERCEDE);
 	}
+	else if (IsEntitySuperPusher(g_PusherEntity))
+	{
+		if (pentBlocked->v.avelocity[2] > 1 || pentBlocked->v.avelocity[2] < -1)
+		{
+			vec3_t vecPlayer = pentOther->v.origin;
+			vec3_t vecPusher = pentBlocked->v.origin;
+			vecPusher.z = vecPlayer.z;
+			vec3_t dir2 = vecPlayer - vecPusher;
+			dir2 = dir2.Normalize();
+
+			pentOther->v.velocity = pentOther->v.velocity + dir2 * pentBlocked->v.armorvalue;
+			pentOther->v.velocity.z += pentBlocked->v.max_health;
+		}
+		SET_META_RESULT(MRES_SUPERCEDE);
+	}
 
 	SET_META_RESULT(MRES_IGNORED);
 }
@@ -291,7 +317,7 @@ static DLL_FUNCTIONS gFunctionTable =
 	NULL,					// pfnAllowLagCompensation
 };
 
-void *MH_SearchPattern(void *pStartSearch, DWORD dwSearchLen, const char *pPattern, DWORD dwPatternLen)
+void *MH_SearchPattern(void *pStartSearch, size_t dwSearchLen, const char *pPattern, size_t dwPatternLen)
 {
 	PUCHAR dwStartAddr = (PUCHAR)pStartSearch;
 	PUCHAR dwEndAddr = dwStartAddr + dwSearchLen - dwPatternLen;
@@ -300,7 +326,7 @@ void *MH_SearchPattern(void *pStartSearch, DWORD dwSearchLen, const char *pPatte
 	{
 		bool found = true;
 
-		for (DWORD i = 0; i < dwPatternLen; i++)
+		for (size_t i = 0; i < dwPatternLen; i++)
 		{
 			char code = *(char *)(dwStartAddr + i);
 
@@ -320,10 +346,27 @@ void *MH_SearchPattern(void *pStartSearch, DWORD dwSearchLen, const char *pPatte
 	return NULL;
 }
 
-DWORD MH_GetModuleSize(HMODULE hModule)
+SIZE_T MH_GetModuleSize(void *hModule)
 {
-	return ((IMAGE_NT_HEADERS *)((DWORD)hModule + ((IMAGE_DOS_HEADER *)hModule)->e_lfanew))->OptionalHeader.SizeOfImage;
+#ifdef _WIN32
+	return ((IMAGE_NT_HEADERS *)((char *)hModule + ((IMAGE_DOS_HEADER *)hModule)->e_lfanew))->OptionalHeader.SizeOfImage;
+#endif
 }
+
+void *MH_GetModuleBase(const char *name)
+{
+#ifdef _WIN32
+	return (void *)GetModuleHandleA(name);
+#endif
+}
+
+#ifdef _WIN32
+
+#define SV_PUSHENTITY_SVENGINE "\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC4\x89\x44\x24\x2A\x8B\x84\x24\x2A\x00\x00\x00"
+#define SV_PUSHMOVE_SVENGINE "\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC4\x89\x44\x24\x2A\x2A\x8B\xBC\x24\x88\x00\x00\x00\xD9"
+#define SV_PUSHROTATE_SVENGINE "\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC4\x89\x84\x24\x2A\x00\x00\x00\x2A\x8B\xBC\x24\xC0\x00\x00\x00\xD9"
+
+#endif
 
 C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable, 
 		int *interfaceVersion)
@@ -340,14 +383,13 @@ C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable,
 	}
 	memcpy(pFunctionTable, &gFunctionTable, sizeof(DLL_FUNCTIONS));
 
-	auto engine = GetModuleHandleA("hw.dll");
+	auto engine = MH_GetModuleBase("hw.dll");
 
 	if (!engine)
-		engine = GetModuleHandleA("swds.dll");
+		engine = MH_GetModuleBase("swds.dll");
 
 	if (engine)
 	{
-#define SV_PUSHENTITY_SVENGINE "\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC4\x89\x44\x24\x2A\x8B\x84\x24\x2A\x00\x00\x00"
 		g_pfnSV_PushEntity = (decltype(g_pfnSV_PushEntity))MH_SearchPattern(engine, MH_GetModuleSize(engine), SV_PUSHENTITY_SVENGINE, sizeof(SV_PUSHENTITY_SVENGINE) - 1);
 
 		if (g_pfnSV_PushEntity)
@@ -361,7 +403,6 @@ C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable,
 			UTIL_LogPrintf("Failed to locate SV_PushEntity");
 		}
 
-#define SV_PUSHMOVE_SVENGINE "\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC4\x89\x44\x24\x2A\x2A\x8B\xBC\x24\x88\x00\x00\x00\xD9"
 		g_pfnSV_PushMove = (decltype(g_pfnSV_PushMove))MH_SearchPattern(engine, MH_GetModuleSize(engine), SV_PUSHMOVE_SVENGINE, sizeof(SV_PUSHMOVE_SVENGINE) - 1);
 
 		if (g_pfnSV_PushMove)
@@ -375,7 +416,6 @@ C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable,
 			UTIL_LogPrintf("Failed to locate SV_PushMove");
 		}
 
-#define SV_PUSHROTATE_SVENGINE "\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC4\x89\x84\x24\x2A\x00\x00\x00\x2A\x8B\xBC\x24\xC0\x00\x00\x00\xD9"
 		g_pfnSV_PushRotate = (decltype(g_pfnSV_PushMove))MH_SearchPattern(engine, MH_GetModuleSize(engine), SV_PUSHROTATE_SVENGINE, sizeof(SV_PUSHROTATE_SVENGINE) - 1);
 
 		if (g_pfnSV_PushRotate)
