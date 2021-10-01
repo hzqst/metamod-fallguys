@@ -87,7 +87,7 @@
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(OutDir)$(TargetName)$(TargetExt)" "$(ProjectDir)/../build/dlls/"</Command>
+      <Command>copy "$(OutDir)$(TargetName)$(TargetExt)" "$(ProjectDir)/../build/addons/metamod/dlls/"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

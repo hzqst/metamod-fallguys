@@ -118,7 +118,7 @@
 	{"si",                "si_i386.so",           "si.dll",            "Science & Industry"},
 	{"snow",              "snow_i386.so",         "snow.dll",          "Snow-War"},
 	{"stargatetc",        "hl_i386.so",           "hl.dll",            "StargateTC"},
-	{"svencoop",          "hl_i386.so",           "hl.dll",            "Sven Coop [Modification]" },
+	//{"svencoop",          "hl_i386.so",           "hl.dll",            "Sven Coop [Modification]" },
 	{"svencoop",          "server.so",                "server.dll",        "Sven Coop [Steam Version]" },
 	{"swarm",             "swarm_i386.so",        "swarm.dll",         "Swarm"},
 	{"tfc",               "tfc_i386.so",          "tfc.dll",           "Team Fortress Classic"},
