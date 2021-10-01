@@ -47,12 +47,12 @@ endif
 
 # set paths for your environment
 ifeq "$(OS)" "linux"
-	INST_DIR=$(HOME)/half-life/cstrike/dlls
-	TEST_DIR=$(HOME)/test/tfc/dlls
+	INST_DIR=../build/dlls
+	TEST_DIR=../build/dlls
 	TST_DIR=$(HOME)/tmp
 else	## windows
-	INST_DIR=/hlserver/tfc/dlls
-	TEST_DIR=/hlserver/tfc/dlls
+	INST_DIR=../build/dlls
+	TEST_DIR=../build/dlls
 endif
 
 DLLS_DIR=../dlls
@@ -60,10 +60,6 @@ SDKSRC=../hlsdk
 METADIR=../metamod
 
 COMPILE_TZ=EET
-## Developer overrides
-ifeq "$(USER)" "jussi"
-	COMPILE_TZ=EET
-endif
 
 
 #############################################################################

@@ -65,7 +65,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(OutDir)$(TargetName)$(TargetExt)" "$(ProjectDir)/../build/"</Command>
+      <Command>copy "$(OutDir)$(TargetName)$(TargetExt)" "$(ProjectDir)/../build/dlls/"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -84,11 +84,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\CDetour\asm\asm.cpp" />
+    <ClCompile Include="..\CDetour\asm\asm.c" />
     <ClCompile Include="..\CDetour\detours.cpp" />
-    <ClCompile Include="..\CDetour\libudis86\decode.cpp" />
-    <ClCompile Include="..\CDetour\libudis86\itab.cpp" />
-    <ClCompile Include="..\CDetour\libudis86\udis86.cpp" />
+    <ClCompile Include="..\CDetour\libudis86\decode.c" />
+    <ClCompile Include="..\CDetour\libudis86\itab.c" />
+    <ClCompile Include="..\CDetour\libudis86\udis86.c" />
     <ClCompile Include="dllapi.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="engine_api.cpp" />
