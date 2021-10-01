@@ -47,12 +47,12 @@ endif
 
 # set paths for your environment
 ifeq "$(OS)" "linux"
-	INST_DIR=../build/dlls
-	TEST_DIR=../build/dlls
+	INST_DIR=../build/addons/metamod/dlls
+	TEST_DIR=../build/addons/metamod/dlls
 	TST_DIR=$(HOME)/tmp
 else	## windows
-	INST_DIR=../build/dlls
-	TEST_DIR=../build/dlls
+	INST_DIR=../build/addons/metamod/dlls
+	TEST_DIR=../build/addons/metamod/dlls
 endif
 
 DLLS_DIR=../dlls
