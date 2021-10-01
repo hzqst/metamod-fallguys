@@ -1,6 +1,3 @@
-// vi: set ts=4 sw=4 :
-// vim: set tw=75 :
-
 /*
  * Copyright (c) 2001-2006 Will Day <willday@hpgx.net>
  *
@@ -319,8 +316,8 @@ static DLL_FUNCTIONS gFunctionTable =
 
 void *MH_SearchPattern(void *pStartSearch, size_t dwSearchLen, const char *pPattern, size_t dwPatternLen)
 {
-	PUCHAR dwStartAddr = (PUCHAR)pStartSearch;
-	PUCHAR dwEndAddr = dwStartAddr + dwSearchLen - dwPatternLen;
+	char * dwStartAddr = (char *)pStartSearch;
+	char * dwEndAddr = dwStartAddr + dwSearchLen - dwPatternLen;
 
 	while (dwStartAddr < dwEndAddr)
 	{
@@ -346,21 +343,25 @@ void *MH_SearchPattern(void *pStartSearch, size_t dwSearchLen, const char *pPatt
 	return NULL;
 }
 
-SIZE_T MH_GetModuleSize(void *hModule)
+size_t MH_GetModuleSize(void *hModule)
 {
-#ifdef _WIN32
+#ifdef PLATFORM_WINDOWS
 	return ((IMAGE_NT_HEADERS *)((char *)hModule + ((IMAGE_DOS_HEADER *)hModule)->e_lfanew))->OptionalHeader.SizeOfImage;
+#else
+	return 0;
 #endif
 }
 
 void *MH_GetModuleBase(const char *name)
 {
-#ifdef _WIN32
+#ifdef PLATFORM_WINDOWS
 	return (void *)GetModuleHandleA(name);
+#else
+	return (void *)dlopen(name, RTLD_NOW | RTLD_NOLOAD);
 #endif
 }
 
-#ifdef _WIN32
+#ifdef PLATFORM_WINDOWS
 
 #define SV_PUSHENTITY_SVENGINE "\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC4\x89\x44\x24\x2A\x8B\x84\x24\x2A\x00\x00\x00"
 #define SV_PUSHMOVE_SVENGINE "\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC4\x89\x44\x24\x2A\x2A\x8B\xBC\x24\x88\x00\x00\x00\xD9"
@@ -388,45 +389,48 @@ C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable,
 	if (!engine)
 		engine = MH_GetModuleBase("swds.dll");
 
+	CDetourManager::Init();
+
 	if (engine)
 	{
+#ifdef PLATFORM_WINDOWS
 		g_pfnSV_PushEntity = (decltype(g_pfnSV_PushEntity))MH_SearchPattern(engine, MH_GetModuleSize(engine), SV_PUSHENTITY_SVENGINE, sizeof(SV_PUSHENTITY_SVENGINE) - 1);
-
+#else
+		g_pfnSV_PushEntity = (decltype(g_pfnSV_PushEntity))dlsym(engine, "_Z13SV_PushEntityP7edict_sPf");
+#endif
 		if (g_pfnSV_PushEntity)
 		{
-			DetourTransactionBegin();
-			DetourAttach(&(void *&)g_pfnSV_PushEntity, NewSV_PushEntity);
-			DetourTransactionCommit();
+			CDetourManager::CreateDetour((void *)g_pfnSV_PushEntity, (void **)&g_pfnSV_PushEntity, (void *)NewSV_PushEntity);
 		}
 		else
 		{
 			UTIL_LogPrintf("Failed to locate SV_PushEntity");
 		}
-
+#ifdef PLATFORM_WINDOWS
 		g_pfnSV_PushMove = (decltype(g_pfnSV_PushMove))MH_SearchPattern(engine, MH_GetModuleSize(engine), SV_PUSHMOVE_SVENGINE, sizeof(SV_PUSHMOVE_SVENGINE) - 1);
-
+#else
+		g_pfnSV_PushMove = (decltype(g_pfnSV_PushMove))dlsym(engine, "_Z11SV_PushMoveP7edict_sf");
+#endif
 		if (g_pfnSV_PushMove)
 		{
-			DetourTransactionBegin();
-			DetourAttach(&(void *&)g_pfnSV_PushMove, NewSV_PushMove);
-			DetourTransactionCommit();
+			CDetourManager::CreateDetour((void *)g_pfnSV_PushMove, (void **)&g_pfnSV_PushMove, (void *)NewSV_PushMove);
 		}
 		else
 		{
 			UTIL_LogPrintf("Failed to locate SV_PushMove");
 		}
-
-		g_pfnSV_PushRotate = (decltype(g_pfnSV_PushMove))MH_SearchPattern(engine, MH_GetModuleSize(engine), SV_PUSHROTATE_SVENGINE, sizeof(SV_PUSHROTATE_SVENGINE) - 1);
-
+#ifdef PLATFORM_WINDOWS
+		g_pfnSV_PushRotate = (decltype(g_pfnSV_PushRotate))MH_SearchPattern(engine, MH_GetModuleSize(engine), SV_PUSHROTATE_SVENGINE, sizeof(SV_PUSHROTATE_SVENGINE) - 1);
+#else
+		g_pfnSV_PushRotate = (decltype(g_pfnSV_PushRotate))dlsym(engine, "_Z13SV_PushRotateP7edict_sf");
+#endif
 		if (g_pfnSV_PushRotate)
 		{
-			DetourTransactionBegin();
-			DetourAttach(&(void *&)g_pfnSV_PushRotate, NewSV_PushRotate);
-			DetourTransactionCommit();
+			CDetourManager::CreateDetour((void *)g_pfnSV_PushRotate, (void **)&g_pfnSV_PushRotate, (void *)NewSV_PushRotate);
 		}
 		else
 		{
-			UTIL_LogPrintf("Failed to locate SV_PushMove");
+			UTIL_LogPrintf("Failed to locate SV_PushRotate");
 		}
 	}
 	else

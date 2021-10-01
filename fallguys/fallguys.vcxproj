@@ -55,8 +55,8 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;FALLGUYS_EXPORTS;_WINDOWS;_USRDLL;PLATFORM_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../hlsdk/common;../hlsdk/dlls;../hlsdk/pm_shared;../hlsdk/engine;../metamod/;../Detours/src</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;FALLGUYS_EXPORTS;_WINDOWS;_USRDLL;PLATFORM_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../hlsdk/common;../hlsdk/dlls;../hlsdk/pm_shared;../hlsdk/engine;../metamod/;../CDetour</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -75,7 +75,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;FALLGUYS_EXPORTS;_WINDOWS;_USRDLL;PLATFORM_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../hlsdk/common;../hlsdk/dlls;../hlsdk/pm_shared;../hlsdk/engine;../metamod/;../Detours/src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../hlsdk/common;../hlsdk/dlls;../hlsdk/pm_shared;../hlsdk/engine;../metamod/;../CDetour</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -84,9 +84,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\Detours\src\detours.cpp" />
-    <ClCompile Include="..\Detours\src\disasm.cpp" />
-    <ClCompile Include="..\Detours\src\modules.cpp" />
+    <ClCompile Include="..\CDetour\asm\asm.cpp" />
+    <ClCompile Include="..\CDetour\detours.cpp" />
+    <ClCompile Include="..\CDetour\libudis86\decode.cpp" />
+    <ClCompile Include="..\CDetour\libudis86\itab.cpp" />
+    <ClCompile Include="..\CDetour\libudis86\udis86.cpp" />
     <ClCompile Include="dllapi.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="engine_api.cpp" />
@@ -95,8 +97,6 @@
     <ClCompile Include="sdk_util.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Detours\src\detours.h" />
-    <ClInclude Include="..\Detours\src\detver.h" />
     <ClInclude Include="info_name.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

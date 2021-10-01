@@ -36,25 +36,25 @@
     <ClCompile Include="sdk_util.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\Detours\src\modules.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Detours\src\detours.cpp">
+    <ClCompile Include="..\CDetour\detours.cpp">
       <Filter>源文件\Detours</Filter>
     </ClCompile>
-    <ClCompile Include="..\Detours\src\disasm.cpp">
+    <ClCompile Include="..\CDetour\libudis86\itab.cpp">
+      <Filter>源文件\Detours</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CDetour\libudis86\udis86.cpp">
+      <Filter>源文件\Detours</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CDetour\libudis86\decode.cpp">
+      <Filter>源文件\Detours</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CDetour\asm\asm.cpp">
       <Filter>源文件\Detours</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="info_name.h">
       <Filter>源文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Detours\src\detours.h">
-      <Filter>源文件\Detours</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Detours\src\detver.h">
-      <Filter>源文件\Detours</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

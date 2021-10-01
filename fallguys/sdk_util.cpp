@@ -42,7 +42,7 @@ void UTIL_LogPrintf( const char *fmt, ... )
 	static char		string[1024];
 	
 	va_start ( argptr, fmt );
-	_vsnprintf_s ( string, sizeof(string), fmt, argptr );
+	_vsnprintf ( string, sizeof(string), fmt, argptr );
 	va_end   ( argptr );
 
 	// Print to server console
