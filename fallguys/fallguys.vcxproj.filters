@@ -1,60 +1,56 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="源文件">
+    <Filter Include="Source">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="头文件">
+    <Filter Include="Source\Detours">
+      <UniqueIdentifier>{5d6605e4-1ea1-4f95-9d61-4c03768775d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
-    <Filter Include="资源文件">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-    <Filter Include="源文件\Detours">
-      <UniqueIdentifier>{5d6605e4-1ea1-4f95-9d61-4c03768775d8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
-      <Filter>源文件</Filter>
+      <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="dllapi.cpp">
-      <Filter>源文件</Filter>
+      <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="engine_api.cpp">
-      <Filter>源文件</Filter>
+      <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="h_export.cpp">
-      <Filter>源文件</Filter>
+      <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="meta_api.cpp">
-      <Filter>源文件</Filter>
+      <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="sdk_util.cpp">
-      <Filter>源文件</Filter>
+      <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\CDetour\detours.cpp">
-      <Filter>源文件\Detours</Filter>
+      <Filter>Source\Detours</Filter>
     </ClCompile>
     <ClCompile Include="..\CDetour\libudis86\itab.c">
-      <Filter>源文件\Detours</Filter>
+      <Filter>Source\Detours</Filter>
     </ClCompile>
     <ClCompile Include="..\CDetour\libudis86\udis86.c">
-      <Filter>源文件\Detours</Filter>
+      <Filter>Source\Detours</Filter>
     </ClCompile>
     <ClCompile Include="..\CDetour\libudis86\decode.c">
-      <Filter>源文件\Detours</Filter>
+      <Filter>Source\Detours</Filter>
     </ClCompile>
     <ClCompile Include="..\CDetour\asm\asm.c">
-      <Filter>源文件\Detours</Filter>
+      <Filter>Source\Detours</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="info_name.h">
-      <Filter>源文件</Filter>
+      <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

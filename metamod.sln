@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "metamod", "metamod\metamod.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fallguys", "fallguys\fallguys.vcxproj", "{B3CA76F7-55CF-4402-9DB6-93B0D3751DC0}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "querycvar", "querycvar\querycvar.vcxproj", "{B3CA76F7-55CF-4402-9DB6-93B0D3751DC1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -27,6 +29,12 @@ Global
 		{B3CA76F7-55CF-4402-9DB6-93B0D3751DC0}.Release|Win32.ActiveCfg = Release|Win32
 		{B3CA76F7-55CF-4402-9DB6-93B0D3751DC0}.Release|Win32.Build.0 = Release|Win32
 		{B3CA76F7-55CF-4402-9DB6-93B0D3751DC0}.Release|x64.ActiveCfg = Release|Win32
+		{B3CA76F7-55CF-4402-9DB6-93B0D3751DC1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B3CA76F7-55CF-4402-9DB6-93B0D3751DC1}.Debug|Win32.Build.0 = Debug|Win32
+		{B3CA76F7-55CF-4402-9DB6-93B0D3751DC1}.Debug|x64.ActiveCfg = Debug|Win32
+		{B3CA76F7-55CF-4402-9DB6-93B0D3751DC1}.Release|Win32.ActiveCfg = Release|Win32
+		{B3CA76F7-55CF-4402-9DB6-93B0D3751DC1}.Release|Win32.Build.0 = Release|Win32
+		{B3CA76F7-55CF-4402-9DB6-93B0D3751DC1}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
