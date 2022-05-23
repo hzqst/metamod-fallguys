@@ -415,7 +415,8 @@ C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable,
 #endif
 		if (g_oldSV_PushEntity)
 		{
-			CDetourManager::CreateDetour((void *)NewSV_PushEntity, (void **)&g_pfnSV_PushEntity, (void *)g_oldSV_PushEntity);
+			auto detour = CDetourManager::CreateDetour((void *)NewSV_PushEntity, (void **)&g_pfnSV_PushEntity, (void *)g_oldSV_PushEntity);
+			detour->EnableDetour();
 		}
 		else
 		{
@@ -428,7 +429,8 @@ C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable,
 #endif
 		if (g_oldSV_PushMove)
 		{
-			CDetourManager::CreateDetour((void *)NewSV_PushMove, (void **)&g_pfnSV_PushMove, (void *)g_oldSV_PushMove);
+			auto detour = CDetourManager::CreateDetour((void *)NewSV_PushMove, (void **)&g_pfnSV_PushMove, (void *)g_oldSV_PushMove);
+			detour->EnableDetour();
 		}
 		else
 		{
@@ -441,7 +443,8 @@ C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable,
 #endif
 		if (g_oldSV_PushRotate)
 		{
-			CDetourManager::CreateDetour((void *)NewSV_PushRotate, (void **)&g_pfnSV_PushRotate, (void *)g_oldSV_PushRotate);
+			auto detour = CDetourManager::CreateDetour((void *)NewSV_PushRotate, (void **)&g_pfnSV_PushRotate, (void *)g_oldSV_PushRotate);
+			detour->EnableDetour();
 		}
 		else
 		{
