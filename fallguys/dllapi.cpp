@@ -56,6 +56,10 @@ bool IsEntityPushee(edict_t *ent)
 	return (ent->v.solid == SOLID_SLIDEBOX || ent->v.solid == SOLID_BBOX) && (ent->v.movetype == MOVETYPE_STEP || ent->v.movetype == MOVETYPE_WALK);
 }
 
+static trace_t *(*g_oldSV_PushEntity)(trace_t * trace, edict_t *ent, float * push) = NULL;
+static void(*g_oldSV_PushMove)(edict_t *pusher, float movetime) = NULL;
+static void(*g_oldSV_PushRotate)(edict_t *pusher, float movetime) = NULL;
+
 static trace_t *(*g_pfnSV_PushEntity)(trace_t * trace, edict_t *ent, float * push) = NULL;
 static void (*g_pfnSV_PushMove)(edict_t *pusher, float movetime) = NULL;
 static void(*g_pfnSV_PushRotate)(edict_t *pusher, float movetime) = NULL;
@@ -369,6 +373,17 @@ void *MH_GetModuleBase(const char *name)
 
 #endif
 
+typedef void(*ENTITYINIT)(entvars_t* pev);
+ENTITYINIT(*oldGetEntityInit)(char* pClassName);
+ENTITYINIT(*pfnGetEntityInit)(char* pClassName);
+
+ENTITYINIT NewGetEntityInit(char* pClassName) {
+	if (!strcmp(pClassName, "weapon_rpg")) {
+		return nullptr;
+	}
+	return pfnGetEntityInit(pClassName);
+}
+
 C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable, 
 		int *interfaceVersion)
 {
@@ -394,39 +409,39 @@ C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable,
 	if (engine)
 	{
 #ifdef PLATFORM_WINDOWS
-		g_pfnSV_PushEntity = (decltype(g_pfnSV_PushEntity))MH_SearchPattern(engine, MH_GetModuleSize(engine), SV_PUSHENTITY_SVENGINE, sizeof(SV_PUSHENTITY_SVENGINE) - 1);
+		g_oldSV_PushEntity = (decltype(g_oldSV_PushEntity))MH_SearchPattern(engine, MH_GetModuleSize(engine), SV_PUSHENTITY_SVENGINE, sizeof(SV_PUSHENTITY_SVENGINE) - 1);
 #else
-		g_pfnSV_PushEntity = (decltype(g_pfnSV_PushEntity))dlsym(engine, "_Z13SV_PushEntityP7edict_sPf");
+		g_oldSV_PushEntity = (decltype(g_oldSV_PushEntity))dlsym(engine, "_Z13SV_PushEntityP7edict_sPf");
 #endif
-		if (g_pfnSV_PushEntity)
+		if (g_oldSV_PushEntity)
 		{
-			CDetourManager::CreateDetour((void *)g_pfnSV_PushEntity, (void **)&g_pfnSV_PushEntity, (void *)NewSV_PushEntity);
+			CDetourManager::CreateDetour((void *)NewSV_PushEntity, (void **)&g_pfnSV_PushEntity, (void *)g_oldSV_PushEntity);
 		}
 		else
 		{
 			UTIL_LogPrintf("Failed to locate SV_PushEntity");
 		}
 #ifdef PLATFORM_WINDOWS
-		g_pfnSV_PushMove = (decltype(g_pfnSV_PushMove))MH_SearchPattern(engine, MH_GetModuleSize(engine), SV_PUSHMOVE_SVENGINE, sizeof(SV_PUSHMOVE_SVENGINE) - 1);
+		g_oldSV_PushMove = (decltype(g_oldSV_PushMove))MH_SearchPattern(engine, MH_GetModuleSize(engine), SV_PUSHMOVE_SVENGINE, sizeof(SV_PUSHMOVE_SVENGINE) - 1);
 #else
-		g_pfnSV_PushMove = (decltype(g_pfnSV_PushMove))dlsym(engine, "_Z11SV_PushMoveP7edict_sf");
+		g_oldSV_PushMove = (decltype(g_oldSV_PushMove))dlsym(engine, "_Z11SV_PushMoveP7edict_sf");
 #endif
-		if (g_pfnSV_PushMove)
+		if (g_oldSV_PushMove)
 		{
-			CDetourManager::CreateDetour((void *)g_pfnSV_PushMove, (void **)&g_pfnSV_PushMove, (void *)NewSV_PushMove);
+			CDetourManager::CreateDetour((void *)NewSV_PushMove, (void **)&g_pfnSV_PushMove, (void *)g_oldSV_PushMove);
 		}
 		else
 		{
 			UTIL_LogPrintf("Failed to locate SV_PushMove");
 		}
 #ifdef PLATFORM_WINDOWS
-		g_pfnSV_PushRotate = (decltype(g_pfnSV_PushRotate))MH_SearchPattern(engine, MH_GetModuleSize(engine), SV_PUSHROTATE_SVENGINE, sizeof(SV_PUSHROTATE_SVENGINE) - 1);
+		g_oldSV_PushRotate = (decltype(g_oldSV_PushRotate))MH_SearchPattern(engine, MH_GetModuleSize(engine), SV_PUSHROTATE_SVENGINE, sizeof(SV_PUSHROTATE_SVENGINE) - 1);
 #else
-		g_pfnSV_PushRotate = (decltype(g_pfnSV_PushRotate))dlsym(engine, "_Z13SV_PushRotateP7edict_sf");
+		g_oldSV_PushRotate = (decltype(g_oldSV_PushRotate))dlsym(engine, "_Z13SV_PushRotateP7edict_sf");
 #endif
-		if (g_pfnSV_PushRotate)
+		if (g_oldSV_PushRotate)
 		{
-			CDetourManager::CreateDetour((void *)g_pfnSV_PushRotate, (void **)&g_pfnSV_PushRotate, (void *)NewSV_PushRotate);
+			CDetourManager::CreateDetour((void *)NewSV_PushRotate, (void **)&g_pfnSV_PushRotate, (void *)g_oldSV_PushRotate);
 		}
 		else
 		{

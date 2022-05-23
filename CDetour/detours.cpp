@@ -70,7 +70,7 @@ void *AllocatePageMemory(void *base, size_t size)
 	#else
 			void * pv = mmap((void *)NULL, DETOUR_REGION_SIZE, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 	#endif
-
+			return pv;
 #endif
 }
 
