@@ -46,6 +46,8 @@ static char *detour_alloc_round_down_to_region(char * pbTry)
 
 void *AllocatePageMemory(void *base, size_t size)
 {
+#if defined(_WIN64) || defined(__x86_64__)
+
 	auto pbTry = detour_alloc_round_down_to_region((char *)base - DETOUR_REGION_SIZE);
 
 	while (pbTry < base) {
@@ -59,8 +61,17 @@ void *AllocatePageMemory(void *base, size_t size)
 
 		pbTry += DETOUR_REGION_SIZE;
 	}
-
 	return NULL;
+
+#else
+
+	#ifdef PLATFORM_WINDOWS
+			void * pv = VirtualAlloc((void *)NULL, DETOUR_REGION_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	#else
+			void * pv = mmap((void *)NULL, DETOUR_REGION_SIZE, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	#endif
+
+#endif
 }
 
 void SetReadWrite(void *base)
