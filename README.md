@@ -17,7 +17,7 @@ g_Hooks.RegisterHook(Hooks::Player::PlayerAddToFullPack, @PlayerAddToFullPack);/
 ```
 HookReturnCode PlayerAddToFullPack( entity_state_t@ state, int e, edict_t @ent, edict_t@ host, int hostflags, int player, uint& out uiFlags )
 {
-   //if uiFlags is set to 1, the entity will not be transmitted to client presented by edict_t@ host.
+   //if uiFlags is set to 1, the entity will not be transmitted to client represented by edict_t@ host.
     return HOOK_HANDLED;
 }
 ```
