@@ -2,6 +2,8 @@
 
 This is a metamod plugin for Fall Guys maps in Sven Co-op 5.25+ (Steam version) (Windows or Linux)
 
+(Linux support is not done yet)
+
 # What it does?
 
 1. You will be pushed backward along with *the player who is trying to block you* instead of getting blocked when being pushed by brush entity with `pev.sequence == 114514`
@@ -44,6 +46,8 @@ HookReturnCode PlayerPostThinkPost(CBasePlayer@ pPlayer)
 
 edict_t@viewent = g_EngineFuncs.GetViewEntity(pPlayer.edict());
 ```
+
+6. You are welcome to request for any new hook which is not implemented by vanilla Sven Co-op.
 
 # Installation
 
