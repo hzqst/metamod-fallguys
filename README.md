@@ -22,6 +22,20 @@ HookReturnCode PlayerAddToFullPack( entity_state_t@ state, int e, edict_t @ent, 
 }
 ```
 
+4. You can hook post call of PlayerPostThink (aka PlayerPostThinkPost) by using following code : 
+
+```
+g_Hooks.RegisterHook(Hooks::Player::PlayerPostThinkPost, @PlayerPostThinkPost);// register at initialization
+```
+
+```
+//You can override player's pev.sequence or some other shit which is updated on every frame in PlayerPostThink
+HookReturnCode PlayerPostThinkPost(CBasePlayer@ pPlayer)
+{
+   return HOOK_CONTINUE;
+}
+```
+
 # Installation
 
 1. Copy everything from `build` directory into `\steamapps\common\Sven Co-op\Sven Co-op\svencoop` *(Warning: `svencoop_addon` and `svencoop_downloads` are not supported yet)*
