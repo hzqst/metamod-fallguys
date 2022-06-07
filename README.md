@@ -36,6 +36,15 @@ HookReturnCode PlayerPostThinkPost(CBasePlayer@ pPlayer)
 }
 ```
 
+5. You can get player's view entity (e.g trigger_camera) by using following code :
+
+```
+//edict_t@ GetViewEntity(edict_t@ pClient)
+//Warning: pClient must be a valid client edict or game may crash.
+
+edict_t@viewent = g_EngineFuncs.GetViewEntity(pPlayer.edict());
+```
+
 # Installation
 
 1. Copy everything from `build` directory into `\steamapps\common\Sven Co-op\Sven Co-op\svencoop` *(Warning: `svencoop_addon` and `svencoop_downloads` are not supported yet)*
