@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -95,12 +95,19 @@
     <ClCompile Include="dllapi.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="engine_api.cpp" />
+    <ClCompile Include="engine_hook.cpp" />
+    <ClCompile Include="fallguys.cpp" />
     <ClCompile Include="h_export.cpp" />
     <ClCompile Include="meta_api.cpp" />
     <ClCompile Include="sdk_util.cpp" />
+    <ClCompile Include="server_hook.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="info_name.h" />
+    <ClInclude Include="enginedef.h" />
+    <ClInclude Include="fallguys.h" />
+    <ClInclude Include="signatures.h" />
+    <ClInclude Include="serverdef.h" />
+    <ClInclude Include="util.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

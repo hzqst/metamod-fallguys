@@ -44,6 +44,10 @@
 
 #include "sdk_util.h"		// UTIL_LogPrintf, etc
 
+#include "enginedef.h"
+#include "serverdef.h"
+#include "fallguys.h"
+
 // Must provide at least one of these..
 static META_FUNCTIONS gMetaFunctionTable = {
 	NULL,			// pfnGetEntityAPI				HL SDK; called before game DLL
@@ -60,13 +64,13 @@ static META_FUNCTIONS gMetaFunctionTable = {
 plugin_info_t Plugin_info = {
 	META_INTERFACE_VERSION,	// ifvers
 	"FallGuys",	// name
-	"1.0",	// version
-	"2021/09/15",	// date
+	"1.1",	// version
+	"2022",	// date
 	"hzqst",	// author
-	"http://www.metamod.org/",	// url
+	"https://github.com/hzqst/metamod-fallguys",	// url
 	"FGUYS",	// logtag, all caps please
 	PT_ANYTIME,	// (when) loadable
-	PT_ANYPAUSE,	// (when) unloadable
+	PT_NEVER,	// (when) unloadable
 };
 
 // Global vars from metamod:
@@ -93,24 +97,58 @@ C_DLLEXPORT int Meta_Query(char * /*ifvers */, plugin_info_t **pPlugInfo,
 //  pFunctionTable	(requested) table of function tables this plugin catches
 //  pMGlobals		(given) global vars from metamod
 //  pGamedllFuncs	(given) copy of function tables from game dll
-C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */, 
-		META_FUNCTIONS *pFunctionTable, meta_globals_t *pMGlobals, 
-		gamedll_funcs_t *pGamedllFuncs) 
+
+C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
+	META_FUNCTIONS* pFunctionTable, meta_globals_t* pMGlobals,
+	gamedll_funcs_t* pGamedllFuncs)
 {
-	if(!pMGlobals) {
+	if (!pMGlobals) {
 		LOG_ERROR(PLID, "Meta_Attach called with null pMGlobals");
-		return(FALSE);
+		return FALSE;
 	}
-	gpMetaGlobals=pMGlobals;
-	if(!pFunctionTable) {
+
+	gpMetaGlobals = pMGlobals;
+	if (!pFunctionTable) {
 		LOG_ERROR(PLID, "Meta_Attach called with null pFunctionTable");
-		return(FALSE);
+		return FALSE;
 	}
 
 	memcpy(pFunctionTable, &gMetaFunctionTable, sizeof(META_FUNCTIONS));
-	gpGamedllFuncs=pGamedllFuncs;
+	gpGamedllFuncs = pGamedllFuncs;
 
-	return 1;
+	CDetourManager::Init();
+
+	auto engine = MH_GetModuleBase(ENGINE_DLL_NAME);
+
+	if (!engine)
+	{
+		LOG_ERROR(PLID, "Engine dll not found !");
+		return FALSE;
+	}
+
+	auto server = MH_GetModuleBase(SERVER_DLL_NAME);
+
+	if (!server)
+	{
+		LOG_ERROR(PLID, "Server dll not found !");
+		return FALSE;
+	}
+
+	FILL_FROM_SIGNATURE(engine, SV_PushEntity);
+	FILL_FROM_SIGNATURE(engine, SV_PushMove);
+	FILL_FROM_SIGNATURE(engine, SV_PushRotate);
+
+	FILL_FROM_SIGNATURE(server, CASHook_CASHook);
+	FILL_FROM_SIGNATURE(server, CASHook_Call);
+	FILL_FROM_SIGNATURED_CALLER(server, CASDocumentation_RegisterObjectType, -1);
+	FILL_FROM_SIGNATURED_CALLER(server, CASDocumentation_RegisterObjectProperty, -7);
+	FILL_FROM_SIGNATURED_CALLER(server, CASDocumentation_RegisterObjectMethod, -7);
+
+	FG_InstallInlineHooks();
+
+	FG_RegisterAngelScriptHooks();
+
+	return TRUE;
 }
 
 // Metamod detaching plugin from the server.
@@ -119,5 +157,6 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME /* now */, 
 		PL_UNLOAD_REASON /* reason */) 
 {
-	return 1;
+	//Nope, AngelScript doesn't provide unloading procedures
+	return FALSE;
 }

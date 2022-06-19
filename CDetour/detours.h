@@ -219,7 +219,7 @@ public:
 	friend class CDetourManager;
 
 protected:
-	CDetour(void*callbackfunction, void **trampoline, void *pAddress);
+	CDetour(void*callbackfunction, void **ptrampoline, void *pAddress);
 
 	bool Init();
 private:

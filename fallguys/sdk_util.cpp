@@ -48,3 +48,50 @@ void UTIL_LogPrintf( const char *fmt, ... )
 	// Print to server console
 	ALERT( at_logged, "%s", string );
 }
+
+void *MH_SearchPattern(void *pStartSearch, size_t dwSearchLen, const char *pPattern, size_t dwPatternLen)
+{
+	char * dwStartAddr = (char *)pStartSearch;
+	char * dwEndAddr = dwStartAddr + dwSearchLen - dwPatternLen;
+
+	while (dwStartAddr < dwEndAddr)
+	{
+		bool found = true;
+
+		for (size_t i = 0; i < dwPatternLen; i++)
+		{
+			char code = *(char *)(dwStartAddr + i);
+
+			if (pPattern[i] != 0x2A && pPattern[i] != code)
+			{
+				found = false;
+				break;
+			}
+		}
+
+		if (found)
+			return (void *)dwStartAddr;
+
+		dwStartAddr++;
+	}
+
+	return NULL;
+}
+
+size_t MH_GetModuleSize(void *hModule)
+{
+#ifdef PLATFORM_WINDOWS
+	return ((IMAGE_NT_HEADERS *)((char *)hModule + ((IMAGE_DOS_HEADER *)hModule)->e_lfanew))->OptionalHeader.SizeOfImage;
+#else
+	return 0;
+#endif
+}
+
+void *MH_GetModuleBase(const char *name)
+{
+#ifdef PLATFORM_WINDOWS
+	return (void *)GetModuleHandleA(name);
+#else
+	return (void *)dlopen(name, RTLD_NOW | RTLD_NOLOAD);
+#endif
+}

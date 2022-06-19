@@ -47,10 +47,31 @@
     <ClCompile Include="..\CDetour\asm\asm.c">
       <Filter>Source\Detours</Filter>
     </ClCompile>
+    <ClCompile Include="engine_hook.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="server_hook.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="fallguys.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="info_name.h">
-      <Filter>Source</Filter>
+    <ClInclude Include="enginedef.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="util.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="serverdef.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="signatures.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="fallguys.h">
+      <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

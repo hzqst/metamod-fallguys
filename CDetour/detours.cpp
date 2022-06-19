@@ -175,14 +175,14 @@ CDetour *CDetourManager::CreateDetour(void *callbackfunction, void **trampoline,
 	return NULL;
 }
 
-CDetour::CDetour(void*callbackfunction, void **trampoline, void *pAddress)
+CDetour::CDetour(void*callbackfunction, void **ptrampoline, void *pAddress)
 {
 	enabled = false;
 	detoured = false;
 	detour_address = pAddress;
 	detour_trampoline = NULL;
-	this->detour_callback = callbackfunction;
-	this->trampoline = trampoline;
+	detour_callback = callbackfunction;
+	trampoline = ptrampoline;
 }
 
 bool CDetour::Init()
