@@ -8,7 +8,7 @@ This is a metamod plugin for [Fall Guys in Sven Co-op](https://github.com/hzqst/
 
 1. Brush entity with `pev.movetype = MOVETYPE_PUSH` , `pev.solid = SOLID_BSP` and `pev.sequence == 114514` is **Super Pusher**.
 
-2. Point entity with (pev.solid == SOLID_SLIDEBOX or pev.solid == SOLID_BBOX) and (pev.movetype == MOVETYPE_STEP or pev.movetype == MOVETYPE_WALK) is **Pushee**
+2. Point entity with `(pev.solid == SOLID_SLIDEBOX or pev.solid == SOLID_BBOX)` and `(pev.movetype == MOVETYPE_STEP or pev.movetype == MOVETYPE_WALK)` is **Pushee**
 
 3. **Pushee** will be pushed backward along with **another Pushee who is trying to block it** instead of getting blocked by **Super Pusher**.
 
