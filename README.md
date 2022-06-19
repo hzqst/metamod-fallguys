@@ -95,7 +95,7 @@ HookReturnCode PlayerTouchImpact( CBasePlayer@ pPlayer, CBaseEntity@ pOther )
 edict_t@viewent = g_EngineFuncs.GetViewEntity(pPlayer.edict());
 ```
 
-6. You are welcome to request for any new hook which is not implemented in Sven Co-op yet.
+### You are welcome to request for any new hook which is not implemented in Sven Co-op yet.
 
 # Installation
 
