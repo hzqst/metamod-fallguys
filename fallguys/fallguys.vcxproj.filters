@@ -56,6 +56,9 @@
     <ClCompile Include="fallguys.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="physics.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="enginedef.h">
@@ -71,6 +74,9 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="fallguys.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="physics.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

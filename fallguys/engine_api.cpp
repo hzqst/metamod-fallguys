@@ -36,6 +36,11 @@
 
 #include <meta_api.h>
 
+#include "enginedef.h"
+#include "serverdef.h"
+#include "fallguys.h"
+#include "physics.h"
+
 enginefuncs_t meta_engfuncs = 
 {
 	NULL,						// pfnPrecacheModel()
@@ -262,5 +267,5 @@ C_DLLEXPORT int GetEngineFunctions(enginefuncs_t *pengfuncsFromEngine,
 		return(FALSE);
 	}
 	memcpy(pengfuncsFromEngine, &meta_engfuncs, sizeof(enginefuncs_t));
-	return(TRUE);
+	return TRUE;
 }

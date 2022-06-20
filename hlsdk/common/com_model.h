@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2002, Valve LLC, All rights reserved. ============
+//========= Copyright ?1996-2002, Valve LLC, All rights reserved. ============
 //
 // Purpose: 
 //
@@ -169,6 +169,8 @@ typedef struct mleaf_s
 	byte		ambient_sound_level[NUM_AMBIENTS];
 } mleaf_t;
 
+//no swds support
+#if 0
 struct msurface_s
 {
 	int			visframe;		// should be drawn when node is crossed
@@ -199,6 +201,43 @@ struct msurface_s
 	
 	decal_t		*pdecals;
 };
+#else
+#define VERTEXSIZE 7
+
+typedef struct glpoly_s
+{
+	struct glpoly_s* next;
+	struct glpoly_s* chain;
+	int numverts;
+	int flags;
+	float verts[4][VERTEXSIZE];
+}
+glpoly_t;
+
+typedef struct msurface_s
+{
+	int visframe;
+	mplane_t* plane;
+	int flags;
+	int firstedge;
+	int numedges;
+	short texturemins[2];
+	short extents[2];
+	int light_s, light_t;
+	glpoly_t* polys;
+	struct msurface_s* texturechain;
+	mtexinfo_t* texinfo;
+	int dlightframe;
+	int dlightbits;
+	int lightmaptexturenum;
+	byte styles[MAXLIGHTMAPS];
+	int cached_light[MAXLIGHTMAPS];
+	qboolean cached_dlight;
+	byte* samples;
+	struct decal_s* pdecals;
+}
+msurface_t;
+#endif
 
 typedef struct
 {

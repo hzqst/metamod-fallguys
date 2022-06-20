@@ -5,6 +5,8 @@
 #include "enginedef.h"
 #include "serverdef.h"
 #include "fallguys.h"
+#include "physics.h"
+
 
 //For SuperPusher
 bool g_bIsPushMove = false;
@@ -28,9 +30,14 @@ CASHook g_PlayerPostThinkPostHook = { 0 };
 CASHook g_PlayerTouchTriggerHook = { 0 };
 CASHook g_PlayerTouchImpactHook = { 0 };
 
+bool IsEntitySuperPhysBox(edict_t* ent)
+{
+	return ent && ent->v.movetype == MOVETYPE_TOSS && ent->v.sequence == SuperPhysBox_MagicNumber;
+}
+
 bool IsEntitySuperPusher(edict_t* ent)
 {
-	return ent && ent->v.solid == SOLID_BSP && ent->v.solid == MOVETYPE_PUSH && ent->v.sequence == 114514;
+	return ent && ent->v.solid == SOLID_BSP && ent->v.movetype == MOVETYPE_PUSH && ent->v.sequence == SuperPusher_MagicNumber;
 }
 
 bool IsEntityPushee(edict_t* ent)
@@ -40,17 +47,12 @@ bool IsEntityPushee(edict_t* ent)
 
 void FG_InstallInlineHooks()
 {
-	g_hook_SV_PushEntity = CDetourManager::CreateDetour((void*)NewSV_PushEntity, (void**)&g_call_original_SV_PushEntity, (void*)g_pfn_SV_PushEntity);
-	g_hook_SV_PushEntity->EnableDetour();
-
-	g_hook_SV_PushMove = CDetourManager::CreateDetour((void*)NewSV_PushMove, (void**)&g_call_original_SV_PushMove, (void*)g_pfn_SV_PushMove);
-	g_hook_SV_PushMove->EnableDetour();
-
-	g_hook_SV_PushRotate = CDetourManager::CreateDetour((void*)NewSV_PushRotate, (void**)&g_call_original_SV_PushRotate, (void*)g_pfn_SV_PushRotate);
-	g_hook_SV_PushRotate->EnableDetour();
-
-	g_hook_CASDocumentation_RegisterObjectType = CDetourManager::CreateDetour((void*)NewCASDocumentation_RegisterObjectType, (void**)&g_call_original_CASDocumentation_RegisterObjectType, (void*)g_pfn_CASDocumentation_RegisterObjectType);
-	g_hook_CASDocumentation_RegisterObjectType->EnableDetour();
+	INSTALL_INLINEHOOK(SV_PushEntity);
+	INSTALL_INLINEHOOK(SV_PushMove);
+	INSTALL_INLINEHOOK(SV_PushRotate);
+	//INSTALL_INLINEHOOK(SV_Physics_Step);
+	INSTALL_INLINEHOOK(SV_Physics_Toss);
+	INSTALL_INLINEHOOK(CASDocumentation_RegisterObjectType);
 }
 
 void FG_RegisterAngelScriptHook_AddToFullPack(int dummy)

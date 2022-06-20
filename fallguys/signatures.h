@@ -20,6 +20,11 @@ extern fn##name g_call_original_##name;
 #define SV_PushEntity_Signature "\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC4\x89\x44\x24\x2A\x8B\x84\x24\x2A\x00\x00\x00"
 #define SV_PushMove_Signature "\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC4\x89\x44\x24\x2A\x2A\x8B\xBC\x24\x88\x00\x00\x00\xD9"
 #define SV_PushRotate_Signature "\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC4\x89\x84\x24\x2A\x00\x00\x00\x2A\x8B\xBC\x24\xC0\x00\x00\x00\xD9"
+#define SV_Physics_Step_Signature "\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\x2A\x2A\xDD\xD8\x2A\x2A\x24\x10\xF7"
+#define SV_Physics_Toss_Signature "\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\x2A\x2A\xDD\xD8"
+#define SV_RunThink_Signature "\x2A\x8B\x2A\x24\x08\x8B\x2A\x24\x02\x00\x00\xA9\x00\x00\x00\x40"
+#define sv_models_Signature "\x3D\xFE\x1F\x00\x00\x2A\x2A\x0F\xAE\xE8\xFF\x34\x8D"
+#define host_frametime_Signature "\xD8\x83\xA8\x00\x00\x00\xD9\x9B\xA8\x00\x00\x00\xE8\x2A\x2A\x2A\x2A\xDD\x05"
 
 #define CASHook_CASHook_Signature "\x8A\x44\x24\x2A\x2A\x54\x24\x2A\x2A\x8A\x5C\x24\x2A\x2A\x8B\xF1\xB9"
 #define CASHook_Call_Signature "\x8B\x4C\x24\x04\x8D\x44\x24\x0C\x50\xFF\x74\x24\x0C\x6A\x00\xE8"
@@ -50,15 +55,54 @@ if (!g_pfn_##name)\
 	return FALSE;\
 }
 
-#define FILL_FROM_SIGNATURED_CALLER(dll, name, offset) auto Caller_of_##name = (char *)LOCATE_FROM_SIGNATURE(dll, name##_Signature);\
+#define FILL_FROM_SIGNATURED_CALLER_FROM_START(dll, name, offset) auto Caller_of_##name = (char *)LOCATE_FROM_SIGNATURE(dll, name##_Signature);\
 if (!Caller_of_##name)\
 {\
 	LOG_ERROR(PLID, "Failed to locate Caller of " #name " from " #dll " dll !");\
 	return FALSE;\
 }\
-g_pfn_##name = g_call_original_##name = (decltype(g_pfn_##name))GetCallAddress(Caller_of_##name + sizeof(name##_Signature) - 1 + (offset));\
+g_pfn_##name = g_call_original_##name = (decltype(g_pfn_##name))GetCallAddress(Caller_of_##name + (offset));\
 if (!((char *)g_pfn_##name > (char*)dll && (char*)g_pfn_##name < (char*)dll + MH_GetModuleSize(dll)))\
 {\
 LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !"); \
 return FALSE; \
 }
+
+#define FILL_FROM_SIGNATURED_CALLER_FROM_END(dll, name, offset) auto Caller_of_##name = (char *)LOCATE_FROM_SIGNATURE(dll, name##_Signature);\
+if (!Caller_of_##name)\
+{\
+	LOG_ERROR(PLID, "Failed to locate Caller of " #name " from " #dll " dll !");\
+	return FALSE;\
+}\
+g_pfn_##name = g_call_original_##name = (decltype(g_pfn_##name))GetCallAddress(Caller_of_##name + (sizeof(name##_Signature) - 1) + (offset));\
+if (!((char *)g_pfn_##name > (char*)dll && (char*)g_pfn_##name < (char*)dll + MH_GetModuleSize(dll)))\
+{\
+LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !"); \
+return FALSE; \
+}
+
+#define VAR_FROM_SIGNATURE(dll, name) name = (decltype(name))LOCATE_FROM_SIGNATURE(dll, name##_Signature);\
+if (!name)\
+{\
+	LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !");\
+	return FALSE;\
+}
+
+#define VAR_FROM_SIGNATURE_FROM_START(dll, name, offset) auto name##_Temp = (PUCHAR)LOCATE_FROM_SIGNATURE(dll, name##_Signature);\
+if (!name##_Temp)\
+{\
+	LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !");\
+	return FALSE;\
+}\
+name = *(decltype(name) *)(name##_Temp + offset);
+
+#define VAR_FROM_SIGNATURE_FROM_END(dll, name, offset) auto name##_Temp = (PUCHAR)LOCATE_FROM_SIGNATURE(dll, name##_Signature);\
+if (!name##_Temp)\
+{\
+	LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !");\
+	return FALSE;\
+}\
+name = *(decltype(name) *)(name##_Temp + (sizeof(name##_Signature) - 1) + offset);
+
+#define INSTALL_INLINEHOOK(name) g_hook_##name = CDetourManager::CreateDetour((void*)New##name, (void**)&g_call_original_##name, (void*)g_pfn_##name);\
+g_hook_##name->EnableDetour();

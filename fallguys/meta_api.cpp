@@ -47,6 +47,7 @@
 #include "enginedef.h"
 #include "serverdef.h"
 #include "fallguys.h"
+#include "physics.h"
 
 // Must provide at least one of these..
 static META_FUNCTIONS gMetaFunctionTable = {
@@ -122,7 +123,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 	if (!engine)
 	{
-		LOG_ERROR(PLID, "Engine dll not found !");
+		LOG_ERROR(PLID, "engine dll not found !");
 		return FALSE;
 	}
 
@@ -130,23 +131,32 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 	if (!server)
 	{
-		LOG_ERROR(PLID, "Server dll not found !");
+		LOG_ERROR(PLID, "server dll not found !");
 		return FALSE;
 	}
 
+	//Fill private engine functions
 	FILL_FROM_SIGNATURE(engine, SV_PushEntity);
 	FILL_FROM_SIGNATURE(engine, SV_PushMove);
 	FILL_FROM_SIGNATURE(engine, SV_PushRotate);
+	FILL_FROM_SIGNATURE(engine, SV_RunThink);
+	FILL_FROM_SIGNATURED_CALLER_FROM_START(engine, SV_Physics_Step, 1);
+	FILL_FROM_SIGNATURED_CALLER_FROM_START(engine, SV_Physics_Toss, 1);
+	VAR_FROM_SIGNATURE_FROM_START(engine, sv_models, 13);
+	VAR_FROM_SIGNATURE_FROM_END(engine, host_frametime, 0);
 
+	//Fill private server functions
 	FILL_FROM_SIGNATURE(server, CASHook_CASHook);
 	FILL_FROM_SIGNATURE(server, CASHook_Call);
-	FILL_FROM_SIGNATURED_CALLER(server, CASDocumentation_RegisterObjectType, -1);
-	FILL_FROM_SIGNATURED_CALLER(server, CASDocumentation_RegisterObjectProperty, -7);
-	FILL_FROM_SIGNATURED_CALLER(server, CASDocumentation_RegisterObjectMethod, -7);
+	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectType, -1);
+	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectProperty, -7);
+	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectMethod, -7);
 
 	FG_InstallInlineHooks();
 
 	FG_RegisterAngelScriptHooks();
+
+	gPhysicsManager.Init();
 
 	return TRUE;
 }

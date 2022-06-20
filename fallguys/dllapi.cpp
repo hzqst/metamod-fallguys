@@ -40,6 +40,9 @@
 #include "enginedef.h"
 #include "serverdef.h"
 #include "fallguys.h"
+#include "physics.h"
+
+cvar_t* sv_gravity = NULL;
 
 void NewTouch(edict_t *pentTouched, edict_t *pentOther)
 {
@@ -101,6 +104,7 @@ int NewAddToFullPack_Post(struct entity_state_s *state, int e, edict_t *ent, edi
 {
 	if (META_RESULT_ORIG_RET(int) == 1)
 	{
+
 		if (g_pfn_CASHook_Call)
 		{
 			int uiFlags = 0;
@@ -113,10 +117,39 @@ int NewAddToFullPack_Post(struct entity_state_s *state, int e, edict_t *ent, edi
 				return 0;
 			}
 		}
+
+		//Don't send magic number to clients
+		if (IsEntitySuperPusher(ent) && state->sequence == SuperPusher_MagicNumber)
+		{
+			state->sequence = 0;
+		}
 	}
 
 	SET_META_RESULT(MRES_IGNORED);
 	return 1;
+}
+
+void NewServerActivate_Post(edict_t* pEdictList, int edictCount, int clientMax)
+{
+	gPhysicsManager.NewMap();
+
+	SET_META_RESULT(MRES_IGNORED);
+}
+
+void NewStartFrame(void)
+{
+	if (!sv_gravity)
+		sv_gravity = CVAR_GET_POINTER("sv_gravity");
+	gPhysicsManager.SetGravity(sv_gravity->value);
+	gPhysicsManager.StepSimulation((*host_frametime));
+
+	SET_META_RESULT(MRES_IGNORED);
+}
+
+void NewThink(edict_t* pent)
+{
+
+	SET_META_RESULT(MRES_IGNORED);
 }
 
 void NewPlayerPreThink(edict_t *pEntity)
@@ -177,7 +210,7 @@ static DLL_FUNCTIONS gFunctionTable =
 	NewPlayerPreThink,		// pfnPlayerPreThink
 	NewPlayerPostThink,		// pfnPlayerPostThink
 
-	NULL,					// pfnStartFrame
+	NewStartFrame,			// pfnStartFrame
 	NULL,					// pfnParmsNewLevel
 	NULL,					// pfnParmsChangeLevel
 
@@ -235,7 +268,7 @@ static DLL_FUNCTIONS gFunctionTable_Post =
 	NULL,					// pfnClientPutInServer
 	NULL,					// pfnClientCommand
 	NULL,					// pfnClientUserInfoChanged
-	NULL,					// pfnServerActivate
+	NewServerActivate_Post,					// pfnServerActivate
 	NULL,					// pfnServerDeactivate
 
 	NULL,					// pfnPlayerPreThink
