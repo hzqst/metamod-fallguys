@@ -42,12 +42,24 @@
 #include "fallguys.h"
 #include "physics.h"
 
-cvar_t* sv_gravity = NULL;
-
 void NewTouch(edict_t *pentTouched, edict_t *pentOther)
 {
-	if (g_bIsPushEntity && pentTouched == g_PushEntity && g_NumPendingEntities < 512)
+#if 0
+	if (gPhysicsManager.IsDynamicPhysicObject(pentTouched) && IsEntitySolidPlayer(pentOther))
 	{
+		if ((pentOther->v.flags & FL_ONGROUND) && pentOther->v.groundentity == pentTouched)
+		{
+			auto DynamicBody = (CDynamicBody*)gPhysicsManager.GetPhysicBody(pentTouched);
+			if (DynamicBody)
+			{
+				DynamicBody->m_ignore_player_mask |= (1 << (g_engfuncs.pfnIndexOfEdict(pentOther) - 1));
+			}
+		}
+	}
+#endif
+	if (g_bIsPushEntity && pentTouched == g_PushEntity && g_NumPendingEntities < _ARRAYSIZE(g_PendingEntities))
+	{
+		//Player pushes another player
 		if (IsEntityPushee(pentTouched) && IsEntityPushee(pentOther))
 		{
 			//Don't append same entity twice
@@ -92,6 +104,17 @@ void NewTouch(edict_t *pentTouched, edict_t *pentOther)
 	SET_META_RESULT(MRES_IGNORED);
 }
 
+void NewSetAbsBox(edict_t *pent)
+{
+	if (gPhysicsManager.SetAbsBox(pent))
+	{
+		SET_META_RESULT(MRES_SUPERCEDE);
+		return;
+	}
+
+	SET_META_RESULT(MRES_IGNORED);
+}
+
 void NewSetupVisibility(struct edict_s *pViewEntity, struct edict_s *pClient, unsigned char **pvs, unsigned char **pas)
 {
 	auto clientIndex = g_engfuncs.pfnIndexOfEdict(pClient);
@@ -104,7 +127,6 @@ int NewAddToFullPack_Post(struct entity_state_s *state, int e, edict_t *ent, edi
 {
 	if (META_RESULT_ORIG_RET(int) == 1)
 	{
-
 		if (g_pfn_CASHook_Call)
 		{
 			int uiFlags = 0;
@@ -118,32 +140,44 @@ int NewAddToFullPack_Post(struct entity_state_s *state, int e, edict_t *ent, edi
 			}
 		}
 
-		//Don't send magic number to clients
-		if (IsEntitySuperPusher(ent) && state->sequence == SuperPusher_MagicNumber)
-		{
-			state->sequence = 0;
-		}
 	}
 
 	SET_META_RESULT(MRES_IGNORED);
 	return 1;
 }
 
-void NewServerActivate_Post(edict_t* pEdictList, int edictCount, int clientMax)
+void NewGameInit_Post(void)
 {
-	gPhysicsManager.NewMap();
+	sv_gravity = CVAR_GET_POINTER("sv_gravity");
 
-	SET_META_RESULT(MRES_IGNORED);
+	gPhysicsManager.Init();
 }
 
 void NewStartFrame(void)
 {
-	if (!sv_gravity)
-		sv_gravity = CVAR_GET_POINTER("sv_gravity");
+	if (!gPhysicsManager.GetNumDynamicBodies())
+		return;
+
+	gPhysicsManager.EntityStartFrame();
+
 	gPhysicsManager.SetGravity(sv_gravity->value);
 	gPhysicsManager.StepSimulation((*host_frametime));
 
+	gPhysicsManager.EntityStartFrame_Post();
+
 	SET_META_RESULT(MRES_IGNORED);
+}
+
+int NewSpawn_Post(edict_t *pent)
+{
+	//Entity 0 = world
+	if (0 == g_engfuncs.pfnIndexOfEdict(pent))
+	{
+		gPhysicsManager.NewMap(pent);
+	}
+
+	SET_META_RESULT(MRES_IGNORED);
+	return 1;
 }
 
 void NewThink(edict_t* pent)
@@ -178,6 +212,22 @@ void NewPlayerPostThink_Post(edict_t *pEntity)
 	SET_META_RESULT(MRES_IGNORED);
 }
 
+void NewPM_Move(struct playermove_s *ppmove, qboolean server)
+{
+	pmove = ppmove;
+
+	gPhysicsManager.PM_PrepareContext(ppmove);
+
+	SET_META_RESULT(MRES_IGNORED);
+}
+
+void NewPM_Move_Post(struct playermove_s *ppmove, qboolean server)
+{
+	gPhysicsManager.PM_DestroyContext(ppmove);
+
+	SET_META_RESULT(MRES_IGNORED);
+}
+
 static DLL_FUNCTIONS gFunctionTable = 
 {
 	NULL,					// pfnGameInit
@@ -189,7 +239,7 @@ static DLL_FUNCTIONS gFunctionTable =
 	NULL,					// pfnKeyValue
 	NULL,					// pfnSave
 	NULL,					// pfnRestore
-	NULL,					// pfnSetAbsBox
+	NewSetAbsBox,			// pfnSetAbsBox
 
 	NULL,					// pfnSaveWriteFields
 	NULL,					// pfnSaveReadFields
@@ -223,7 +273,7 @@ static DLL_FUNCTIONS gFunctionTable =
 	
 	NULL,					// pfnSys_Error
 
-	NULL,					// pfnPM_Move
+	NewPM_Move,				// pfnPM_Move
 	NULL,					// pfnPM_Init
 	NULL,					// pfnPM_FindTextureType
 	
@@ -244,8 +294,8 @@ static DLL_FUNCTIONS gFunctionTable =
 
 static DLL_FUNCTIONS gFunctionTable_Post =
 {
-	NULL,					// pfnGameInit
-	NULL,					// pfnSpawn
+	NewGameInit_Post,		// pfnGameInit
+	NewSpawn_Post,			// pfnSpawn
 	NULL,					// pfnThink
 	NULL,					// pfnUse
 	NULL,					// pfnTouch
@@ -268,7 +318,7 @@ static DLL_FUNCTIONS gFunctionTable_Post =
 	NULL,					// pfnClientPutInServer
 	NULL,					// pfnClientCommand
 	NULL,					// pfnClientUserInfoChanged
-	NewServerActivate_Post,					// pfnServerActivate
+	NULL,					// pfnServerActivate
 	NULL,					// pfnServerDeactivate
 
 	NULL,					// pfnPlayerPreThink
@@ -287,7 +337,7 @@ static DLL_FUNCTIONS gFunctionTable_Post =
 
 	NULL,					// pfnSys_Error
 
-	NULL,					// pfnPM_Move
+	NewPM_Move_Post,		// pfnPM_Move
 	NULL,					// pfnPM_Init
 	NULL,					// pfnPM_FindTextureType
 
@@ -341,4 +391,44 @@ C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable, int *interfaceVersi
 
 	memcpy(pFunctionTable, &gFunctionTable, sizeof(DLL_FUNCTIONS));
 	return TRUE;
+}
+
+void NewOnFreeEntPrivateData(edict_t* pEnt)
+{
+	gPhysicsManager.FreeEntityPrivateData(pEnt);
+}
+
+static NEW_DLL_FUNCTIONS gNewDllFunctionTable =
+{
+	// Called right before the object's memory is freed. 
+	// Calls its destructor.
+	NewOnFreeEntPrivateData,
+	NULL,
+	NULL,
+
+	// Added 2005/08/11 (no SDK update):
+	NULL,//void(*pfnCvarValue)(const edict_t *pEnt, const char *value);
+
+	// Added 2005/11/21 (no SDK update):
+	//    value is "Bad CVAR request" on failure (i.e that user is not connected or the cvar does not exist).
+	//    value is "Bad Player" if invalid player edict.
+	NULL,//void(*pfnCvarValue2)(const edict_t *pEnt, int requestID, const char *cvarName, const char *value);
+};
+
+C_DLLEXPORT int GetNewDLLFunctions(NEW_DLL_FUNCTIONS* pNewDllFunctionTable,
+	int* interfaceVersion)
+{
+	if (!pNewDllFunctionTable) {
+		UTIL_LogPrintf("GetNewDLLFunctions called with null pFunctionTable");
+		return(FALSE);
+	}
+	else if (*interfaceVersion != NEW_DLL_FUNCTIONS_VERSION) {
+		UTIL_LogPrintf("GetNewDLLFunctions version mismatch; requested=%d ours=%d", *interfaceVersion, NEW_DLL_FUNCTIONS_VERSION);
+		//! Tell metamod what version we had, so it can figure out who is out of date.
+		*interfaceVersion = NEW_DLL_FUNCTIONS_VERSION;
+		return(FALSE);
+	}
+	memcpy(pNewDllFunctionTable, &gNewDllFunctionTable, sizeof(NEW_DLL_FUNCTIONS));
+
+	return(TRUE);
 }

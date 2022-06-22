@@ -55,7 +55,7 @@ static META_FUNCTIONS gMetaFunctionTable = {
 	NULL,			// pfnGetEntityAPI_Post			META; called after game DLL
 	GetEntityAPI2,	// pfnGetEntityAPI2				HL SDK2; called before game DLL
 	GetEntityAPI2_Post,			// pfnGetEntityAPI2_Post		META; called after game DLL
-	NULL,			// pfnGetNewDLLFunctions		HL SDK2; called before game DLL
+	GetNewDLLFunctions,			// pfnGetNewDLLFunctions		HL SDK2; called before game DLL
 	NULL,			// pfnGetNewDLLFunctions_Post	META; called after game DLL
 	GetEngineFunctions,	// pfnGetEngineFunctions	META; called before HL engine
 	NULL,			// pfnGetEngineFunctions_Post	META; called after HL engine
@@ -136,12 +136,14 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	}
 
 	//Fill private engine functions
+	FILL_FROM_SIGNATURED_CALLER_FROM_END(engine, SV_TestEntityPosition, -1);
 	FILL_FROM_SIGNATURE(engine, SV_PushEntity);
 	FILL_FROM_SIGNATURE(engine, SV_PushMove);
 	FILL_FROM_SIGNATURE(engine, SV_PushRotate);
 	FILL_FROM_SIGNATURE(engine, SV_RunThink);
 	FILL_FROM_SIGNATURED_CALLER_FROM_START(engine, SV_Physics_Step, 1);
 	FILL_FROM_SIGNATURED_CALLER_FROM_START(engine, SV_Physics_Toss, 1);
+	FILL_FROM_SIGNATURED_CALLER_FROM_START(engine, PM_PlayerTrace, 0);
 	VAR_FROM_SIGNATURE_FROM_START(engine, sv_models, 13);
 	VAR_FROM_SIGNATURE_FROM_END(engine, host_frametime, 0);
 
@@ -155,8 +157,6 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	FG_InstallInlineHooks();
 
 	FG_RegisterAngelScriptHooks();
-
-	gPhysicsManager.Init();
 
 	return TRUE;
 }

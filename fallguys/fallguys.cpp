@@ -7,15 +7,18 @@
 #include "fallguys.h"
 #include "physics.h"
 
-
 //For SuperPusher
 bool g_bIsPushMove = false;
 bool g_bIsPushRotate = false;
+bool g_bIsPushPhysicEngnie = false;
 edict_t* g_PusherEntity = NULL;
 bool g_bIsPushEntity = false;
 edict_t* g_PushEntity;
 edict_t* g_PendingEntities[512] = { 0 };
 int g_NumPendingEntities = 0;
+
+edict_t *g_CurrentSuperPusher = NULL;
+vec3_t g_CurrentSuperPusherPushingVector = g_vecZero;
 
 //For PlayerTouchImpact & PlayerTouchTrigger
 bool g_bIsRunPlayerMove = false;
@@ -30,14 +33,19 @@ CASHook g_PlayerPostThinkPostHook = { 0 };
 CASHook g_PlayerTouchTriggerHook = { 0 };
 CASHook g_PlayerTouchImpactHook = { 0 };
 
-bool IsEntitySuperPhysBox(edict_t* ent)
+bool IsEntitySolidPlayer(int entindex, edict_t* ent)
 {
-	return ent && ent->v.movetype == MOVETYPE_TOSS && ent->v.sequence == SuperPhysBox_MagicNumber;
+	return entindex >= 1 && entindex <= gpGlobals->maxClients && ent->v.solid >= SOLID_BBOX && ent->v.solid <= SOLID_SLIDEBOX;
 }
 
-bool IsEntitySuperPusher(edict_t* ent)
+bool IsEntitySolidPlayer(edict_t* ent)
 {
-	return ent && ent->v.solid == SOLID_BSP && ent->v.movetype == MOVETYPE_PUSH && ent->v.sequence == SuperPusher_MagicNumber;
+	return IsEntitySolidPlayer(g_engfuncs.pfnIndexOfEdict(ent), ent);
+}
+
+bool IsEntitySolidPusher(edict_t* ent)
+{
+	return ent->v.solid == SOLID_BSP && ent->v.movetype == MOVETYPE_PUSH;
 }
 
 bool IsEntityPushee(edict_t* ent)
@@ -45,13 +53,30 @@ bool IsEntityPushee(edict_t* ent)
 	return (ent->v.solid == SOLID_SLIDEBOX || ent->v.solid == SOLID_BBOX) && (ent->v.movetype == MOVETYPE_STEP || ent->v.movetype == MOVETYPE_WALK);
 }
 
+edict_t *GetCurrentSuperPusher(Vector *out)
+{
+	if (g_CurrentSuperPusher)
+	{
+		*out = g_CurrentSuperPusherPushingVector;
+
+		return g_CurrentSuperPusher;
+	}
+
+	*out = g_vecZero;
+
+	return NULL;
+}
+
+int GetRunPlayerMovePlayerIndex()
+{
+	return g_iRunPlayerMoveIndex;
+}
+
 void FG_InstallInlineHooks()
 {
 	INSTALL_INLINEHOOK(SV_PushEntity);
 	INSTALL_INLINEHOOK(SV_PushMove);
 	INSTALL_INLINEHOOK(SV_PushRotate);
-	//INSTALL_INLINEHOOK(SV_Physics_Step);
-	INSTALL_INLINEHOOK(SV_Physics_Toss);
 	INSTALL_INLINEHOOK(CASDocumentation_RegisterObjectType);
 }
 

@@ -9,6 +9,7 @@
 #include "enginedef.h"
 #include "serverdef.h"
 #include "fallguys.h"
+#include "physics.h"
 
 PRIVATE_FUNCTION_DEFINE(CASHook_Call);
 PRIVATE_FUNCTION_DEFINE(CASHook_CASHook);
@@ -23,6 +24,31 @@ edict_t* SC_SERVER_DECL CASEngineFuncs__GetViewEntity(void* pthis, SC_SERVER_DUM
 		return viewent;
 
 	return pClient;
+}
+
+int SC_SERVER_DECL CASEngineFuncs__GetRunPlayerMovePlayerIndex(void* pthis, SC_SERVER_DUMMYARG_NOCOMMA)
+{
+	return GetRunPlayerMovePlayerIndex();
+}
+
+bool SC_SERVER_DECL CASEntityFuncs__CreatePhysicBox(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, float mass, float friction, float rollingFriction, float ccdRadius, float ccdThreshold, bool pushable)
+{
+	return gPhysicsManager.CreatePhysicBox(ent, mass, friction, rollingFriction, ccdRadius, ccdThreshold, pushable);
+}
+
+bool SC_SERVER_DECL CASEntityFuncs__CreateSuperPusher(void* pthis, SC_SERVER_DUMMYARG edict_t* ent)
+{
+	return gPhysicsManager.CreateSuperPusher(ent);
+}
+
+edict_t * SC_SERVER_DECL CASEntityFuncs__GetCurrentSuperPusher(void* pthis, SC_SERVER_DUMMYARG Vector* out)
+{
+	return GetCurrentSuperPusher(out);
+}
+
+bool SC_SERVER_DECL CASEntityFuncs__ApplyImpulse(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, const Vector& impulse, const Vector& origin)
+{
+	return gPhysicsManager.ApplyImpulse(ent, impulse, origin);
 }
 
 int SC_SERVER_DECL NewCASDocumentation_RegisterObjectType(CASDocumentation *pthis, SC_SERVER_DUMMYARG const char *docs, const char *name, int a4, unsigned int flags)
@@ -86,9 +112,47 @@ int SC_SERVER_DECL NewCASDocumentation_RegisterObjectType(CASDocumentation *pthi
 		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "Vector vuser3", offsetof(entity_state_t, vuser3));
 		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "Vector vuser4", offsetof(entity_state_t, vuser4));
 
-		CASMethodRegistration reg;
-		reg.pfnMethod = CASEngineFuncs__GetViewEntity;
-		g_call_original_CASDocumentation_RegisterObjectMethod(pthis, dummy, "Get view entity of specified client", "CEngineFuncs", "edict_t@ GetViewEntity(edict_t@ pClient)", &reg, 3);
+		if (1)
+		{
+			CASMethodRegistration reg;
+			reg.pfnMethod = CASEngineFuncs__GetRunPlayerMovePlayerIndex;
+			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, dummy, "Get index of player that is currently running PlayerMove code", "CEngineFuncs", "int GetRunPlayerMovePlayerIndex()", &reg, 3);
+		}
+
+		if (1)
+		{
+			CASMethodRegistration reg;
+			reg.pfnMethod = CASEngineFuncs__GetViewEntity;
+			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, dummy, "Get view entity of specified client", "CEngineFuncs", "edict_t@ GetViewEntity(edict_t@ pClient)", &reg, 3);
+		}
+
+		if (1)
+		{
+			CASMethodRegistration reg;
+			reg.pfnMethod = CASEntityFuncs__CreatePhysicBox;
+			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, dummy, "Create physic box for entity", "CEntityFuncs", "bool CreatePhysicBox(edict_t@ ent, float mass, float friction, float rollingFriction, float ccdRadius, float ccdThreshold, bool pushable)", &reg, 3);
+		}
+
+		if (1)
+		{
+			CASMethodRegistration reg;
+			reg.pfnMethod = CASEntityFuncs__CreateSuperPusher;
+			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, dummy, "Create Super-Pusher for entity", "CEntityFuncs", "bool CreateSuperPusher(edict_t@ ent)", &reg, 3);
+		}
+
+		if (1)
+		{
+			CASMethodRegistration reg;
+			reg.pfnMethod = CASEntityFuncs__GetCurrentSuperPusher;
+			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, dummy, "Get current working Super-Pusher, return valid edict only in pfnTouch", "CEntityFuncs", "edict_t@ GetCurrentSuperPusher(Vector &out)", &reg, 3);
+		}
+
+		if (1)
+		{
+			CASMethodRegistration reg;
+			reg.pfnMethod = CASEntityFuncs__ApplyImpulse;
+			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, dummy, "Apply impulse on physic object", "CEntityFuncs", "bool ApplyImpulse(edict_t@ ent, const Vector& in impulse, const Vector& in origin)", &reg, 3);
+		}
 	}
 
 	return g_call_original_CASDocumentation_RegisterObjectType(pthis, dummy, docs, name, a4, flags);

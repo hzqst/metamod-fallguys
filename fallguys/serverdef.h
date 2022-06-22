@@ -73,6 +73,7 @@ public:
 #ifdef PLATFORM_WINDOWS
 
 #define SC_SERVER_DECL __fastcall
+#define SC_SERVER_DUMMYARG_NOCOMMA int dummy
 #define SC_SERVER_DUMMYARG int dummy, 
 #define SC_SERVER_PASS_DUMMYARG dummy, 
 #define SERVER_DLL_NAME "server.dll"
