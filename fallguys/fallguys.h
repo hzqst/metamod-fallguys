@@ -3,10 +3,9 @@
 const int SuperPusher_MagicNumber = 114514;
 const int SuperPusherTouch_MagicNumber = 1919810;
 
-//For SuperPusher
+//For SuperPusher Brush Entities
 extern bool g_bIsPushMove;
 extern bool g_bIsPushRotate;
-extern bool g_bIsPushPhysicEngnie;
 extern edict_t* g_PusherEntity;
 extern bool g_bIsPushEntity;
 extern edict_t* g_PushEntity;
@@ -33,8 +32,10 @@ bool IsEntitySolidPlayer(int entindex, edict_t* ent);
 bool IsEntitySolidPlayer(edict_t* ent);
 bool IsEntitySolidPusher(edict_t* ent);
 bool IsEntityPushee(edict_t* ent);
-edict_t *GetCurrentSuperPusher(Vector *out);
+
 int GetRunPlayerMovePlayerIndex();
+edict_t* GetCurrentSuperPusher(Vector* out);
+edict_t* GetClientViewEntity(edict_t* pClient);
 
 void FG_InstallInlineHooks();
 void FG_RegisterAngelScriptHooks();

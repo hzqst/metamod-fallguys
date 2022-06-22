@@ -61,7 +61,8 @@ trace_t* NewSV_PushEntity(trace_t* trace, edict_t* ent, vec3_t* push)
 	}
 
 	//Commit the transaction
-	if ((g_bIsPushMove || g_bIsPushRotate || g_bIsPushPhysicEngnie) && gPhysicsManager.IsSuperPusher(g_PusherEntity))
+	if ((g_bIsPushMove || g_bIsPushRotate) && 
+		gPhysicsManager.IsSuperPusher(g_PusherEntity))
 	{
 		for (int i = 0; i < g_NumPendingEntities; ++i)
 		{
@@ -107,25 +108,3 @@ void NewSV_PushRotate(edict_t *pusher, float movetime)
 	g_PusherEntity = NULL;
 	g_bIsPushRotate = false;
 }
-#if 0
-pmtrace_t *NewPM_PlayerTrace(pmtrace_t *results, const float *start, const float *end, int traceFlags, int numphysent, physent_t *physents, int ignore_pe, int(__cdecl *pfnIgnore)(physent_t *pe))
-{
-	g_call_original_PM_PlayerTrace(results, start, end, traceFlags, numphysent, physents, ignore_pe, pfnIgnore);
-
-	if (gPhysicsManager.IsRunningPlayerMove() && traceFlags == PM_NORMAL && ignore_pe == -1 && results->fraction > 0)
-	{
-		vec3_t _start(start[0], start[1], start[2]);
-		vec3_t _end(end[0], end[1], end[2]);
-		vec3_t _angles(pmove->angles);
-		_angles.x = 0;//no pitch
-		_angles.y = 0;
-		_angles.z = 0;
-
-		vec3_t _mins = pmove->player_mins[pmove->usehull];
-		vec3_t _maxs = pmove->player_maxs[pmove->usehull];
-
-		gPhysicsManager.PM_BoxTrace(_start, _end, _angles, _mins, _maxs, traceFlags, numphysent, physents, ignore_pe, results);
-	}
-	return results;
-}
-#endif

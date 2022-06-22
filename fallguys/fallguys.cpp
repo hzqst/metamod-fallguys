@@ -10,7 +10,6 @@
 //For SuperPusher
 bool g_bIsPushMove = false;
 bool g_bIsPushRotate = false;
-bool g_bIsPushPhysicEngnie = false;
 edict_t* g_PusherEntity = NULL;
 bool g_bIsPushEntity = false;
 edict_t* g_PushEntity;

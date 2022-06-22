@@ -64,6 +64,7 @@ public:
 		m_rigbody = NULL;
 		m_entindex = -1;
 		m_pent = NULL;
+		m_mass = 0;
 	}
 	virtual ~CPhysicBody()
 	{
@@ -75,6 +76,7 @@ public:
 		}
 		m_entindex = -1;
 		m_pent = NULL;
+		m_mass = 0;
 	}
 
 	virtual bool IsDynamic() const = 0;
@@ -94,6 +96,7 @@ public:
 	btRigidBody* m_rigbody;
 	int m_entindex;
 	edict_t *m_pent;
+	float m_mass;
 };
 
 ATTRIBUTE_ALIGNED16(class)
@@ -170,7 +173,6 @@ public:
 		m_mass = 0;
 		m_pushable = false;
 		m_superpusher = false;
-		m_ignore_player_mask = 0;
 	}	
 	virtual ~CDynamicBody()
 	{
@@ -201,8 +203,6 @@ public:
 	float m_mass;
 	bool m_pushable;
 	bool m_superpusher;
-
-	unsigned long m_ignore_player_mask;
 };
 
 ATTRIBUTE_ALIGNED16(class)
@@ -364,7 +364,6 @@ public:
 	void StepSimulation(double framerate);
 
 	int GetNumDynamicBodies();
-	bool IsRunningPlayerMove();
 	CPhysicBody* GetPhysicBody(int entindex); 
 	CPhysicBody* GetPhysicBody(edict_t* ent);
 	void RemovePhysicBody(int entindex);
@@ -375,13 +374,13 @@ public:
 	bool ApplyImpulse(edict_t* ent, const Vector& impulse, const Vector& origin);
 
 	//Physic Body
-	CDynamicBody* CreateDynamicBody(edict_t* ent, float mass, float friction, float rollingfriction, float ccdRadius, float ccdThreshold, bool pushable, 
+	CDynamicBody* CreateDynamicBody(edict_t* ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable,
 		btCollisionShape* collisionShape, const btVector3& localInertia);
 	CStaticBody* CreateStaticBody(edict_t* ent, vertexarray_t* vertexarray, indexarray_t* indexarray, bool kinematic);
-	bool CreatePhysicBox(edict_t* ent, float mass, float friction, float rollingfriction, float ccdRadius, float ccdThreshold, bool pushable);
 	CPlayerBody* CreatePlayerBody(edict_t* ent, float mass, btCollisionShape* collisionShape, const btVector3& localInertia);
-
-	CStaticBody* CreateBrushModel(edict_t* ent);
+	
+	bool CreateBrushModel(edict_t* ent);
+	bool CreatePhysicBox(edict_t* ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable);
 	bool CreatePlayerBox(edict_t* ent);
 	bool CreateSuperPusher(edict_t* ent);
 
@@ -392,11 +391,9 @@ public:
 	void FreeEntityPrivateData(edict_t* ent);
 	bool SetAbsBox(edict_t *pent);
 
-	void PM_PrepareContext(playermove_t *pm);
-	void PM_DestroyContext(playermove_t *pm); 
-	void SV_PrepareContext();
-	void SV_DestroyContext();
-	void BoxTrace(const vec3_t start_, const vec3_t end_, const vec3_t angles_, const vec3_t mins_, const vec3_t maxs_, trace_t* results);
+	void PM_StartMove();
+	void PM_EndMove(); 
+	qboolean PM_AddToTouched(pmtrace_t tr, vec3_t impactvelocity);
 private:
 	btDefaultCollisionConfiguration* m_collisionConfiguration;
 	btCollisionDispatcher* m_dispatcher;
@@ -409,20 +406,10 @@ private:
 	int m_numDynamicBody;
 	std::vector<CPhysicBody*> m_removeBodies;
 	std::vector<indexarray_t*> m_brushIndexArray;
-#if 0
-	int *m_ChangeFlagsModelPointers[MAX_PHYSENTS];
-	int m_ChangeFlagsModelOriginalValue[MAX_PHYSENTS];
-	int m_ChangeFlagsModelCount;
-
-	int *m_ChangeSolidPointers[512];
-	int m_ChangeSolidOriginalValue[512];
-	int m_ChangeSolidCount;
-#endif
 	CPlayerDynamicPush m_PlayerDynamicPush[33];
 
 	vertexarray_t* m_worldVertexArray;
 	float m_gravity;
-	bool m_is_running_playermove;
 };
 
 extern CPhysicsManager gPhysicsManager;

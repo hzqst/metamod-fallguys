@@ -44,19 +44,7 @@
 
 void NewTouch(edict_t *pentTouched, edict_t *pentOther)
 {
-#if 0
-	if (gPhysicsManager.IsDynamicPhysicObject(pentTouched) && IsEntitySolidPlayer(pentOther))
-	{
-		if ((pentOther->v.flags & FL_ONGROUND) && pentOther->v.groundentity == pentTouched)
-		{
-			auto DynamicBody = (CDynamicBody*)gPhysicsManager.GetPhysicBody(pentTouched);
-			if (DynamicBody)
-			{
-				DynamicBody->m_ignore_player_mask |= (1 << (g_engfuncs.pfnIndexOfEdict(pentOther) - 1));
-			}
-		}
-	}
-#endif
+
 	if (g_bIsPushEntity && pentTouched == g_PushEntity && g_NumPendingEntities < _ARRAYSIZE(g_PendingEntities))
 	{
 		//Player pushes another player
@@ -117,10 +105,14 @@ void NewSetAbsBox(edict_t *pent)
 
 void NewSetupVisibility(struct edict_s *pViewEntity, struct edict_s *pClient, unsigned char **pvs, unsigned char **pas)
 {
-	auto clientIndex = g_engfuncs.pfnIndexOfEdict(pClient);
-	g_ClientViewEntity[clientIndex] = pViewEntity;
+	g_ClientViewEntity[g_engfuncs.pfnIndexOfEdict(pClient)] = pViewEntity;
 
 	SET_META_RESULT(MRES_IGNORED);
+}
+
+edict_t* GetClientViewEntity(edict_t*pClient)
+{
+	return g_ClientViewEntity[g_engfuncs.pfnIndexOfEdict(pClient)];
 }
 
 int NewAddToFullPack_Post(struct entity_state_s *state, int e, edict_t *ent, edict_t *host, int hostflags, int player, unsigned char *pSet)
@@ -155,15 +147,15 @@ void NewGameInit_Post(void)
 
 void NewStartFrame(void)
 {
-	if (!gPhysicsManager.GetNumDynamicBodies())
-		return;
+	if (gPhysicsManager.GetNumDynamicBodies())
+	{
+		gPhysicsManager.EntityStartFrame();
 
-	gPhysicsManager.EntityStartFrame();
+		gPhysicsManager.SetGravity(sv_gravity->value);
+		gPhysicsManager.StepSimulation((*host_frametime));
 
-	gPhysicsManager.SetGravity(sv_gravity->value);
-	gPhysicsManager.StepSimulation((*host_frametime));
-
-	gPhysicsManager.EntityStartFrame_Post();
+		gPhysicsManager.EntityStartFrame_Post();
+	}
 
 	SET_META_RESULT(MRES_IGNORED);
 }
@@ -178,12 +170,6 @@ int NewSpawn_Post(edict_t *pent)
 
 	SET_META_RESULT(MRES_IGNORED);
 	return 1;
-}
-
-void NewThink(edict_t* pent)
-{
-
-	SET_META_RESULT(MRES_IGNORED);
 }
 
 void NewPlayerPreThink(edict_t *pEntity)
@@ -216,14 +202,14 @@ void NewPM_Move(struct playermove_s *ppmove, qboolean server)
 {
 	pmove = ppmove;
 
-	gPhysicsManager.PM_PrepareContext(ppmove);
+	gPhysicsManager.PM_StartMove();
 
 	SET_META_RESULT(MRES_IGNORED);
 }
 
 void NewPM_Move_Post(struct playermove_s *ppmove, qboolean server)
 {
-	gPhysicsManager.PM_DestroyContext(ppmove);
+	gPhysicsManager.PM_EndMove();
 
 	SET_META_RESULT(MRES_IGNORED);
 }
@@ -396,6 +382,8 @@ C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable, int *interfaceVersi
 void NewOnFreeEntPrivateData(edict_t* pEnt)
 {
 	gPhysicsManager.FreeEntityPrivateData(pEnt);
+
+	SET_META_RESULT(MRES_HANDLED);
 }
 
 static NEW_DLL_FUNCTIONS gNewDllFunctionTable =

@@ -31,9 +31,9 @@ int SC_SERVER_DECL CASEngineFuncs__GetRunPlayerMovePlayerIndex(void* pthis, SC_S
 	return GetRunPlayerMovePlayerIndex();
 }
 
-bool SC_SERVER_DECL CASEntityFuncs__CreatePhysicBox(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, float mass, float friction, float rollingFriction, float ccdRadius, float ccdThreshold, bool pushable)
+bool SC_SERVER_DECL CASEntityFuncs__CreatePhysicBox(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable)
 {
-	return gPhysicsManager.CreatePhysicBox(ent, mass, friction, rollingFriction, ccdRadius, ccdThreshold, pushable);
+	return gPhysicsManager.CreatePhysicBox(ent, mass, friction, rollingFriction, restitution, ccdRadius, ccdThreshold, pushable);
 }
 
 bool SC_SERVER_DECL CASEntityFuncs__CreateSuperPusher(void* pthis, SC_SERVER_DUMMYARG edict_t* ent)
@@ -130,7 +130,7 @@ int SC_SERVER_DECL NewCASDocumentation_RegisterObjectType(CASDocumentation *pthi
 		{
 			CASMethodRegistration reg;
 			reg.pfnMethod = CASEntityFuncs__CreatePhysicBox;
-			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, dummy, "Create physic box for entity", "CEntityFuncs", "bool CreatePhysicBox(edict_t@ ent, float mass, float friction, float rollingFriction, float ccdRadius, float ccdThreshold, bool pushable)", &reg, 3);
+			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, dummy, "Create physic box for entity", "CEntityFuncs", "bool CreatePhysicBox(edict_t@ ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable)", &reg, 3);
 		}
 
 		if (1)
