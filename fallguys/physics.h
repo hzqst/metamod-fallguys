@@ -384,8 +384,6 @@ public:
 	bool CreatePlayerBox(edict_t* ent);
 	bool CreateSuperPusher(edict_t* ent);
 
-	void PreTickCallback(btScalar timeStep);
-
 	void EntityStartFrame();
 	void EntityStartFrame_Post();
 	void FreeEntityPrivateData(edict_t* ent);

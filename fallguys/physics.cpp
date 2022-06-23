@@ -1266,6 +1266,9 @@ void CPhysicsManager::StepSimulation(double frametime)
 		g_engfuncs.pfnCVarSetFloat("bv_simrate", 128);
 	}
 
+	if (!gPhysicsManager.GetNumDynamicBodies())
+		return;
+
 	m_dynamicsWorld->stepSimulation(frametime, 3, 1.0f / bv_simrate->value);
 }
 
@@ -1282,6 +1285,7 @@ int CPhysicsManager::GetNumDynamicBodies()
 {
 	return m_numDynamicBody;
 }
+
 CPhysicBody *CPhysicsManager::GetPhysicBody(int entindex)
 {
 	return m_physBodies[entindex];

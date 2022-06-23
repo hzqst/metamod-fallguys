@@ -147,15 +147,12 @@ void NewGameInit_Post(void)
 
 void NewStartFrame(void)
 {
-	if (gPhysicsManager.GetNumDynamicBodies())
-	{
-		gPhysicsManager.EntityStartFrame();
+	gPhysicsManager.EntityStartFrame();
 
-		gPhysicsManager.SetGravity(sv_gravity->value);
-		gPhysicsManager.StepSimulation((*host_frametime));
+	gPhysicsManager.SetGravity(sv_gravity->value);
+	gPhysicsManager.StepSimulation((*host_frametime));
 
-		gPhysicsManager.EntityStartFrame_Post();
-	}
+	gPhysicsManager.EntityStartFrame_Post();
 
 	SET_META_RESULT(MRES_IGNORED);
 }

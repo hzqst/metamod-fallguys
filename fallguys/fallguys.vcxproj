@@ -58,6 +58,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;FALLGUYS_EXPORTS;_WINDOWS;_USRDLL;PLATFORM_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../hlsdk/common;../hlsdk/dlls;../hlsdk/pm_shared;../hlsdk/engine;../metamod/;../CDetour;../bullet3/src/</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

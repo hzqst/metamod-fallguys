@@ -136,14 +136,14 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	}
 
 	//Fill private engine functions
-	FILL_FROM_SIGNATURED_CALLER_FROM_END(engine, SV_TestEntityPosition, -1);
+	//FILL_FROM_SIGNATURED_CALLER_FROM_END(engine, SV_TestEntityPosition, -1);
 	FILL_FROM_SIGNATURE(engine, SV_PushEntity);
 	FILL_FROM_SIGNATURE(engine, SV_PushMove);
 	FILL_FROM_SIGNATURE(engine, SV_PushRotate);
-	FILL_FROM_SIGNATURE(engine, SV_RunThink);
-	FILL_FROM_SIGNATURED_CALLER_FROM_START(engine, SV_Physics_Step, 1);
-	FILL_FROM_SIGNATURED_CALLER_FROM_START(engine, SV_Physics_Toss, 1);
-	FILL_FROM_SIGNATURED_CALLER_FROM_START(engine, PM_PlayerTrace, 0);
+	//FILL_FROM_SIGNATURE(engine, SV_RunThink);
+	//FILL_FROM_SIGNATURED_CALLER_FROM_START(engine, SV_Physics_Step, 1);
+	//FILL_FROM_SIGNATURED_CALLER_FROM_START(engine, SV_Physics_Toss, 1);
+	//FILL_FROM_SIGNATURED_CALLER_FROM_START(engine, PM_PlayerTrace, 0);
 	VAR_FROM_SIGNATURE_FROM_START(engine, sv_models, 13);
 	VAR_FROM_SIGNATURE_FROM_END(engine, host_frametime, 0);
 
