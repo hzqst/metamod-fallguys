@@ -86,7 +86,7 @@ void FG_RegisterAngelScriptHook_AddToFullPack(int dummy)
 	reg.stopMode = StopMode_CALL_ALL;
 	reg.docs = "Post call of gEntityInterface.pfnAddToFullPack, only visible entity goes here";
 
-	g_pfn_CASHook_CASHook(&g_AddToFullPackHook, SC_SERVER_PASS_DUMMYARG 2, ASHookFlag_MapScript | ASHookFlag_Plugin, "Player", "PlayerAddToFullPack", "entity_state_t@ state, int e, edict_t @ent, edict_t@ host, int hostflags, int player, uint& out", &reg);
+	g_pfn_CASHook_CASHook(&g_AddToFullPackHook, SC_SERVER_PASS_DUMMYARG 2, ASHookFlag_MapScript | ASHookFlag_Plugin, "Player", "PlayerAddToFullPack", "entity_state_t@ state, int entindex, edict_t @ent, edict_t@ host, int hostflags, int player, uint& out", &reg);
 }
 
 void FG_RegisterAngelScriptHook_PlayerPostThinkPost(int dummy)

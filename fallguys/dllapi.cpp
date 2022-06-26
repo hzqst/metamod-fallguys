@@ -110,20 +110,34 @@ void NewSetupVisibility(struct edict_s *pViewEntity, struct edict_s *pClient, un
 	SET_META_RESULT(MRES_IGNORED);
 }
 
-edict_t* GetClientViewEntity(edict_t*pClient)
+edict_t* GetClientViewEntity(int clientindex)
 {
-	return g_ClientViewEntity[g_engfuncs.pfnIndexOfEdict(pClient)];
+	if(clientindex > 0 && clientindex < gpGlobals->maxClients)
+		return g_ClientViewEntity[clientindex];
+
+	return NULL;
 }
 
-int NewAddToFullPack_Post(struct entity_state_s *state, int e, edict_t *ent, edict_t *host, int hostflags, int player, unsigned char *pSet)
+edict_t* GetClientViewEntity(edict_t*pClient)
+{
+	return GetClientViewEntity(g_engfuncs.pfnIndexOfEdict(pClient));
+}
+
+int NewAddToFullPack_Post(struct entity_state_s *state, int entindex, edict_t *ent, edict_t *host, int hostflags, int player, unsigned char *pSet)
 {
 	if (META_RESULT_ORIG_RET(int) == 1)
 	{
+		if (!gPhysicsManager.AddToFullPack(state, entindex, ent, host, hostflags, player))
+		{
+			SET_META_RESULT(MRES_OVERRIDE);
+			return 0;
+		}
+
 		if (g_pfn_CASHook_Call)
 		{
 			int uiFlags = 0;
 
-			g_pfn_CASHook_Call(&g_AddToFullPackHook, 0, state, e, ent, host, hostflags, player, &uiFlags);
+			g_pfn_CASHook_Call(&g_AddToFullPackHook, 0, state, entindex, ent, host, hostflags, player, &uiFlags);
 
 			if (uiFlags & 1)
 			{
@@ -167,6 +181,13 @@ int NewSpawn_Post(edict_t *pent)
 
 	SET_META_RESULT(MRES_IGNORED);
 	return 1;
+}
+
+void NewServerDeactivate()
+{
+	gPhysicsManager.Shutdown();
+
+	SET_META_RESULT(MRES_IGNORED);
 }
 
 void NewPlayerPreThink(edict_t *pEntity)
@@ -238,7 +259,7 @@ static DLL_FUNCTIONS gFunctionTable =
 	NULL,					// pfnClientCommand
 	NULL,					// pfnClientUserInfoChanged
 	NULL,					// pfnServerActivate
-	NULL,					// pfnServerDeactivate
+	NewServerDeactivate,	// pfnServerDeactivate
 
 	NewPlayerPreThink,		// pfnPlayerPreThink
 	NewPlayerPostThink,		// pfnPlayerPostThink

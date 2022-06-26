@@ -35,7 +35,13 @@ bool IsEntityPushee(edict_t* ent);
 
 int GetRunPlayerMovePlayerIndex();
 edict_t* GetCurrentSuperPusher(Vector* out);
+edict_t* GetClientViewEntity(int clientindex);
 edict_t* GetClientViewEntity(edict_t* pClient);
 
 void FG_InstallInlineHooks();
 void FG_RegisterAngelScriptHooks();
+
+#define LOD_BODY 1
+#define LOD_MODELINDEX 2
+#define LOD_SCALE 4
+#define LOD_SCALE_INTERP 8

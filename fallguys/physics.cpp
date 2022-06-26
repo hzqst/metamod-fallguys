@@ -2,6 +2,7 @@
 
 #include <meta_api.h>		// of course
 
+
 #include "enginedef.h"
 #include "serverdef.h"
 #include "fallguys.h"
@@ -96,17 +97,6 @@ void Vector3BulletToGoldSrc(btVector3& vec)
 	vec.m_floats[2] *= B2GScale;
 }
 
-void CDynamicBody::GetVelocity(vec3_t &vel) const
-{
-	auto vecVelocity = m_rigbody->getLinearVelocity();
-
-	vel.x = vecVelocity.getX();
-	vel.y = vecVelocity.getY();
-	vel.z = vecVelocity.getZ();
-
-	Vec3BulletToGoldSrc(vel);
-}
-
 void CPhysicsDebugDraw::drawLine(const btVector3& from1, const btVector3& to1, const btVector3& color1)
 {
 	
@@ -121,11 +111,10 @@ CPhysicsManager::CPhysicsManager()
 	m_overlappingPairCache = NULL;
 	m_solver = NULL;
 	m_dynamicsWorld = NULL;
-	m_debugDraw = NULL;
 	m_worldVertexArray = NULL;
 	m_gravity = 0;
-	m_numDynamicBody = 0;
-	m_maxIndexPhysBody = 0;
+	m_numDynamicObjects = 0;
+	m_maxIndexGameObject = 0;
 }
 
 void CPhysicsManager::GenerateBrushIndiceArray(std::vector<glpoly_t*> &glpolys)
@@ -411,16 +400,14 @@ void CPhysicsManager::GenerateIndexedArrayForBrush(model_t* mod, vertexarray_t* 
 	}
 }
 
-CDynamicBody* CPhysicsManager::CreateDynamicBody(edict_t* ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold,
+CDynamicObject* CPhysicsManager::CreateDynamicObject(edict_t* ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold,
 	bool pushable, btCollisionShape* collisionShape, const btVector3& localInertia)
 {
-	auto dynamicbody = new CDynamicBody;
-	dynamicbody->m_pent = ent;
-	dynamicbody->m_entindex = g_engfuncs.pfnIndexOfEdict(ent);
-	dynamicbody->m_mass = mass;
-	dynamicbody->m_pushable = pushable;
+	auto dynamicobj = new CDynamicObject(ent, g_engfuncs.pfnIndexOfEdict(ent), 
+		pushable ? BMASK_ALL : BMASK_ALL_NONPLAYER, pushable ? BMASK_DYNAMIC_PUSHABLE : BMASK_DYNAMIC, //Dynamic object collide with all other stuffs when pushable, and all non-player stuffs when unpushable
+		mass, pushable);
 
-	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, new EntityMotionState(dynamicbody), collisionShape, localInertia);
+	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, new EntityMotionState(dynamicobj), collisionShape, localInertia);
 
 	cInfo.m_friction = friction;
 	cInfo.m_rollingFriction = rollingFriction;
@@ -428,56 +415,35 @@ CDynamicBody* CPhysicsManager::CreateDynamicBody(edict_t* ent, float mass, float
 	cInfo.m_linearSleepingThreshold = 0.1f;
 	cInfo.m_angularSleepingThreshold = 0.001f;
 
-	auto body = new btRigidBody(cInfo);
+	dynamicobj->SetRigidBody(new btRigidBody(cInfo));
 
-	dynamicbody->m_rigbody = body;
+	dynamicobj->GetRigidBody()->setCcdSweptSphereRadius(G2BScale * ccdRadius);
+	dynamicobj->GetRigidBody()->setCcdMotionThreshold(G2BScale * ccdThreshold);
 
-	body->setCcdSweptSphereRadius(G2BScale * ccdRadius);
-	body->setCcdMotionThreshold(G2BScale * ccdThreshold);
-	body->setUserPointer(dynamicbody);
+	AddGameObject(dynamicobj);
 
-	m_dynamicsWorld->addRigidBody(body, pushable ? BMASK_ALL : BMASK_ALL_NONPLAYER, pushable ? BMASK_DYNAMIC_PUSHABLE : BMASK_DYNAMIC);
+	m_numDynamicObjects++;
 
-	m_physBodies[dynamicbody->m_entindex] = dynamicbody;
-	
-	if (dynamicbody->m_entindex > m_maxIndexPhysBody)
-		m_maxIndexPhysBody = dynamicbody->m_entindex;
-
-	m_numDynamicBody++;
-
-	return dynamicbody;
+	return dynamicobj;
 }
 
-CStaticBody* CPhysicsManager::CreateStaticBody(edict_t* ent, vertexarray_t* vertexarray, indexarray_t* indexarray, bool kinematic)
+CStaticObject* CPhysicsManager::CreateStaticObject(edict_t* ent, vertexarray_t* vertexarray, indexarray_t* indexarray, bool kinematic)
 {
 	if (!indexarray->vIndiceBuffer.size())
 	{
-		auto staticbody = new CStaticBody;
-		staticbody->m_pent = ent;
-		staticbody->m_entindex = g_engfuncs.pfnIndexOfEdict(ent);
-		staticbody->m_vertexarray = vertexarray;
-		staticbody->m_indexarray = indexarray;
+		//todo: maybe use clipnode?
+		auto staticobj = new CStaticObject(ent, g_engfuncs.pfnIndexOfEdict(ent), 
+			BMASK_ALL, kinematic ? BMASK_BRUSH : BMASK_WORLD,//Static object collide with all other stuffs
+			vertexarray, indexarray, kinematic);
 
-		staticbody->m_rigbody = NULL;
+		AddGameObject(staticobj);
 
-		if (kinematic)
-		{
-			staticbody->m_kinematic = true;
-		}
-
-		m_physBodies[staticbody->m_entindex] = staticbody;
-
-		if (staticbody->m_entindex > m_maxIndexPhysBody)
-			m_maxIndexPhysBody = staticbody->m_entindex;
-
-		return staticbody;
+		return staticobj;
 	}
 
-	auto staticbody = new CStaticBody;
-	staticbody->m_pent = ent;
-	staticbody->m_entindex = g_engfuncs.pfnIndexOfEdict(ent);
-	staticbody->m_vertexarray = vertexarray;
-	staticbody->m_indexarray = indexarray;
+	auto staticobj = new CStaticObject(ent, g_engfuncs.pfnIndexOfEdict(ent), 
+		BMASK_ALL, kinematic ? BMASK_BRUSH : BMASK_WORLD, 
+		vertexarray, indexarray, kinematic);
 
 	auto vertexArray = new btTriangleIndexVertexArray(
 		indexarray->vIndiceBuffer.size() / 3, indexarray->vIndiceBuffer.data(), 3 * sizeof(int),
@@ -486,68 +452,47 @@ CStaticBody* CPhysicsManager::CreateStaticBody(edict_t* ent, vertexarray_t* vert
 	auto meshShape = new btBvhTriangleMeshShape(vertexArray, true, true);
 
 	btMotionState* motionState = NULL;
+
 	if (kinematic)
-		motionState = new EntityMotionState(staticbody);
+		motionState = new EntityMotionState(staticobj);
 	else
 		motionState = new btDefaultMotionState();
 
 	btRigidBody::btRigidBodyConstructionInfo cInfo(0, motionState, meshShape);
-	
-	auto body = new btRigidBody(cInfo);
 
-	staticbody->m_rigbody = body;
+	cInfo.m_friction = 1;
+	cInfo.m_rollingFriction = 1;
+
+	staticobj->SetRigidBody(new btRigidBody(cInfo));
 
 	if (kinematic)
 	{
-		body->setCollisionFlags(body->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
-		body->setActivationState(DISABLE_DEACTIVATION);
-
-		staticbody->m_kinematic = true;
+		staticobj->GetRigidBody()->setCollisionFlags(staticobj->GetRigidBody()->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
+		staticobj->GetRigidBody()->setActivationState(DISABLE_DEACTIVATION);
 	}
 
-	body->setCollisionFlags(body->getCollisionFlags() | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
+	AddGameObject(staticobj);
 
-	body->setFriction(1.0f);
-	body->setRollingFriction(1.0f);
-	body->setUserPointer(staticbody);
-
-	m_dynamicsWorld->addRigidBody(body, BMASK_ALL, kinematic ? BMASK_BRUSH : BMASK_WORLD);
-
-	m_physBodies[staticbody->m_entindex] = staticbody;
-
-	if (staticbody->m_entindex > m_maxIndexPhysBody)
-		m_maxIndexPhysBody = staticbody->m_entindex;
-
-	return staticbody;
+	return staticobj;
 }
 
-CPlayerBody* CPhysicsManager::CreatePlayerBody(edict_t* ent, float mass, btCollisionShape* collisionShape, const btVector3& localInertia)
+CPlayerObject* CPhysicsManager::CreatePlayerObject(edict_t* ent, float mass, btCollisionShape* collisionShape, const btVector3& localInertia)
 {
-	auto playerbody = new CPlayerBody;
-	playerbody->m_pent = ent;
-	playerbody->m_entindex = g_engfuncs.pfnIndexOfEdict(ent);
+	auto playerobj = new CPlayerObject(ent, g_engfuncs.pfnIndexOfEdict(ent), 
+		BMASK_DYNAMIC_PUSHABLE, BMASK_PLAYER,//Player only collides with pushable objects, and world..?(do we really need to collide with world ?)
+		mass);
 
-	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, new EntityMotionState(playerbody), collisionShape, localInertia);
+	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, new EntityMotionState(playerobj), collisionShape, localInertia);
 
 	cInfo.m_friction = 1;
 	cInfo.m_rollingFriction = 1;
 	cInfo.m_restitution = 0;
 
-	auto body = new btRigidBody(cInfo);
+	playerobj->SetRigidBody(new btRigidBody(cInfo));
 
-	playerbody->m_rigbody = body;
-	playerbody->m_mass = mass;
+	AddGameObject(playerobj);
 
-	body->setUserPointer(playerbody);
-
-	m_dynamicsWorld->addRigidBody(body, BMASK_DYNAMIC_PUSHABLE, BMASK_PLAYER);
-
-	m_physBodies[playerbody->m_entindex] = playerbody;
-
-	if (playerbody->m_entindex > m_maxIndexPhysBody)
-		m_maxIndexPhysBody = playerbody->m_entindex;
-
-	return playerbody;
+	return playerobj;
 }
 
 void EulerMatrix(const btVector3& in_euler, btMatrix3x3& out_matrix) {
@@ -585,10 +530,10 @@ void MatrixEuler(const btMatrix3x3& in_matrix, btVector3& out_euler) {
 
 void EntityMotionState::getWorldTransform(btTransform& worldTrans) const
 {
-	auto ent = GetPhysicBody()->m_pent;
+	auto ent = GetPhysicObject()->GetEdict();
 
 	//Player and brush upload origin and angles in normal way
-	if (!GetPhysicBody()->IsDynamic())
+	if (!GetPhysicObject()->IsDynamic())
 	{
 		btVector3 GoldSrcOrigin(ent->v.origin.x, ent->v.origin.y, ent->v.origin.z);
 
@@ -598,7 +543,7 @@ void EntityMotionState::getWorldTransform(btTransform& worldTrans) const
 
 		vec3_t GoldSrcAngles = ent->v.angles;
 
-		if (GetPhysicBody()->IsPlayer())
+		if (GetPhysicObject()->IsPlayer())
 		{
 			GoldSrcAngles.x = 0;
 			GoldSrcAngles.y = 0;
@@ -640,12 +585,12 @@ void EntityMotionState::getWorldTransform(btTransform& worldTrans) const
 void EntityMotionState::setWorldTransform(const btTransform& worldTrans)
 {
 	//Nope, don't download player state !
-	if (GetPhysicBody()->IsPlayer())
+	if (GetPhysicObject()->IsPlayer())
 	{
 		return;
 	}
 
-	auto ent = GetPhysicBody()->m_pent;
+	auto ent = GetPhysicObject()->GetEdict();
 
 	Vector origin = Vector((float*)(worldTrans.getOrigin().m_floats));
 
@@ -676,9 +621,9 @@ void CPhysicsManager::EntityStartFrame()
 		if (!ent)
 			continue;
 
-		auto body = m_physBodies[i];
+		auto obj = m_gameObjects[i];
 
-		if (!body)
+		if (!obj)
 		{
 			if (ent->free)
 				continue;
@@ -699,18 +644,18 @@ void CPhysicsManager::EntityStartFrame()
 			//entity freed?
 			if (ent->free)
 			{
-				RemovePhysicBody(i);
+				RemoveGameObject(i);
 				continue;
 			}
 
 			//Player or brush changed to non-solid?
-			if (body->IsKinematic() && ent->v.solid <= SOLID_TRIGGER)
+			if (obj->IsKinematic() && ent->v.solid <= SOLID_TRIGGER)
 			{
-				RemovePhysicBody(i);
+				RemoveGameObject(i);
 				continue;
 			}
 			
-			body->StartFrame();
+			obj->StartFrame();
 		}
 	}
 }
@@ -727,7 +672,7 @@ void CPhysicsManager::EntityStartFrame_Post()
 		if (ent->free)
 			continue;
 
-		auto body = m_physBodies[i];
+		auto body = m_gameObjects[i];
 
 		if (body)
 		{
@@ -736,12 +681,12 @@ void CPhysicsManager::EntityStartFrame_Post()
 	}
 }
 
-void CDynamicBody::StartFrame()
+void CDynamicObject::StartFrame()
 {
 
 }
 
-void CDynamicBody::StartFrame_Post()
+void CDynamicObject::StartFrame_Post()
 {
 	//Download linear velocity from bullet engine
 
@@ -751,10 +696,10 @@ void CDynamicBody::StartFrame_Post()
 	
 	Vec3BulletToGoldSrc(velocity);
 
-	m_pent->v.vuser1 = velocity;
+	GetEdict()->v.vuser1 = velocity;
 }
 
-void CPlayerBody::StartFrame()
+void CPlayerObject::StartFrame()
 {
 	//Upload to bullet engine before simulation
 	btTransform trans;
@@ -762,49 +707,49 @@ void CPlayerBody::StartFrame()
 	m_rigbody->setWorldTransform(trans);
 
 	//Do we really need this?
-	btVector3 vecVelocity(m_pent->v.velocity.x, m_pent->v.velocity.y, m_pent->v.velocity.z);
+	btVector3 vecVelocity(GetEdict()->v.velocity.x, GetEdict()->v.velocity.y, GetEdict()->v.velocity.z);
 	Vector3GoldSrcToBullet(vecVelocity);
 	m_rigbody->setLinearVelocity(vecVelocity);
 }
 
-void CPlayerBody::StartFrame_Post()
+void CPlayerObject::StartFrame_Post()
 {
 	
 }
 
 void CPhysicsManager::FreeEntityPrivateData(edict_t* ent)
 {
-	RemovePhysicBody(g_engfuncs.pfnIndexOfEdict(ent));
+	RemoveGameObject(g_engfuncs.pfnIndexOfEdict(ent));
 }
 
-bool CPhysicsManager::SetAbsBox(edict_t *pent)
+bool CPhysicsManager::SetAbsBox(edict_t *ent)
 {
-	auto body = m_physBodies[g_engfuncs.pfnIndexOfEdict(pent)];
+	auto obj = GetGameObject(ent);
 
-	if (body && body->IsDynamic())
+	if (obj && obj->IsDynamic())
 	{
-		auto dynamicbody = (CDynamicBody *)body;
+		auto dynamicobj = (CDynamicObject *)obj;
 
 		btVector3 aabbMins, aabbMaxs;
-		dynamicbody->m_rigbody->getAabb(aabbMins, aabbMaxs);
+		dynamicobj->GetRigidBody()->getAabb(aabbMins, aabbMaxs);
 
 		Vector3BulletToGoldSrc(aabbMins);
 		Vector3BulletToGoldSrc(aabbMaxs);
 
-		pent->v.absmin.x = aabbMins.getX();
-		pent->v.absmin.y = aabbMins.getY();
-		pent->v.absmin.z = aabbMins.getZ();
-		pent->v.absmax.x = aabbMaxs.getX();
-		pent->v.absmax.y = aabbMaxs.getY();
-		pent->v.absmax.z = aabbMaxs.getZ();
+		ent->v.absmin.x = aabbMins.getX();
+		ent->v.absmin.y = aabbMins.getY();
+		ent->v.absmin.z = aabbMins.getZ();
+		ent->v.absmax.x = aabbMaxs.getX();
+		ent->v.absmax.y = aabbMaxs.getY();
+		ent->v.absmax.z = aabbMaxs.getZ();
 
-		//wtf why?
-		pent->v.absmin.x -= 1;
-		pent->v.absmin.y -= 1;
-		pent->v.absmin.z -= 1;
-		pent->v.absmax.x += 1;
-		pent->v.absmax.y += 1;
-		pent->v.absmax.z += 1;
+		//wtf why additional 1 unit ?
+		ent->v.absmin.x -= 1;
+		ent->v.absmin.y -= 1;
+		ent->v.absmin.z -= 1;
+		ent->v.absmax.x += 1;
+		ent->v.absmax.y += 1;
+		ent->v.absmax.z += 1;
 
 		return true;
 	}
@@ -812,129 +757,35 @@ bool CPhysicsManager::SetAbsBox(edict_t *pent)
 	return false;
 }
 
-void SV_CopyEdictToPhysent(physent_t *pe, int e, edict_t *check)
+bool CPhysicsManager::AddToFullPack(struct entity_state_s *state, int entindex, edict_t *ent, edict_t *host, int hostflags, int player)
 {
-	model_t *pModel;
+	auto obj = GetGameObject(ent);
 
-	pe->info = e;
-	pe->origin = check->v.origin;
-
-	if (e >= 1 && e <= gpGlobals->maxClients)
+	if (obj)
 	{
-		//wtf?
-		//SV_GetTrueOrigin(e - 1, pe->origin);
-		pe->player = e;
-	}
-	else
-	{
-		pe->player = 0;
-	}
-
-	pe->angles = check->v.angles;
-
-	pe->studiomodel = NULL;
-	pe->rendermode = check->v.rendermode;
-
-	switch (check->v.solid)
-	{
-	case SOLID_NOT:
-	{
-		if (check->v.modelindex)
+		if (obj->GetLevelOfDetailFlags() != 0)
 		{
-			pe->model = (*sv_models)[check->v.modelindex];
+			auto viewent = GetClientViewEntity(host);
 
-			strncpy(pe->name, pe->model->name, sizeof(pe->name));
-			pe->name[sizeof(pe->name) - 1] = 0;
-		}
-		else
-		{
-			pe->model = NULL;
+			if (viewent)
+			{
+				float distance = (ent->v.origin - viewent->v.origin).Length();
+
+				obj->ApplyLevelOfDetailBody(distance, &state->body, &state->modelindex, &state->scale);
+			}
 		}
 
-		break;
-	}
-
-	case SOLID_BBOX:
-	{
-		pe->model = NULL;
-
-		if (check->v.modelindex)
+		if (obj && obj->GetPartialViewerMask())
 		{
-			pModel = (*sv_models)[check->v.modelindex];
-		}
-		else
-		{
-			pModel = NULL;
-		}
-
-		if (pModel)
-		{
-			//if (pModel->flags & FMODEL_TRACE_HITBOX)
-				pe->studiomodel = pModel;
-
-			strncpy(pe->name, pModel->name, sizeof(pe->name));
-			pe->name[sizeof(pe->name) - 1] = 0;
-		}
-
-		pe->mins = check->v.mins;
-		pe->maxs = check->v.maxs;
-		break;
-	}
-
-	case SOLID_BSP:
-	{
-		pe->model = (*sv_models)[check->v.modelindex];
-
-		strncpy(pe->name, pe->model->name, sizeof(pe->name));
-		pe->name[sizeof(pe->name) - 1] = 0;
-		break;
-	}
-
-	default:
-	{
-		pe->model = NULL;
-
-		pe->mins = check->v.mins;
-		pe->maxs = check->v.maxs;
-
-		if (check->v.classname)
-		{
-			strncpy(pe->name, STRING(check->v.classname), sizeof(pe->name));
-			pe->name[sizeof(pe->name) - 1] = 0;
-		}
-		else
-		{
-			pe->name[0] = '?';
-			pe->name[1] = 0;
+			int hostindex = g_engfuncs.pfnIndexOfEdict(host);
+			if ((obj->GetPartialViewerMask() & (1 << (hostindex - 1))) == 0)
+			{
+				return false;
+			}
 		}
 	}
-	}
 
-	pe->solid = check->v.solid;
-	pe->skin = check->v.skin;
-	pe->frame = check->v.frame;
-	pe->sequence = check->v.sequence;
-
-	memcpy(pe->controller, check->v.controller, 4);
-	memcpy(pe->blending, check->v.blending, 2);
-
-	pe->movetype = check->v.movetype;
-	pe->takedamage = DAMAGE_NO;
-	pe->blooddecal = 0;
-
-	pe->iuser1 = check->v.iuser1;
-	pe->iuser2 = check->v.iuser2;
-	pe->iuser3 = check->v.iuser3;
-	pe->iuser4 = check->v.iuser4;
-	pe->fuser1 = check->v.fuser1;
-	pe->fuser2 = check->v.fuser2;
-	pe->fuser3 = check->v.fuser3;
-	pe->fuser4 = check->v.fuser4;
-
-	pe->vuser1 = check->v.vuser1;
-	pe->vuser2 = check->v.vuser2;
-	pe->vuser3 = check->v.vuser3;
-	pe->vuser4 = check->v.vuser4;
+	return true;
 }
 
 qboolean CPhysicsManager::PM_AddToTouched(pmtrace_t tr, vec3_t impactvelocity)
@@ -969,50 +820,60 @@ void CPhysicsManager::PM_StartMove()
 void CPhysicsManager::PM_EndMove()
 {
 	//Check if stuck?
-	if (m_numDynamicBody)
+	if (!m_numDynamicObjects)
+		return;
+
+	pmtrace_t trace = { 0 };
+	int hitent = pmove->PM_TestPlayerPosition(pmove->origin, &trace);
+	if (hitent != -1)
 	{
-		pmtrace_t trace = { 0 };
-		int hitent = pmove->PM_TestPlayerPosition(pmove->origin, &trace);
-		if (hitent != -1)
+		auto blocker = &pmove->physents[hitent];
+
+		auto body = gPhysicsManager.GetGameObject(blocker->info);
+
+		if (body && body->IsDynamic())
 		{
-			auto blocker = &pmove->physents[hitent];
-
-			auto physbody = gPhysicsManager.GetPhysicBody(blocker->info);
-
-			if (physbody && physbody->IsDynamic())
-			{
-				vec3_t move;
+			vec3_t move;
 				
-				move = pmove->origin - blocker->origin;
+			move = pmove->origin - blocker->origin;
 
-				move.z += (blocker->maxs.z - blocker->mins.z) * 0.5f;
+			move.z += (blocker->maxs.z - blocker->mins.z) * 0.5f;
 
-				move = move.Normalize();
+			move = move.Normalize();
 
-				move = move * (1000.0f * pmove->frametime);
+			move = move * (1000.0f * pmove->frametime);
 
-				auto backup_origin = pmove->origin;
+			auto backup_origin = pmove->origin;
 
-				blocker->solid = SOLID_NOT;
+			blocker->solid = SOLID_NOT;
 
-				pmove->origin = pmove->origin + move;
+			pmove->origin = pmove->origin + move;
 
-				pmtrace_t trace2 = { 0 };
-				auto hitent2 = pmove->PM_TestPlayerPosition(pmove->origin, &trace2);
-				if (hitent2 != -1 && hitent2 != hitent)
-				{
-					//Blocked, don't move
-					pmove->origin = backup_origin;
-				}
-				else
-				{
-					PM_AddToTouched(trace, move);
-				}
-
-				blocker->solid = SOLID_BBOX;
+			pmtrace_t trace2 = { 0 };
+			auto hitent2 = pmove->PM_TestPlayerPosition(pmove->origin, &trace2);
+			if (hitent2 != -1 && hitent2 != hitent)
+			{
+				//Blocked, don't move
+				pmove->origin = backup_origin;
 			}
+			else
+			{
+				PM_AddToTouched(trace, move);
+			}
+
+			blocker->solid = SOLID_BBOX;
 		}
 	}
+}
+
+void CPhysicsManager::AddGameObject(CGameObject *obj)
+{
+	obj->AddToPhysicWorld(m_dynamicsWorld, &m_numDynamicObjects);
+
+	m_gameObjects[obj->GetEntIndex()] = obj;
+
+	if (obj->GetEntIndex() > m_maxIndexGameObject)
+		m_maxIndexGameObject = obj->GetEntIndex();
 }
 
 bool CPhysicsManager::CreateBrushModel(edict_t* ent)
@@ -1020,23 +881,19 @@ bool CPhysicsManager::CreateBrushModel(edict_t* ent)
 	int modelindex = ent->v.modelindex;
 	if (modelindex == -1)
 	{
-		//invalid model index?
-		UTIL_LogPrintf("CreateBrushModel: Invalid model index\n");
 		return false;
 	}
 
 	if (!m_brushIndexArray[modelindex])
 	{
-		//invalid model index?
-		UTIL_LogPrintf("CreateBrushModel: Invalid model index\n");
 		return false;
 	}
 
 	bool bKinematic = ((ent != r_worldentity) && (ent->v.movetype == MOVETYPE_PUSH)) ? true : false;
 
-	auto staticbody = CreateStaticBody(ent, m_worldVertexArray, m_brushIndexArray[modelindex], bKinematic);
+	auto staticobj = CreateStaticObject(ent, m_worldVertexArray, m_brushIndexArray[modelindex], bKinematic);
 	
-	if (staticbody)
+	if (staticobj)
 	{
 		return true;
 	}
@@ -1055,7 +912,7 @@ bool CPhysicsManager::CreatePlayerBox(edict_t* ent)
 	btVector3 localInertia;
 	meshShape->calculateLocalInertia(mass, localInertia);
 
-	if (CreatePlayerBody(ent, mass, meshShape, localInertia))
+	if (CreatePlayerObject(ent, mass, meshShape, localInertia))
 	{
 		return true;
 	}
@@ -1065,19 +922,21 @@ bool CPhysicsManager::CreatePlayerBox(edict_t* ent)
 
 bool CPhysicsManager::ApplyImpulse(edict_t* ent, const Vector& impulse, const Vector& origin)
 {
-	auto body = m_physBodies[g_engfuncs.pfnIndexOfEdict(ent)];
+	auto obj = GetGameObject(ent);
 
-	if (!body)
+	if (!obj)
 	{
 		//no physic body found
 		return false;
 	}
 
-	if (!body->IsDynamic())
+	if (!obj->IsDynamic())
 	{
 		//no dynamic body found
 		return false;
 	}
+
+	auto dynamicobj = (CDynamicObject *)obj;
 
 	btVector3 vecImpulse;
 	impulse.CopyToArray(vecImpulse.m_floats);
@@ -1090,36 +949,68 @@ bool CPhysicsManager::ApplyImpulse(edict_t* ent, const Vector& impulse, const Ve
 	relpos.CopyToArray(vecRelPos.m_floats);
 	Vector3GoldSrcToBullet(vecRelPos);
 
-	body->m_rigbody->applyImpulse(vecImpulse, vecRelPos);
+	dynamicobj->GetRigidBody()->applyImpulse(vecImpulse, vecRelPos);
 
 	return true;
 }
 
-bool CPhysicsManager::CreateSuperPusher(edict_t* ent)
+bool CPhysicsManager::SetEntityLevelOfDetail(edict_t* ent, int flags, int body_0, float scale_0, int body_1, float scale_1, float distance_1, int body_2, float scale_2, float distance_2, int body_3, float scale_3, float distance_3)
 {
-	auto body = m_physBodies[g_engfuncs.pfnIndexOfEdict(ent)];
+	auto obj = GetGameObject(ent);
 
-	if(!body && IsEntitySolidPusher(ent))
+	if (!obj)
+	{
+		obj = new CGameObject(ent, g_engfuncs.pfnIndexOfEdict(ent));
+
+		obj->SetLevelOfDetail(flags, body_0, scale_0, body_1, scale_1, distance_1, body_2, scale_2, distance_2, body_3, scale_3, distance_3);
+
+		AddGameObject(obj);
+	}
+	else
+	{
+		obj->SetLevelOfDetail(flags, body_0, scale_0, body_1, scale_1, distance_1, body_2, scale_2, distance_2, body_3, scale_3, distance_3);
+	}
+
+	return false;
+}
+
+bool CPhysicsManager::SetEntityPartialViewer(edict_t* ent, int partial_viewer_mask)
+{
+	auto obj = GetGameObject(ent);
+
+	if (!obj)
+	{
+		obj = new CGameObject(ent, g_engfuncs.pfnIndexOfEdict(ent));
+
+		obj->SetPartialViewer(partial_viewer_mask);
+
+		AddGameObject(obj);
+	}
+	else
+	{
+		obj->SetPartialViewer(partial_viewer_mask);
+	}
+
+	return false;
+}
+
+bool CPhysicsManager::SetEntitySuperPusher(edict_t* ent, bool enable)
+{
+	auto obj = GetGameObject(ent);
+
+	if(!obj && IsEntitySolidPusher(ent))
 	{
 		if (CreateBrushModel(ent))
 		{
-			body = GetPhysicBody(ent);
+			obj = GetGameObject(ent);
 		}
 	}
 
-	if (body)
+	if (obj)
 	{
-		if (body->IsKinematic())
+		if (obj->IsKinematic())
 		{
-			auto staticbody = (CStaticBody *)body;
-			staticbody->m_superpusher = true;
-
-			return true;
-		}
-		else if (body->IsDynamic())
-		{
-			auto dynamicbody = (CDynamicBody *)body;
-			dynamicbody->m_superpusher = true;
+			obj->SetSuperPusher(enable);
 
 			return true;
 		}
@@ -1130,9 +1021,9 @@ bool CPhysicsManager::CreateSuperPusher(edict_t* ent)
 
 bool CPhysicsManager::CreatePhysicBox(edict_t* ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable)
 {
-	auto body = m_physBodies[g_engfuncs.pfnIndexOfEdict(ent)];
+	auto obj = GetGameObject(ent);
 
-	if (body)
+	if (obj)
 	{
 		//Already created
 		return false;
@@ -1178,19 +1069,19 @@ bool CPhysicsManager::CreatePhysicBox(edict_t* ent, float mass, float friction, 
 	btVector3 localInertia;
 	meshShape->calculateLocalInertia(mass, localInertia);
 
-	auto dynamicbody = CreateDynamicBody(ent, mass, friction, rollingFriction, restitution, ccdRadius, ccdThreshold, pushable, meshShape, localInertia);
+	auto dynamicobj = CreateDynamicObject(ent, mass, friction, rollingFriction, restitution, ccdRadius, ccdThreshold, pushable, meshShape, localInertia);
 
-	if (dynamicbody)
+	if (dynamicobj)
 	{
 		btVector3 vecLinearVelocity(ent->v.velocity.x, ent->v.velocity.y, ent->v.velocity.z);
 
 		Vector3GoldSrcToBullet(vecLinearVelocity);
 
-		dynamicbody->m_rigbody->setLinearVelocity(vecLinearVelocity);
+		dynamicobj->GetRigidBody()->setLinearVelocity(vecLinearVelocity);
 
 		btVector3 vecALinearVelocity(ent->v.avelocity.x * SIMD_RADS_PER_DEG, ent->v.avelocity.y * SIMD_RADS_PER_DEG, ent->v.avelocity.z * SIMD_RADS_PER_DEG);
 
-		dynamicbody->m_rigbody->setAngularVelocity(vecALinearVelocity);
+		dynamicobj->GetRigidBody()->setAngularVelocity(vecALinearVelocity);
 
 		ent->v.velocity = g_vecZero;
 		ent->v.avelocity = g_vecZero;
@@ -1206,8 +1097,8 @@ void CPhysicsManager::NewMap(edict_t *ent)
 	G2BScale = CVAR_GET_FLOAT("bv_worldscale");
 	B2GScale = 1 / G2BScale;
 
-	m_maxIndexPhysBody = 0;
-	m_physBodies.resize(gpGlobals->maxEntities);
+	m_maxIndexGameObject = 0;
+	m_gameObjects.resize(gpGlobals->maxEntities);
 
 	r_worldentity = ent;
 
@@ -1220,9 +1111,53 @@ void CPhysicsManager::NewMap(edict_t *ent)
 	CreateBrushModel(r_worldentity);
 }
 
+struct GameFilterCallback : public btOverlapFilterCallback
+{
+	// return true when pairs need collision
+	virtual bool needBroadphaseCollision(btBroadphaseProxy* proxy0,btBroadphaseProxy* proxy1) const
+	{
+		bool collides = (proxy0->m_collisionFilterGroup & proxy1->m_collisionFilterMask) != 0;
+		collides = collides && (proxy1->m_collisionFilterGroup & proxy0->m_collisionFilterMask);
+	
+		if (collides)
+		{
+			auto body0 = (btRigidBody *)proxy0->m_clientObject;
+			auto body1 = (btRigidBody *)proxy1->m_clientObject;
+
+			auto physobj0 = (CPhysicObject *)body0->getUserPointer();
+			auto physobj1 = (CPhysicObject *)body1->getUserPointer();
+
+			if (physobj0->IsKinematic() && physobj0->GetEdict() && physobj0->GetEdict()->v.solid <= SOLID_TRIGGER)
+			{
+				return false;
+			}
+
+			if (physobj1->IsKinematic() && physobj1->GetEdict() && physobj1->GetEdict()->v.solid <= SOLID_TRIGGER)
+			{
+				return false;
+			}
+		}
+		return collides;
+	}
+};
+
+void CPhysicsManager::Init(void)
+{
+	CVAR_REGISTER(&bv_tickrate);
+	CVAR_REGISTER(&bv_worldscale);
+
+	m_collisionConfiguration = new btDefaultCollisionConfiguration();
+	m_dispatcher = new btCollisionDispatcher(m_collisionConfiguration);
+	m_overlappingPairCache = new btDbvtBroadphase();
+	m_solver = new btSequentialImpulseConstraintSolver;
+	m_dynamicsWorld = new btDiscreteDynamicsWorld(m_dispatcher, m_overlappingPairCache, m_solver, m_collisionConfiguration);
+	m_dynamicsWorld->getPairCache()->setOverlapFilterCallback(new GameFilterCallback());
+	m_dynamicsWorld->setGravity(btVector3(0, 0, 0));
+}
+
 void CPhysicsManager::Shutdown(void)
 {
-	RemoveAllPhysicBodies();
+	RemoveAllGameBodies();
 
 	for (size_t i = 0; i < m_brushIndexArray.size(); ++i)
 	{
@@ -1239,20 +1174,6 @@ void CPhysicsManager::Shutdown(void)
 		delete m_worldVertexArray;
 		m_worldVertexArray = NULL;
 	}
-}
-
-void CPhysicsManager::Init(void)
-{
-	CVAR_REGISTER(&bv_tickrate);
-	CVAR_REGISTER(&bv_worldscale);
-
-	m_collisionConfiguration = new btDefaultCollisionConfiguration();
-	m_dispatcher = new btCollisionDispatcher(m_collisionConfiguration);
-	m_overlappingPairCache = new btDbvtBroadphase();
-	m_solver = new btSequentialImpulseConstraintSolver;
-	m_dynamicsWorld = new btDiscreteDynamicsWorld(m_dispatcher, m_overlappingPairCache, m_solver, m_collisionConfiguration);
-
-	m_dynamicsWorld->setGravity(btVector3(0, 0, 0));
 }
 
 void CPhysicsManager::StepSimulation(double frametime)
@@ -1283,57 +1204,53 @@ void CPhysicsManager::SetGravity(float velocity)
 
 int CPhysicsManager::GetNumDynamicBodies()
 {
-	return m_numDynamicBody;
+	return m_numDynamicObjects;
 }
 
-CPhysicBody *CPhysicsManager::GetPhysicBody(int entindex)
+CGameObject *CPhysicsManager::GetGameObject(int entindex)
 {
-	return m_physBodies[entindex];
+	if (entindex >= (int)m_gameObjects.size())
+		return NULL;
+
+	return m_gameObjects[entindex];
 }
 
-CPhysicBody* CPhysicsManager::GetPhysicBody(edict_t *ent)
+CGameObject* CPhysicsManager::GetGameObject(edict_t *ent)
 {
-	return m_physBodies[g_engfuncs.pfnIndexOfEdict(ent)];
+	return GetGameObject(g_engfuncs.pfnIndexOfEdict(ent));
 }
 
-void CPhysicsManager::RemovePhysicBody(int entindex)
+void CPhysicsManager::RemoveGameObject(int entindex)
 {
-	if (entindex >= (int)m_physBodies.size())
+	if (entindex >= (int)m_gameObjects.size())
 		return;
 
-	auto body = m_physBodies[entindex];
-	if (body)
+	auto obj = m_gameObjects[entindex];
+	if (obj)
 	{
-		if (body->IsDynamic())
-			m_numDynamicBody--;
+		obj->RemoveFromPhysicWorld(m_dynamicsWorld, &m_numDynamicObjects);
 
-		if (body->m_rigbody)
-		{
-			m_dynamicsWorld->removeRigidBody(body->m_rigbody);
-			delete body->m_rigbody;
-			body->m_rigbody = NULL;
-		}
+		delete obj;
 
-		delete body;
-
-		m_physBodies[entindex] = NULL;
+		m_gameObjects[entindex] = NULL;
 	}
 }
 
-void CPhysicsManager::RemoveAllPhysicBodies()
+void CPhysicsManager::RemoveAllGameBodies()
 {
-	for (int i = 0;i <= m_maxIndexPhysBody; ++i)
+	for (int i = 0;i <= m_maxIndexGameObject; ++i)
 	{
-		RemovePhysicBody(i);
+		RemoveGameObject(i);
 	}
 
-	m_physBodies.clear();
+	m_gameObjects.clear();
 }
 
-bool CPhysicsManager::IsSuperPusher(edict_t* ent)
+bool CPhysicsManager::IsEntitySuperPusher(edict_t* ent)
 {
-	auto body = m_physBodies[g_engfuncs.pfnIndexOfEdict(ent)];
-	if (body && body->IsSuperPusher())
+	auto obj = GetGameObject(ent);
+
+	if (obj && obj->IsSuperPusher())
 	{
 		return true;
 	}
@@ -1341,10 +1258,11 @@ bool CPhysicsManager::IsSuperPusher(edict_t* ent)
 	return false;
 }
 
-bool CPhysicsManager::IsDynamicPhysicObject(edict_t* ent)
+bool CPhysicsManager::IsEntityDynamicPhysicObject(edict_t* ent)
 {
-	auto body = m_physBodies[g_engfuncs.pfnIndexOfEdict(ent)];
-	if (body && body->IsDynamic())
+	auto obj = GetGameObject(ent);
+
+	if (obj && obj->IsDynamic())
 	{
 		return true;
 	}

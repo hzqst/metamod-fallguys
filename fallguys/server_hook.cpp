@@ -19,11 +19,7 @@ PRIVATE_FUNCTION_DEFINE(CASDocumentation_RegisterObjectMethod);
 
 edict_t* SC_SERVER_DECL CASEngineFuncs__GetViewEntity(void* pthis, SC_SERVER_DUMMYARG edict_t* pClient)
 {
-	auto viewent = g_ClientViewEntity[g_engfuncs.pfnIndexOfEdict(pClient)];
-	if (viewent)
-		return viewent;
-
-	return pClient;
+	return GetClientViewEntity(pClient);
 }
 
 int SC_SERVER_DECL CASEngineFuncs__GetRunPlayerMovePlayerIndex(void* pthis, SC_SERVER_DUMMYARG_NOCOMMA)
@@ -36,12 +32,23 @@ bool SC_SERVER_DECL CASEntityFuncs__CreatePhysicBox(void* pthis, SC_SERVER_DUMMY
 	return gPhysicsManager.CreatePhysicBox(ent, mass, friction, rollingFriction, restitution, ccdRadius, ccdThreshold, pushable);
 }
 
-bool SC_SERVER_DECL CASEntityFuncs__CreateSuperPusher(void* pthis, SC_SERVER_DUMMYARG edict_t* ent)
+bool SC_SERVER_DECL CASEntityFuncs__SetEntitySuperPusher(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, bool enable)
 {
-	return gPhysicsManager.CreateSuperPusher(ent);
+	return gPhysicsManager.SetEntitySuperPusher(ent, enable);
 }
 
-edict_t * SC_SERVER_DECL CASEntityFuncs__GetCurrentSuperPusher(void* pthis, SC_SERVER_DUMMYARG Vector* out)
+bool SC_SERVER_DECL CASEntityFuncs__SetEntityLevelOfDetail(void* pthis, SC_SERVER_DUMMYARG edict_t* ent,
+	int flags, int body_0, float scale_0, int body_1, float scale_1, float distance_1, int body_2, float scale_2, float distance_2, int body_3, float scale_3, float distance_3)
+{
+	return gPhysicsManager.SetEntityLevelOfDetail(ent, flags, body_0, scale_0, body_1, scale_1, distance_1, body_2, scale_2, distance_2, body_3, scale_3, distance_3);
+}
+
+bool SC_SERVER_DECL CASEntityFuncs__SetEntityPartialViewer(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int partial_viewer_mask)
+{
+	return gPhysicsManager.SetEntityPartialViewer(ent, partial_viewer_mask);
+}
+
+edict_t *SC_SERVER_DECL CASEntityFuncs__GetCurrentSuperPusher(void* pthis, SC_SERVER_DUMMYARG Vector* out)
 {
 	return GetCurrentSuperPusher(out);
 }
@@ -136,8 +143,22 @@ int SC_SERVER_DECL NewCASDocumentation_RegisterObjectType(CASDocumentation *pthi
 		if (1)
 		{
 			CASMethodRegistration reg;
-			reg.pfnMethod = CASEntityFuncs__CreateSuperPusher;
-			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, dummy, "Create Super-Pusher for entity", "CEntityFuncs", "bool CreateSuperPusher(edict_t@ ent)", &reg, 3);
+			reg.pfnMethod = CASEntityFuncs__SetEntitySuperPusher;
+			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, dummy, "Enable or disable Super-Pusher for entity", "CEntityFuncs", "bool SetEntitySuperPusher(edict_t@ ent, bool enable)", &reg, 3);
+		}
+
+		if (1)
+		{
+			CASMethodRegistration reg;
+			reg.pfnMethod = CASEntityFuncs__SetEntityLevelOfDetail;
+			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, dummy, "Enable Level-of-Detail for entity", "CEntityFuncs", "bool SetEntityLevelOfDetail(edict_t@ ent, int flags, int body_0, float scale_0, int body_1, float scale_1, float distance_1, int body_2, float scale_2, float distance_2, int body_3, float scale_3, float distance_3)", &reg, 3);
+		}
+
+		if (1)
+		{
+			CASMethodRegistration reg;
+			reg.pfnMethod = CASEntityFuncs__SetEntityPartialViewer;
+			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, dummy, "Create Level-of-Detail object for entity", "CEntityFuncs", "bool SetEntityPartialViewer(edict_t@ ent, int partial_viewer_mask)", &reg, 3);
 		}
 
 		if (1)

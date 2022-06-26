@@ -12,14 +12,9 @@
 #include "fallguys.h"
 #include "physics.h"
 
-PRIVATE_FUNCTION_DEFINE(SV_TestEntityPosition);
 PRIVATE_FUNCTION_DEFINE(SV_PushEntity);
 PRIVATE_FUNCTION_DEFINE(SV_PushMove);
 PRIVATE_FUNCTION_DEFINE(SV_PushRotate);
-PRIVATE_FUNCTION_DEFINE(SV_Physics_Step);
-PRIVATE_FUNCTION_DEFINE(SV_Physics_Toss);
-PRIVATE_FUNCTION_DEFINE(SV_RunThink);
-PRIVATE_FUNCTION_DEFINE(PM_PlayerTrace);
 
 const Vector g_vecZero = { 0, 0, 0 };
 
@@ -62,7 +57,7 @@ trace_t* NewSV_PushEntity(trace_t* trace, edict_t* ent, vec3_t* push)
 
 	//Commit the transaction
 	if ((g_bIsPushMove || g_bIsPushRotate) && 
-		gPhysicsManager.IsSuperPusher(g_PusherEntity))
+		gPhysicsManager.IsEntitySuperPusher(g_PusherEntity))
 	{
 		for (int i = 0; i < g_NumPendingEntities; ++i)
 		{
