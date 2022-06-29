@@ -1,11 +1,7 @@
 MODNAME = fallguys
 SRCFILES = dllapi.cpp engine_api.cpp engine_hook.cpp fallguys.cpp h_export.cpp meta_api.cpp physics.cpp sdk_util.cpp server_hook.cpp ../CDetour/detours.cpp ../CDetour/asm/asm.c ../CDetour/libudis86/udis86.c ../CDetour/libudis86/itab.c ../CDetour/libudis86/decode.c 
+
+INCLUDEDIRS+=-I$(SDKSRC)/../CDetour -I$(SDKSRC)/../libudis86 -I$(SDKSRC)/../bullet3/build/include/bullet
 EXTRA_CFLAGS += -DPLATFORM_POSIX
-EXTRA_CFLAGS += -L../bullet3/build/src/Bullet3Collision
-EXTRA_CFLAGS += -L../bullet3/build/src/Bullet3Common
-EXTRA_CFLAGS += -L../bullet3/build/src/Bullet3Dynamics
-EXTRA_CFLAGS += -L../bullet3/build/src/Bullet3Geometry
-EXTRA_CFLAGS += -L../bullet3/build/src/BulletCollision
-EXTRA_CFLAGS += -L../bullet3/build/src/BulletDynamics
-EXTRA_CFLAGS += -L../bullet3/build/src/LinearMath
-EXTRA_CFLAGS += -Wl,-Bstatic -l:libBullet3Collision.a -l:libBullet3Common.a -l:libBullet3Dynamics.a -l:libBullet3Geometry.a -l:libBulletCollision.a -l:libBulletDynamics.a -l:libLinearMath.a -Wl,-Bdynamic
+EXTRA_LINK += -L../bullet3/build/lib
+EXTRA_LINK += -Bstatic -lBulletSoftBody -lBulletDynamics -lBulletCollision -lLinearMath -Bdynamic

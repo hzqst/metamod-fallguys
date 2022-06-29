@@ -4,5 +4,3 @@
 # of linking to it.
 
 include ../metamod/Makefile
-
-INCLUDEDIRS+=-I$(SDKSRC)/../CDetour -I$(SDKSRC)/../libudis86 -I$(SDKSRC)/../bullet3/src
