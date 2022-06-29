@@ -8,4 +8,4 @@ EXTRA_CFLAGS += -L../bullet3/build/src/Bullet3Geometry
 EXTRA_CFLAGS += -L../bullet3/build/src/BulletCollision
 EXTRA_CFLAGS += -L../bullet3/build/src/BulletDynamics
 EXTRA_CFLAGS += -L../bullet3/build/src/LinearMath
-EXTRA_CFLAGS += -Wl,-Bstatic -l:libBullet3Collision.a -l:libBullet3Common.a -l:libBullet3Dynamics.a -l:lib.aBullet3Geometry -l:libBulletCollision.a -l:libBulletDynamics.a -l:libLinearMath.a -Wl,-Bdynamic
+EXTRA_CFLAGS += -Wl,-Bstatic -l:libBullet3Collision.a -l:libBullet3Common.a -l:libBullet3Dynamics.a -l:libBullet3Geometry.a -l:libBulletCollision.a -l:libBulletDynamics.a -l:libLinearMath.a -Wl,-Bdynamic
