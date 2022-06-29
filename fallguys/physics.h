@@ -246,8 +246,8 @@ public:
 	}
 
 protected:
-	int m_entindex;
 	edict_t *m_ent;
+	int m_entindex;
 
 private:
 	int m_lod_flags;
@@ -281,7 +281,7 @@ public:
 		m_group = group;
 		m_mask = mask;
 	}
-	virtual ~CPhysicObject()
+	~CPhysicObject()
 	{
 		//Should be removed from world before free
 		if (m_rigbody)
@@ -342,7 +342,7 @@ public:
 		m_kinematic = kinematic;
 		m_superpusher = false;
 	}
-	virtual ~CStaticObject()
+	~CStaticObject()
 	{
 		if (m_vertexarray->bIsDynamic)
 		{
@@ -396,7 +396,7 @@ public:
 		m_mass = mass;
 		m_pushable = pushable;
 	}
-	virtual ~CDynamicObject()
+	~CDynamicObject()
 	{
 		CPhysicObject::~CPhysicObject();
 	}
@@ -438,7 +438,7 @@ public:
 	{
 		m_mass = mass;
 	}
-	virtual ~CPlayerObject()
+	~CPlayerObject()
 	{
 		CPhysicObject::~CPhysicObject();
 	}
@@ -483,62 +483,6 @@ private:
 	//Avoid gimbal lock
 	mutable btTransform m_worldTransform;
 	mutable bool m_worldTransformInitialized;
-};
-
-ATTRIBUTE_ALIGNED16(class)
-CPhysicsDebugDraw : public btIDebugDraw
-{
-	int m_debugMode;
-
-	DefaultColors m_ourColors;
-
-public:
-	BT_DECLARE_ALIGNED_ALLOCATOR();
-
-	CPhysicsDebugDraw() : m_debugMode(btIDebugDraw::DBG_DrawWireframe | btIDebugDraw::DBG_DrawConstraints | btIDebugDraw::DBG_DrawConstraintLimits)
-	{
-
-	}
-
-	virtual ~CPhysicsDebugDraw()
-	{
-	}
-	virtual DefaultColors getDefaultColors() const
-	{
-		return m_ourColors;
-	}
-	///the default implementation for setDefaultColors has no effect. A derived class can implement it and store the colors.
-	virtual void setDefaultColors(const DefaultColors& colors)
-	{
-		m_ourColors = colors;
-	}
-
-	virtual void drawLine(const btVector3& from1, const btVector3& to1, const btVector3& color1);
-
-	virtual void drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, btScalar distance, int lifeTime, const btVector3& color)
-	{
-		drawLine(PointOnB, PointOnB + normalOnB * distance, color);
-		btVector3 ncolor(0, 0, 0);
-		drawLine(PointOnB, PointOnB + normalOnB * 0.01f, ncolor);
-	}
-
-	virtual void reportErrorWarning(const char* warningString)
-	{
-	}
-
-	virtual void draw3dText(const btVector3& location, const char* textString)
-	{
-	}
-
-	virtual void setDebugMode(int debugMode)
-	{
-		m_debugMode = debugMode;
-	}
-
-	virtual int getDebugMode() const
-	{
-		return m_debugMode;
-	}
 };
 
 class CPhysicsManager
