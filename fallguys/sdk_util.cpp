@@ -83,10 +83,7 @@ size_t MH_GetModuleSize(void *hModule)
 #ifdef PLATFORM_WINDOWS
 	return ((IMAGE_NT_HEADERS *)((char *)hModule + ((IMAGE_DOS_HEADER *)hModule)->e_lfanew))->OptionalHeader.SizeOfImage;
 #else
-	Dl_info info;
-	dladdr(hModule, &info);
-
-	return info.dli_size;
+	return 0;//wtf?
 #endif
 }
 
@@ -96,5 +93,18 @@ void *MH_GetModuleBase(const char *name)
 	return (void *)GetModuleHandleA(name);
 #else
 	return (void *)dlopen(name, RTLD_NOLOAD);
+#endif
+}
+
+bool MH_IsAddressInModule(void *lpAddress, void *hModule)
+{
+#ifdef PLATFORM_WINDOWS
+	return (char *)lpAddress > (char *)hModule && (char *)lpAddress < (char *)hModule + MH_GetModuleSize(hModule);
+#else
+	Dl_info info;
+	if (dladdr(lpAddress, &info) != 0 && info.dli_fbase == hModule)
+		return true;
+
+	return false;
 #endif
 }

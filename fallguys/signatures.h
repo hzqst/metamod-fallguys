@@ -68,7 +68,7 @@ if (!Caller_of_##name)\
 	return FALSE;\
 }\
 g_pfn_##name = g_call_original_##name = (decltype(g_pfn_##name))GetCallAddress(Caller_of_##name + (offset));\
-if (!((char *)g_pfn_##name > (char*)dll && (char*)g_pfn_##name < (char*)dll + MH_GetModuleSize(dll)))\
+if (!MH_IsAddressInModule(g_pfn_##name, dll))\
 {\
 LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !"); \
 return FALSE; \
@@ -81,7 +81,7 @@ if (!Caller_of_##name)\
 	return FALSE;\
 }\
 g_pfn_##name = g_call_original_##name = (decltype(g_pfn_##name))GetCallAddress(Caller_of_##name + (sizeof(name##_Signature) - 1) + (offset));\
-if (!((char *)g_pfn_##name > (char*)dll && (char*)g_pfn_##name < (char*)dll + MH_GetModuleSize(dll)))\
+if (!MH_IsAddressInModule(g_pfn_##name, dll))\
 {\
 LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !"); \
 return FALSE; \
