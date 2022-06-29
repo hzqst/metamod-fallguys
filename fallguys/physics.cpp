@@ -169,14 +169,12 @@ void CPhysicsManager::BuildSurfaceDisplayList(model_t *mod, msurface_t* fa, std:
 #define BLOCK_HEIGHT 128
 	int i, lindex, lnumverts;
 	medge_t* pedges, * r_pedge;
-	int vertpage;
 	float* vec;
 	float s, t;
 	glpoly_t* poly;
 
 	pedges = mod->edges;
 	lnumverts = fa->numedges;
-	vertpage = 0;
 
 	int allocSize = (int)sizeof(glpoly_t) + ((lnumverts - 4) * VERTEXSIZE * sizeof(float));
 
