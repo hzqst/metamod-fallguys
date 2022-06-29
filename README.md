@@ -115,7 +115,7 @@ edict_t@viewent = g_EngineFuncs.GetViewEntity(pPlayer.edict());
 
 2. Run `build-win32-all.bat`
 
-3. `metamod.dll` and `fallguys.dll` should be generated at `build/addons/metamod/dlls` if no error(s) occours.
+3. Be patient, `metamod.dll` and `fallguys.dll` will be generated at `build/addons/metamod/dlls` if no error(s) occours.
 
 # Build Requirements (Linux)
 
@@ -129,6 +129,6 @@ edict_t@viewent = g_EngineFuncs.GetViewEntity(pPlayer.edict());
 
 1. `git clone https://github.com/hzqst/metamod-fallguys`, then `cd metamod-fallguys`
 
-2. `sudo chmod +777 build-all-linux.sh`, then `./build-all-linux.sh`
+2. `sudo chmod +777 build-all-linux.sh` to make it executable, then `./build-all-linux.sh`
 
-3. `metamod.so` and `fallguys.so` should be generated at `build/addons/metamod/dlls` if no error(s) occours.
+3. Be patient, `metamod.so` and `fallguys.so` will be generated at `build/addons/metamod/dlls` if no error(s) occours.

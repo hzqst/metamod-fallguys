@@ -165,7 +165,7 @@ endif
 # "WONT WORK WITH omit-frame-pointer"?
 # - disable (unneeded) C++ exceptions and rtti code to save some space ?
 
-CCOPT = $(CCO) $(CCOPT_ARCH) #-fno-exceptions -fno-rtti wtfwtfwtf??
+CCOPT = $(CCO) $(CCOPT_ARCH) -fno-exceptions -fno-rtti
 
 # optimization level; overridden for certain problematic files
 CCO = -O2 -fomit-frame-pointer -funsafe-math-optimizations

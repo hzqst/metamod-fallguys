@@ -114,6 +114,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		return FALSE;
 	}
 
+	LOG_ERROR(PLID, "Meta_Attach !");
+
 	memcpy(pFunctionTable, &gMetaFunctionTable, sizeof(META_FUNCTIONS));
 	gpGamedllFuncs = pGamedllFuncs;
 
