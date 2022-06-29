@@ -127,63 +127,63 @@ int SC_SERVER_DECL NewCASDocumentation_RegisterObjectType(CASDocumentation *pthi
 		if (1)
 		{
 			CASMethodRegistration reg;
-			reg.pfnMethod = CASEngineFuncs__GetRunPlayerMovePlayerIndex;
+			reg.pfnMethod = (void *)CASEngineFuncs__GetRunPlayerMovePlayerIndex;
 			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, dummy, "Get index of player that is currently running PlayerMove code", "CEngineFuncs", "int GetRunPlayerMovePlayerIndex()", &reg, 3);
 		}
 
 		if (1)
 		{
 			CASMethodRegistration reg;
-			reg.pfnMethod = CASEngineFuncs__GetViewEntity;
+			reg.pfnMethod = (void *)CASEngineFuncs__GetViewEntity;
 			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, dummy, "Get view entity of specified client", "CEngineFuncs", "edict_t@ GetViewEntity(edict_t@ pClient)", &reg, 3);
 		}
 
 		if (1)
 		{
 			CASMethodRegistration reg;
-			reg.pfnMethod = CASEntityFuncs__CreatePhysicBox;
+			reg.pfnMethod = (void *)CASEntityFuncs__CreatePhysicBox;
 			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, dummy, "Create physic box for entity", "CEntityFuncs", "bool CreatePhysicBox(edict_t@ ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable)", &reg, 3);
 		}
 
 		if (1)
 		{
 			CASMethodRegistration reg;
-			reg.pfnMethod = CASEntityFuncs__CreatePhysicSphere;
+			reg.pfnMethod = (void *)CASEntityFuncs__CreatePhysicSphere;
 			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, dummy, "Create physic sphere for entity", "CEntityFuncs", "bool CreatePhysicSphere(edict_t@ ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable)", &reg, 3);
 		}
 
 		if (1)
 		{
 			CASMethodRegistration reg;
-			reg.pfnMethod = CASEntityFuncs__SetEntitySuperPusher;
+			reg.pfnMethod = (void *)CASEntityFuncs__SetEntitySuperPusher;
 			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, dummy, "Enable or disable Super-Pusher for brush entity", "CEntityFuncs", "bool SetEntitySuperPusher(edict_t@ ent, bool enable)", &reg, 3);
 		}
 
 		if (1)
 		{
 			CASMethodRegistration reg;
-			reg.pfnMethod = CASEntityFuncs__SetEntityLevelOfDetail;
+			reg.pfnMethod = (void *)CASEntityFuncs__SetEntityLevelOfDetail;
 			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, dummy, "Enable Level-of-Detail for entity", "CEntityFuncs", "bool SetEntityLevelOfDetail(edict_t@ ent, int flags, int body_0, float scale_0, int body_1, float scale_1, float distance_1, int body_2, float scale_2, float distance_2, int body_3, float scale_3, float distance_3)", &reg, 3);
 		}
 
 		if (1)
 		{
 			CASMethodRegistration reg;
-			reg.pfnMethod = CASEntityFuncs__SetEntityPartialViewer;
+			reg.pfnMethod = (void *)CASEntityFuncs__SetEntityPartialViewer;
 			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, dummy, "Create Level-of-Detail object for entity", "CEntityFuncs", "bool SetEntityPartialViewer(edict_t@ ent, int partial_viewer_mask)", &reg, 3);
 		}
 
 		if (1)
 		{
 			CASMethodRegistration reg;
-			reg.pfnMethod = CASEntityFuncs__GetCurrentSuperPusher;
+			reg.pfnMethod = (void *)CASEntityFuncs__GetCurrentSuperPusher;
 			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, dummy, "Get current working Super-Pusher, return valid edict only in pfnTouch", "CEntityFuncs", "edict_t@ GetCurrentSuperPusher(Vector &out)", &reg, 3);
 		}
 
 		if (1)
 		{
 			CASMethodRegistration reg;
-			reg.pfnMethod = CASEntityFuncs__ApplyImpulse;
+			reg.pfnMethod = (void *)CASEntityFuncs__ApplyImpulse;
 			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, dummy, "Apply impulse on physic object", "CEntityFuncs", "bool ApplyImpulse(edict_t@ ent, const Vector& in impulse, const Vector& in origin)", &reg, 3);
 		}
 	}
