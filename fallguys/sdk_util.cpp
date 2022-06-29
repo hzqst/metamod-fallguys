@@ -92,6 +92,6 @@ void *MH_GetModuleBase(const char *name)
 #ifdef PLATFORM_WINDOWS
 	return (void *)GetModuleHandleA(name);
 #else
-	return (void *)dlopen(name, RTLD_NOW | RTLD_NOLOAD);
+	return (void *)dlopen(name, RTLD_NOLOAD);
 #endif
 }
