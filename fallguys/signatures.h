@@ -50,6 +50,7 @@ extern fn##name g_call_original_##name;
 
 #define sv_Signature "sv"
 #define sv_models_Signature "\x8B\x84\x82\x2A\x2A\x2A\x00\x89\x04\x24\xE8"
+#define host_frametime_Signature "host_frametime"
 
 #endif
 
