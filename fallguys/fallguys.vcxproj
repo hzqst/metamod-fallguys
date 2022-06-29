@@ -115,7 +115,7 @@
     <ClInclude Include="physics.h" />
     <ClInclude Include="signatures.h" />
     <ClInclude Include="serverdef.h" />
-    <ClInclude Include="util.h" />
+    <ClInclude Include="mhutil.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

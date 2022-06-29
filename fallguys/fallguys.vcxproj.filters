@@ -64,9 +64,6 @@
     <ClInclude Include="enginedef.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="util.h">
-      <Filter>Header</Filter>
-    </ClInclude>
     <ClInclude Include="serverdef.h">
       <Filter>Header</Filter>
     </ClInclude>
@@ -77,6 +74,9 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="physics.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="mhutil.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>
