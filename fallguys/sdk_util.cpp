@@ -83,7 +83,10 @@ size_t MH_GetModuleSize(void *hModule)
 #ifdef PLATFORM_WINDOWS
 	return ((IMAGE_NT_HEADERS *)((char *)hModule + ((IMAGE_DOS_HEADER *)hModule)->e_lfanew))->OptionalHeader.SizeOfImage;
 #else
-	return 0;
+	Dl_info info;
+	dladdr(hModule, &info);
+
+	return info.dli_size;
 #endif
 }
 
