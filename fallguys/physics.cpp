@@ -97,11 +97,6 @@ void Vector3BulletToGoldSrc(btVector3& vec)
 	vec.m_floats[2] *= B2GScale;
 }
 
-void CPhysicsDebugDraw::drawLine(const btVector3& from1, const btVector3& to1, const btVector3& color1)
-{
-	
-}
-
 CPhysicsManager gPhysicsManager;
 
 CPhysicsManager::CPhysicsManager()
