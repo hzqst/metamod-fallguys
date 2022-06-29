@@ -88,6 +88,11 @@ static void mutil_LogMessage(plid_t plid, const char *fmt, ...) {
 	safevoid_vsnprintf(buf, sizeof(buf), fmt, ap);
 	va_end(ap);
 	ALERT(at_logged, "[%s] %s\n", plinfo->logtag, buf);
+
+	FILE *fp = fopen("metamod.log", "a+");
+	fputs(buf, fp);
+	fputs("\r\n", fp);
+	fclose(fp);
 }
 
 // Log an error message to logs; newline added.
@@ -101,6 +106,11 @@ static void mutil_LogError(plid_t plid, const char *fmt, ...) {
 	safevoid_vsnprintf(buf, sizeof(buf), fmt, ap);
 	va_end(ap);
 	ALERT(at_logged, "[%s] ERROR: %s\n", plinfo->logtag, buf);
+
+	FILE *fp = fopen("metamod.log", "a+");
+	fputs(buf, fp);
+	fputs("\r\n", fp);
+	fclose(fp);
 }
 
 // Log a message only if cvar "developer" set; newline added.
@@ -117,6 +127,11 @@ static void mutil_LogDeveloper(plid_t plid, const char *fmt, ...) {
 	safevoid_vsnprintf(buf, sizeof(buf), fmt, ap);
 	va_end(ap);
 	ALERT(at_logged, "[%s] dev: %s\n", plinfo->logtag, buf);
+
+	FILE *fp = fopen("metamod.log", "a+");
+	fputs(buf, fp);
+	fputs("\r\n", fp);
+	fclose(fp);
 }
 
 // Print a center-message, with text parameters and varargs.  Provides
