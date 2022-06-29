@@ -32,6 +32,11 @@ bool SC_SERVER_DECL CASEntityFuncs__CreatePhysicBox(void* pthis, SC_SERVER_DUMMY
 	return gPhysicsManager.CreatePhysicBox(ent, mass, friction, rollingFriction, restitution, ccdRadius, ccdThreshold, pushable);
 }
 
+bool SC_SERVER_DECL CASEntityFuncs__CreatePhysicSphere(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable)
+{
+	return gPhysicsManager.CreatePhysicSphere(ent, mass, friction, rollingFriction, restitution, ccdRadius, ccdThreshold, pushable);
+}
+
 bool SC_SERVER_DECL CASEntityFuncs__SetEntitySuperPusher(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, bool enable)
 {
 	return gPhysicsManager.SetEntitySuperPusher(ent, enable);
@@ -143,8 +148,15 @@ int SC_SERVER_DECL NewCASDocumentation_RegisterObjectType(CASDocumentation *pthi
 		if (1)
 		{
 			CASMethodRegistration reg;
+			reg.pfnMethod = CASEntityFuncs__CreatePhysicSphere;
+			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, dummy, "Create physic sphere for entity", "CEntityFuncs", "bool CreatePhysicSphere(edict_t@ ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable)", &reg, 3);
+		}
+
+		if (1)
+		{
+			CASMethodRegistration reg;
 			reg.pfnMethod = CASEntityFuncs__SetEntitySuperPusher;
-			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, dummy, "Enable or disable Super-Pusher for entity", "CEntityFuncs", "bool SetEntitySuperPusher(edict_t@ ent, bool enable)", &reg, 3);
+			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, dummy, "Enable or disable Super-Pusher for brush entity", "CEntityFuncs", "bool SetEntitySuperPusher(edict_t@ ent, bool enable)", &reg, 3);
 		}
 
 		if (1)

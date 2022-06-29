@@ -151,9 +151,9 @@ public:
 		return m_lod_flags;
 	}
 
-	void ApplyLevelOfDetailBody(float distance, int *body, int *modelindex, float *scale)
+	void ApplyLevelOfDetail(float distance, int *body, int *modelindex, float *scale)
 	{
-		if (distance > m_lod_distance3)
+		if (m_lod_distance3 > 0 && distance > m_lod_distance3)
 		{
 			if ((m_lod_flags & LOD_BODY) && m_lod_body3 >= 0)
 				*body = m_lod_body3;
@@ -169,7 +169,7 @@ public:
 				*scale = m_lod_scale3;
 			}
 		}
-		else if (distance > m_lod_distance2)
+		else if (m_lod_distance2 > 0 && distance > m_lod_distance2)
 		{
 			if ((m_lod_flags & LOD_BODY) && m_lod_body2 >= 0)
 				*body = m_lod_body2;
@@ -185,7 +185,7 @@ public:
 				*scale = m_lod_scale2;
 			}
 		}
-		else if (distance > m_lod_distance1)
+		else if (m_lod_distance1 > 0 && distance > m_lod_distance1)
 		{
 			if ((m_lod_flags & LOD_BODY) && m_lod_body1 >= 0)
 				*body = m_lod_body1;
@@ -580,6 +580,7 @@ public:
 	void AddGameObject(CGameObject *obj);
 
 	bool CreateBrushModel(edict_t* ent);
+	bool CreatePhysicSphere(edict_t* ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable);
 	bool CreatePhysicBox(edict_t* ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable);
 	bool CreatePlayerBox(edict_t* ent);
 	bool SetEntityLevelOfDetail(edict_t* ent, int flags, int body_0, float scale_0, int body_1, float scale_1, float distance_1, int body_2, float scale_2, float distance_2, int body_3, float scale_3, float distance_3);

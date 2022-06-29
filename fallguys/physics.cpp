@@ -763,6 +763,15 @@ bool CPhysicsManager::AddToFullPack(struct entity_state_s *state, int entindex, 
 
 	if (obj)
 	{
+		if (obj && obj->GetPartialViewerMask())
+		{
+			int hostindex = g_engfuncs.pfnIndexOfEdict(host);
+			if ((obj->GetPartialViewerMask() & (1 << (hostindex - 1))) == 0)
+			{
+				return false;
+			}
+		}
+
 		if (obj->GetLevelOfDetailFlags() != 0)
 		{
 			auto viewent = GetClientViewEntity(host);
@@ -771,16 +780,7 @@ bool CPhysicsManager::AddToFullPack(struct entity_state_s *state, int entindex, 
 			{
 				float distance = (ent->v.origin - viewent->v.origin).Length();
 
-				obj->ApplyLevelOfDetailBody(distance, &state->body, &state->modelindex, &state->scale);
-			}
-		}
-
-		if (obj && obj->GetPartialViewerMask())
-		{
-			int hostindex = g_engfuncs.pfnIndexOfEdict(host);
-			if ((obj->GetPartialViewerMask() & (1 << (hostindex - 1))) == 0)
-			{
-				return false;
+				obj->ApplyLevelOfDetail(distance, &state->body, &state->modelindex, &state->scale);
 			}
 		}
 	}
@@ -1062,6 +1062,79 @@ bool CPhysicsManager::CreatePhysicBox(edict_t* ent, float mass, float friction, 
 	Vector3GoldSrcToBullet(boxSize);
 
 	auto meshShape = new btBoxShape(boxSize);
+
+	if (mass <= 0)
+		mass = 1;
+
+	btVector3 localInertia;
+	meshShape->calculateLocalInertia(mass, localInertia);
+
+	auto dynamicobj = CreateDynamicObject(ent, mass, friction, rollingFriction, restitution, ccdRadius, ccdThreshold, pushable, meshShape, localInertia);
+
+	if (dynamicobj)
+	{
+		btVector3 vecLinearVelocity(ent->v.velocity.x, ent->v.velocity.y, ent->v.velocity.z);
+
+		Vector3GoldSrcToBullet(vecLinearVelocity);
+
+		dynamicobj->GetRigidBody()->setLinearVelocity(vecLinearVelocity);
+
+		btVector3 vecALinearVelocity(ent->v.avelocity.x * SIMD_RADS_PER_DEG, ent->v.avelocity.y * SIMD_RADS_PER_DEG, ent->v.avelocity.z * SIMD_RADS_PER_DEG);
+
+		dynamicobj->GetRigidBody()->setAngularVelocity(vecALinearVelocity);
+
+		ent->v.velocity = g_vecZero;
+		ent->v.avelocity = g_vecZero;
+
+		return true;
+	}
+
+	return false;
+}
+
+bool CPhysicsManager::CreatePhysicSphere(edict_t* ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable)
+{
+	auto obj = GetGameObject(ent);
+
+	if (obj)
+	{
+		//Already created
+		return false;
+	}
+
+	if (!ent->v.modelindex)
+	{
+		//Must have a model
+		return false;
+	}
+
+	auto mod = (*sv_models)[ent->v.modelindex];
+
+	if (!mod)
+	{
+		//Must have a model
+		return false;
+	}
+
+	if (mod->type != mod_studio)
+	{
+		//Must be studio
+		return false;
+	}
+
+	//mod->flags |= FMODEL_TRACE_HITBOX;//always use hitbox as hull
+
+	float radius = (ent->v.maxs.x - ent->v.mins.x) * 0.5f;
+
+	if (radius <= 0)
+	{
+		//Must be valid size
+		return false;
+	}
+
+	FloatGoldSrcToBullet(&radius);
+
+	auto meshShape = new btSphereShape(radius);
 
 	if (mass <= 0)
 		mass = 1;
