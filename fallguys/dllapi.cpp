@@ -44,8 +44,7 @@
 
 void NewTouch(edict_t *pentTouched, edict_t *pentOther)
 {
-
-	if (g_bIsPushEntity && pentTouched == g_PushEntity && g_NumPendingEntities < _ARRAYSIZE(g_PendingEntities))
+	if (g_bIsPushEntity && pentTouched == g_PushEntity && g_NumPendingEntities < (int)_ARRAYSIZE(g_PendingEntities))
 	{
 		//Player pushes another player
 		if (IsEntityPushee(pentTouched) && IsEntityPushee(pentOther))

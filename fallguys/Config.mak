@@ -12,5 +12,6 @@ EXTRA_LINK += -l:libBullet3Collision.a
 EXTRA_LINK += -l:libBullet3Common.a
 EXTRA_LINK += -l:libBullet3Dynamics.a
 EXTRA_LINK += -l:libBullet3Geometry.a
+EXTRA_LINK += -l:libBulletCollision.a
 EXTRA_LINK += -l:libBulletDynamics.a
 EXTRA_LINK += -l:libLinearMath.a

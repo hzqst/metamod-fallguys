@@ -250,7 +250,6 @@ void CPhysicsManager::GenerateWorldVerticeArray(std::vector<glpoly_t*> &glpolys)
 
 	brushvertex_t Vertexes[3];
 
-	int iNumFaces = 0;
 	int iNumVerts = 0;
 
 	auto surf = r_worldmodel->surfaces;
@@ -288,6 +287,7 @@ void CPhysicsManager::GenerateWorldVerticeArray(std::vector<glpoly_t*> &glpolys)
 				Vertexes[j].pos[2] = v[2];
 				Vec3GoldSrcToBullet(Vertexes[j].pos);
 			}
+
 			m_worldVertexArray->vVertexBuffer.emplace_back(Vertexes[0]);
 			m_worldVertexArray->vVertexBuffer.emplace_back(Vertexes[1]);
 			m_worldVertexArray->vVertexBuffer.emplace_back(Vertexes[2]);
@@ -295,7 +295,10 @@ void CPhysicsManager::GenerateWorldVerticeArray(std::vector<glpoly_t*> &glpolys)
 
 			for (int j = 0; j < (poly->numverts - 3); j++, v += VERTEXSIZE)
 			{
-				memcpy(&Vertexes[1], &Vertexes[2], sizeof(brushvertex_t));
+				Vertexes[1].pos[0] = Vertexes[2].pos[0];
+				Vertexes[1].pos[1] = Vertexes[2].pos[1];
+				Vertexes[1].pos[2] = Vertexes[2].pos[2];
+				//memcpy(&Vertexes[1], &Vertexes[2], sizeof(brushvertex_t));
 
 				Vertexes[2].pos[0] = v[0];
 				Vertexes[2].pos[1] = v[1];

@@ -49,7 +49,7 @@ trace_t* NewSV_PushEntity(trace_t* trace, edict_t* ent, vec3_t* push)
 	}
 
 	//Add me into pending queue at final stage to commit the SuperPusher touch callback
-	if (g_NumPendingEntities < _ARRAYSIZE(g_PendingEntities))
+	if (g_NumPendingEntities < (int)_ARRAYSIZE(g_PendingEntities))
 	{
 		g_PendingEntities[g_NumPendingEntities] = ent;
 		g_NumPendingEntities++;
