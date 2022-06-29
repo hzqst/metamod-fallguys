@@ -59,7 +59,7 @@ public:
 		unk8 = 3;
 	}
 
-	PVOID pfnMethod;//+0
+	void *pfnMethod;//+0
 	int unk1;//+4
 	int unk2;//+8
 	int unk3;//+12
@@ -80,7 +80,7 @@ public:
 
 #else
 
-#define SC_SERVER_DECL __cdecl
+#define SC_SERVER_DECL 
 #define SC_SERVER_DUMMYARG
 #define SC_SERVER_PASS_DUMMYARG
 #define SERVER_DLL_NAME "server.so"
@@ -89,23 +89,23 @@ public:
 
 //Server dll private functions
 
-//CASHook::CASHook
+//CASHook::CASHook __fastcall in Windows
 typedef CASHook* (SC_SERVER_DECL* fnCASHook_CASHook)(CASHook* pthis, SC_SERVER_DUMMYARG unsigned char flags, unsigned char type, const char* firstClass, const char* funcName, const char* argList, CASHookRegistration* reg);
 PRIVATE_FUNCTION_EXTERN(CASHook_CASHook);
 
-//CASHook::Call
-typedef void(__cdecl *fnCASHook_Call)(CASHook *pthis, int unk, ...); 
+//CASHook::Call __cdecl in Windows
+typedef void(*fnCASHook_Call)(CASHook *pthis, int unk, ...); 
 PRIVATE_FUNCTION_EXTERN(CASHook_Call);
 
-//CASDocumentation::RegisterObjectType
+//CASDocumentation::RegisterObjectType __fastcall in Windows
 typedef int (SC_SERVER_DECL *fnCASDocumentation_RegisterObjectType)(CASDocumentation *pthis, SC_SERVER_DUMMYARG const char *docs, const char *name, int a4, unsigned int flags);
 PRIVATE_FUNCTION_EXTERN(CASDocumentation_RegisterObjectType);
 int SC_SERVER_DECL NewCASDocumentation_RegisterObjectType(CASDocumentation* pthis, SC_SERVER_DUMMYARG const char* docs, const char* name, int a4, unsigned int flags);
 
-//CASDocumentation::RegisterObjectProperty
+//CASDocumentation::RegisterObjectProperty __fastcall in Windows
 typedef int (SC_SERVER_DECL *fnCASDocumentation_RegisterObjectProperty)(CASDocumentation *pthis, SC_SERVER_DUMMYARG const char *docs, const char *name, const char *prop, int offset);
 PRIVATE_FUNCTION_EXTERN(CASDocumentation_RegisterObjectProperty);
 
-//CASDocumentation::RegisterObjectMethod
+//CASDocumentation::RegisterObjectMethod __fastcall in Windows
 typedef int (SC_SERVER_DECL *fnCASDocumentation_RegisterObjectMethod)(CASDocumentation *pthis, SC_SERVER_DUMMYARG const char *docs, const char *objectname, const char *funcname, CASMethodRegistration *reg, int a5);
 PRIVATE_FUNCTION_EXTERN(CASDocumentation_RegisterObjectMethod);
