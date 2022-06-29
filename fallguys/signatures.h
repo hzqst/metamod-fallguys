@@ -11,7 +11,7 @@ fn##name g_call_original_##name;
 extern fn##name g_pfn_##name;\
 extern fn##name g_call_original_##name;
 
-#define GetCallAddress(addr) ((PUCHAR)addr + *(int *)((PUCHAR)addr + 1) + 5)
+#define GetCallAddress(addr) ((char *)addr + *(int *)((char *)addr + 1) + 5)
 
 #ifdef PLATFORM_WINDOWS
 
@@ -94,7 +94,7 @@ if (!name)\
 	return FALSE;\
 }
 
-#define VAR_FROM_SIGNATURE_FROM_START(dll, name, offset) auto name##_Temp = (PUCHAR)LOCATE_FROM_SIGNATURE(dll, name##_Signature);\
+#define VAR_FROM_SIGNATURE_FROM_START(dll, name, offset) auto name##_Temp = (char *)LOCATE_FROM_SIGNATURE(dll, name##_Signature);\
 if (!name##_Temp)\
 {\
 	LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !");\
@@ -102,7 +102,7 @@ if (!name##_Temp)\
 }\
 name = *(decltype(name) *)(name##_Temp + offset);
 
-#define VAR_FROM_SIGNATURE_FROM_END(dll, name, offset) auto name##_Temp = (PUCHAR)LOCATE_FROM_SIGNATURE(dll, name##_Signature);\
+#define VAR_FROM_SIGNATURE_FROM_END(dll, name, offset) auto name##_Temp = (char *)LOCATE_FROM_SIGNATURE(dll, name##_Signature);\
 if (!name##_Temp)\
 {\
 	LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !");\
