@@ -90,7 +90,7 @@ C_DLLEXPORT int Meta_Query(char * /*ifvers */, plugin_info_t **pPlugInfo,
 	*pPlugInfo=&Plugin_info;
 	// Get metamod utility function table.
 	gpMetaUtilFuncs=pMetaUtilFuncs;
-	return(TRUE);
+	return TRUE;
 }
 
 // Metamod attaching plugin to the server.
@@ -113,8 +113,6 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		LOG_ERROR(PLID, "Meta_Attach called with null pFunctionTable");
 		return FALSE;
 	}
-
-	LOG_ERROR(PLID, "Meta_Attach !");
 
 	memcpy(pFunctionTable, &gMetaFunctionTable, sizeof(META_FUNCTIONS));
 	gpGamedllFuncs = pGamedllFuncs;
