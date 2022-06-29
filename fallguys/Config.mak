@@ -10,4 +10,4 @@ EXTRA_LINK+=-L$(SDKSRC)/../bullet3/build/src/BulletSoftBody
 EXTRA_LINK+=-L$(SDKSRC)/../bullet3/build/src/BulletDynamics
 EXTRA_LINK+=-L$(SDKSRC)/../bullet3/build/src/BulletCollision
 EXTRA_LINK+=-L$(SDKSRC)/../bullet3/build/src/LinearMath
-EXTRA_LINK+=-lBullet3Dynamics -lBullet3Collision -lBullet3Common -lBullet3Geometry -lBulletSoftBody -lBulletDynamics -lBulletCollision -lLinearMath
+EXTRA_LINK+=-Wl,--whole-archive -lBullet3Dynamics -lBullet3Collision -lBullet3Common -lBullet3Geometry -lBulletSoftBody -lBulletDynamics -lBulletCollision -lLinearMath -Wl,--no-whole-archive
