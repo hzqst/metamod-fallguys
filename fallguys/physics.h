@@ -289,8 +289,6 @@ public:
 			delete m_rigbody;
 			m_rigbody = NULL;
 		}
-
-		CGameObject::~CGameObject();
 	}
 
 	virtual bool IsPhysic() const
@@ -355,8 +353,6 @@ public:
 			delete m_indexarray;
 			m_indexarray = NULL;
 		}
-
-		CPhysicObject::~CPhysicObject();
 	}
 
 	virtual bool IsKinematic() const
@@ -396,10 +392,6 @@ public:
 		m_mass = mass;
 		m_pushable = pushable;
 	}
-	~CDynamicObject()
-	{
-		CPhysicObject::~CPhysicObject();
-	}
 
 	virtual bool IsDynamic() const
 	{
@@ -437,10 +429,6 @@ public:
 	CPlayerObject(edict_t *ent, int entindex, int group, int mask, float mass) : CPhysicObject(ent, entindex, group, mask)
 	{
 		m_mass = mass;
-	}
-	~CPlayerObject()
-	{
-		CPhysicObject::~CPhysicObject();
 	}
 
 	virtual bool IsPlayer() const
