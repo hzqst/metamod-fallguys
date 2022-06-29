@@ -159,9 +159,15 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 	VAR_FROM_SIGNATURE(engine, sv);
 
+	LOG_ERROR(PLID, "sv at %p", sv);;
+
 	sv_models = (decltype(sv_models))((char *)sv + 0x276148);
 
+	LOG_ERROR(PLID, "sv_models at %p", sv_models);;
+
 	VAR_FROM_SIGNATURE(engine, host_frametime);
+
+	LOG_ERROR(PLID, "host_frametime at %p", host_frametime);
 
 	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterObjectType);
 	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterObjectProperty);
