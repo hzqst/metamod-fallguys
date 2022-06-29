@@ -139,8 +139,6 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	FILL_FROM_SIGNATURE(engine, SV_PushEntity);
 	FILL_FROM_SIGNATURE(engine, SV_PushMove);
 	FILL_FROM_SIGNATURE(engine, SV_PushRotate);
-	VAR_FROM_SIGNATURE_FROM_START(engine, sv_models, 13);
-	VAR_FROM_SIGNATURE_FROM_END(engine, host_frametime, 0);
 
 	//Fill private server functions
 	FILL_FROM_SIGNATURE(server, CASHook_CASHook);
@@ -148,6 +146,23 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectType, -1);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectProperty, -7);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectMethod, -7);
+
+#ifdef PLATFORM_WINDOWS
+
+	VAR_FROM_SIGNATURE_FROM_START(engine, sv_models, 13);
+	VAR_FROM_SIGNATURE_FROM_END(engine, host_frametime, 0);
+
+#else
+
+	void *sv = NULL;
+
+	VAR_FROM_SIGNATURE(engine, sv);
+
+	sv_models = (decltype(sv_models))((char *)sv + 0x276148);
+
+	VAR_FROM_SIGNATURE(engine, host_frametime);
+
+#endif
 
 	FG_InstallInlineHooks();
 
