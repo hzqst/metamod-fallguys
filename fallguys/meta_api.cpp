@@ -163,9 +163,9 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 	VAR_FROM_SIGNATURE(engine, host_frametime);
 
-	FILL_FROM_SIGNATURED(server, CASDocumentation_RegisterObjectType);
-	FILL_FROM_SIGNATURED(server, CASDocumentation_RegisterObjectProperty);
-	FILL_FROM_SIGNATURED(server, CASDocumentation_RegisterObjectMethod);
+	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterObjectType);
+	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterObjectProperty);
+	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterObjectMethod);
 
 #endif
 
