@@ -4,4 +4,4 @@ SRCFILES = dllapi.cpp engine_api.cpp engine_hook.cpp fallguys.cpp h_export.cpp m
 INCLUDEDIRS+=-I$(SDKSRC)/../CDetour -I$(SDKSRC)/../libudis86 -I$(SDKSRC)/../bullet3/build/include/bullet
 EXTRA_CFLAGS += -DPLATFORM_POSIX
 EXTRA_LINK += -L../bullet3/build/lib
-EXTRA_LINK += -Bstatic -lBulletSoftBody -lBulletDynamics -lBulletCollision -lLinearMath -Bdynamic
+EXTRA_LINK += -Bstatic -lBulletCollision -lBulletDynamics -lLinearMath -lBullet3Common -lBullet3Collision -lBullet3Geometry -lBullet3Dynamics -Bdynamic
