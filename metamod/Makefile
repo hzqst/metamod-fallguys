@@ -169,7 +169,7 @@ CCOPT = $(CCO) $(CCOPT_ARCH) #-fno-exceptions -fno-rtti wtfwtfwtf??
 
 # optimization level; overridden for certain problematic files
 CCO = -O2 -fomit-frame-pointer -funsafe-math-optimizations
-CCO += -flto -fvisibility=hidden
+CCO += -fvisibility=hidden #-flto 
 
 # architecture tuning by target type
 ifeq "$(TARGETTYPE)" "amd64"
