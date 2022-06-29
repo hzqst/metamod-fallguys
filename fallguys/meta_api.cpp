@@ -127,11 +127,11 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		return FALSE;
 	}
 
-	auto server = MH_GetModuleBase(SERVER_DLL_NAME);
+	auto server = MH_GetModuleBase(gpMetaUtilFuncs->pfnGetGameInfo(PLID, GINFO_REALDLL_FULLPATH));
 
 	if (!server)
 	{
-		LOG_ERROR(PLID, "server dll not found ! pfnAddToFullPack is at %p", pGamedllFuncs->dllapi_table->pfnAddToFullPack);
+		LOG_ERROR(PLID, "server dll not found !");
 		return FALSE;
 	}
 
