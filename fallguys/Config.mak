@@ -1,6 +1,13 @@
 MODNAME = fallguys
 SRCFILES = dllapi.cpp engine_api.cpp engine_hook.cpp fallguys.cpp h_export.cpp meta_api.cpp physics.cpp sdk_util.cpp server_hook.cpp ../CDetour/detours.cpp ../CDetour/asm/asm.c ../CDetour/libudis86/udis86.c ../CDetour/libudis86/itab.c ../CDetour/libudis86/decode.c 
 EXTRA_CFLAGS += -DPLATFORM_POSIX
+EXTRA_LINK += -static-Bullet3Collision
+EXTRA_LINK += -static-Bullet3Common
+EXTRA_LINK += -static-Bullet3Dynamics
+EXTRA_LINK += -static-Bullet3Geometry
+EXTRA_LINK += -static-BulletCollision
+EXTRA_LINK += -static-BulletDynamics
+EXTRA_LINK += -static-LinearMath
 EXTRA_LINK += -L../bullet3/build/src/Bullet3Collision
 EXTRA_LINK += -L../bullet3/build/src/Bullet3Common
 EXTRA_LINK += -L../bullet3/build/src/Bullet3Dynamics
