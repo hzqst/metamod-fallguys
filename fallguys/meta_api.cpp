@@ -131,7 +131,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 	if (!server)
 	{
-		LOG_ERROR(PLID, "server dll not found !");
+		LOG_ERROR(PLID, "server dll not found ! pfnAddToFullPack is at %p", pGamedllFuncs->dllapi_table->pfnAddToFullPack);
 		return FALSE;
 	}
 
