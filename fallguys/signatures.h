@@ -1,6 +1,6 @@
 #pragma once
 
-#include "util.h"
+#include "mhutil.h"
 #include "detours.h"
 
 #define PRIVATE_FUNCTION_DEFINE(name) CDetour *g_hook_##name;\
