@@ -143,11 +143,12 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	//Fill private server functions
 	FILL_FROM_SIGNATURE(server, CASHook_CASHook);
 	FILL_FROM_SIGNATURE(server, CASHook_Call);
+
+#ifdef PLATFORM_WINDOWS
+
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectType, -1);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectProperty, -7);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectMethod, -7);
-
-#ifdef PLATFORM_WINDOWS
 
 	VAR_FROM_SIGNATURE_FROM_START(engine, sv_models, 13);
 	VAR_FROM_SIGNATURE_FROM_END(engine, host_frametime, 0);
@@ -161,6 +162,10 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	sv_models = (decltype(sv_models))((char *)sv + 0x276148);
 
 	VAR_FROM_SIGNATURE(engine, host_frametime);
+
+	FILL_FROM_SIGNATURED(server, CASDocumentation_RegisterObjectType);
+	FILL_FROM_SIGNATURED(server, CASDocumentation_RegisterObjectProperty);
+	FILL_FROM_SIGNATURED(server, CASDocumentation_RegisterObjectMethod);
 
 #endif
 

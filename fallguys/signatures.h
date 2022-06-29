@@ -70,7 +70,7 @@ if (!Caller_of_##name)\
 g_pfn_##name = g_call_original_##name = (decltype(g_pfn_##name))GetCallAddress(Caller_of_##name + (offset));\
 if (!MH_IsAddressInModule(((void *)g_pfn_##name, dll))\
 {\
-LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !"); \
+LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll ! got %p", ((void *)g_pfn_##name); \
 return FALSE; \
 }
 
