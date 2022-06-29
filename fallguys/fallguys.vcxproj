@@ -99,7 +99,6 @@
     <ClCompile Include="..\CDetour\libudis86\itab.c" />
     <ClCompile Include="..\CDetour\libudis86\udis86.c" />
     <ClCompile Include="dllapi.cpp" />
-    <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="engine_api.cpp" />
     <ClCompile Include="engine_hook.cpp" />
     <ClCompile Include="fallguys.cpp" />
