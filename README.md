@@ -103,7 +103,7 @@ edict_t@viewent = g_EngineFuncs.GetViewEntity(pPlayer.edict());
 
 # Build Requirements (Windows)
 
-1. Visual Studio 2017 or 2019, with vc141 or vc142 toolset.
+1. [Visual Studio 2017 / 2019 / 2022, with vc141 / vc142 / vc143 toolset](https://visualstudio.microsoft.com/)
 
 2. [CMake](https://cmake.org/download/)
 
@@ -111,28 +111,24 @@ edict_t@viewent = g_EngineFuncs.GetViewEntity(pPlayer.edict());
 
 # Build Instruction (Windows)
 
-1. git clone https://github.com/hzqst/metamod-fallguys, `cd metamod-fallguys`
+1. `git clone https://github.com/hzqst/metamod-fallguys`, then `cd metamod-fallguys`
 
-2. Run `build-initdeps.bat`, wait until all required submodules / dependencies are pulled. (this may takes couple of minutes, depending on your network connection and download speed)
+2. Run `build-win32-all.bat`
 
-3. Run `build-bullet3.bat`, wait until Bullet Engine static libraries generated.
-
-4. Run `build-fallguys.bat`, `metamod.dll` and `fallguys.dll` should be generated at `build/addons/metamod/dlls` if no error(s) occours.
+3. `metamod.dll` and `fallguys.dll` should be generated at `build/addons/metamod/dlls` if no error(s) occours.
 
 # Build Requirements (Linux)
 
-1. GNU C++ Build environment. Install with `sudo apt-get install make build-essential gcc gcc-multilib g++-multilib` if something is missing.
+1. GNU C++ Build environment. Install with `sudo apt-get install make build-essential gcc gcc-multilib g++-multilib` if missing.
 
-2. CMake. Install with `suto apt-get install cmake` if something is missing.
+2. CMake. Install with `suto apt-get install cmake` if missing.
 
-3. Git client. Install with `suto apt-get install git` if something is missing.
+3. Git client. Install with `suto apt-get install git` if missing.
 
 # Build Instruction (Linux)
 
-1. git clone https://github.com/hzqst/metamod-fallguys, `cd metamod-fallguys`
+1. `git clone https://github.com/hzqst/metamod-fallguys`, then `cd metamod-fallguys`
 
-2. `git submodule update --init --recursive`
+2. `sudo chmod +777 build-all-linux.sh`, then `./build-all-linux.sh`
 
-3. `make OPT=opt install`
-
-4. `metamod.so` and `fallguys.so` should be generated at `build/addons/metamod/dlls` if no error(s) occours.
+3. `metamod.so` and `fallguys.so` should be generated at `build/addons/metamod/dlls` if no error(s) occours.
