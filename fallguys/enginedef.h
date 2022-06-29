@@ -46,7 +46,7 @@
 //Engine private functions
 
 // SV_PushEntity
-typedef trace_t *(__cdecl *fnSV_PushEntity)(trace_t * trace, edict_t *ent, vec3_t * push);
+typedef trace_t *(*fnSV_PushEntity)(trace_t * trace, edict_t *ent, vec3_t * push);
 trace_t* NewSV_PushEntity(trace_t* trace, edict_t* ent, vec3_t* push);
 PRIVATE_FUNCTION_EXTERN(SV_PushEntity);
 

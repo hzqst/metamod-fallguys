@@ -109,5 +109,4 @@ if (!name##_Temp)\
 }\
 name = *(decltype(name) *)(name##_Temp + (sizeof(name##_Signature) - 1) + offset);
 
-#define INSTALL_INLINEHOOK(name) g_hook_##name = CDetourManager::CreateDetour((void*)New##name, (void**)&g_call_original_##name, (void*)g_pfn_##name);\
-g_hook_##name->EnableDetour();
+#define INSTALL_INLINEHOOK(name) g_hook_##name = CDetourManager::CreateDetour((void*)New##name, (void**)&g_call_original_##name, (void*)g_pfn_##name); g_hook_##name->EnableDetour();
