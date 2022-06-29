@@ -22,7 +22,7 @@ edict_t* SC_SERVER_DECL CASEngineFuncs__GetViewEntity(void* pthis, SC_SERVER_DUM
 	return GetClientViewEntity(pClient);
 }
 
-int SC_SERVER_DECL CASEngineFuncs__GetRunPlayerMovePlayerIndex(void* pthis, SC_SERVER_DUMMYARG_NOCOMMA)
+int SC_SERVER_DECL CASEngineFuncs__GetRunPlayerMovePlayerIndex(void* pthis SC_SERVER_DUMMYARG_NOCOMMA)
 {
 	return GetRunPlayerMovePlayerIndex();
 }

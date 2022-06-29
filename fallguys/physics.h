@@ -133,7 +133,7 @@ public:
 	
 	virtual void RemoveFromPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
 	{
-		
+
 	}
 
 	int GetEntIndex()
@@ -402,14 +402,14 @@ public:
 	{
 		CPhysicObject::AddToPhysicWorld(world, numDynamicObjects);
 
-		*numDynamicObjects ++ ;
+		(*numDynamicObjects) ++ ;
 	}
 
 	virtual void RemoveFromPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
 	{
 		CPhysicObject::RemoveFromPhysicWorld(world, numDynamicObjects);
 
-		*numDynamicObjects --;
+		(*numDynamicObjects) --;
 	}
 
 	virtual void StartFrame();
