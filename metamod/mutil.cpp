@@ -767,7 +767,7 @@ qboolean mutil_DisasmRanges(void * DisasmBase, size_t DisasmSize, fnDisasmCallba
 				if (!count)
 					break;
 
-				SIZE_T instLen = insts[0].size;
+				size_t instLen = insts[0].size;
 				if (!instLen)
 					break;
 
