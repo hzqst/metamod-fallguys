@@ -36,4 +36,4 @@ C_DLLEXPORT void *ASEXT_RegisterHook(const char *docs, int stopMode, int type, i
 
 typedef void(*fnASEXT_CallHook)(void *hook, int unk, ...);
 
-C_DLLEXPORT extern fnASEXT_CallHook ASEXT_CallHook;
+C_DLLEXPORT fnASEXT_CallHook ASEXT_CallHook;
