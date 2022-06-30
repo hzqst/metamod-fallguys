@@ -6,17 +6,126 @@ This is a metamod plugin for [Fall Guys in Sven Co-op](https://github.com/hzqst/
 
 ## Better Player vs Brush Entities Interaction
 
-1. Brush entity with `pev.movetype = MOVETYPE_PUSH` , `pev.solid = SOLID_BSP` and `pev.sequence == 114514` is **Super Pusher**.
+1. Players and monsters will be pushed backward along with another players who is trying to block **Super Pusher**.
 
-2. Point entity with `(pev.solid == SOLID_SLIDEBOX or pev.solid == SOLID_BBOX)` and `(pev.movetype == MOVETYPE_STEP or pev.movetype == MOVETYPE_WALK)` is **Pushee**
-
-3. **Pushee** will be pushed backward along with **another Pushee who is trying to block it** instead of getting blocked by **Super Pusher**.
-
-4. `void Touch( CBaseEntity@ pOther )` will get called when **Super Pusher** impacts or hits any **Pushee** positively. `pev.sequence` of **Super Pusher** will be set to `1919810` temporarily in this scenario.
+2. `void Touch( CBaseEntity@ pOther )` will get called when **Super Pusher** impacts or hits any **Pushee** positively.
 
 ## AngelScript interface expansion
 
+### Set Brush Entity as **Super Pusher**
+
+```
+g_EntityFuncs.SetEntitySuperPusher(self.edict(), true);
+```
+
+### Server-Side Level of Detail
+
+```
+
+const int LOD_BODY = 1;
+const int LOD_MODELINDEX = 2;
+const int LOD_SCALE = 4;
+const int LOD_SCALE_INTERP = 8;
+
+```
+
+```
+
+g_EntityFuncs.SetEntityLevelOfDetail(pEntity.edict(),
+		LOD_MODELINDEX | LOD_SCALE_INTERP, //modelindex LoD
+		g_iPlayerArrowSprite1ModelIndex, 0.15,      //LoD 0
+		g_iPlayerArrowSprite2ModelIndex, 0.15, 300, //Lod 1
+		g_iPlayerArrowSprite3ModelIndex, 0.75, 700, //Lod 2
+		g_iPlayerArrowSprite4ModelIndex, 0.75, 1000 //Lod 3
+	);
+   
+//pEntity 's modelindex will be changed to g_iPlayerArrowSprite1ModelIndex when it's distance to player ranges from 0 to 300 units
+//pEntity 's modelindex will be changed to g_iPlayerArrowSprite2ModelIndex when it's distance to player ranges from 300 to 700 units
+//pEntity 's modelindex will be changed to g_iPlayerArrowSprite3ModelIndex when it's distance to player ranges from 700 to 1000 units
+//pEntity 's modelindex will be changed to g_iPlayerArrowSprite3ModelIndex when it's distance to player ranges from 1000 to +inf units
+
+//pEntity 's scale will be changed to 0.15 when it's distance to player ranges from 0 to 300 units
+//pEntity 's scale will be changed to 0.15 + (0.75 - 0.15) * (distance - 300) / (700 - 300) when it's distance to player ranges from 300 to 700 units
+//pEntity 's scale will be changed to 0.75 when it's distance to player ranges from 700 to 1000 units
+//pEntity 's scale will be changed to 0.75 when it's distance to player ranges from 1000 to +inf units
+
+modelindex and scale are calculated at runtime for each players separately.
+
+```
+
+```
+			g_EntityFuncs.SetEntityLevelOfDetail(pEntity.edict(), 
+				LOD_BODY,
+				0, 0.0, //LoD 0
+				pEntity.pev.iuser1, 0, pEntity.pev.fuser1, //LoD 1
+				pEntity.pev.iuser2, 0, pEntity.pev.fuser2, //LoD 2
+				pEntity.pev.iuser3, 0, pEntity.pev.fuser3 //LoD 3
+			);
+         
+//pEntity 's body will be changed to 0 when it's distance to player ranges from 0 to fuser1 units
+//pEntity 's body will be changed to pEntity.pev.iuser1 when it's distance to player ranges from pEntity.pev.fuser1 to pEntity.pev.fuser2 units
+//pEntity 's body will be changed to pEntity.pev.iuser2 when it's distance to player ranges from pEntity.pev.fuser2 to pEntity.pev.fuser3 units
+//pEntity 's body will be changed to pEntity.pev.iuser3 when it's distance to player ranges from pEntity.pev.fuser3 to +inf units
+
+```
+
+###
+
+### Partial Viewer
+
+```
+//Entity set as Partial Viewer can only be seen by pPlayer
+
+g_EntityFuncs.SetEntityPartialViewer(pEntity.edict(), (1 << (pPlayer.entindex() - 1)) );
+
+//Entity set as Partial Viewer can only be seen by pPlayer and pPlayer2
+
+g_EntityFuncs.SetEntityPartialViewer(pEntity.edict(), (1 << (pPlayer.entindex() - 1)) |  (1 << (pPlayer2.entindex() - 1)) );
+
+//Set second arg to 0 to turn Partial Viewer off for pEntity
+
+g_EntityFuncs.SetEntityPartialViewer(pEntity.edict(), 0 );
+
+```
+
+### Create PhysicBox
+
+```
+//Must be called before setting LevelOfDetail
+g_EntityFuncs.CreatePhysicBox(pEntity.edict(),
+			m_flMass,
+			m_flLinearFriction,
+			m_flRollingFriction,
+			m_flRestitution,
+			m_flCCDRadius,
+			m_flCCDThreshold,
+			bIsPushable);
+         
+//The box will be pushable to players if bIsPushable is true
+//The half extent of box is (pEntity.pev.mins + pEntity.pev.maxs) * 0.5
+
+```
+
+### Detect who is currently running player move code
+
+```
+void Touch( CBaseEntity@ pOther )
+{
+   int playerIndex = g_EngineFuncs.GetRunPlayerMovePlayerIndex();
+      if(playerIndex == pOther.entindex())
+      {
+         //pOther is running player move code and trying to impact me (stepping towards me)
+         //pOther is basically stopped moving because of hitting me and the impact velocity is pOther.pev.velocity
+         Vector vecImpactVelocity = pOther.pev.velocity;
+         
+      }
+   }
+}
+```
+
 ### Hook AddToFullPack
+
+//Not recommended to use, this can slow down your server's framerate.
 
 ```
 g_Hooks.RegisterHook(Hooks::Player::PlayerAddToFullPack, @PlayerAddToFullPack);// register at initialization
@@ -67,9 +176,9 @@ HookReturnCode PlayerTouchTrigger( CBasePlayer@ pPlayer, CBaseEntity@ pOther )
 
 ### Hook PlayerTouchImpact
 
-The PlayerTouchImpact get called when player touches a solid entity (pev.solid == SOLID_BBOX or pev.solid == SOLID_SLIDEBOX or pev.solid == SOLID_BSP) positively.
+The PlayerTouchImpact get called when player touches or impacts a solid entity (pev.solid == SOLID_BBOX or pev.solid == SOLID_SLIDEBOX or pev.solid == SOLID_BSP) positively.
 
-pPlayer.pev.velocity will be set to impactvelocity temporarily in this scenario.
+pPlayer.pev.velocity will be set to impact velocity temporarily in the hook handler.
 
 Any changes to pPlayer.pev.velocity will be dropped and ignored.
 
