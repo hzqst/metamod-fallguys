@@ -791,16 +791,23 @@ qboolean mutil_DisasmRanges(void * DisasmBase, size_t DisasmSize, fnDisasmCallba
 	return success;
 }
 
-typedef struct walk_context_s
+class walk_context_t
 {
-	walk_context_s(void * a, size_t l, int d) : address(a), len(l), depth(d)
+public:
+	walk_context_t()
+	{
+		address = 0;
+		len = 0;
+		depth = 0;
+	}
+	walk_context_t(void * a, size_t l, int d) : address(a), len(l), depth(d)
 	{
 
 	}
 	void * address;
 	size_t len;
 	int depth;
-}walk_context_t;
+};
 
 typedef struct
 {
