@@ -155,11 +155,7 @@ void NewGameInit_Post(void)
 {
 	sv_gravity = CVAR_GET_POINTER("sv_gravity");
 
-	LOG_ERROR(PLID, "NewGameInit_Post start");
-
 	gPhysicsManager.Init();
-
-	LOG_ERROR(PLID, "NewGameInit_Post end");
 
 	SET_META_RESULT(MRES_IGNORED);
 }
