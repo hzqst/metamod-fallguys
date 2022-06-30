@@ -325,7 +325,7 @@ g_PlayerPostThinkPostHook = ASEXT_RegisterHook("Post call of gEntityInterface.pf
 //Where you need to call AS hooks
 void NewPlayerPostThink_Post(edict_t *pEntity)
 {
-	if(ASEXT_CallHook)
+	if(ASEXT_CallHook)//The second arg must be zero, the third, 4th, 5th, 6th... args are the real args pass to AngelScript VM.
 		(*ASEXT_CallHook)(g_PlayerPostThinkPostHook, 0, pEntity->pvPrivateData);
 
 	SET_META_RESULT(MRES_IGNORED);
