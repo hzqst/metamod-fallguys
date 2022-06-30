@@ -257,6 +257,7 @@ IMPORT_FUNCTION_DEFINE(ASEXT_RegisterHook);
 ```
 	//....
 	//Load asext dll
+	void *asext = NULL;
 #ifdef _WIN32
 	LOAD_PLUGIN(PLID, "addons/metamod/dlls/asext.dll", PLUG_LOADTIME::PT_ANYTIME, &asext);
 #else
