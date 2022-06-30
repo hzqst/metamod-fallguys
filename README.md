@@ -49,7 +49,8 @@ g_EntityFuncs.SetEntityLevelOfDetail(pEntity.edict(),
 //pEntity 's scale will be changed to 0.75 when it's distance to player ranges from 700 to 1000 units
 //pEntity 's scale will be changed to 0.75 when it's distance to player ranges from 1000 to +inf units
 
-modelindex and scale are calculated at runtime for each players separately.
+//modelindex is calculated at runtime for each players separately.
+//scale is calculated at runtime for each players separately.
 
 ```
 
@@ -66,6 +67,8 @@ modelindex and scale are calculated at runtime for each players separately.
 //pEntity 's body will be changed to pEntity.pev.iuser1 when it's distance to player ranges from pEntity.pev.fuser1 to pEntity.pev.fuser2 units
 //pEntity 's body will be changed to pEntity.pev.iuser2 when it's distance to player ranges from pEntity.pev.fuser2 to pEntity.pev.fuser3 units
 //pEntity 's body will be changed to pEntity.pev.iuser3 when it's distance to player ranges from pEntity.pev.fuser3 to +inf units
+
+//body is calculated at runtime for each players separately.
 
 ```
 
