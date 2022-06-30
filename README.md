@@ -175,7 +175,7 @@ HookReturnCode PlayerPostThinkPost(CBasePlayer@ pPlayer)
 
 The PlayerTouchTrigger get called when player touches a trigger entity (pev.solid == SOLID_TRIGGER) positively.
 
-pPlayer.pev.velocity will be set to impactvelocity temporarily in this scenario.
+pPlayer.pev.velocity will be set to impact velocity temporarily in the hook handler.
 
 Any changes to pPlayer.pev.velocity will be dropped and ignored.
 
