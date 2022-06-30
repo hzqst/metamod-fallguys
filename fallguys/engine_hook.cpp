@@ -29,13 +29,13 @@ model_t* r_worldmodel = NULL;
 
 playermove_t *pmove = NULL;
 
-trace_t* NewSV_PushEntity(trace_t* trace, edict_t* ent, vec3_t* push)
+trace_t NewSV_PushEntity(edict_t* ent, vec3_t* push)
 {
 	g_bIsPushEntity = true;
 	g_PushEntity = ent;
 
 	//Here we collect players in NewTouch and add them into pending queue.
-	auto r = g_call_original_SV_PushEntity(trace, ent, push);
+	auto r = g_call_original_SV_PushEntity(ent, push);
 
 	//Do the push job for all players
 	for (int i = 0; i < g_NumPendingEntities; ++i)
@@ -44,8 +44,7 @@ trace_t* NewSV_PushEntity(trace_t* trace, edict_t* ent, vec3_t* push)
 
 		g_PushEntity = pPendingEntity;
 
-		trace_t temp;
-		g_call_original_SV_PushEntity(&temp, pPendingEntity, push);
+		g_call_original_SV_PushEntity(pPendingEntity, push);
 	}
 
 	//Add me into pending queue at final stage to commit the SuperPusher touch callback
