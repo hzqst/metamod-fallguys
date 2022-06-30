@@ -40,6 +40,9 @@
 
 #include <extdll.h>			// always
 
+#include <vector>
+#include <set>
+
 #include "meta_api.h"		// 
 #include "mutil.h"			// me
 #include "mhook.h"			// class MHookList, etc
@@ -52,8 +55,6 @@
 //Added by hzqst
 #include "detours.h"		// ALERT, etc
 #include <capstone.h>
-#include <vector>
-#include <set>
 
 static hudtextparms_t default_csay_tparms = {
 	-1, 0.25,			// x, y
