@@ -63,129 +63,107 @@ bool SC_SERVER_DECL CASEntityFuncs__ApplyImpulse(void* pthis, SC_SERVER_DUMMYARG
 	return gPhysicsManager.ApplyImpulse(ent, impulse, origin);
 }
 
+void FG_AngelScriptRegisterEntityState(CASDocumentation *pthis SC_SERVER_DUMMYARG_NOCOMMA)
+{
+	g_call_original_CASDocumentation_RegisterObjectType(pthis, SC_SERVER_PASS_DUMMYARG "Entity states transmit to client", "entity_state_t", 0, 0x40001u);
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "Fields which are filled in by routines outside of delta compression", "entity_state_t", "int entityType", offsetof(entity_state_t, entityType));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "Index into cl_entities array for this entity.", "entity_state_t", "int number", offsetof(entity_state_t, number));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "float msg_time", offsetof(entity_state_t, msg_time));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "Message number last time the player/entity state was updated.", "entity_state_t", "int messagenum", offsetof(entity_state_t, messagenum));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "Vector origin", offsetof(entity_state_t, origin));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "Vector angles", offsetof(entity_state_t, angles));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int modelindex", offsetof(entity_state_t, modelindex));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int sequence", offsetof(entity_state_t, sequence));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "float frame", offsetof(entity_state_t, frame));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int colormap", offsetof(entity_state_t, colormap));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int16 skin", offsetof(entity_state_t, skin));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int16 solid", offsetof(entity_state_t, solid));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int effects", offsetof(entity_state_t, effects));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "float scale", offsetof(entity_state_t, scale));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int8 eflags", offsetof(entity_state_t, eflags));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int rendermode", offsetof(entity_state_t, rendermode));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int renderamt", offsetof(entity_state_t, renderamt));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int renderfx", offsetof(entity_state_t, renderfx));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int movetype", offsetof(entity_state_t, movetype));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "float animtime", offsetof(entity_state_t, animtime));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "float framerate", offsetof(entity_state_t, framerate));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int body", offsetof(entity_state_t, body));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "Vector velocity", offsetof(entity_state_t, velocity));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "Vector mins", offsetof(entity_state_t, mins));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "Vector maxs", offsetof(entity_state_t, maxs));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int aiment", offsetof(entity_state_t, aiment));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int owner", offsetof(entity_state_t, owner));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "float friction", offsetof(entity_state_t, friction));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "float gravity", offsetof(entity_state_t, gravity));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int team", offsetof(entity_state_t, team));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int playerclass", offsetof(entity_state_t, playerclass));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int health", offsetof(entity_state_t, health));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int spectator", offsetof(entity_state_t, spectator));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int weaponmodel", offsetof(entity_state_t, weaponmodel));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int gaitsequence", offsetof(entity_state_t, gaitsequence));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "Vector basevelocity", offsetof(entity_state_t, basevelocity));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int usehull", offsetof(entity_state_t, usehull));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int oldbuttons", offsetof(entity_state_t, oldbuttons));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int onground", offsetof(entity_state_t, onground));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int iStepLeft", offsetof(entity_state_t, iStepLeft));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "float flFallVelocity", offsetof(entity_state_t, flFallVelocity));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "float fov", offsetof(entity_state_t, fov));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int weaponanim", offsetof(entity_state_t, weaponanim));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int iuser1", offsetof(entity_state_t, iuser1));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int iuser2", offsetof(entity_state_t, iuser2));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int iuser3", offsetof(entity_state_t, iuser3));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int iuser4", offsetof(entity_state_t, iuser4));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "float fuser1", offsetof(entity_state_t, fuser1));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "float fuser2", offsetof(entity_state_t, fuser2));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "float fuser3", offsetof(entity_state_t, fuser3));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "float fuser4", offsetof(entity_state_t, fuser4));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "Vector vuser1", offsetof(entity_state_t, vuser1));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "Vector vuser2", offsetof(entity_state_t, vuser2));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "Vector vuser3", offsetof(entity_state_t, vuser3));
+	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "Vector vuser4", offsetof(entity_state_t, vuser4));
+}
+
+void FG_AngelScriptRegisterMethod(CASDocumentation *pthis, SC_SERVER_DUMMYARG const char *docs, const char *name, const char *func, void *pfn, int type)
+{
+	CASMethodRegistration reg;
+	reg.pfnMethod = pfn;
+	g_call_original_CASDocumentation_RegisterObjectMethod(pthis, SC_SERVER_PASS_DUMMYARG docs, name, func, &reg, type);
+}
+
 int SC_SERVER_DECL NewCASDocumentation_RegisterObjectType(CASDocumentation *pthis, SC_SERVER_DUMMYARG const char *docs, const char *name, int a4, unsigned int flags)
 {
 	if (name && docs && !strcmp(name, "CSurvivalMode") && !strcmp(docs, "Survival Mode handler") && flags == 0x40001u)
 	{
-		g_call_original_CASDocumentation_RegisterObjectType    (pthis, SC_SERVER_PASS_DUMMYARG "Entity states transmit to client", "entity_state_t", 0, 0x40001u);
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "Fields which are filled in by routines outside of delta compression", "entity_state_t", "int entityType", offsetof(entity_state_t, entityType));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "Index into cl_entities array for this entity.", "entity_state_t", "int number", offsetof(entity_state_t, number));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "float msg_time", offsetof(entity_state_t, msg_time));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "Message number last time the player/entity state was updated.", "entity_state_t", "int messagenum", offsetof(entity_state_t, messagenum));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "Fields which can be transitted and reconstructed over the network stream.", "entity_state_t", "Vector origin", offsetof(entity_state_t, origin));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "Fields which can be transitted and reconstructed over the network stream.", "entity_state_t", "Vector angles", offsetof(entity_state_t, angles));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int modelindex", offsetof(entity_state_t, modelindex));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int sequence", offsetof(entity_state_t, sequence));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "float frame", offsetof(entity_state_t, frame));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int colormap", offsetof(entity_state_t, colormap));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int16 skin", offsetof(entity_state_t, skin));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int16 solid", offsetof(entity_state_t, solid));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int effects", offsetof(entity_state_t, effects));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "float scale", offsetof(entity_state_t, scale));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int8 eflags", offsetof(entity_state_t, eflags));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int rendermode", offsetof(entity_state_t, rendermode));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int renderamt", offsetof(entity_state_t, renderamt));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int renderfx", offsetof(entity_state_t, renderfx));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int movetype", offsetof(entity_state_t, movetype));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "float animtime", offsetof(entity_state_t, animtime));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "float framerate", offsetof(entity_state_t, framerate));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int body", offsetof(entity_state_t, body));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "Vector velocity", offsetof(entity_state_t, velocity));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "Vector mins", offsetof(entity_state_t, mins));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "Vector maxs", offsetof(entity_state_t, maxs));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int aiment", offsetof(entity_state_t, aiment));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int owner", offsetof(entity_state_t, owner));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "float friction", offsetof(entity_state_t, friction));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "float gravity", offsetof(entity_state_t, gravity));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int team", offsetof(entity_state_t, team));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int playerclass", offsetof(entity_state_t, playerclass));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int health", offsetof(entity_state_t, health));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int spectator", offsetof(entity_state_t, spectator));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int weaponmodel", offsetof(entity_state_t, weaponmodel));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int gaitsequence", offsetof(entity_state_t, gaitsequence));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "Vector basevelocity", offsetof(entity_state_t, basevelocity));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int usehull", offsetof(entity_state_t, usehull));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int oldbuttons", offsetof(entity_state_t, oldbuttons));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int onground", offsetof(entity_state_t, onground));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int iStepLeft", offsetof(entity_state_t, iStepLeft));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "float flFallVelocity", offsetof(entity_state_t, flFallVelocity));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "float fov", offsetof(entity_state_t, fov));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int weaponanim", offsetof(entity_state_t, weaponanim));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int iuser1", offsetof(entity_state_t, iuser1));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int iuser2", offsetof(entity_state_t, iuser2));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int iuser3", offsetof(entity_state_t, iuser3));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "int iuser4", offsetof(entity_state_t, iuser4));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "float fuser1", offsetof(entity_state_t, fuser1));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "float fuser2", offsetof(entity_state_t, fuser2));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "float fuser3", offsetof(entity_state_t, fuser3));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "float fuser4", offsetof(entity_state_t, fuser4));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "Vector vuser1", offsetof(entity_state_t, vuser1));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "Vector vuser2", offsetof(entity_state_t, vuser2));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "Vector vuser3", offsetof(entity_state_t, vuser3));
-		g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG "", "entity_state_t", "Vector vuser4", offsetof(entity_state_t, vuser4));
+		FG_AngelScriptRegisterEntityState(pthis, SC_SERVER_PASS_DUMMYARG_NOCOMMA);
 
-		if (1)
-		{
-			CASMethodRegistration reg;
-			reg.pfnMethod = (void *)CASEngineFuncs__GetRunPlayerMovePlayerIndex;
-			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, SC_SERVER_PASS_DUMMYARG "Get index of player that is currently running PlayerMove code", "CEngineFuncs", "int GetRunPlayerMovePlayerIndex()", &reg, 3);
-		}
+		FG_AngelScriptRegisterMethod(pthis, SC_SERVER_PASS_DUMMYARG 
+			"Get index of player that is currently running PlayerMove code", "CEngineFuncs", "int GetRunPlayerMovePlayerIndex()", 
+			CASEngineFuncs__GetRunPlayerMovePlayerIndex, 3);
 
-		if (1)
-		{
-			CASMethodRegistration reg;
-			reg.pfnMethod = (void *)CASEngineFuncs__GetViewEntity;
-			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, SC_SERVER_PASS_DUMMYARG "Get view entity of specified client", "CEngineFuncs", "edict_t@ GetViewEntity(edict_t@ pClient)", &reg, 3);
-		}
+		FG_AngelScriptRegisterMethod(pthis, SC_SERVER_PASS_DUMMYARG "Get view entity of specified client", "CEngineFuncs", "edict_t@ GetViewEntity(edict_t@ pClient)",
+			CASEngineFuncs__GetViewEntity, 3);
 
-		if (1)
-		{
-			CASMethodRegistration reg;
-			reg.pfnMethod = (void *)CASEntityFuncs__CreatePhysicBox;
-			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, SC_SERVER_PASS_DUMMYARG "Create physic box for entity", "CEntityFuncs", "bool CreatePhysicBox(edict_t@ ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable)", &reg, 3);
-		}
+		FG_AngelScriptRegisterMethod(pthis, SC_SERVER_PASS_DUMMYARG "Create physic box for entity", "CEntityFuncs", "bool CreatePhysicBox(edict_t@ ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable)",
+			CASEntityFuncs__CreatePhysicBox, 3);
 
-		if (1)
-		{
-			CASMethodRegistration reg;
-			reg.pfnMethod = (void *)CASEntityFuncs__CreatePhysicSphere;
-			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, SC_SERVER_PASS_DUMMYARG "Create physic sphere for entity", "CEntityFuncs", "bool CreatePhysicSphere(edict_t@ ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable)", &reg, 3);
-		}
+		FG_AngelScriptRegisterMethod(pthis, SC_SERVER_PASS_DUMMYARG "Create physic sphere for entity", "CEntityFuncs", "bool CreatePhysicSphere(edict_t@ ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable)",
+			CASEntityFuncs__CreatePhysicSphere, 3);
 
-		if (1)
-		{
-			CASMethodRegistration reg;
-			reg.pfnMethod = (void *)CASEntityFuncs__SetEntitySuperPusher;
-			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, SC_SERVER_PASS_DUMMYARG "Enable or disable Super-Pusher for brush entity", "CEntityFuncs", "bool SetEntitySuperPusher(edict_t@ ent, bool enable)", &reg, 3);
-		}
+		FG_AngelScriptRegisterMethod(pthis, SC_SERVER_PASS_DUMMYARG "Enable or disable Super-Pusher for brush entity", "CEntityFuncs", "bool SetEntitySuperPusher(edict_t@ ent, bool enable)",
+			CASEntityFuncs__SetEntitySuperPusher, 3);
 
-		if (1)
-		{
-			CASMethodRegistration reg;
-			reg.pfnMethod = (void *)CASEntityFuncs__SetEntityLevelOfDetail;
-			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, SC_SERVER_PASS_DUMMYARG "Enable Level-of-Detail for entity", "CEntityFuncs", "bool SetEntityLevelOfDetail(edict_t@ ent, int flags, int body_0, float scale_0, int body_1, float scale_1, float distance_1, int body_2, float scale_2, float distance_2, int body_3, float scale_3, float distance_3)", &reg, 3);
-		}
+		FG_AngelScriptRegisterMethod(pthis, SC_SERVER_PASS_DUMMYARG "Enable Level-of-Detail for entity", "CEntityFuncs", "bool SetEntityLevelOfDetail(edict_t@ ent, int flags, int body_0, float scale_0, int body_1, float scale_1, float distance_1, int body_2, float scale_2, float distance_2, int body_3, float scale_3, float distance_3)", 
+			CASEntityFuncs__SetEntityLevelOfDetail, 3);
 
-		if (1)
-		{
-			CASMethodRegistration reg;
-			reg.pfnMethod = (void *)CASEntityFuncs__SetEntityPartialViewer;
-			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, SC_SERVER_PASS_DUMMYARG "Create Level-of-Detail object for entity", "CEntityFuncs", "bool SetEntityPartialViewer(edict_t@ ent, int partial_viewer_mask)", &reg, 3);
-		}
+		FG_AngelScriptRegisterMethod(pthis, SC_SERVER_PASS_DUMMYARG "Create Level-of-Detail object for entity", "CEntityFuncs", "bool SetEntityPartialViewer(edict_t@ ent, int partial_viewer_mask)",
+			CASEntityFuncs__SetEntityPartialViewer, 3);
+		
+		FG_AngelScriptRegisterMethod(pthis, SC_SERVER_PASS_DUMMYARG "Get current working Super-Pusher, return valid edict only in pfnTouch", "CEntityFuncs", "edict_t@ GetCurrentSuperPusher(Vector &out)",
+			CASEntityFuncs__GetCurrentSuperPusher, 3);
 
-		if (1)
-		{
-			CASMethodRegistration reg;
-			reg.pfnMethod = (void *)CASEntityFuncs__GetCurrentSuperPusher;
-			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, SC_SERVER_PASS_DUMMYARG "Get current working Super-Pusher, return valid edict only in pfnTouch", "CEntityFuncs", "edict_t@ GetCurrentSuperPusher(Vector &out)", &reg, 3);
-		}
+		FG_AngelScriptRegisterMethod(pthis, SC_SERVER_PASS_DUMMYARG "Apply impulse on physic object", "CEntityFuncs", "bool ApplyImpulse(edict_t@ ent, const Vector& in impulse, const Vector& in origin)",
+			CASEntityFuncs__CreatePhysicSphere, 3);
 
-		if (1)
-		{
-			CASMethodRegistration reg;
-			reg.pfnMethod = (void *)CASEntityFuncs__ApplyImpulse;
-			g_call_original_CASDocumentation_RegisterObjectMethod(pthis, SC_SERVER_PASS_DUMMYARG "Apply impulse on physic object", "CEntityFuncs", "bool ApplyImpulse(edict_t@ ent, const Vector& in impulse, const Vector& in origin)", &reg, 3);
-		}
 	}
 
 	return g_call_original_CASDocumentation_RegisterObjectType(pthis, SC_SERVER_PASS_DUMMYARG docs, name, a4, flags);

@@ -76,6 +76,7 @@ public:
 #define SC_SERVER_DUMMYARG_NOCOMMA , int dummy
 #define SC_SERVER_DUMMYARG int dummy, 
 #define SC_SERVER_PASS_DUMMYARG dummy, 
+#define SC_SERVER_PASS_DUMMYARG_NOCOMMA dummy
 #define SERVER_DLL_NAME "server.dll"
 
 #else
@@ -84,6 +85,7 @@ public:
 #define SC_SERVER_DUMMYARG_NOCOMMA
 #define SC_SERVER_DUMMYARG
 #define SC_SERVER_PASS_DUMMYARG
+#define SC_SERVER_PASS_DUMMYARG_NOCOMMA
 #define SERVER_DLL_NAME "server.so"
 
 #endif
