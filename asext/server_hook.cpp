@@ -22,7 +22,7 @@ bool g_ASDocInit = false;
 std::vector<fnASDocInitCallback> g_ASDocInitCallbacks;
 std::vector<CASHook *> g_ASHooks;
 
-C_DLLEXPORT fnASEXT_CallHook ASEXT_CallHook = NULL;
+fnASEXT_CallHook ASEXT_CallHook;
 
 C_DLLEXPORT void ASEXT_RegisterObjectMethod(void *pthis, const char *docs, const char *name, const char *func, void *pfn, int type)
 {
