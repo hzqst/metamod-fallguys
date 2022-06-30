@@ -129,6 +129,13 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 	auto server = MH_GetModuleBase(gpMetaUtilFuncs->pfnGetGameInfo(PLID, GINFO_REALDLL_FULLPATH));
 
+#ifdef PLATFORM_WINDOWS
+	if (!server)
+	{
+		server = MH_GetModuleBase(gpMetaUtilFuncs->pfnGetGameInfo(PLID, GINFO_DLL_FILENAME));
+	}
+#endif
+
 	if (!server)
 	{
 		LOG_ERROR(PLID, "server dll not found !");
@@ -171,7 +178,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 	//FG_InstallInlineHooks();
 
-	//FG_RegisterAngelScriptHooks();
+	FG_RegisterAngelScriptHooks();
 
 	return TRUE;
 }
