@@ -806,8 +806,8 @@ typedef struct
 	void * base;
 	size_t max_insts;
 	int max_depth;
-	std::set<void *> code;
-	std::set<void *> branches;
+	std::set<uintp> code;
+	std::set<uintp> branches;
 	std::vector<walk_context_t> walks;
 
 	void *DesiredAddress;
@@ -847,7 +847,7 @@ void *mutil_ReverseSearchFunctionBegin(void * SearchBegin, size_t SearchSize)
 			{
 				MH_ReverseSearchFunctionBegin_ctx2 ctx2 = { 0 };
 
-				mutil_DisasmSingleInstruction(SearchPtr + 1, [](void *inst, byte *address, size_t instLen, PVOID context)
+				mutil_DisasmSingleInstruction(SearchPtr + 1, [](void *inst, byte *address, size_t instLen, void * context)
 				{
 					auto pinst = (cs_insn *)inst;
 					auto ctx = (MH_ReverseSearchFunctionBegin_ctx2 *)context;
@@ -907,7 +907,7 @@ void *mutil_ReverseSearchFunctionBegin(void * SearchBegin, size_t SearchSize)
 						if (ctx->code.size() > ctx->max_insts)
 							return true;
 
-						if (ctx->code.find(address) != ctx->code.end())
+						if (ctx->code.find((uintp)address) != ctx->code.end())
 							return true;
 
 						ctx->code.emplace(address);
@@ -916,11 +916,11 @@ void *mutil_ReverseSearchFunctionBegin(void * SearchBegin, size_t SearchSize)
 							pinst->detail->x86.op_count == 1 &&
 							pinst->detail->x86.operands[0].type == X86_OP_IMM)
 						{
-							PVOID imm = (PVOID)pinst->detail->x86.operands[0].imm;
-							auto foundbranch = ctx->branches.find(imm);
+							void *imm = (void *)pinst->detail->x86.operands[0].imm;
+							auto foundbranch = ctx->branches.find((uintp)imm);
 							if (foundbranch == ctx->branches.end())
 							{
-								ctx->branches.emplace(imm);
+								ctx->branches.emplace((uintp)imm);
 								if (depth + 1 < ctx->max_depth)
 									ctx->walks.emplace_back(imm, 0x300, depth + 1);
 							}
@@ -1038,7 +1038,7 @@ void *mutil_ReverseSearchFunctionBeginEx(void * SearchBegin, size_t SearchSize, 
 						if (ctx->code.size() > ctx->max_insts)
 							return true;
 
-						if (ctx->code.find(address) != ctx->code.end())
+						if (ctx->code.find((uintp)address) != ctx->code.end())
 							return true;
 
 						ctx->code.emplace(address);
@@ -1047,11 +1047,11 @@ void *mutil_ReverseSearchFunctionBeginEx(void * SearchBegin, size_t SearchSize, 
 							pinst->detail->x86.op_count == 1 &&
 							pinst->detail->x86.operands[0].type == X86_OP_IMM)
 						{
-							PVOID imm = (PVOID)pinst->detail->x86.operands[0].imm;
-							auto foundbranch = ctx->branches.find(imm);
+							void * imm = (void *)pinst->detail->x86.operands[0].imm;
+							auto foundbranch = ctx->branches.find((uintp)imm);
 							if (foundbranch == ctx->branches.end())
 							{
-								ctx->branches.emplace(imm);
+								ctx->branches.emplace((uintp)imm);
 								if (depth + 1 < ctx->max_depth)
 									ctx->walks.emplace_back(imm, 0x300, depth + 1);
 							}
