@@ -19,6 +19,8 @@
 #define sv_models_Signature "\x3D\xFE\x1F\x00\x00\x2A\x2A\x0F\xAE\xE8\xFF\x34\x8D"
 #define host_frametime_Signature "\xD8\x83\xA8\x00\x00\x00\xD9\x9B\xA8\x00\x00\x00\xE8\x2A\x2A\x2A\x2A\xDD\x05"
 
+#define ENGINE_DLL_NAME "hw.dll"
+
 #else
 
 #ifndef _ARRAYSIZE
@@ -34,6 +36,8 @@
 #define sv_Signature "sv"
 #define sv_models_Signature "\x8B\x84\x82\x2A\x2A\x2A\x00\x89\x04\x24\xE8"
 #define host_frametime_Signature "host_frametime"
+
+#define ENGINE_DLL_NAME "hw.so"
 
 #endif
 

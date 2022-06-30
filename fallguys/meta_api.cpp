@@ -123,6 +123,10 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	gpGamedllFuncs = pGamedllFuncs;
 
 	auto engine = gpMetaUtilFuncs->pfnGetEngineBase();
+	if (!engine)
+	{
+		engine = gpMetaUtilFuncs->pfnGetModuleBase(ENGINE_DLL_NAME);
+	}
 
 	if (!engine)
 	{
@@ -135,7 +139,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 #ifdef _WIN32
 	LOAD_PLUGIN(PLID, "addons/metamod/dlls/asext.dll", PLUG_LOADTIME::PT_ANYTIME, &asext);
 #else
-	LOAD_PLUGIN(PLID, "linux addons/metamod/dlls/asext.so", PLUG_LOADTIME::PT_ANYTIME, &asext);
+	LOAD_PLUGIN(PLID, "addons/metamod/dlls/asext.so", PLUG_LOADTIME::PT_ANYTIME, &asext);
 #endif
 	if (!asext)
 	{
