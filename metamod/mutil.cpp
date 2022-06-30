@@ -670,7 +670,7 @@ void *mutil_ReverseSearchPattern(void *pStartSearch, size_t dwSearchLen, const c
 	{
 		bool found = true;
 
-		for (DWORD i = 0; i < dwPatternLen; i++)
+		for (size_t i = 0; i < dwPatternLen; i++)
 		{
 			char code = *(char *)(dwStartAddr + i);
 
@@ -705,9 +705,11 @@ int mutil_DisasmSingleInstruction(void *address, fnDisasmSingleCallback callback
 			uint64_t vaddr = ((uint64_t)address & 0x00000000FFFFFFFFull);
 			size_t size = 15;
 
+#ifdef _WIN32
 			bool accessable = !IsBadReadPtr(addr, size);
 
 			if (accessable)
+#endif
 			{
 				count = cs_disasm(handle, addr, size, vaddr, 1, &insts);
 				if (count)
