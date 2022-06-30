@@ -1278,7 +1278,7 @@ int CPhysicsManager::GetNumDynamicBodies()
 
 CGameObject *CPhysicsManager::GetGameObject(int entindex)
 {
-	if (entindex >= (int)m_gameObjects.size())
+	if (entindex < 0 || entindex >= (int)m_gameObjects.size())
 		return NULL;
 
 	return m_gameObjects[entindex];
