@@ -8,7 +8,7 @@ This is a metamod plugin for [Fall Guys in Sven Co-op](https://github.com/hzqst/
 
 1. Players and monsters will be pushed backward along with another players who is trying to block **Super Pusher**.
 
-2. `void Touch( CBaseEntity@ pOther )` will get called when **Super Pusher** impacts or hits any **Pushee** positively.
+2. `void Touch( CBaseEntity@ pOther )` will get called when **Super Pusher** impacts or hits any player or monster positively.
 
 ## AngelScript interface expansion
 
