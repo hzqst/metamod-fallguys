@@ -32,5 +32,6 @@ ifeq "$(OPT)" "opt-fast"
 endif
 
 INCLUDEDIRS+=-I$(SDKSRC)/../CDetour
+INCLUDEDIRS+=-I$(SDKSRC)/../capstone/include/capstone
 
 #STLFILES = mreg.cpp
