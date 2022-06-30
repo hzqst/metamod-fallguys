@@ -74,7 +74,7 @@ int GetRunPlayerMovePlayerIndex()
 void FG_InstallInlineHooks()
 {
 	//INSTALL_INLINEHOOK(SV_PushEntity);
-	//INSTALL_INLINEHOOK(SV_PushMove);
+	INSTALL_INLINEHOOK(SV_PushMove);
 	//INSTALL_INLINEHOOK(SV_PushRotate);
 	INSTALL_INLINEHOOK(CASDocumentation_RegisterObjectType);
 }
