@@ -90,7 +90,22 @@ g_EntityFuncs.SetEntityPartialViewer(pEntity.edict(), 0 );
 
 ### Create PhysicBox
 
+PhysicBox does it's physic simulation (gravity, movement, collision) in Bullet Engine instead of GoldSrc hull clipping.
+
+
 ```
+
+//pEntity will collide with players
+pEntity.pev.solid = SOLID_BBOX;
+
+//or
+
+//pEntity will not collide with players
+pEntity.pev.solid = SOLID_NOT;
+
+//Must be noclip, otherwise client interpolation will be disable.
+pEntity.pev.movetype = MOVETYPE_NOCLIP;
+
 //Must be called before setting LevelOfDetail
 g_EntityFuncs.CreatePhysicBox(pEntity.edict(),
 			m_flMass,
@@ -100,10 +115,10 @@ g_EntityFuncs.CreatePhysicBox(pEntity.edict(),
 			m_flCCDRadius,
 			m_flCCDThreshold,
 			bIsPushable);
-         
+
 //The box will be pushable to players if bIsPushable is true
 //The half extent of box is (pEntity.pev.mins + pEntity.pev.maxs) * 0.5
-
+//The studiomodel of this box should have modelflags bit 512 set (Hitbox Collision in HLAM -> Model Flags) otherwise the collision with players will be glitchy.
 ```
 
 ### Detect who is currently running player move code
