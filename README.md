@@ -247,11 +247,14 @@ IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectProperty);
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterHook);
 
 ```
+
 //Initialization in Meta_Attach (meta_api.cpp)
-C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
+
+`C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	META_FUNCTIONS* pFunctionTable, meta_globals_t* pMGlobals,
-	gamedll_funcs_t* pGamedllFuncs){
-	
+	gamedll_funcs_t* pGamedllFuncs){`
+
+```
 	//....
 	//Load asext dll
 #ifdef _WIN32
