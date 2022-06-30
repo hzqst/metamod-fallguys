@@ -70,39 +70,39 @@ void RegisterAngelScriptMethods(void)
 
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Get index of player that is currently running PlayerMove code", "CEngineFuncs", "int GetRunPlayerMovePlayerIndex()",
-			CASEngineFuncs__GetRunPlayerMovePlayerIndex, 3);
+			(void *)CASEngineFuncs__GetRunPlayerMovePlayerIndex, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Get view entity of specified client", "CEngineFuncs", "edict_t@ GetViewEntity(edict_t@ pClient)",
-			CASEngineFuncs__GetViewEntity, 3);
+			(void *)CASEngineFuncs__GetViewEntity, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Create physic box for entity", "CEntityFuncs", "bool CreatePhysicBox(edict_t@ ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable)",
-			CASEntityFuncs__CreatePhysicBox, 3);
+			(void *)CASEntityFuncs__CreatePhysicBox, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Create physic sphere for entity", "CEntityFuncs", "bool CreatePhysicSphere(edict_t@ ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable)",
-			CASEntityFuncs__CreatePhysicSphere, 3);
+			(void *)CASEntityFuncs__CreatePhysicSphere, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Enable or disable Super-Pusher for brush entity", "CEntityFuncs", "bool SetEntitySuperPusher(edict_t@ ent, bool enable)",
-			CASEntityFuncs__SetEntitySuperPusher, 3);
+			(void *)CASEntityFuncs__SetEntitySuperPusher, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Enable Level-of-Detail for entity", "CEntityFuncs", "bool SetEntityLevelOfDetail(edict_t@ ent, int flags, int body_0, float scale_0, int body_1, float scale_1, float distance_1, int body_2, float scale_2, float distance_2, int body_3, float scale_3, float distance_3)",
-			CASEntityFuncs__SetEntityLevelOfDetail, 3);
+			(void *)CASEntityFuncs__SetEntityLevelOfDetail, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Create Level-of-Detail object for entity", "CEntityFuncs", "bool SetEntityPartialViewer(edict_t@ ent, int partial_viewer_mask)",
-			CASEntityFuncs__SetEntityPartialViewer, 3);
+			(void *)CASEntityFuncs__SetEntityPartialViewer, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Get current working Super-Pusher, return valid edict only in pfnTouch", "CEntityFuncs", "edict_t@ GetCurrentSuperPusher(Vector &out)",
-			CASEntityFuncs__GetCurrentSuperPusher, 3);
+			(void *)CASEntityFuncs__GetCurrentSuperPusher, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Apply impulse on physic object", "CEntityFuncs", "bool ApplyImpulse(edict_t@ ent, const Vector& in impulse, const Vector& in origin)",
-			CASEntityFuncs__CreatePhysicSphere, 3);
+			(void *)CASEntityFuncs__CreatePhysicSphere, 3);
 
 	});
 }
