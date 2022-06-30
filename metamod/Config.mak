@@ -10,7 +10,7 @@ SRCFILES = api_hook.cpp api_info.cpp commands_meta.cpp conf_meta.cpp \
 	log_meta.cpp meta_eiface.cpp metamod.cpp mlist.cpp mplayer.cpp \
 	mplugin.cpp mqueue.cpp mreg.cpp mutil.cpp osdep.cpp \
 	osdep_p.cpp reg_support.cpp sdk_util.cpp studioapi.cpp \
-	support_meta.cpp thread_logparse.cpp vdate.cpp
+	support_meta.cpp thread_logparse.cpp vdate.cpp ../CDetour/detours.cpp ../CDetour/asm/asm.c ../CDetour/libudis86/udis86.c ../CDetour/libudis86/itab.c ../CDetour/libudis86/decode.c 
 
 INFOFILES = info_name.h vers_meta.h
 RESFILE = res_meta.rc
