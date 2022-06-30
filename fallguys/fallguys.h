@@ -1,8 +1,5 @@
 #pragma once
 
-const int SuperPusher_MagicNumber = 114514;
-const int SuperPusherTouch_MagicNumber = 1919810;
-
 //For SuperPusher Brush Entities
 extern bool g_bIsPushMove;
 extern bool g_bIsPushRotate;
@@ -23,10 +20,10 @@ extern int g_iRunPlayerMoveIndex;
 extern edict_t* g_ClientViewEntity[33];
 
 //For AngelScript Hook
-extern CASHook g_AddToFullPackHook;
-extern CASHook g_PlayerPostThinkPostHook;
-extern CASHook g_PlayerTouchTriggerHook;
-extern CASHook g_PlayerTouchImpactHook;
+extern void * g_AddToFullPackHook;
+extern void * g_PlayerPostThinkPostHook;
+extern void * g_PlayerTouchTriggerHook;
+extern void * g_PlayerTouchImpactHook;
 
 bool IsEntitySolidPlayer(int entindex, edict_t* ent);
 bool IsEntitySolidPlayer(edict_t* ent);
@@ -38,8 +35,9 @@ edict_t* GetCurrentSuperPusher(Vector* out);
 edict_t* GetClientViewEntity(int clientindex);
 edict_t* GetClientViewEntity(edict_t* pClient);
 
-void FG_InstallInlineHooks();
-void FG_RegisterAngelScriptHooks();
+void InstallEngineHooks();
+void RegisterAngelScriptHooks();
+void RegisterAngelScriptMethods(void);
 
 #define LOD_BODY 1
 #define LOD_MODELINDEX 2

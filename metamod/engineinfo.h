@@ -34,8 +34,10 @@ static const int  c_EngineInfo__typeLen = 10;
 
 class EngineInfo : public class_metamod_new
 {
-	private:
+	public:
 	// data :
+	MemAddr m_imageStart;
+	MemAddr m_imageEnd;
 
 	MemAddr m_codeStart;
 	MemAddr m_codeEnd;

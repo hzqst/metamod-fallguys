@@ -44,10 +44,8 @@
 
 #include "sdk_util.h"		// UTIL_LogPrintf, etc
 
-#include "enginedef.h"
+#include "asext.h"
 #include "serverdef.h"
-#include "fallguys.h"
-#include "physics.h"
 
 // Must provide at least one of these..
 static META_FUNCTIONS gMetaFunctionTable = {
@@ -64,12 +62,12 @@ static META_FUNCTIONS gMetaFunctionTable = {
 // Description of plugin
 plugin_info_t Plugin_info = {
 	META_INTERFACE_VERSION,	// ifvers
-	"FallGuys",	// name
-	"1.2",	// version
+	"AngelScriptExt",	// name
+	"1.0",	// version
 	"2022",	// date
 	"hzqst",	// author
 	"https://github.com/hzqst/metamod-fallguys",	// url
-	"FGUYS",	// logtag, all caps please
+	"ASEXT",	// logtag, all caps please
 	PT_ANYTIME,	// (when) loadable
 	PT_NEVER,	// (when) unloadable
 };
@@ -122,61 +120,36 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	memcpy(pFunctionTable, &gMetaFunctionTable, sizeof(META_FUNCTIONS));
 	gpGamedllFuncs = pGamedllFuncs;
 
-	auto engine = gpMetaUtilFuncs->pfnGetEngineBase();
+	auto server = gpMetaUtilFuncs->pfnGetGameDllBase();
 
-	if (!engine)
+	if (!server)
 	{
-		LOG_ERROR(PLID, "engine dll not found!");
+		LOG_ERROR(PLID, "server dll not found!");
 		return FALSE;
 	}
 
-	void *asext = NULL;
+	//Fill private server functions
+	FILL_FROM_SIGNATURE(server, CASHook_CASHook);
+	FILL_FROM_SIGNATURE(server, CASHook_Call);
 
-#ifdef _WIN32
-	LOAD_PLUGIN(PLID, "addons/metamod/dlls/asext.dll", PLUG_LOADTIME::PT_ANYTIME, &asext);
-#else
-	LOAD_PLUGIN(PLID, "linux addons/metamod/dlls/asext.so", PLUG_LOADTIME::PT_ANYTIME, &asext);
-#endif
-	if (!asext)
-	{
-		LOG_ERROR(PLID, "asext dll not found!");
-		return FALSE;
-	}
-
-	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterDocInitCallback);
-	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectMethod);
-	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectType);
-	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectProperty);
-	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterHook);
-	IMPORT_FUNCTION_DLSYM(asext, ASEXT_CallHook);
-
-	//Fill private engine functions
-	FILL_FROM_SIGNATURE(engine, SV_PushEntity);
-	FILL_FROM_SIGNATURE(engine, SV_PushMove);
-	FILL_FROM_SIGNATURE(engine, SV_PushRotate);
+	ASEXT_CallHook = (fnASEXT_CallHook)g_call_original_CASHook_Call;
 
 #ifdef _WIN32
 
-	VAR_FROM_SIGNATURE_FROM_START(engine, sv_models, 13);
-	VAR_FROM_SIGNATURE_FROM_END(engine, host_frametime, 0);
+	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectType, -1);
+	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectProperty, -7);
+	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectMethod, -7);
+
 
 #else
 
-	void *sv = NULL;
-
-	VAR_FROM_SIGNATURE(engine, sv);
-
-	sv_models = (decltype(sv_models))((char *)sv + 0x276148);
-
-	VAR_FROM_SIGNATURE(engine, host_frametime);
-
+	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterObjectType);
+	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterObjectProperty);
+	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterObjectMethod);
 
 #endif
 
-
-	InstallEngineHooks();
-	RegisterAngelScriptMethods();
-	RegisterAngelScriptHooks();
+	INSTALL_INLINEHOOK(CASDocumentation_RegisterObjectType);
 
 	return TRUE;
 }
@@ -187,5 +160,6 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME /* now */, 
 		PL_UNLOAD_REASON /* reason */) 
 {
+	//Nope, AngelScript doesn't provide unloading procedures
 	return FALSE;
 }

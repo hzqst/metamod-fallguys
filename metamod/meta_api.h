@@ -63,7 +63,8 @@
 // Version 5:11 added plugin loading and unloading API [v1.18]
 // Version 5:12 added IS_QUERYING_CLIENT_CVAR to mutils [v1.18]
 // Version 5:13 added MAKE_REQUESTID and GET_HOOK_TABLES to mutils [v1.19]
-#define META_INTERFACE_VERSION "5:13"
+// Version 5:14 added Binary Analysis and InlineHook to mutils [v1.20]
+#define META_INTERFACE_VERSION "5:14"
 
 // Flags returned by a plugin's api function.
 // NOTE: order is crucial, as greater/less comparisons are made.

@@ -37,208 +37,18 @@
 #include <cl_entity.h>
 #include <entity_state.h>
 
-#include "enginedef.h"
-#include "serverdef.h"
-#include "fallguys.h"
-#include "physics.h"
-
-void NewTouch(edict_t *pentTouched, edict_t *pentOther)
-{
-	if (g_bIsPushEntity && pentTouched == g_PushEntity && g_NumPendingEntities < (int)_ARRAYSIZE(g_PendingEntities))
-	{
-		//Player pushes another player
-		if (IsEntityPushee(pentTouched) && IsEntityPushee(pentOther))
-		{
-			//Don't append same entity twice
-			for (int i = 0; i < g_NumPendingEntities; ++i)
-			{
-				if (g_PendingEntities[i] == pentOther)
-				{
-					SET_META_RESULT(MRES_IGNORED);
-					return;
-				}
-			}
-
-			g_PendingEntities[g_NumPendingEntities] = pentOther;
-			g_NumPendingEntities++;
-
-			SET_META_RESULT(MRES_HANDLED);
-			return;
-		}
-	}
-
-	if (g_bIsRunPlayerMove)
-	{
-		int entindex = g_engfuncs.pfnIndexOfEdict(pentTouched);
-		if (entindex == g_iRunPlayerMoveIndex)
-		{
-			if (pentOther->v.solid == SOLID_TRIGGER)
-			{
-				if(ASEXT_CallHook)
-					(*ASEXT_CallHook)(g_PlayerTouchTriggerHook, 0, pentTouched->pvPrivateData, pentOther->pvPrivateData);
-			}
-			else if (pentOther->v.solid != SOLID_NOT)
-			{
-				if (ASEXT_CallHook)
-					(*ASEXT_CallHook)(g_PlayerTouchImpactHook, 0, pentTouched->pvPrivateData, pentOther->pvPrivateData);
-			}
-		}
-	}
-	SET_META_RESULT(MRES_IGNORED);
-}
-
-void NewSetAbsBox(edict_t *pent)
-{
-	if (gPhysicsManager.SetAbsBox(pent))
-	{
-		SET_META_RESULT(MRES_SUPERCEDE);
-		return;
-	}
-
-	SET_META_RESULT(MRES_IGNORED);
-}
-
-void NewSetupVisibility(struct edict_s *pViewEntity, struct edict_s *pClient, unsigned char **pvs, unsigned char **pas)
-{
-	g_ClientViewEntity[g_engfuncs.pfnIndexOfEdict(pClient)] = pViewEntity;
-
-	SET_META_RESULT(MRES_IGNORED);
-}
-
-edict_t* GetClientViewEntity(int clientindex)
-{
-	if(clientindex > 0 && clientindex < gpGlobals->maxClients)
-		return g_ClientViewEntity[clientindex];
-
-	return NULL;
-}
-
-edict_t* GetClientViewEntity(edict_t*pClient)
-{
-	return GetClientViewEntity(g_engfuncs.pfnIndexOfEdict(pClient));
-}
-
-int NewAddToFullPack_Post(struct entity_state_s *state, int entindex, edict_t *ent, edict_t *host, int hostflags, int player, unsigned char *pSet)
-{
-	if (META_RESULT_ORIG_RET(int) == 1)
-	{
-		if (!gPhysicsManager.AddToFullPack(state, entindex, ent, host, hostflags, player))
-		{
-			SET_META_RESULT(MRES_OVERRIDE);
-			return 0;
-		}
-
-		if (ASEXT_CallHook)
-		{
-			int uiFlags = 0;
-
-			(*ASEXT_CallHook)(g_AddToFullPackHook, 0, state, entindex, ent, host, hostflags, player, &uiFlags);
-
-			if (uiFlags & 1)
-			{
-				SET_META_RESULT(MRES_OVERRIDE);
-				return 0;
-			}
-		}
-
-	}
-
-	SET_META_RESULT(MRES_IGNORED);
-	return 1;
-}
-
-void NewGameInit_Post(void)
-{
-	sv_gravity = CVAR_GET_POINTER("sv_gravity");
-
-	gPhysicsManager.Init();
-
-	SET_META_RESULT(MRES_IGNORED);
-}
-
-void NewStartFrame(void)
-{
-	gPhysicsManager.EntityStartFrame();
-
-	gPhysicsManager.SetGravity(sv_gravity->value);
-	gPhysicsManager.StepSimulation((*host_frametime));
-
-	gPhysicsManager.EntityStartFrame_Post();
-
-	SET_META_RESULT(MRES_IGNORED);
-}
-
-int NewSpawn_Post(edict_t *pent)
-{
-	//Entity 0 = world
-	if (0 == g_engfuncs.pfnIndexOfEdict(pent))
-	{
-		gPhysicsManager.NewMap(pent);
-	}
-
-	SET_META_RESULT(MRES_IGNORED);
-	return 1;
-}
-
-void NewServerDeactivate()
-{
-	gPhysicsManager.Shutdown();
-
-	SET_META_RESULT(MRES_IGNORED);
-}
-
-void NewPlayerPreThink(edict_t *pEntity)
-{
-	g_bIsRunPlayerMove = true;
-	g_iRunPlayerMoveIndex = g_engfuncs.pfnIndexOfEdict(pEntity);
-
-	SET_META_RESULT(MRES_IGNORED);
-}
-
-void NewPlayerPostThink(edict_t* pEntity)
-{
-	g_bIsRunPlayerMove = false;
-	g_iRunPlayerMoveIndex = 0;
-
-	SET_META_RESULT(MRES_IGNORED);
-}
-
-void NewPlayerPostThink_Post(edict_t *pEntity)
-{
-	if(ASEXT_CallHook)
-		(*ASEXT_CallHook)(g_PlayerPostThinkPostHook, 0, pEntity->pvPrivateData);
-
-	SET_META_RESULT(MRES_IGNORED);
-}
-
-void NewPM_Move(struct playermove_s *ppmove, qboolean server)
-{
-	pmove = ppmove;
-
-	gPhysicsManager.PM_StartMove();
-
-	SET_META_RESULT(MRES_IGNORED);
-}
-
-void NewPM_Move_Post(struct playermove_s *ppmove, qboolean server)
-{
-	gPhysicsManager.PM_EndMove();
-
-	SET_META_RESULT(MRES_IGNORED);
-}
-
 static DLL_FUNCTIONS gFunctionTable = 
 {
 	NULL,					// pfnGameInit
 	NULL,					// pfnSpawn
 	NULL,					// pfnThink
 	NULL,					// pfnUse
-	NewTouch,				// pfnTouch
+	NULL,				// pfnTouch
 	NULL,					// pfnBlocked
 	NULL,					// pfnKeyValue
 	NULL,					// pfnSave
 	NULL,					// pfnRestore
-	NewSetAbsBox,			// pfnSetAbsBox
+	NULL,			// pfnSetAbsBox
 
 	NULL,					// pfnSaveWriteFields
 	NULL,					// pfnSaveReadFields
@@ -254,12 +64,12 @@ static DLL_FUNCTIONS gFunctionTable =
 	NULL,					// pfnClientCommand
 	NULL,					// pfnClientUserInfoChanged
 	NULL,					// pfnServerActivate
-	NewServerDeactivate,	// pfnServerDeactivate
+	NULL,					// pfnServerDeactivate
 
-	NewPlayerPreThink,		// pfnPlayerPreThink
-	NewPlayerPostThink,		// pfnPlayerPostThink
+	NULL,					// pfnPlayerPreThink
+	NULL,					// pfnPlayerPostThink
 
-	NewStartFrame,			// pfnStartFrame
+	NULL,					// pfnStartFrame
 	NULL,					// pfnParmsNewLevel
 	NULL,					// pfnParmsChangeLevel
 
@@ -272,11 +82,11 @@ static DLL_FUNCTIONS gFunctionTable =
 	
 	NULL,					// pfnSys_Error
 
-	NewPM_Move,				// pfnPM_Move
+	NULL,					// pfnPM_Move
 	NULL,					// pfnPM_Init
 	NULL,					// pfnPM_FindTextureType
 	
-	NewSetupVisibility,		// pfnSetupVisibility
+	NULL,					// pfnSetupVisibility
 	NULL,					// pfnUpdateClientData
 	NULL,					// pfnAddToFullPack
 	NULL,					// pfnCreateBaseline
@@ -293,8 +103,8 @@ static DLL_FUNCTIONS gFunctionTable =
 
 static DLL_FUNCTIONS gFunctionTable_Post =
 {
-	NewGameInit_Post,		// pfnGameInit
-	NewSpawn_Post,			// pfnSpawn
+	NULL,					// pfnGameInit
+	NULL,					// pfnSpawn
 	NULL,					// pfnThink
 	NULL,					// pfnUse
 	NULL,					// pfnTouch
@@ -321,7 +131,7 @@ static DLL_FUNCTIONS gFunctionTable_Post =
 	NULL,					// pfnServerDeactivate
 
 	NULL,					// pfnPlayerPreThink
-	NewPlayerPostThink_Post,					// pfnPlayerPostThink
+	NULL,					// pfnPlayerPostThink
 
 	NULL,					// pfnStartFrame
 	NULL,					// pfnParmsNewLevel
@@ -336,13 +146,13 @@ static DLL_FUNCTIONS gFunctionTable_Post =
 
 	NULL,					// pfnSys_Error
 
-	NewPM_Move_Post,		// pfnPM_Move
+	NULL,					// pfnPM_Move
 	NULL,					// pfnPM_Init
 	NULL,					// pfnPM_FindTextureType
 
 	NULL,					// pfnSetupVisibility
 	NULL,					// pfnUpdateClientData
-	NewAddToFullPack_Post,				// pfnAddToFullPack
+	NULL,					// pfnAddToFullPack
 	NULL,					// pfnCreateBaseline
 	NULL,					// pfnRegisterEncoders
 	NULL,					// pfnGetWeaponData
@@ -392,18 +202,11 @@ C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable, int *interfaceVersi
 	return TRUE;
 }
 
-void NewOnFreeEntPrivateData(edict_t* pEnt)
-{
-	gPhysicsManager.FreeEntityPrivateData(pEnt);
-
-	SET_META_RESULT(MRES_HANDLED);
-}
-
 static NEW_DLL_FUNCTIONS gNewDllFunctionTable =
 {
 	// Called right before the object's memory is freed. 
 	// Calls its destructor.
-	NewOnFreeEntPrivateData,
+	NULL,
 	NULL,
 	NULL,
 

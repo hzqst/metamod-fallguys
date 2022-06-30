@@ -27,10 +27,10 @@ int g_iRunPlayerMoveIndex = 0;
 edict_t* g_ClientViewEntity[33] = { 0 };
 
 //For AngelScript Hook
-CASHook g_AddToFullPackHook = { 0 };
-CASHook g_PlayerPostThinkPostHook = { 0 };
-CASHook g_PlayerTouchTriggerHook = { 0 };
-CASHook g_PlayerTouchImpactHook = { 0 };
+void * g_AddToFullPackHook = NULL;
+void * g_PlayerPostThinkPostHook = NULL;
+void * g_PlayerTouchTriggerHook = NULL;
+void * g_PlayerTouchImpactHook = NULL;
 
 bool IsEntitySolidPlayer(int entindex, edict_t* ent)
 {
@@ -71,58 +71,20 @@ int GetRunPlayerMovePlayerIndex()
 	return g_iRunPlayerMoveIndex;
 }
 
-void FG_InstallInlineHooks()
+void InstallEngineHooks()
 {
-	INSTALL_INLINEHOOK(SV_PushEntity);
+	//INSTALL_INLINEHOOK(SV_PushEntity);
 	INSTALL_INLINEHOOK(SV_PushMove);
 	INSTALL_INLINEHOOK(SV_PushRotate);
-	INSTALL_INLINEHOOK(CASDocumentation_RegisterObjectType);
 }
 
-void FG_RegisterAngelScriptHook_AddToFullPack(int dummy)
+void RegisterAngelScriptHooks()
 {
-	CASHookRegistration reg;
-	reg.unk = 0;
-	reg.stopMode = StopMode_CALL_ALL;
-	reg.docs = "Post call of gEntityInterface.pfnAddToFullPack, only visible entity goes here";
+	g_AddToFullPackHook = ASEXT_RegisterHook("Post call of gEntityInterface.pfnAddToFullPack, only visible entity goes here", StopMode_CALL_ALL, 2, ASHookFlag_MapScript | ASHookFlag_Plugin, "Player", "PlayerAddToFullPack", "entity_state_t@ state, int entindex, edict_t @ent, edict_t@ host, int hostflags, int player, uint& out");
 
-	g_pfn_CASHook_CASHook(&g_AddToFullPackHook, SC_SERVER_PASS_DUMMYARG 2, ASHookFlag_MapScript | ASHookFlag_Plugin, "Player", "PlayerAddToFullPack", "entity_state_t@ state, int entindex, edict_t @ent, edict_t@ host, int hostflags, int player, uint& out", &reg);
-}
+	g_PlayerPostThinkPostHook = ASEXT_RegisterHook("Post call of gEntityInterface.pfnPlayerPostThink", StopMode_CALL_ALL, 2, ASHookFlag_MapScript | ASHookFlag_Plugin, "Player", "PlayerPostThinkPost", "CBasePlayer@ pPlayer");
 
-void FG_RegisterAngelScriptHook_PlayerPostThinkPost(int dummy)
-{
-	CASHookRegistration reg;
-	reg.unk = 0;
-	reg.stopMode = StopMode_CALL_ALL;
-	reg.docs = "Post call of gEntityInterface.pfnPlayerPostThink";
+	g_PlayerTouchTriggerHook = ASEXT_RegisterHook("Get called when player touches a trigger", StopMode_CALL_ALL, 2, ASHookFlag_MapScript | ASHookFlag_Plugin, "Player", "PlayerTouchTrigger", "CBasePlayer@ pPlayer, CBaseEntity@ pOther");
 
-	g_pfn_CASHook_CASHook(&g_PlayerPostThinkPostHook, SC_SERVER_PASS_DUMMYARG 2, ASHookFlag_MapScript | ASHookFlag_Plugin, "Player", "PlayerPostThinkPost", "CBasePlayer@ pPlayer", &reg);
-}
-
-void FG_RegisterAngelScriptHook_PlayerTouchTrigger(int dummy)
-{
-	CASHookRegistration reg;
-	reg.unk = 0;
-	reg.stopMode = StopMode_CALL_ALL;
-	reg.docs = "Get called when player touches a trigger";
-
-	g_pfn_CASHook_CASHook(&g_PlayerTouchTriggerHook, SC_SERVER_PASS_DUMMYARG 2, ASHookFlag_MapScript | ASHookFlag_Plugin, "Player", "PlayerTouchTrigger", "CBasePlayer@ pPlayer, CBaseEntity@ pOther", &reg);
-}
-
-void FG_RegisterAngelScriptHook_PlayerTouchImpact(int dummy)
-{
-	CASHookRegistration reg;
-	reg.unk = 0;
-	reg.stopMode = StopMode_CALL_ALL;
-	reg.docs = "Get called when player impacts a solid entities or world, player's velocity is temporarily set to impactvelocity";
-
-	g_pfn_CASHook_CASHook(&g_PlayerTouchImpactHook, SC_SERVER_PASS_DUMMYARG 2, ASHookFlag_MapScript | ASHookFlag_Plugin, "Player", "PlayerTouchImpact", "CBasePlayer@ pPlayer, CBaseEntity@ pOther", &reg);
-}
-
-void FG_RegisterAngelScriptHooks()
-{
-	FG_RegisterAngelScriptHook_AddToFullPack(0);
-	FG_RegisterAngelScriptHook_PlayerPostThinkPost(0);
-	FG_RegisterAngelScriptHook_PlayerTouchTrigger(0);
-	FG_RegisterAngelScriptHook_PlayerTouchImpact(0);
+	g_PlayerTouchImpactHook = ASEXT_RegisterHook("Get called when player impacts a solid entities or world, player's velocity is temporarily set to impactvelocity", StopMode_CALL_ALL, 2, ASHookFlag_MapScript | ASHookFlag_Plugin, "Player", "PlayerTouchImpact", "CBasePlayer@ pPlayer, CBaseEntity@ pOther");
 }

@@ -661,7 +661,7 @@ mBOOL DLLINTERNAL MPlugin::query(void) {
 	// GiveFnptrsToDll before Meta_Query, because the latter typically uses 
 	// engine functions like AlertMessage, which have to be passed along via 
 	// GiveFnptrsToDll.
-	pfn_query = (META_QUERY_FN) DLSYM(handle, "Meta_Query");
+	pfn_query = (META_QUERY_FN)DLSYM(handle, "Meta_Query");
 	if(!pfn_query) {
 		META_WARNING("dll: Failed query plugin '%s'; Couldn't find Meta_Query(): %s", desc, DLERROR());
 		// caller will dlclose()

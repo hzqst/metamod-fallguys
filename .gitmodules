@@ -1,3 +1,9 @@
 [submodule "bullet3"]
 	path = bullet3
 	url = https://github.com/bulletphysics/bullet3
+[submodule "capstone"]
+	path = capstone
+	url = https://github.com/capstone-engine/capstone
+[submodule "procmap"]
+	path = procmap
+	url = https://github.com/joaomlneto/procmap

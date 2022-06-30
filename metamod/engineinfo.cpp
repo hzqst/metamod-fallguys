@@ -219,6 +219,9 @@ void DLLINTERNAL EngineInfo::set_code_range( unsigned char* _pBase, PIMAGE_NT_HE
 {
 	m_codeStart = _pBase + _pNThdr->OptionalHeader.BaseOfCode;
 	m_codeEnd = _pBase + _pNThdr->OptionalHeader.BaseOfCode + _pNThdr->OptionalHeader.SizeOfCode;
+	
+	m_imageStart = _pBase;
+	m_imageEnd = _pBase + _pNThdr->OptionalHeader.SizeOfImage;
 
 	m_state = STATE_VALID;
 }
@@ -233,6 +236,9 @@ int DLLINTERNAL EngineInfo::phdr_elfhdr( void* _pElfHdr )
 	ElfW(Phdr)* pPhdr;
 
 	if ( NULL == _pElfHdr ) return INVALID_ARG;
+
+	m_imageStart = _pElfHdr;
+	m_imageEnd = NULL;
 	
 	if ( pEhdr->e_ident[0] == 0x7f
 	  && pEhdr->e_ident[1] == 'E'

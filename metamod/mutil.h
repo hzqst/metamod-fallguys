@@ -45,6 +45,33 @@
 // max buffer size for printed messages
 #define MAX_LOGMSG_LEN  1024
 
+//Added by hzqst
+typedef struct hook_s
+{
+	int iType;
+	qboolean bCommitted;
+	void *pOldFuncAddr;
+	void *pNewFuncAddr;
+	void **pOrginalCall;
+	void *pClass;
+	int iTableIndex;
+	int iFuncIndex;
+	void *hModule;
+	const char *pszModuleName;
+	const char *pszFuncName;
+	struct hook_s *pNext;
+	void *pInfo;
+}hook_t;
+
+#define MH_HOOK_INLINE 1
+#define MH_HOOK_VFTABLE 2
+#define MH_HOOK_IAT 3
+
+typedef void(*fnDisasmSingleCallback)(void *inst, byte *address, size_t instLen, void *context);
+typedef qboolean(*fnDisasmCallback)(void *inst, byte *address, size_t instLen, int instCount, int depth, void *context);
+typedef qboolean(*fnFindAddressCallback)(byte *address);
+
+
 // For GetGameInfo:
 typedef enum {
 	GINFO_NAME = 0,
@@ -81,7 +108,26 @@ typedef struct meta_util_funcs_s {
 	
 	int (*pfnMakeRequestID)	(plid_t plid);
 	
-	void            (*pfnGetHookTables)             (plid_t plid, enginefuncs_t **peng, DLL_FUNCTIONS **pdll, NEW_DLL_FUNCTIONS **pnewdll);
+	void (*pfnGetHookTables) (plid_t plid, enginefuncs_t **peng, DLL_FUNCTIONS **pdll, NEW_DLL_FUNCTIONS **pnewdll);
+
+	//Added by hzqst
+	void *(*pfnGetGameDllBase)(void);
+	void *(*pfnGetEngineBase)(void);
+	void *(*pfnGetEngineCodeBase)(void);
+	void *(*pfnGetEngineCodeEnd)(void);
+	qboolean(*pfnIsValidCodePointerInEngine)(void *ptr);
+	void *(*pfnGetModuleBase)(const char *name);
+	size_t(*pfnGetModuleSize)(void *hModule);
+	qboolean(*pfnIsAddressInModule)(void *lpAddress, void *hModule);
+	qboolean(*pfnUnHook)(hook_t *pHook);
+	hook_t *(*pfnInlineHook)(void *pOldFuncAddr, void *pNewFuncAddr, void **pOrginalCall, bool bTranscation);
+	void *(*pfnGetNextCallAddr)(void *pAddress, int dwCount);
+	void *(*pfnSearchPattern)(void *pStartSearch, size_t dwSearchLen, const char *pPattern, size_t dwPatternLen);
+	void *(*pfnReverseSearchPattern)(void *pStartSearch, size_t dwSearchLen, const char *pPattern, size_t dwPatternLen);
+	int(*pfnDisasmSingleInstruction)(void *address, fnDisasmSingleCallback callback, void *context);
+	qboolean(*pfnDisasmRanges)(void * DisasmBase, size_t DisasmSize, fnDisasmCallback callback, int depth, void *context);
+	void *(*pfnReverseSearchFunctionBegin)(void * SearchBegin, size_t SearchSize);
+	void *(*pfnReverseSearchFunctionBeginEx)(void * SearchBegin, size_t SearchSize, fnFindAddressCallback callback);
 } mutil_funcs_t;
 extern mutil_funcs_t MetaUtilFunctions DLLHIDDEN;
 

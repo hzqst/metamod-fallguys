@@ -32,14 +32,16 @@
 #ifndef _INCLUDE_SOURCEMOD_DETOURHELPERS_H_
 #define _INCLUDE_SOURCEMOD_DETOURHELPERS_H_
 
-#if defined PLATFORM_POSIX
+#if defined _WIN32
+
+#include <Windows.h>
+
+#else
+
 #include <sys/mman.h>
 #include <unistd.h>
 #include <string.h>
-#endif
 
-#if defined PLATFORM_WINDOWS
-#include <Windows.h>
 #endif
 
 //#include <amtl/am-bits.h>
@@ -73,14 +75,14 @@ AlignedBase(void* addr, size_t alignment)
 
 inline void ProtectMemory(void *addr, int length)
 {
-#if defined PLATFORM_POSIX
+#ifdef _WIN32
+	DWORD old_prot;
+	VirtualProtect(addr, length, PAGE_EXECUTE_READWRITE, &old_prot);
+#else
 	long pageSize = sysconf(_SC_PAGESIZE);
 	void *startPage = AlignedBase(addr, pageSize);
 	void *endPage = AlignedBase((void *)((intptr_t)addr + length), pageSize);
 	mprotect(startPage, ((intptr_t)endPage - (intptr_t)startPage) + pageSize, PROT_READ | PROT_WRITE | PROT_EXEC);
-#elif defined PLATFORM_WINDOWS
-	DWORD old_prot;
-	VirtualProtect(addr, length, PAGE_EXECUTE_READWRITE, &old_prot);
 #endif
 }
 

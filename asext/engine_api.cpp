@@ -36,11 +36,6 @@
 
 #include <meta_api.h>
 
-#include "enginedef.h"
-#include "serverdef.h"
-#include "fallguys.h"
-#include "physics.h"
-
 enginefuncs_t meta_engfuncs = 
 {
 	NULL,						// pfnPrecacheModel()

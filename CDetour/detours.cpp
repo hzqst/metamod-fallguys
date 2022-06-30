@@ -51,7 +51,7 @@ void *AllocatePageMemory(void *base, size_t size)
 	auto pbTry = detour_alloc_round_down_to_region((char *)base - DETOUR_REGION_SIZE);
 
 	while (pbTry < base) {
-#ifdef PLATFORM_WINDOWS
+#ifdef _WIN32
 		void * pv = VirtualAlloc((void *)pbTry, DETOUR_REGION_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 #else
 		void * pv = mmap((void *)pbTry, DETOUR_REGION_SIZE, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
@@ -65,7 +65,7 @@ void *AllocatePageMemory(void *base, size_t size)
 
 #else
 
-	#ifdef PLATFORM_WINDOWS
+	#ifdef _WIN32
 			void * pv = VirtualAlloc((void *)NULL, DETOUR_REGION_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 	#else
 			void * pv = mmap((void *)NULL, DETOUR_REGION_SIZE, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
@@ -76,7 +76,7 @@ void *AllocatePageMemory(void *base, size_t size)
 
 void SetReadWrite(void *base)
 {
-#ifdef PLATFORM_WINDOWS
+#ifdef _WIN32
 	VirtualProtect(base, DETOUR_REGION_SIZE, PAGE_READWRITE, NULL);
 #else
 	mprotect(base, DETOUR_REGION_SIZE, PROT_READ | PROT_WRITE);
@@ -85,7 +85,7 @@ void SetReadWrite(void *base)
 
 void SetReadExecute(void *base)
 {
-#ifdef PLATFORM_WINDOWS
+#ifdef _WIN32
 	VirtualProtect(base, DETOUR_REGION_SIZE, PAGE_EXECUTE_READ, NULL);
 #else
 	mprotect(base, DETOUR_REGION_SIZE, PROT_READ | PROT_EXEC);
@@ -94,7 +94,7 @@ void SetReadExecute(void *base)
 
 void FreePageMemory(void *base)
 {
-#ifdef PLATFORM_WINDOWS
+#ifdef _WIN32
 	VirtualFree(base, 0, MEM_RELEASE);
 #else
 	munmap(base, DETOUR_REGION_SIZE);

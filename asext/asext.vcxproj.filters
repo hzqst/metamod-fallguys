@@ -2,11 +2,11 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FA}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
     <Filter Include="Header">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFA}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
   </ItemGroup>
@@ -23,16 +23,7 @@
     <ClCompile Include="meta_api.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="engine_hook.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="server_hook.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="fallguys.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="physics.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="dllmain.cpp">
@@ -40,22 +31,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="enginedef.h">
-      <Filter>Header</Filter>
-    </ClInclude>
     <ClInclude Include="serverdef.h">
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="signatures.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="fallguys.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="physics.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="asext_api.h">
+    <ClInclude Include="asext.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

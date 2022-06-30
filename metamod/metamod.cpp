@@ -90,6 +90,7 @@ int requestid_counter = 0;
 DLHANDLE metamod_handle;
 int metamod_not_loaded = 0;
 
+void mutil_CommitHooks(void);
 
 // Very first metamod function that's run.
 // Do startup operations...
@@ -260,10 +261,14 @@ int DLLINTERNAL metamod_startup(void) {
 		META_ERROR("Failure to load game DLL; exiting...");
 		return(0);
 	}
+
 	if(!Plugins->load()) {
 		META_WARNING("Failure to load plugins...");
 		// Exit on failure here?  Dunno...
 	}
+
+	//Commit inline-hooks which was installed by plugins
+	mutil_CommitHooks();
 
 	// Allow for commands to metamod plugins at startup.  Autoexec.cfg is
 	// read too early, and server.cfg is read too late.

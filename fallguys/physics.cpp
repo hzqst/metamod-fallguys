@@ -1259,7 +1259,7 @@ void CPhysicsManager::StepSimulation(double frametime)
 	if (!gPhysicsManager.GetNumDynamicBodies())
 		return;
 
-	m_dynamicsWorld->stepSimulation(frametime, 3, 1.0f / bv_simrate->value);
+	m_dynamicsWorld->stepSimulation((btScalar)frametime, 3, (btScalar)(1.0f / bv_simrate->value));
 }
 
 void CPhysicsManager::SetGravity(float velocity)

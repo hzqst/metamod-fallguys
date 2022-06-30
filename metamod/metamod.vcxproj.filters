@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
+    <Filter Include="Source Files\CDetour">
+      <UniqueIdentifier>{38a78e0c-6461-4aef-a076-8f9223a4b1c0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="api_hook.cpp">
@@ -110,6 +113,21 @@
     </ClCompile>
     <ClCompile Include="vdate.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CDetour\detours.cpp">
+      <Filter>Source Files\CDetour</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CDetour\asm\asm.c">
+      <Filter>Source Files\CDetour</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CDetour\libudis86\decode.c">
+      <Filter>Source Files\CDetour</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CDetour\libudis86\itab.c">
+      <Filter>Source Files\CDetour</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CDetour\libudis86\udis86.c">
+      <Filter>Source Files\CDetour</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -33,16 +33,6 @@
 #define FMODEL_DYNAMIC_LIGHT 0x100
 #define FMODEL_TRACE_HITBOX 0x200
 
-#ifdef PLATFORM_WINDOWS
-
-#define ENGINE_DLL_NAME "hw.dll"
-
-#else
-
-#define ENGINE_DLL_NAME "hw.so"
-
-#endif
-
 //Engine private functions
 
 // SV_PushEntity
