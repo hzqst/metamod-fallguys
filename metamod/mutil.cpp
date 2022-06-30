@@ -712,7 +712,7 @@ int mutil_DisasmSingleInstruction(void *address, fnDisasmSingleCallback callback
 				count = cs_disasm(handle, addr, size, vaddr, 1, &insts);
 				if (count)
 				{
-					callback(insts, (PUCHAR)address, insts->size, context);
+					callback(insts, (byte *)address, insts->size, context);
 
 					instLen += insts->size;
 				}
@@ -742,7 +742,7 @@ qboolean mutil_DisasmRanges(void * DisasmBase, size_t DisasmSize, fnDisasmCallba
 
 		if (cs_option(handle, CS_OPT_DETAIL, CS_OPT_ON) == CS_ERR_OK)
 		{
-			PUCHAR pAddress = (PUCHAR)DisasmBase;
+			byte *pAddress = (byte *)DisasmBase;
 
 			do
 			{
@@ -777,7 +777,7 @@ qboolean mutil_DisasmRanges(void * DisasmBase, size_t DisasmSize, fnDisasmCallba
 
 				pAddress += instLen;
 				instCount++;
-			} while (pAddress < (PUCHAR)DisasmBase + DisasmSize);
+			} while (pAddress < (byte *)DisasmBase + DisasmSize);
 		}
 
 		if (insts) {
@@ -1009,7 +1009,7 @@ void *mutil_ReverseSearchFunctionBeginEx(void * SearchBegin, size_t SearchSize, 
 			}
 		}
 
-		if (bShouldCheck && callback((PUCHAR)Candidate))
+		if (bShouldCheck && callback((byte *)Candidate))
 		{
 			MH_ReverseSearchFunctionBegin_ctx ctx = { 0 };
 
