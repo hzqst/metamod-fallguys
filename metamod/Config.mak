@@ -31,4 +31,6 @@ ifeq "$(OPT)" "opt-fast"
 	EXTRA_CFLAGS += -D__INTERNALS_USE_REGPARAMS__
 endif
 
+INCLUDEDIRS+=-I$(SDKSRC)/../CDetour
+
 #STLFILES = mreg.cpp
