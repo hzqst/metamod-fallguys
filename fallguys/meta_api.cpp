@@ -176,7 +176,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 #endif
 
-	//FG_InstallInlineHooks();
+	FG_InstallInlineHooks();
 
 	FG_RegisterAngelScriptHooks();
 
