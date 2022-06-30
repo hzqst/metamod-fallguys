@@ -918,7 +918,7 @@ void *mutil_ReverseSearchFunctionBegin(void * SearchBegin, size_t SearchSize)
 						if (ctx->code.find((uintp)address) != ctx->code.end())
 							return true;
 
-						ctx->code.emplace(address);
+						ctx->code.emplace((uintp)address);
 
 						if ((pinst->id == X86_INS_JMP || (pinst->id >= X86_INS_JAE && pinst->id <= X86_INS_JS)) &&
 							pinst->detail->x86.op_count == 1 &&
@@ -1049,7 +1049,7 @@ void *mutil_ReverseSearchFunctionBeginEx(void * SearchBegin, size_t SearchSize, 
 						if (ctx->code.find((uintp)address) != ctx->code.end())
 							return true;
 
-						ctx->code.emplace(address);
+						ctx->code.emplace((uintp)address);
 
 						if ((pinst->id == X86_INS_JMP || (pinst->id >= X86_INS_JAE && pinst->id <= X86_INS_JS)) &&
 							pinst->detail->x86.op_count == 1 &&
