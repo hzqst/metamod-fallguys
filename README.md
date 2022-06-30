@@ -298,7 +298,7 @@ int SC_SERVER_DECL CASEngineFuncs__TestFunc(void* pthis SC_SERVER_DUMMYARG_NOCOM
 	
 ```
 
-//Now you can call this from game :
+Now you can call this from game, you will get test = 114514 :
 ```
 int test = g_EngineFuncs.TestFunc();
 ```
