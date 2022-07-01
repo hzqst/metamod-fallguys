@@ -123,6 +123,7 @@ static void * __replacement_dlsym(void * pmodule, const char * funcname)
 	//it but some LD_PRELOADed library that hooks dlsym might actually
 	//do so.
 
+#if 0
 	//Added by hzqst, as simple as possible
 	auto r = dlsym_original(pmodule, funcname);
 	if (!r && gamedll_module_handle)
@@ -131,7 +132,7 @@ static void * __replacement_dlsym(void * pmodule, const char * funcname)
 	}
 	return r;
 
-#if 0
+#else
 	static int is_original_restored = 0;
 	int was_original_restored = is_original_restored;
 	
@@ -205,7 +206,7 @@ int DLLINTERNAL init_linkent_replacement(DLHANDLE MetamodHandle, DLHANDLE GameDl
 {
 	metamod_module_handle = MetamodHandle;
 	gamedll_module_handle = GameDllHandle;
-	
+
 	// dlsym is already known to be pointing to valid function, we loaded gamedll using it earlier!
 	void * sym_ptr = (void*)&dlsym;
 	while(is_code_trampoline_jmp_opcode(sym_ptr)) {
@@ -213,11 +214,11 @@ int DLLINTERNAL init_linkent_replacement(DLHANDLE MetamodHandle, DLHANDLE GameDl
 	}
 	
 	dlsym_original = (dlsym_func)sym_ptr;
-	
+#if 0
 	//Added by hzqst, use mutil
 	MetaUtilFunctions.pfnInlineHook(sym_ptr, (void *)__replacement_dlsym, (void **)&dlsym_original, false);
 
-#if 0
+#else
 	//Backup old bytes of "dlsym" function
 	memcpy(dlsym_old_bytes, (void*)dlsym_original, BYTES_SIZE);
 	
