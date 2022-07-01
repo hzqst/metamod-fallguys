@@ -356,7 +356,7 @@ void NewPlayerPostThink_Post(edict_t *pEntity)
 
 2. Run `build-win32-all.bat`
 
-3. Be patient, `metamod.dll` and `fallguys.dll` will be generated at `build/addons/metamod/dlls` if no error(s) occours.
+3. Be patient, `metamod.dll`, `asext.dll` and `fallguys.dll` will be generated at `build/addons/metamod/dlls` if no error(s) occours.
 
 # Build Requirements (Linux)
 
@@ -372,4 +372,4 @@ void NewPlayerPostThink_Post(edict_t *pEntity)
 
 2. `sudo chmod +777 build-all-linux.sh` to make it executable, then `./build-all-linux.sh`
 
-3. Be patient, `metamod.so` and `fallguys.so` will be generated at `build/addons/metamod/dlls` if no error(s) occours.
+3. Be patient, `metamod.so`, `asext.so` and `fallguys.so` will be generated at `build/addons/metamod/dlls` if no error(s) occours.
