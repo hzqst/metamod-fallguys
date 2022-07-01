@@ -48,6 +48,11 @@
 #include "log_meta.h"			// META_LOG, etc
 #include "support_meta.h"
 
+ //Added by hzqst
+#include "detours.h"		// ALERT, etc
+#include "mutil.h"		// ALERT, etc
+
+
 //
 // Linux code for dynamic linkents
 //  -- by Jussi Kivilinna
@@ -113,11 +118,21 @@ inline void DLLINTERNAL reset_dlsym_hook(void)
 //
 // Replacement dlsym function
 //
-static void * __replacement_dlsym(void * module, const char * funcname)
+static void * __replacement_dlsym(void * pmodule, const char * funcname)
 {
 	//these are needed in case dlsym calls dlsym, default one doesn't do
 	//it but some LD_PRELOADed library that hooks dlsym might actually
 	//do so.
+
+	//Added by hzqst, as simple as possible
+	auto r = dlsym_original(pmodule, funcname);
+	if (!r)
+	{
+		r = dlsym_original(gamedll_module_handle, funcname);
+	}
+	return r;
+
+#if 0
 	static int is_original_restored = 0;
 	int was_original_restored = is_original_restored;
 	
@@ -178,7 +193,8 @@ static void * __replacement_dlsym(void * module, const char * funcname)
 	
 	//unlock
 	pthread_mutex_unlock(&mutex_replacement_dlsym);
-	
+#endif
+
 	return(func);
 }
 
@@ -198,6 +214,10 @@ int DLLINTERNAL init_linkent_replacement(DLHANDLE MetamodHandle, DLHANDLE GameDl
 	
 	dlsym_original = (dlsym_func)sym_ptr;
 	
+	//Added by hzqst, use mutil
+	mutil_InlineHook(sym_ptr, __replacement_dlsym, (void **)&dlsym_original, false);
+
+#if 0
 	//Backup old bytes of "dlsym" function
 	memcpy(dlsym_old_bytes, (void*)dlsym_original, BYTES_SIZE);
 	
@@ -228,7 +248,7 @@ int DLLINTERNAL init_linkent_replacement(DLHANDLE MetamodHandle, DLHANDLE GameDl
 	
 	//Write our own jmp-forwarder on "dlsym"
 	reset_dlsym_hook();
-		
+#endif
 	//done
 	return(1);
 }

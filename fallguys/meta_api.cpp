@@ -114,18 +114,32 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	}
 
 	gpMetaGlobals = pMGlobals;
+
 	if (!pFunctionTable) {
 		LOG_ERROR(PLID, "Meta_Attach called with null pFunctionTable");
 		return FALSE;
 	}
 
 	memcpy(pFunctionTable, &gMetaFunctionTable, sizeof(META_FUNCTIONS));
+
 	gpGamedllFuncs = pGamedllFuncs;
 
 	auto engine = gpMetaUtilFuncs->pfnGetEngineBase();
+
 	if (!engine)
 	{
 		engine = gpMetaUtilFuncs->pfnGetModuleBase(ENGINE_DLL_NAME);
+	}
+
+	if (!engine)
+	{
+		engine = gpMetaUtilFuncs->pfnGetModuleBase("engine_i686.so");
+	}
+
+
+	if (!engine)
+	{
+		engine = gpMetaUtilFuncs->pfnGetModuleBase("engine_amd.so");
 	}
 
 	if (!engine)
