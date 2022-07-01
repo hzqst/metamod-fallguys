@@ -16,6 +16,7 @@ IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectMethod);
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectType);
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectProperty);
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterHook);
+
 fnASEXT_CallHook *ASEXT_CallHook = NULL;
 
 edict_t* SC_SERVER_DECL CASEngineFuncs__GetViewEntity(void* pthis, SC_SERVER_DUMMYARG edict_t* pClient)
