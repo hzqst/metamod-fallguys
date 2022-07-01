@@ -216,7 +216,7 @@ int DLLINTERNAL init_linkent_replacement(DLHANDLE MetamodHandle, DLHANDLE GameDl
 	dlsym_original = (dlsym_func)sym_ptr;
 #if 1
 	//Added by hzqst, use mutil
-	//MetaUtilFunctions.pfnInlineHook(sym_ptr, (void *)__replacement_dlsym, (void **)&dlsym_original, false);
+	MetaUtilFunctions.pfnInlineHook(sym_ptr, (void *)__replacement_dlsym, (void **)&dlsym_original, false);
 
 #else
 	//Backup old bytes of "dlsym" function
