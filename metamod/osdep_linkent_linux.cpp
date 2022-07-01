@@ -52,7 +52,6 @@
 #include "detours.h"		// ALERT, etc
 #include "mutil.h"		// ALERT, etc
 
-
 //
 // Linux code for dynamic linkents
 //  -- by Jussi Kivilinna
@@ -193,9 +192,10 @@ static void * __replacement_dlsym(void * pmodule, const char * funcname)
 	
 	//unlock
 	pthread_mutex_unlock(&mutex_replacement_dlsym);
-#endif
 
 	return(func);
+
+#endif
 }
 
 //
@@ -215,7 +215,7 @@ int DLLINTERNAL init_linkent_replacement(DLHANDLE MetamodHandle, DLHANDLE GameDl
 	dlsym_original = (dlsym_func)sym_ptr;
 	
 	//Added by hzqst, use mutil
-	mutil_InlineHook(sym_ptr, __replacement_dlsym, (void **)&dlsym_original, false);
+	MetaUtilFunctions.pfnInlineHook(sym_ptr, __replacement_dlsym, (void **)&dlsym_original, false);
 
 #if 0
 	//Backup old bytes of "dlsym" function
