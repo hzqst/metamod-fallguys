@@ -224,6 +224,120 @@ edict_t@viewent = g_EngineFuncs.GetViewEntity(pPlayer.edict());
 
 ### You are welcome to request for any new hook which is not implemented in Sven Co-op yet.
 
+## Third-Party AngelScript Extension
+
+You can register your own hooks or methods in AngelScript engine.
+
+```
+#include "asext_api.h"// metamod-fallguys\fallguys\asext_api.h it's there
+
+#define IMPORT_FUNCTION_DEFINE(name) fn##name name;
+
+#define IMPORT_FUNCTION_DLSYM(dll, name) name = (decltype(name))DLSYM((DLHANDLE)dll, #name);\
+if (!name)\
+{\
+	LOG_ERROR(PLID, "Failed to get " #name " from " #dll " dll !");\
+	return FALSE;\
+}
+
+IMPORT_FUNCTION_DEFINE(ASEXT_RegisterDocInitCallback);
+IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectMethod);
+IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectType);
+IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectProperty);
+IMPORT_FUNCTION_DEFINE(ASEXT_RegisterHook);
+
+```
+
+//Initialization in Meta_Attach (meta_api.cpp)
+
+`C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
+	META_FUNCTIONS* pFunctionTable, meta_globals_t* pMGlobals,
+	gamedll_funcs_t* pGamedllFuncs){`
+
+```
+	//....
+	//Load asext dll
+	void *asext = NULL;
+#ifdef _WIN32
+	LOAD_PLUGIN(PLID, "addons/metamod/dlls/asext.dll", PLUG_LOADTIME::PT_ANYTIME, &asext);
+#else
+	LOAD_PLUGIN(PLID, "addons/metamod/dlls/asext.so", PLUG_LOADTIME::PT_ANYTIME, &asext);
+#endif
+	if (!asext)
+	{
+		LOG_ERROR(PLID, "asext dll not found!");
+		return FALSE;
+	}
+
+	//Load asext API
+	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterDocInitCallback);
+	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectMethod);
+	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectType);
+	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectProperty);
+	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterHook);
+	IMPORT_FUNCTION_DLSYM(asext, ASEXT_CallHook);
+```
+
+### Register your own AngelScript methods
+
+```
+int SC_SERVER_DECL CASEngineFuncs__TestFunc(void* pthis SC_SERVER_DUMMYARG_NOCOMMA)
+{
+	return 114514;
+}
+
+//Must be registered before AS initialization, Meta_Attach is okay
+
+	ASEXT_RegisterDocInitCallback([](void *pASDoc) {
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"A Test Function", "CEngineFuncs", "int TestFunc()",
+			(void *)CASEngineFuncs__TestFunc, 3);
+
+	});
+	
+```
+
+Now you can call this from game, you will get test = 114514 :
+```
+int test = g_EngineFuncs.TestFunc();
+```
+
+### Register your own hooks
+
+```
+
+//Global var
+
+void *g_PlayerPostThinkPostHook = NULL;
+
+```
+
+```
+
+//Must be registered before AS initialization, Meta_Attach is okay
+
+g_PlayerPostThinkPostHook = ASEXT_RegisterHook("Post call of gEntityInterface.pfnPlayerPostThink", StopMode_CALL_ALL, 2, ASHookFlag_MapScript | ASHookFlag_Plugin, "Player", "PlayerPostThinkPost", "CBasePlayer@ pPlayer");
+
+```
+
+```
+//Where you need to call AS hooks
+void NewPlayerPostThink_Post(edict_t *pEntity)
+{
+	if(ASEXT_CallHook)//The second arg must be zero, the third, 4th, 5th, 6th... args are the real args pass to AngelScript VM.
+		(*ASEXT_CallHook)(g_PlayerPostThinkPostHook, 0, pEntity->pvPrivateData);
+
+	SET_META_RESULT(MRES_IGNORED);
+}
+```
+
+
+//Now you can register hook from game :
+```
+    g_Hooks.RegisterHook(Hooks::Player::PlayerPostThinkPost, @PlayerPostThinkPost);
+```
+
 # Installation
 
 1. Copy everything from `build` directory into `\steamapps\common\Sven Co-op\Sven Co-op\svencoop` *(Warning: `svencoop_addon` and `svencoop_downloads` are not supported)*
