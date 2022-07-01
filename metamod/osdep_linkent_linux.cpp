@@ -148,7 +148,7 @@ static void * __replacement_dlsym(void * pmodule, const char * funcname)
 	}
 		
 	//check if we should hook this call
-	if(module != metamod_module_handle || !metamod_module_handle || !gamedll_module_handle)
+	if(pmodule != metamod_module_handle || !metamod_module_handle || !gamedll_module_handle)
 	{
 		//no metamod/gamedll module? should we remove hook now?
 		void * retval = dlsym_original(pmodule, funcname);
