@@ -594,9 +594,6 @@ hook_t *mutil_InlineHook(void *pOldFuncAddr, void *pNewFuncAddr, void **pOrginal
 	else
 	{
 		d->EnableDetour();
-
-		h->pOrginalCall = pOrginalCall;
-		*h->pOrginalCall = h->pOldFuncAddr;
 		h->bCommitted = true;
 	}
 
