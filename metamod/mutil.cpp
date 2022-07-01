@@ -443,7 +443,7 @@ qboolean mutil_IsAddressInModuleRange(void *lpAddress, void *lpModuleBase)
 	return (char *)lpAddress > (char *)lpModuleBase && (char *)lpAddress < (char *)lpModuleBase + mutil_GetModuleSize(lpModuleBase);
 #else
 	Dl_info info;
-	if (dladdr(lpAddress, &info) != 0 && info.dli_fbase == hModule)
+	if (dladdr(lpAddress, &info) != 0 && info.dli_fbase == lpModuleBase)
 		return true;
 
 	return false;
