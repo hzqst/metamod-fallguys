@@ -396,14 +396,83 @@ static void mutil_GetHookTables(plid_t plid, enginefuncs_t **peng, DLL_FUNCTIONS
 
 //Added by hzqst
 
-void *mutil_GetGameDllBase(void)
+void * mutil_GetModuleBaseByHandle(void *hModule)
+{
+#ifdef _WIN32
+	return hModule;
+#else
+	struct link_map *map = NULL;
+	if (0 == dlinfo(hModule, RTLD_DI_LINKMAP, &map))
+	{
+		void *base = NULL;
+		if (0 == dladdr((void *)map->l_ld, &base))
+		{
+			return base;
+		}
+	}
+	return NULL;
+#endif
+}
+
+void *mutil_GetModuleHandle(const char *name)
+{
+#ifdef _WIN32
+	return (void *)GetModuleHandleA(name);
+#else
+	return (void *)dlopen(name, RTLD_NOLOAD);
+#endif
+}
+
+void *mutil_GetModuleBase(const char *name)
+{
+	return (void *)mutil_GetModuleBaseByHandle(mutil_GetModuleHandle(name));
+}
+
+size_t mutil_GetModuleSize(void *hModule)
+{
+#ifdef _WIN32
+	return ((IMAGE_NT_HEADERS *)((char *)hModule + ((IMAGE_DOS_HEADER *)hModule)->e_lfanew))->OptionalHeader.SizeOfImage;
+#else
+	return 0;//wtf?
+#endif
+}
+
+qboolean mutil_IsAddressInModuleRange(void *lpAddress, void *lpModuleBase)
+{
+#ifdef _WIN32
+	return (char *)lpAddress > (char *)lpModuleBase && (char *)lpAddress < (char *)lpModuleBase + mutil_GetModuleSize(lpModuleBase);
+#else
+	Dl_info info;
+	if (dladdr(lpAddress, &info) != 0 && info.dli_fbase == hModule)
+		return true;
+
+	return false;
+#endif
+}
+
+void *mutil_GetGameDllHandle(void)
 {
 	return (void *)GameDLL.handle;
+}
+
+void *mutil_GetGameDllBase(void)
+{
+	return (void *)GameDLL.imagebase;
+}
+
+void *mutil_GetEngineHandle(void)
+{
+	return Engine.info.m_imageHandle;
 }
 
 void *mutil_GetEngineBase(void)
 {
 	return Engine.info.m_imageStart;
+}
+
+void *mutil_GetEngineEnd(void)
+{
+	return Engine.info.m_imageEnd;
 }
 
 void *mutil_GetEngineCodeBase(void)
@@ -420,38 +489,6 @@ qboolean mutil_IsValidCodePointerInEngine(void *ptr)
 {
 	return Engine.info.is_valid_code_pointer(ptr);
 }
-
-void *mutil_GetModuleBase(const char *name)
-{
-#ifdef _WIN32
-	return (void *)GetModuleHandleA(name);
-#else
-	return (void *)dlopen(name, RTLD_NOLOAD);
-#endif
-}
-
-size_t mutil_GetModuleSize(void *hModule)
-{
-#ifdef _WIN32
-	return ((IMAGE_NT_HEADERS *)((char *)hModule + ((IMAGE_DOS_HEADER *)hModule)->e_lfanew))->OptionalHeader.SizeOfImage;
-#else
-	return 0;//wtf?
-#endif
-}
-
-qboolean mutil_IsAddressInModule(void *lpAddress, void *hModule)
-{
-#ifdef _WIN32
-	return (char *)lpAddress > (char *)hModule && (char *)lpAddress < (char *)hModule + mutil_GetModuleSize(hModule);
-#else
-	Dl_info info;
-	if (dladdr(lpAddress, &info) != 0 && info.dli_fbase == hModule)
-		return true;
-
-	return false;
-#endif
-}
-
 
 hook_t *g_pHookBase = NULL;
 
@@ -1112,14 +1149,19 @@ mutil_funcs_t MetaUtilFunctions = {
 	mutil_GetHookTables,   // pfnGetHookTables
 
 	//Added by hzqst
+	mutil_GetModuleBaseByHandle,
+	mutil_GetModuleHandle,
+	mutil_GetModuleBase,
+	mutil_GetModuleSize,
+	mutil_IsAddressInModuleRange,
+	mutil_GetGameDllHandle,
 	mutil_GetGameDllBase,
+	mutil_GetEngineHandle,
 	mutil_GetEngineBase,
+	mutil_GetEngineEnd,
 	mutil_GetEngineCodeBase,
 	mutil_GetEngineCodeEnd,
 	mutil_IsValidCodePointerInEngine,
-	mutil_GetModuleBase,
-	mutil_GetModuleSize,
-	mutil_IsAddressInModule,
 	mutil_UnHook,
 	mutil_InlineHook,
 	mutil_GetNextCallAddr,

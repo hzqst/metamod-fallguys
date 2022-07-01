@@ -35,6 +35,9 @@ static const int  c_EngineInfo__typeLen = 10;
 class EngineInfo : public class_metamod_new
 {
 	public:
+
+	DLHANDLE m_imageHandle;
+
 	// data :
 	MemAddr m_imageStart;
 	MemAddr m_imageEnd;
@@ -65,14 +68,14 @@ class EngineInfo : public class_metamod_new
 
         // Set info using the PE header found by module name.
         // Returns 0 on success, error code on failure.
-        int DLLINTERNAL nthdr_module_name( void );
+	int DLLINTERNAL nthdr_module_name( void );
 
 	int DLLINTERNAL vac_pe_approx( enginefuncs_t* pFuncs );
 
         // Set code segment start and end from PEheader. The base
         // address, that relative addresses are based on, is passed in
         // pBase.
-        void DLLINTERNAL set_code_range( unsigned char* pBase, PIMAGE_NT_HEADERS pNThdr );
+	void DLLINTERNAL set_code_range( unsigned char* pBase, PIMAGE_NT_HEADERS pNThdr );
 
 #else
         
@@ -84,11 +87,11 @@ class EngineInfo : public class_metamod_new
 	int DLLINTERNAL phdr_dladdr( void* pMem );
         // Set info using the Programheader found via ELF header passed as
         // pElfHdr. Return 0 on success, error code on failure.
-	int DLLINTERNAL phdr_elfhdr( void* pElfHdr );
+	int DLLINTERNAL phdr_elfhdr( const char *_pszFileName, void* pElfHdr );
         // Set code segment start and end from Programheader. The base
         // address, that relative addresses are based on, is passed in
         // pBase.
-        void DLLINTERNAL set_code_range( void* pBase, ElfW(Phdr)* pPhdr );
+	void DLLINTERNAL set_code_range( void* pBase, ElfW(Phdr)* pPhdr );
         
 #endif /* _WIN32 */ 
 
@@ -147,6 +150,9 @@ class EngineInfo : public class_metamod_new
 // We probably should run an initialisation here without a reference
 // pointer so that the object has valid info in any case. 
 inline EngineInfo::EngineInfo() :
+	m_imageHandle(NULL),
+	m_imageStart(NULL),
+	m_imageEnd(NULL),
 	m_codeStart(NULL),
 	m_codeEnd(NULL),
 	m_state(STATE_NULL)
@@ -156,6 +162,9 @@ inline EngineInfo::EngineInfo() :
 
 
 inline EngineInfo::EngineInfo( const EngineInfo& _rhs) :
+	m_imageHandle(_rhs.m_imageHandle),
+	m_imageStart(_rhs.m_imageStart),
+	m_imageEnd(_rhs.m_imageEnd),
 	m_codeStart(_rhs.m_codeStart),
 	m_codeEnd(_rhs.m_codeEnd),
 	m_state(STATE_NULL)
@@ -167,6 +176,9 @@ inline EngineInfo::EngineInfo( const EngineInfo& _rhs) :
 inline EngineInfo& EngineInfo::operator=( const EngineInfo& _rhs)
 {
 	m_state = _rhs.m_state;
+	m_imageHandle = _rhs.m_imageHandle;
+	m_imageStart = _rhs.m_imageStart;
+	m_imageEnd = _rhs.m_imageEnd;
 	m_codeStart = _rhs.m_codeStart;
 	m_codeEnd = _rhs.m_codeEnd;
 	memcpy( m_type, _rhs.m_type, c_EngineInfo__typeLen );

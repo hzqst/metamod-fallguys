@@ -161,6 +161,8 @@ int DLLINTERNAL EngineInfo::nthdr_module_name( void )
 		return INVALID_NT_SIGN;
 	}
 
+	m_imageHandle = (DLHANDLE)pBaseAddr;
+
 	set_code_range( pBaseAddr, pNTHeader );
 	return 0;
 }
@@ -229,13 +231,14 @@ void DLLINTERNAL EngineInfo::set_code_range( unsigned char* _pBase, PIMAGE_NT_HE
 
 #else /* _WIN32 */
 
-
-int DLLINTERNAL EngineInfo::phdr_elfhdr( void* _pElfHdr )
+int DLLINTERNAL EngineInfo::phdr_elfhdr( const char *_pszFileName, void* _pElfHdr )
 {
 	ElfW(Ehdr)* pEhdr = (ElfW(Ehdr)*)_pElfHdr;
 	ElfW(Phdr)* pPhdr;
 
 	if ( NULL == _pElfHdr ) return INVALID_ARG;
+
+	m_imageHandle = dlopen(_pszFileName, RTLD_NOLOAD);
 
 	m_imageStart = _pElfHdr;
 	m_imageEnd = NULL;
@@ -288,7 +291,9 @@ int DLLINTERNAL EngineInfo::phdr_dladdr( void* _pMem )
 	if ( 0 != dladdr(_pMem, &info) ) {
 		// Check if this is the engine module
 		if ( check_for_engine_module(info.dli_fname) ) {
-		   return phdr_elfhdr( info.dli_fbase );
+
+
+		   return phdr_elfhdr(info.dli_fname, info.dli_fbase );
 		}
 	}
 
@@ -323,7 +328,7 @@ int DLLINTERNAL EngineInfo::phdr_r_debug( void )
 		while ( pMap->l_prev != NULL ) pMap = pMap->l_prev;
 		do {
 			if ( check_for_engine_module(pMap->l_name) ) {
-				return phdr_elfhdr( (void*)pMap->l_addr );
+				return phdr_elfhdr(pMap->l_name, (void*)pMap->l_addr );
 			}
 
 			pMap = pMap->l_next;

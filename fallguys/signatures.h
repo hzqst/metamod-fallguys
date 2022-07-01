@@ -10,7 +10,7 @@
 
 #ifdef _WIN32
 
-#define LOCATE_FROM_SIGNATURE(dll, sig) gpMetaUtilFuncs->pfnSearchPattern(dll, gpMetaUtilFuncs->pfnGetModuleSize(dll), sig, sizeof(sig) - 1);
+#define LOCATE_FROM_SIGNATURE(dll, sig) gpMetaUtilFuncs->pfnSearchPattern(dll, gpMetaUtilFuncs->pfnGetModuleSize(dll), sig, sizeof(sig) - 1)
 
 #define SV_PushEntity_Signature "\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC4\x89\x44\x24\x2A\x8B\x84\x24\x2A\x00\x00\x00"
 #define SV_PushMove_Signature "\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC4\x89\x44\x24\x2A\x2A\x8B\xBC\x24\x88\x00\x00\x00\xD9"
@@ -27,7 +27,7 @@
 #define _ARRAYSIZE(A)   (sizeof(A)/sizeof((A)[0]))
 #endif
 
-#define LOCATE_FROM_SIGNATURE(dll, sig) dlsym(dll, sig);
+#define LOCATE_FROM_SIGNATURE(dll, sig) DLSYM(dll, sig)
 
 #define SV_PushEntity_Signature "_Z13SV_PushEntityP7edict_sPf"
 #define SV_PushMove_Signature "_Z11SV_PushMoveP7edict_sf"

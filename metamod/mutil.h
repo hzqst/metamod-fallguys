@@ -111,14 +111,19 @@ typedef struct meta_util_funcs_s {
 	void (*pfnGetHookTables) (plid_t plid, enginefuncs_t **peng, DLL_FUNCTIONS **pdll, NEW_DLL_FUNCTIONS **pnewdll);
 
 	//Added by hzqst
-	void *(*pfnGetGameDllBase)(void);
-	void *(*pfnGetEngineBase)(void);
-	void *(*pfnGetEngineCodeBase)(void);
-	void *(*pfnGetEngineCodeEnd)(void);
+	void *   (*pfnGetModuleBaseByHandle)(void *hModule);
+	void *   (*pfnGetModuleHandle)(const char *name);
+	void *   (*pfnGetModuleBase)(const char *name);
+	size_t   (*pfnGetModuleSize)(void *hModule);
+	qboolean (*pfnIsAddressInModuleRange)(void *lpAddress, void *lpModuleBase);
+	void *   (*pfnGetGameDllHandle)(void);
+	void *   (*pfnGetGameDllBase)(void);
+	void *   (*pfnGetEngineHandle)(void);
+	void *   (*pfnGetEngineBase)(void);
+	void *   (*pfnGetEngineEnd)(void);
+	void *   (*pfnGetEngineCodeBase)(void);
+	void *   (*pfnGetEngineCodeEnd)(void);
 	qboolean(*pfnIsValidCodePointerInEngine)(void *ptr);
-	void *(*pfnGetModuleBase)(const char *name);
-	size_t(*pfnGetModuleSize)(void *hModule);
-	qboolean(*pfnIsAddressInModule)(void *lpAddress, void *hModule);
 	qboolean(*pfnUnHook)(hook_t *pHook);
 	hook_t *(*pfnInlineHook)(void *pOldFuncAddr, void *pNewFuncAddr, void **pOrginalCall, bool bTranscation);
 	void *(*pfnGetNextCallAddr)(void *pAddress, int dwCount);

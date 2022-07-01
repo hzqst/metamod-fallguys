@@ -73,7 +73,7 @@ int GetRunPlayerMovePlayerIndex()
 
 void InstallEngineHooks()
 {
-	//INSTALL_INLINEHOOK(SV_PushEntity);
+	INSTALL_INLINEHOOK(SV_PushEntity);
 	INSTALL_INLINEHOOK(SV_PushMove);
 	INSTALL_INLINEHOOK(SV_PushRotate);
 }

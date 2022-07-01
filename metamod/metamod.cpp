@@ -372,6 +372,8 @@ mBOOL DLLINTERNAL meta_load_gamedll(void) {
 		RETURN_ERRNO(mFALSE, ME_DLOPEN);
 	}
 
+	GameDLL.imagebase = MetaUtilFunctions.pfnGetModuleBaseByHandle(GameDLL.handle);
+
 	// Used to only pass our table of engine funcs if a loaded plugin
 	// wanted to catch one of the functions, but now that plugins are
 	// dynamically loadable at any time, we have to always pass our table,

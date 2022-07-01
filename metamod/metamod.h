@@ -77,6 +77,7 @@ typedef struct gamedll_s {
 	char const *file;			// ie "cs_i386.so"
 	char real_pathname[PATH_MAX];	// in case pathname overridden by bot, etc
 	DLHANDLE handle;
+	void *imagebase;
 	gamedll_funcs_t funcs;		// dllapi_table, newapi_table
 } gamedll_t;
 extern gamedll_t GameDLL DLLHIDDEN;
