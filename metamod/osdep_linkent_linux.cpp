@@ -123,7 +123,8 @@ static void * __replacement_dlsym(void * pmodule, const char * funcname)
 	//it but some LD_PRELOADed library that hooks dlsym might actually
 	//do so.
 
-#if 1
+#if 0
+
 	//Added by hzqst, as simple as possible
 	auto r = dlsym_original(pmodule, funcname);
 	if (!r && pmodule == metamod_module_handle && metamod_module_handle && gamedll_module_handle)
@@ -214,7 +215,7 @@ int DLLINTERNAL init_linkent_replacement(DLHANDLE MetamodHandle, DLHANDLE GameDl
 	}
 	
 	dlsym_original = (dlsym_func)sym_ptr;
-#if 1
+#if 0
 	//Added by hzqst, use mutil
 	MetaUtilFunctions.pfnInlineHook(sym_ptr, (void *)__replacement_dlsym, (void **)&dlsym_original, false);
 
