@@ -576,6 +576,7 @@ hook_t *mutil_InlineHook(void *pOldFuncAddr, void *pNewFuncAddr, void **pOrginal
 	hook_t *h = mutil_NewHook(MH_HOOK_INLINE);
 	h->pOldFuncAddr = pOldFuncAddr;
 	h->pNewFuncAddr = pNewFuncAddr;
+	h->pOrginalCall = pOrginalCall;
 
 	if (!pOrginalCall)
 	{
@@ -588,7 +589,6 @@ hook_t *mutil_InlineHook(void *pOldFuncAddr, void *pNewFuncAddr, void **pOrginal
 
 	if (bTranscation)
 	{
-		h->pOrginalCall = pOrginalCall;
 		h->bCommitted = false;
 	}
 	else
