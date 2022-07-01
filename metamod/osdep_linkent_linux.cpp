@@ -126,7 +126,7 @@ static void * __replacement_dlsym(void * pmodule, const char * funcname)
 #if 1
 	//Added by hzqst, as simple as possible
 	auto r = dlsym_original(pmodule, funcname);
-	if (!r && gamedll_module_handle)
+	if (!r && pmodule == metamod_module_handle && metamod_module_handle && gamedll_module_handle)
 	{
 		r = dlsym_original(gamedll_module_handle, funcname);
 	}
