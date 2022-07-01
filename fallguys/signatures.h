@@ -10,7 +10,7 @@
 
 #ifdef _WIN32
 
-#define LOCATE_FROM_SIGNATURE(dll, sig) gpMetaUtilFuncs->pfnSearchPattern(dll, gpMetaUtilFuncs->pfnGetModuleSize(dll), sig, sizeof(sig) - 1)
+#define LOCATE_FROM_SIGNATURE(dll, sig) gpMetaUtilFuncs->pfnSearchPattern(dll##Base, gpMetaUtilFuncs->pfnGetModuleSize(dll##Base), sig, sizeof(sig) - 1)
 
 #define SV_PushEntity_Signature "\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC4\x89\x44\x24\x2A\x8B\x84\x24\x2A\x00\x00\x00"
 #define SV_PushMove_Signature "\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC4\x89\x44\x24\x2A\x2A\x8B\xBC\x24\x88\x00\x00\x00\xD9"
@@ -27,7 +27,7 @@
 #define _ARRAYSIZE(A)   (sizeof(A)/sizeof((A)[0]))
 #endif
 
-#define LOCATE_FROM_SIGNATURE(dll, sig) DLSYM(dll, sig)
+#define LOCATE_FROM_SIGNATURE(dll, sig) DLSYM(dll##Handle, sig)
 
 #define SV_PushEntity_Signature "_Z13SV_PushEntityP7edict_sPf"
 #define SV_PushMove_Signature "_Z11SV_PushMoveP7edict_sf"
@@ -41,7 +41,7 @@
 
 #endif
 
-#define IMPORT_FUNCTION_DLSYM(dll, name) name = (decltype(name))DLSYM((DLHANDLE)dll, #name);\
+#define IMPORT_FUNCTION_DLSYM(dll, name) name = (decltype(name))DLSYM((DLHANDLE)dll##Handle, #name);\
 if (!name)\
 {\
 	LOG_ERROR(PLID, "Failed to get " #name " from " #dll " dll !");\
@@ -62,7 +62,7 @@ if (!Caller_of_##name)\
 	return FALSE;\
 }\
 g_pfn_##name = g_call_original_##name = (decltype(g_pfn_##name))gpMetaUtilFuncs->pfnGetNextCallAddr(Caller_of_##name + (offset), 1);\
-if (!gpMetaUtilFuncs->pfnIsAddressInModule(((void *)g_pfn_##name, dll))\
+if (!gpMetaUtilFuncs->pfnIsAddressInModuleRange(((void *)g_pfn_##name, dll##Base))\
 {\
 LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll ! got %p", ((void *)g_pfn_##name); \
 return FALSE; \
@@ -75,7 +75,7 @@ if (!Caller_of_##name)\
 	return FALSE;\
 }\
 g_pfn_##name = g_call_original_##name = (decltype(g_pfn_##name))gpMetaUtilFuncs->pfnGetNextCallAddr(Caller_of_##name + (sizeof(name##_Signature) - 1) + (offset), 1);\
-if (!gpMetaUtilFuncs->pfnIsAddressInModule((void *)g_pfn_##name, dll))\
+if (!gpMetaUtilFuncs->pfnIsAddressInModuleRange((void *)g_pfn_##name, dll##Base))\
 {\
 LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !"); \
 return FALSE; \

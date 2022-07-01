@@ -124,38 +124,23 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 	gpGamedllFuncs = pGamedllFuncs;
 
-	auto engine = gpMetaUtilFuncs->pfnGetEngineBase();
+	auto engineHandle = gpMetaUtilFuncs->pfnGetEngineHandle();
+	auto engineBase = gpMetaUtilFuncs->pfnGetEngineBase();
 
-	if (!engine)
-	{
-		engine = gpMetaUtilFuncs->pfnGetModuleBase(ENGINE_DLL_NAME);
-	}
-
-	if (!engine)
-	{
-		engine = gpMetaUtilFuncs->pfnGetModuleBase("engine_i686.so");
-	}
-
-
-	if (!engine)
-	{
-		engine = gpMetaUtilFuncs->pfnGetModuleBase("engine_amd.so");
-	}
-
-	if (!engine)
+	if (!engineHandle || !engineBase)
 	{
 		LOG_ERROR(PLID, "engine dll not found!");
 		return FALSE;
 	}
 
-	void *asext = NULL;
+	void *asextHandle = NULL;
 
 #ifdef _WIN32
-	LOAD_PLUGIN(PLID, "addons/metamod/dlls/asext.dll", PLUG_LOADTIME::PT_ANYTIME, &asext);
+	LOAD_PLUGIN(PLID, "addons/metamod/dlls/asext.dll", PLUG_LOADTIME::PT_ANYTIME, &asextHandle);
 #else
-	LOAD_PLUGIN(PLID, "addons/metamod/dlls/asext.so", PLUG_LOADTIME::PT_ANYTIME, &asext);
+	LOAD_PLUGIN(PLID, "addons/metamod/dlls/asext.so", PLUG_LOADTIME::PT_ANYTIME, &asextHandle);
 #endif
-	if (!asext)
+	if (!asextHandle)
 	{
 		LOG_ERROR(PLID, "asext dll not found!");
 		return FALSE;
@@ -190,7 +175,6 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 
 #endif
-
 
 	InstallEngineHooks();
 	RegisterAngelScriptMethods();

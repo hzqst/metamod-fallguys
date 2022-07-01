@@ -120,9 +120,10 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	memcpy(pFunctionTable, &gMetaFunctionTable, sizeof(META_FUNCTIONS));
 	gpGamedllFuncs = pGamedllFuncs;
 
-	auto server = gpMetaUtilFuncs->pfnGetGameDllBase();
+	auto serverHandle = gpMetaUtilFuncs->pfnGetGameDllHandle();
+	auto serverBase = gpMetaUtilFuncs->pfnGetGameDllBase();
 
-	if (!server)
+	if (!serverHandle || !serverBase)
 	{
 		LOG_ERROR(PLID, "server dll not found!");
 		return FALSE;
