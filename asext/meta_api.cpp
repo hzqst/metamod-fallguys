@@ -123,9 +123,15 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	auto serverHandle = gpMetaUtilFuncs->pfnGetGameDllHandle();
 	auto serverBase = gpMetaUtilFuncs->pfnGetGameDllBase();
 
-	if (!serverHandle || !serverBase)
+	if (!serverHandle)
 	{
-		LOG_ERROR(PLID, "server dll not found!");
+		LOG_ERROR(PLID, "server handle not found!");
+		return FALSE;
+	}
+
+	if (!serverBase)
+	{
+		LOG_ERROR(PLID, "server base not found!");
 		return FALSE;
 	}
 

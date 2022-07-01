@@ -127,9 +127,15 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	auto engineHandle = gpMetaUtilFuncs->pfnGetEngineHandle();
 	auto engineBase = gpMetaUtilFuncs->pfnGetEngineBase();
 
-	if (!engineHandle || !engineBase)
+	if (!engineHandle)
 	{
-		LOG_ERROR(PLID, "engine dll not found!");
+		LOG_ERROR(PLID, "engine handle not found!");
+		return FALSE;
+	}
+
+	if (!engineBase)
+	{
+		LOG_ERROR(PLID, "engine base not found!");
 		return FALSE;
 	}
 
@@ -142,7 +148,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 #endif
 	if (!asextHandle)
 	{
-		LOG_ERROR(PLID, "asext dll not found!");
+		LOG_ERROR(PLID, "asext dll handle not found!");
 		return FALSE;
 	}
 
