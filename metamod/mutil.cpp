@@ -404,10 +404,10 @@ void * mutil_GetModuleBaseByHandle(void *hModule)
 	struct link_map *map = NULL;
 	if (0 == dlinfo(hModule, RTLD_DI_LINKMAP, &map))
 	{
-		void *base = NULL;
-		if (0 == dladdr((void *)map->l_ld, &base))
+		Dl_info info;
+		if (0 == dladdr((void *)map->l_ld, &info))
 		{
-			return base;
+			return info.dli_fbase;
 		}
 	}
 	return NULL;
