@@ -545,12 +545,11 @@ void mutil_FreeHook(hook_t *pHook)
 
 			pHook->pInfo = NULL;
 		}
-	}
-
-	if (pHook->pInfo)
-	{
-		delete pHook->pInfo;
-		pHook->pInfo = NULL;
+		else
+		{
+			d->Destroy();
+			pHook->pInfo = NULL;
+		}
 	}
 
 	delete pHook;

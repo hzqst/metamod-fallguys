@@ -30,7 +30,7 @@ typedef struct brushface_s
 
 typedef struct vertexarray_s
 {
-	struct vertexarray_s()
+	vertexarray_s()
 	{
 	}
 	std::vector<brushvertex_t> vVertexBuffer;
@@ -39,7 +39,7 @@ typedef struct vertexarray_s
 
 typedef struct indexarray_s
 {
-	struct indexarray_s()
+	indexarray_s()
 	{
 	}
 	std::vector<int> vIndiceBuffer;
@@ -469,14 +469,15 @@ public:
 
 		m_physics.emplace_back(physobj);
 	}
-
+	//cpp14 not support
+#if 0
 	void RemovePhysicObject(CPhysicObject *physobj, btDiscreteDynamicsWorld* world, int *numDynamicObjects)
 	{
 		physobj->RemoveFromPhysicWorld(world, numDynamicObjects);
 
 		m_physics.erase(std::find(m_physics.begin(), m_physics.end(), physobj));
 	}
-
+#endif
 	void RemoveAllPhysicObjects(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
 	{
 		for (size_t i = 0; i < m_physics.size(); ++i)
