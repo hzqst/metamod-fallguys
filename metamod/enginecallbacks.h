@@ -57,6 +57,10 @@
 
 #include <enginecallback.h>		// ALERT, etc
 
+#include <com_model.h>				// 2022/07/02 Added by hzqst, do we need this for studio blending api hijacking?
+#include <studio.h>					// 2022/07/02 Added by hzqst, do we need this for studio blending api hijacking?
+#include <r_studioint.h>			// 2022/07/02 Added by hzqst, do we need this for studio blending api hijacking?
+
 #ifdef __METAMOD_BUILD__
 #  undef enginefuncs_t
 #endif /* METAMOD_CORE */

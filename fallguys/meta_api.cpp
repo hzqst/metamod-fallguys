@@ -59,6 +59,8 @@ static META_FUNCTIONS gMetaFunctionTable = {
 	NULL,			// pfnGetNewDLLFunctions_Post	META; called after game DLL
 	GetEngineFunctions,	// pfnGetEngineFunctions	META; called before HL engine
 	NULL,			// pfnGetEngineFunctions_Post	META; called after HL engine
+	NULL,			// pfnGetStudioBlendingInterface 2022/07/02 Added by hzqst
+	NULL,			// pfnGetStudioBlendingInterface_Post 2022/07/02 Added by hzqst
 };
 
 // Description of plugin

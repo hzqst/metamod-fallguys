@@ -90,6 +90,8 @@ int requestid_counter = 0;
 DLHANDLE metamod_handle;
 int metamod_not_loaded = 0;
 
+//2022-07 hzqst
+
 void mutil_CommitHooks(void);
 
 // Very first metamod function that's run.
@@ -267,7 +269,7 @@ int DLLINTERNAL metamod_startup(void) {
 		// Exit on failure here?  Dunno...
 	}
 
-	//Commit inline-hooks which was installed by plugins
+	//Commit inline-hooks which was installed by plugins in Plugins->load
 	mutil_CommitHooks();
 
 	// Allow for commands to metamod plugins at startup.  Autoexec.cfg is
@@ -462,5 +464,6 @@ mBOOL DLLINTERNAL meta_load_gamedll(void) {
 	}
 
 	META_LOG("Game DLL for '%s' loaded successfully", GameDLL.desc);
+
 	return(mTRUE);
 }

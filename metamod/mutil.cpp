@@ -52,7 +52,7 @@
 #include "osdep.h"			// win32 vsnprintf, etc
 #include "sdk_util.h"		// ALERT, etc
 
-//Added by hzqst
+//2022-07 Added by hzqst
 #include "detours.h"		// ALERT, etc
 #include <capstone.h>
 
@@ -394,7 +394,7 @@ static void mutil_GetHookTables(plid_t plid, enginefuncs_t **peng, DLL_FUNCTIONS
 		*pnewdll = g_pHookedNewDllFunctions;
 }
 
-//Added by hzqst
+//2022-07 Added by hzqst
 
 void * mutil_GetModuleBaseByHandle(void *hModule)
 {
@@ -1150,7 +1150,7 @@ mutil_funcs_t MetaUtilFunctions = {
 	mutil_MakeRequestID, 	// pfnMakeRequestID
 	mutil_GetHookTables,   // pfnGetHookTables
 
-	//Added by hzqst
+	//2022-07 Added by hzqst
 	mutil_GetModuleBaseByHandle,
 	mutil_GetModuleHandle,
 	mutil_GetModuleBase,

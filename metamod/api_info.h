@@ -51,6 +51,7 @@ typedef enum enum_api_t {
 	e_api_engine = 0,
 	e_api_dllapi = 1,
 	e_api_newapi = 2,
+	e_api_studioapi = 3,
 } enum_api_t;
 
 // API caller function prototype
@@ -133,6 +134,11 @@ typedef struct newapi_info_s {
 	api_info_t END;
 } newapi_info_t;
 
+// 2022/07/02 Added by hzqst "Studio Blending Interface" api functions
+typedef struct studioapi_info_s {
+	api_info_t SV_StudioSetupBones;
+	api_info_t END;
+} studioapi_info_t;
 
 // Engine functions
 typedef struct engine_info_s {
@@ -307,6 +313,7 @@ typedef struct engine_info_s {
 
 extern const dllapi_info_t dllapi_info DLLHIDDEN;
 extern const newapi_info_t newapi_info DLLHIDDEN;
+extern const studioapi_info_t studioapi_info DLLHIDDEN;
 extern const engine_info_t engine_info DLLHIDDEN;
 
 #endif /* API_INFO_H */

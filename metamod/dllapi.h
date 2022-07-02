@@ -45,6 +45,8 @@
 typedef int (*GETENTITYAPI_FN) (DLL_FUNCTIONS *pFunctionTable, int interfaceVersion);
 typedef int (*GETENTITYAPI2_FN) (DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion);
 typedef int (*GETNEWDLLFUNCTIONS_FN) (NEW_DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion);
+// 2022/07/02 hzqst
+typedef int (*GETSTUDIOBLENDINGINTERFACE_FN) (sv_blending_interface_t *pStudioBlendingInterface, int *interfaceVersion);
 
 // From SDK dlls/cbase.h:
 C_DLLEXPORT int GetEntityAPI( DLL_FUNCTIONS *pFunctionTable, int interfaceVersion );
@@ -55,6 +57,8 @@ C_DLLEXPORT int GetEntityAPI2( DLL_FUNCTIONS *pFunctionTable, int *interfaceVers
 C_DLLEXPORT int GetNewDLLFunctions( NEW_DLL_FUNCTIONS *pNewFunctionTable, int *interfaceVersion );
 
 // Typedefs for the above functions:
+
+typedef void(*FN_STUDIOSETUPBONES)(model_t *pModel, float frame, int sequence, const float *angles, const float *origin, const byte *pcontroller, const byte *pblending, int iBone, const edict_t *edict);
 
 typedef void (*FN_GAMEINIT) ( void );
 typedef int (*FN_DISPATCHSPAWN) ( edict_t *pent );

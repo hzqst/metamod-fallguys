@@ -311,6 +311,15 @@ PACK_ARGS_CLASS_HEADER(pi2p2ip, (const void *_p1, int _i1, const void *_p2, cons
 	const void *p4;
 PACK_ARGS_END
 
+//-2022/07/02 Added by hzqst
+PACK_ARGS_CLASS_HEADER(pfi4pip, (const void *_p1, float _f1, int _i1, const void *_p2, const void *_p3, const void *_p4, const void *_p5, int _i2,  const void *_p6)) : p1(_p1), f1(_f1), i1(_i1), p2(_p2), p3(_p3), p4(_p4), p5(_p5), i2(_i2), p6(_p6) {};
+const void *p1;
+float f1;
+int i1;
+const void *p2, *p3, *p4, *p5;
+int i2;
+const void *p6;
+PACK_ARGS_END
 //
 // API function callers.
 //
@@ -394,4 +403,6 @@ EXTERN_API_CALLER_FUNCTION(ptr, pip);
 EXTERN_API_CALLER_FUNCTION(void, pip2f2i);
 EXTERN_API_CALLER_FUNCTION(void, pip2f4i2p);
 
+// 2022/07/02 Added by hzqst "Studio Blending Interface" api functions
+EXTERN_API_CALLER_FUNCTION(void, pfi4pip);
 #endif /*API_HOOK_H*/

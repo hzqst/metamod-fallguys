@@ -11,13 +11,10 @@
 #include <pmtrace.h>
 #include <pm_defs.h>
 
-const int BMASK_WORLD = 1;
-const int BMASK_BRUSH = 2;
-const int BMASK_PLAYER = 4;
-const int BMASK_DYNAMIC = 8;
-const int BMASK_DYNAMIC_PUSHABLE = 16;
-const int BMASK_ALL = (BMASK_WORLD | BMASK_BRUSH | BMASK_PLAYER | BMASK_DYNAMIC | BMASK_DYNAMIC_PUSHABLE);
-const int BMASK_ALL_NONPLAYER = (BMASK_WORLD | BMASK_BRUSH | BMASK_DYNAMIC | BMASK_DYNAMIC_PUSHABLE);
+enum FallGuysCollisionFilterGroups
+{
+	PlayerFilter = 0x40,
+};
 
 typedef struct brushvertex_s
 {
@@ -33,57 +30,36 @@ typedef struct brushface_s
 
 typedef struct vertexarray_s
 {
-	vertexarray_s()
+	struct vertexarray_s()
 	{
-		bIsDynamic = false;
 	}
 	std::vector<brushvertex_t> vVertexBuffer;
 	std::vector<brushface_t> vFaceBuffer;
-	bool bIsDynamic;
 }vertexarray_t;
 
 typedef struct indexarray_s
 {
-	indexarray_s()
+	struct indexarray_s()
 	{
-		bIsDynamic = false;
 	}
 	std::vector<int> vIndiceBuffer;
-	bool bIsDynamic;
 }indexarray_t;
 
+class CGameObject;
+
 ATTRIBUTE_ALIGNED16(class)
-CGameObject
+CPhysicObject
 {
 public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
-
-	CGameObject(edict_t *ent, int entindex) : m_ent(ent), m_entindex(entindex)
+	CPhysicObject(CGameObject *obj) : m_gameobj(obj)
 	{
-		m_lod_flags = 0;
-		m_lod_body0 = 0;
-		m_lod_body1 = 0;
-		m_lod_body2 = 0;
-		m_lod_body3 = 0;
-		m_lod_scale0 = 0;
-		m_lod_scale1 = 0;
-		m_lod_scale2 = 0;
-		m_lod_scale3 = 0;
-		m_lod_distance1 = 0;
-		m_lod_distance2 = 0;
-		m_lod_distance3 = 0;
-		m_partial_viewer_mask = 0;
+		
 	}
 
-	virtual ~CGameObject()
+	virtual ~CPhysicObject()
 	{
-		m_entindex = -1;
-		m_ent = NULL;
-	}
-
-	virtual bool IsPhysic() const
-	{
-		return false;
+		m_gameobj = NULL;
 	}
 
 	virtual bool IsDynamic() const
@@ -101,187 +77,160 @@ public:
 		return false;
 	}
 
-	virtual bool IsPlayer() const 
+	virtual bool IsPlayer() const
 	{
 		return false;
-	}
-
-	virtual bool IsSuperPusher() const
-	{
-		return false;
-	}
-
-	virtual void SetSuperPusher(bool superpusher)
-	{
-
-	}
-
-	virtual void StartFrame()
-	{
-		
-	}
-
-	virtual void StartFrame_Post()
-	{
-	
 	}
 
 	virtual void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
 	{
 
 	}
-	
+
 	virtual void RemoveFromPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
 	{
 
 	}
 
-	int GetEntIndex()
+	virtual void StartFrame(btDiscreteDynamicsWorld* world)
 	{
-		return m_entindex;
+
 	}
 
-	edict_t *GetEdict()
+	virtual void StartFrame_Post(btDiscreteDynamicsWorld* world)
 	{
-		return m_ent;
+
 	}
 
-	int GetLevelOfDetailFlags() const
+	virtual bool SetAbsBox(edict_t *ent)
 	{
-		return m_lod_flags;
+		return false;
 	}
 
-	void ApplyLevelOfDetail(float distance, int *body, int *modelindex, float *scale)
+	virtual int PM_CheckStuck(int hitent, physent_t *blocker, vec3_t *impactvelocity)
 	{
-		if (m_lod_distance3 > 0 && distance > m_lod_distance3)
-		{
-			if ((m_lod_flags & LOD_BODY) && m_lod_body3 >= 0)
-				*body = m_lod_body3;
-			else if((m_lod_flags & LOD_MODELINDEX) && m_lod_body3 >= 0)
-				*modelindex = m_lod_body3;
-			
-			if (m_lod_flags & LOD_SCALE_INTERP)
-			{
-				*scale = m_lod_scale3;
-			}
-			else if (m_lod_flags & LOD_SCALE)
-			{
-				*scale = m_lod_scale3;
-			}
-		}
-		else if (m_lod_distance2 > 0 && distance > m_lod_distance2)
-		{
-			if ((m_lod_flags & LOD_BODY) && m_lod_body2 >= 0)
-				*body = m_lod_body2;
-			else if ((m_lod_flags & LOD_MODELINDEX) && m_lod_body2 >= 0)
-				*modelindex = m_lod_body2;
-
-			if (m_lod_flags & LOD_SCALE_INTERP)
-			{
-				*scale = m_lod_scale2 + (m_lod_scale3 - m_lod_scale2) * (distance - m_lod_distance2) / (m_lod_distance3 - m_lod_distance2);
-			}
-			else if (m_lod_flags & LOD_SCALE)
-			{
-				*scale = m_lod_scale2;
-			}
-		}
-		else if (m_lod_distance1 > 0 && distance > m_lod_distance1)
-		{
-			if ((m_lod_flags & LOD_BODY) && m_lod_body1 >= 0)
-				*body = m_lod_body1;
-			else if ((m_lod_flags & LOD_MODELINDEX) && m_lod_body1 >= 0)
-				*modelindex = m_lod_body1;
-
-			if (m_lod_flags & LOD_SCALE_INTERP)
-			{
-				*scale = m_lod_scale1 + (m_lod_scale2 - m_lod_scale1) * (distance - m_lod_distance1) / (m_lod_distance2 - m_lod_distance1);
-			}
-			else if (m_lod_flags & LOD_SCALE)
-			{
-				*scale = m_lod_scale1;
-			}
-		}
-		else
-		{
-			if ((m_lod_flags & LOD_BODY) && m_lod_body0 >= 0)
-				*body = m_lod_body0;
-			else if ((m_lod_flags & LOD_MODELINDEX) && m_lod_body0 >= 0)
-				*modelindex = m_lod_body0;
-
-			if (m_lod_flags & LOD_SCALE_INTERP)
-			{
-				*scale = m_lod_scale0 + (m_lod_scale1 - m_lod_scale0) * (distance - 0) / (m_lod_distance1 - 0);
-			}
-			else if (m_lod_flags & LOD_SCALE)
-			{
-				*scale = m_lod_scale0;
-			}
-		}
+		return 0;
 	}
 
-	void SetLevelOfDetail(int flags, int body_0, float scale_0, int body_1, float scale_1, float distance_1, int body_2, float scale_2, float distance_2, int body_3, float scale_3, float distance_3)
+	CGameObject *GetGameObject() const
 	{
-		m_lod_flags = flags;
-		m_lod_body0 = body_0;
-		m_lod_body1 = body_1;
-		m_lod_body2 = body_2;
-		m_lod_body3 = body_3;
-		m_lod_scale0 = scale_0;
-		m_lod_scale1 = scale_1;
-		m_lod_scale2 = scale_2;
-		m_lod_scale3 = scale_3;
-		m_lod_distance1 = distance_1;
-		m_lod_distance2 = distance_2;
-		m_lod_distance3 = distance_3;
+		return m_gameobj;
 	}
 
-	void SetPartialViewer(int viewer_mask)
+	void SetGameObject(CGameObject *gameobj)
 	{
-		m_partial_viewer_mask = viewer_mask;
+		m_gameobj = gameobj;
 	}
-
-	int GetPartialViewerMask() const
-	{
-		return m_partial_viewer_mask;
-	}
-
-protected:
-	edict_t *m_ent;
-	int m_entindex;
 
 private:
-	int m_lod_flags;
-
-	int m_lod_body0;
-	int m_lod_body1;
-	int m_lod_body2;
-	int m_lod_body3;
-
-	float m_lod_scale0;
-	float m_lod_scale1;
-	float m_lod_scale2;
-	float m_lod_scale3;
-
-	float m_lod_distance1;
-	float m_lod_distance2;
-	float m_lod_distance3;
-
-private:
-	int m_partial_viewer_mask;
+	CGameObject *m_gameobj;
 };
 
 ATTRIBUTE_ALIGNED16(class)
-CPhysicObject : public CGameObject
+CGhostPhysicObject : public CPhysicObject
 {
 public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
-	CPhysicObject(edict_t *ent, int entindex, int group, int mask) : CGameObject(ent, entindex)
+	CGhostPhysicObject(CGameObject *obj) : CPhysicObject(obj)
+	{
+		m_ghostobj = NULL;
+	}
+	~CGhostPhysicObject()
+	{
+		//Should be removed from world before free
+		if (m_ghostobj)
+		{
+			delete m_ghostobj;
+			m_ghostobj = NULL;
+		}
+	}
+
+	virtual void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
+	{
+		if (m_ghostobj)
+		{
+			world->addCollisionObject(m_ghostobj, btBroadphaseProxy::SensorTrigger, btBroadphaseProxy::DefaultFilter);
+
+			(*numDynamicObjects)++;
+		}
+	}
+
+	virtual void RemoveFromPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
+	{
+		if (m_ghostobj)
+		{
+			world->removeCollisionObject(m_ghostobj);
+
+			(*numDynamicObjects)--;
+		}
+	}
+
+	void SetGhostObject(btPairCachingGhostObject* ghostobj)
+	{
+		m_ghostobj = ghostobj;
+		m_ghostobj->setUserPointer(this);
+	}
+
+	btPairCachingGhostObject* GetGhostObject()
+	{
+		return m_ghostobj;
+	}
+
+private:
+	btPairCachingGhostObject* m_ghostobj;
+};
+
+ATTRIBUTE_ALIGNED16(class)
+CSolidOptimizerGhostPhysicObject : public CGhostPhysicObject
+{
+public:
+	BT_DECLARE_ALIGNED_ALLOCATOR();
+	CSolidOptimizerGhostPhysicObject(CGameObject *obj, int boneindex) : CGhostPhysicObject(obj), m_boneindex(boneindex)
+	{
+		m_cached_sequence = -1;
+		m_cached_frame = 0;
+	}
+	~CSolidOptimizerGhostPhysicObject()
+	{
+
+	}
+
+	virtual void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
+	{
+		if (GetGhostObject())
+		{
+			world->addCollisionObject(GetGhostObject(), btBroadphaseProxy::SensorTrigger, FallGuysCollisionFilterGroups::PlayerFilter);
+
+			(*numDynamicObjects)++;
+		}
+	}
+
+	virtual void StartFrame(btDiscreteDynamicsWorld* world);
+
+	virtual void StartFrame_Post(btDiscreteDynamicsWorld* world);
+
+private:
+	int m_boneindex;
+	vec3_t m_cached_boneorigin;
+	vec3_t m_cached_boneangles;
+	vec3_t m_cached_origin;
+	int m_cached_sequence;
+	float m_cached_frame;
+};
+
+ATTRIBUTE_ALIGNED16(class)
+CCollisionPhysicObject : public CPhysicObject
+{
+public:
+	BT_DECLARE_ALIGNED_ALLOCATOR();
+	CCollisionPhysicObject(CGameObject *obj, int group, int mask) : CPhysicObject(obj)
 	{
 		m_rigbody = NULL;
 		m_group = group;
 		m_mask = mask;
 	}
-	~CPhysicObject()
+
+	~CCollisionPhysicObject()
 	{
 		//Should be removed from world before free
 		if (m_rigbody)
@@ -289,11 +238,6 @@ public:
 			delete m_rigbody;
 			m_rigbody = NULL;
 		}
-	}
-
-	virtual bool IsPhysic() const
-	{
-		return true;
 	}
 
 	virtual void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
@@ -314,8 +258,8 @@ public:
 
 	void SetRigidBody(btRigidBody* rigbody)
 	{
-		rigbody->setUserPointer(this);
 		m_rigbody = rigbody;
+		m_rigbody->setUserPointer(this);
 	}
 
 	btRigidBody* GetRigidBody()
@@ -323,36 +267,25 @@ public:
 		return m_rigbody;
 	}
 
-protected:
+private:
 	btRigidBody* m_rigbody;
 	int m_group, m_mask;
 };
 
 ATTRIBUTE_ALIGNED16(class)
-CStaticObject : public CPhysicObject
+CStaticObject : public CCollisionPhysicObject
 {
 public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
-	CStaticObject(edict_t *ent, int entindex, int group, int mask, vertexarray_t* vertexarray, indexarray_t* indexarray, bool kinematic) : CPhysicObject(ent, entindex, group, mask)
+	CStaticObject(CGameObject *obj, int group, int mask, vertexarray_t* vertexarray, indexarray_t* indexarray, bool kinematic) : CCollisionPhysicObject(obj, group, mask)
 	{
 		m_vertexarray = vertexarray;
 		m_indexarray = indexarray;
 		m_kinematic = kinematic;
-		m_superpusher = false;
 	}
 	~CStaticObject()
 	{
-		if (m_vertexarray->bIsDynamic)
-		{
-			delete m_vertexarray;
-			m_vertexarray = NULL;
-		}
-
-		if (m_indexarray->bIsDynamic)
-		{
-			delete m_indexarray;
-			m_indexarray = NULL;
-		}
+		
 	}
 
 	virtual bool IsKinematic() const
@@ -365,29 +298,18 @@ public:
 		return !m_kinematic;
 	}
 
-	virtual bool IsSuperPusher() const
-	{
-		return m_superpusher;
-	}
-
-	virtual void SetSuperPusher(bool superpusher)
-	{
-		m_superpusher = superpusher;
-	}
-
 protected:
 	vertexarray_t* m_vertexarray;
 	indexarray_t* m_indexarray;
 	bool m_kinematic;
-	bool m_superpusher;
 };
 
 ATTRIBUTE_ALIGNED16(class)
-CDynamicObject : public CPhysicObject
+CDynamicObject : public CCollisionPhysicObject
 {
 public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
-	CDynamicObject(edict_t *ent, int entindex, int group, int mask, float mass, bool pushable) : CPhysicObject(ent, entindex, group, mask)
+	CDynamicObject(CGameObject *obj, int group, int mask, float mass, bool pushable) : CCollisionPhysicObject(obj, group, mask)
 	{
 		m_mass = mass;
 		m_pushable = pushable;
@@ -400,21 +322,25 @@ public:
 
 	virtual void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
 	{
-		CPhysicObject::AddToPhysicWorld(world, numDynamicObjects);
+		CCollisionPhysicObject::AddToPhysicWorld(world, numDynamicObjects);
 
 		(*numDynamicObjects) ++ ;
 	}
 
 	virtual void RemoveFromPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
 	{
-		CPhysicObject::RemoveFromPhysicWorld(world, numDynamicObjects);
+		CCollisionPhysicObject::RemoveFromPhysicWorld(world, numDynamicObjects);
 
 		(*numDynamicObjects) --;
 	}
 
-	virtual void StartFrame();
+	virtual void StartFrame(btDiscreteDynamicsWorld* world);
 
-	virtual void StartFrame_Post();
+	virtual void StartFrame_Post(btDiscreteDynamicsWorld* world);
+
+	virtual bool SetAbsBox(edict_t *ent);
+
+	virtual int PM_CheckStuck(int hitent, physent_t *blocker, vec3_t *impactvelocity);
 
 protected:
 	float m_mass;
@@ -422,11 +348,11 @@ protected:
 };
 
 ATTRIBUTE_ALIGNED16(class)
-CPlayerObject : public CPhysicObject
+CPlayerObject : public CCollisionPhysicObject
 {
 public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
-	CPlayerObject(edict_t *ent, int entindex, int group, int mask, float mass) : CPhysicObject(ent, entindex, group, mask)
+	CPlayerObject(CGameObject *obj, int group, int mask, float mass) : CCollisionPhysicObject(obj, group, mask)
 	{
 		m_mass = mass;
 	}
@@ -436,9 +362,9 @@ public:
 		return true;
 	}
 
-	virtual void StartFrame();
+	virtual void StartFrame(btDiscreteDynamicsWorld* world);
 
-	virtual void StartFrame_Post();
+	virtual void StartFrame_Post(btDiscreteDynamicsWorld* world);
 
 protected:
 	float m_mass;
@@ -473,6 +399,240 @@ private:
 	mutable bool m_worldTransformInitialized;
 };
 
+class CCachedBoneSolidOptimizer
+{
+public :
+	CCachedBoneSolidOptimizer(int bone, float radius)
+	{
+		m_boneindex = bone;
+		m_radius = radius;
+		m_cached_sequence = -1;
+		m_cached_frame = 0;
+	}
+
+	void StartFrame(CGameObject *obj);
+
+	int m_boneindex;
+	float m_radius;
+	vec3_t m_cached_boneorigin;
+	vec3_t m_cached_boneangles;
+	vec3_t m_cached_origin;
+	int m_cached_sequence;
+	float m_cached_frame;
+};
+
+ATTRIBUTE_ALIGNED16(class)
+CGameObject
+{
+public:
+	BT_DECLARE_ALIGNED_ALLOCATOR();
+
+	CGameObject(edict_t *ent, int entindex) : m_ent(ent), m_entindex(entindex)
+	{
+		m_lod_flags = 0;
+		m_lod_body0 = 0;
+		m_lod_body1 = 0;
+		m_lod_body2 = 0;
+		m_lod_body3 = 0;
+		m_lod_scale0 = 0;
+		m_lod_scale1 = 0;
+		m_lod_scale2 = 0;
+		m_lod_scale3 = 0;
+		m_lod_distance1 = 0;
+		m_lod_distance2 = 0;
+		m_lod_distance3 = 0;
+		m_partial_viewer_mask = 0;
+		m_super_pusher = false;
+		m_semi_clip_mask = 0;
+		m_original_solid = 0;
+	}
+
+	~CGameObject()
+	{
+		m_entindex = -1;
+		m_ent = NULL;
+		for (size_t i = 0; i < m_physics.size(); ++i)
+		{
+			delete m_physics[i];
+		}
+		m_physics.clear();
+	}
+
+	void AddSolidOptimizer(int bone, float radius)
+	{
+		m_solid_optimizer.emplace_back(bone, radius);
+	}
+
+	void AddPhysicObject(CPhysicObject *physobj, btDiscreteDynamicsWorld* world, int *numDynamicObjects)
+	{
+		physobj->AddToPhysicWorld(world, numDynamicObjects);
+
+		m_physics.emplace_back(physobj);
+	}
+
+	void RemovePhysicObject(CPhysicObject *physobj, btDiscreteDynamicsWorld* world, int *numDynamicObjects)
+	{
+		physobj->RemoveFromPhysicWorld(world, numDynamicObjects);
+
+		m_physics.erase(std::find(m_physics.begin(), m_physics.end(), physobj));
+	}
+
+	void RemoveAllPhysicObjects(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
+	{
+		for (size_t i = 0; i < m_physics.size(); ++i)
+		{
+			m_physics[i]->RemoveFromPhysicWorld(world, numDynamicObjects);
+			delete m_physics[i];
+		}
+
+		m_physics.clear();
+	}
+
+	bool SetAbsBox(edict_t *ent)
+	{
+		for (size_t i = 0; i < m_physics.size(); ++i)
+		{
+			if (m_physics[i]->SetAbsBox(ent))
+				return true;
+		}
+
+		return false;
+	}
+
+	int PM_CheckStuck(int hitent, physent_t *blocker, vec3_t *impactvelocity)
+	{
+		for (size_t i = 0; i < m_physics.size(); ++i)
+		{
+			int result = m_physics[i]->PM_CheckStuck(hitent, blocker, impactvelocity);
+			if (result != 0)
+				return result;
+		}
+
+		return 0;
+	}
+
+	bool IsSuperPusherEnabled() const
+	{
+		return m_super_pusher;
+	}
+
+	void SetSuperPusherEnabled(bool enabled)
+	{
+		m_super_pusher = enabled;
+	}
+
+	bool IsSolidOptimizerEnabled() const
+	{
+		return m_solid_optimizer.size() && !(m_ent->v.effects & EF_NODRAW);
+	}
+
+	int GetEntIndex()
+	{
+		return m_entindex;
+	}
+
+	edict_t *GetEdict()
+	{
+		return m_ent;
+	}
+
+	int GetLevelOfDetailFlags() const
+	{
+		return m_lod_flags;
+	}
+
+	void SetLevelOfDetail(int flags, int body_0, float scale_0, int body_1, float scale_1, float distance_1, int body_2, float scale_2, float distance_2, int body_3, float scale_3, float distance_3)
+	{
+		m_lod_flags = flags;
+		m_lod_body0 = body_0;
+		m_lod_body1 = body_1;
+		m_lod_body2 = body_2;
+		m_lod_body3 = body_3;
+		m_lod_scale0 = scale_0;
+		m_lod_scale1 = scale_1;
+		m_lod_scale2 = scale_2;
+		m_lod_scale3 = scale_3;
+		m_lod_distance1 = distance_1;
+		m_lod_distance2 = distance_2;
+		m_lod_distance3 = distance_3;
+	}
+
+	void SetPartialViewer(int viewer_mask)
+	{
+		m_partial_viewer_mask = viewer_mask;
+	}
+
+	int GetPartialViewerMask() const
+	{
+		return m_partial_viewer_mask;
+	}
+
+	void SetSemiClipMask(int clip_mask)
+	{
+		m_semi_clip_mask = clip_mask;
+	}
+
+	void RemoveSemiClipMask(int clip_mask)
+	{
+		m_semi_clip_mask &= ~clip_mask;
+	}
+
+	int GetSemiClipMask() const
+	{
+		return m_semi_clip_mask;
+	}
+
+	void SetOriginalSolid(int original_solid)
+	{
+		m_original_solid = original_solid;
+	}
+
+	int GetOriginalSolid() const
+	{
+		return m_original_solid;
+	}
+
+	void StartFrame(btDiscreteDynamicsWorld* world);
+
+	void StartFrame_Post(btDiscreteDynamicsWorld* world);
+
+	void ApplyLevelOfDetail(float distance, int *body, int *modelindex, float *scale);
+
+	bool AddToFullPack(struct entity_state_s *state, int entindex, edict_t *ent, edict_t *host, int hostflags, int player);
+
+private:
+	edict_t *m_ent;
+	int m_entindex;
+
+	std::vector<CPhysicObject *> m_physics;
+
+	int m_lod_flags;
+
+	int m_lod_body0;
+	int m_lod_body1;
+	int m_lod_body2;
+	int m_lod_body3;
+
+	float m_lod_scale0;
+	float m_lod_scale1;
+	float m_lod_scale2;
+	float m_lod_scale3;
+
+	float m_lod_distance1;
+	float m_lod_distance2;
+	float m_lod_distance3;
+
+	bool m_super_pusher;
+
+	int m_partial_viewer_mask;
+
+	int m_semi_clip_mask;
+
+	int m_original_solid;
+
+	std::vector<CCachedBoneSolidOptimizer> m_solid_optimizer;
+};
+
 class CPhysicsManager
 {
 public:
@@ -494,6 +654,7 @@ public:
 	void SetGravity(float velocity);
 	void StepSimulation(double framerate);
 
+	int GetSolidPlayerMask();
 	int GetNumDynamicBodies();
 	CGameObject* GetGameObject(int entindex);
 	CGameObject* GetGameObject(edict_t* ent);
@@ -501,30 +662,34 @@ public:
 	void RemoveAllGameBodies();
 
 	bool IsEntitySuperPusher(edict_t* ent);
-	bool IsEntityDynamicPhysicObject(edict_t* ent);
 	bool ApplyImpulse(edict_t* ent, const Vector& impulse, const Vector& origin);
 
-	CDynamicObject* CreateDynamicObject(edict_t* ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable,
+	CDynamicObject* CreateDynamicObject(CGameObject *obj, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable,
 		btCollisionShape* collisionShape, const btVector3& localInertia);
-	CStaticObject* CreateStaticObject(edict_t* ent, vertexarray_t* vertexarray, indexarray_t* indexarray, bool kinematic);
-	CPlayerObject* CreatePlayerObject(edict_t* ent, float mass, btCollisionShape* collisionShape, const btVector3& localInertia);
-	
+	CStaticObject* CreateStaticObject(CGameObject *obj, vertexarray_t* vertexarray, indexarray_t* indexarray, bool kinematic);
+	CPlayerObject* CreatePlayerObject(CGameObject *obj, float mass, btCollisionShape* collisionShape, const btVector3& localInertia);
+
 	void AddGameObject(CGameObject *obj);
 
 	bool CreateBrushModel(edict_t* ent);
 	bool CreatePhysicSphere(edict_t* ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable);
 	bool CreatePhysicBox(edict_t* ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable);
 	bool CreatePlayerBox(edict_t* ent);
+	//bool CreateSolidOptimizer(edict_t* ent, int boneindex, const Vector &mins, const Vector &maxs);
+	bool CreateSolidOptimizer(edict_t* ent, int boneindex, float radius);
 	bool SetEntityLevelOfDetail(edict_t* ent, int flags, int body_0, float scale_0, int body_1, float scale_1, float distance_1, int body_2, float scale_2, float distance_2, int body_3, float scale_3, float distance_3);
 	bool SetEntityPartialViewer(edict_t* ent, int partial_viewer_mask);
 	bool SetEntitySuperPusher(edict_t* ent, bool enable);
 
-	void EntityStartFrame();
-	void EntityStartFrame_Post();
+	void EntityStartFrame(void);
+	void EntityStartFrame_Post(void);
 	void FreeEntityPrivateData(edict_t* ent);
 	bool SetAbsBox(edict_t *pent);
 	bool AddToFullPack(struct entity_state_s *state, int entindex, edict_t *ent, edict_t *host, int hostflags, int player);
-
+	
+	void PM_StartSemiClip(int playerIndex);
+	void PM_EndSemiClip(int playerIndex);
+	bool PM_ShouldCollide(int info);
 	void PM_StartMove();
 	void PM_EndMove(); 
 	qboolean PM_AddToTouched(pmtrace_t tr, vec3_t impactvelocity);
@@ -534,6 +699,8 @@ private:
 	btBroadphaseInterface* m_overlappingPairCache;
 	btSequentialImpulseConstraintSolver* m_solver;
 	btDiscreteDynamicsWorld* m_dynamicsWorld;
+	btGhostPairCallback *m_ghostPairCallback;
+	btOverlapFilterCallback *m_overlapFilterCallback;
 
 	std::vector<CGameObject*> m_gameObjects;
 	int m_maxIndexGameObject;
@@ -541,6 +708,8 @@ private:
 	std::vector<indexarray_t*> m_brushIndexArray;
 	vertexarray_t* m_worldVertexArray;
 	float m_gravity;
+
+	int m_solidPlayerMask;
 };
 
 extern CPhysicsManager gPhysicsManager;

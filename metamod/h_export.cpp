@@ -83,8 +83,7 @@ engine_t Engine;
 // This appears to be the _first_ DLL routine called by the engine, so this
 // is where we hook to load all the other DLLs (game, plugins, etc), which
 // is actually all done in meta_startup().
-C_DLLEXPORT void WINAPI GiveFnptrsToDll(enginefuncs_t *pengfuncsFromEngine, 
-		globalvars_t *pGlobals)
+C_DLLEXPORT void WINAPI GiveFnptrsToDll(enginefuncs_t *pengfuncsFromEngine, globalvars_t *pGlobals)
 {
 #ifdef linux
 	metamod_handle = get_module_handle_of_memptr((void*)&g_engfuncs);
@@ -103,6 +102,4 @@ C_DLLEXPORT void WINAPI GiveFnptrsToDll(enginefuncs_t *pengfuncsFromEngine,
 	if(!metamod_startup()) {
 		metamod_not_loaded = 1;
 	}
-	
-	return;
 }

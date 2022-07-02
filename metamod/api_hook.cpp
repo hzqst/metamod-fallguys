@@ -41,16 +41,18 @@
 #include "osdep.h"			//unlikely
 
 // getting pointer with table index is faster than with if-else
-static const void ** api_tables[3] = {
+static const void ** api_tables[4] = {
 	(const void**)&Engine.funcs,
 	(const void**)&GameDLL.funcs.dllapi_table,
-	(const void**)&GameDLL.funcs.newapi_table
+	(const void**)&GameDLL.funcs.newapi_table,
+	(const void**)&GameDLL.funcs.studio_blend_api,
 };
 
-static const void ** api_info_tables[3] = {
+static const void ** api_info_tables[4] = {
 	(const void**)&engine_info,
 	(const void**)&dllapi_info,
-	(const void**)&newapi_info
+	(const void**)&newapi_info,
+	(const void**)&studioapi_info,
 };
 
 // Safety check for metamod-bot-plugin bugfix.
@@ -688,3 +690,7 @@ END_API_CALLER_FUNC_void( (const void*, int, const void*, float, float, int, int
 //-
 BEGIN_API_CALLER_FUNC(void, pip2f4i2p)
 END_API_CALLER_FUNC_void( (const void*, int, const void*, float, float, int, int, int, int, const void*, const void*), (p->p1, p->i1, p->p2, p->f1, p->f2, p->i2, p->i3, p->i4, p->i5, p->p3, p->p4) );
+
+//-2022/07/02 Added by hzqst
+BEGIN_API_CALLER_FUNC(void, pfi4pip)
+END_API_CALLER_FUNC_void( (const void *, float , int , const void *, const void *, const void *, const void *, int , const void *), (p->p1, p->f1, p->i1, p->p2, p->p3, p->p4, p->p5, p->i2, p->p6) );

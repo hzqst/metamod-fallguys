@@ -45,7 +45,7 @@
 // max buffer size for printed messages
 #define MAX_LOGMSG_LEN  1024
 
-//Added by hzqst
+//2022-07 Added by hzqst
 typedef struct hook_s
 {
 	int iType;
@@ -110,7 +110,7 @@ typedef struct meta_util_funcs_s {
 	
 	void (*pfnGetHookTables) (plid_t plid, enginefuncs_t **peng, DLL_FUNCTIONS **pdll, NEW_DLL_FUNCTIONS **pnewdll);
 
-	//Added by hzqst
+	// 2022-07 Added by hzqst
 	void *   (*pfnGetModuleBaseByHandle)(void *hModule);
 	void *   (*pfnGetModuleHandle)(const char *name);
 	void *   (*pfnGetModuleBase)(const char *name);

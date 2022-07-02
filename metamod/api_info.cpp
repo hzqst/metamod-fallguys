@@ -105,6 +105,13 @@ const newapi_info_t newapi_info = {
 	{ mFALSE,  0,	NULL, 	NULL },
 };
 
+// 2022/07/02 Added by hzqst "Studio Blending Interface" api functions
+//void SV_StudioSetupBones(model_t *pModel, float frame, int sequence, const vec3_t angles, const vec3_t origin, const byte *pcontroller, const byte *pblending, int iBone, const edict_t *edict)
+const studioapi_info_t studioapi_info = {
+	{ mFALSE,  35,	api_caller_void_args_pfi4pip,		"SV_StudioSetupBones" },	// pfnOnFreeEntPrivateData
+	{ mFALSE,  0,	NULL, 	NULL },
+};
+
 const engine_info_t engine_info = {
 	{ mFALSE,  13,	api_caller_int_args_p,		"PrecacheModel" },		// pfnPrecacheModel
 	{ mFALSE,  13,	api_caller_int_args_p,		"PrecacheSound" },		// pfnPrecacheSound

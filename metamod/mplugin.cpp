@@ -852,6 +852,20 @@ mBOOL DLLINTERNAL MPlugin::attach(PLUG_LOADTIME now) {
 		else
 			memset(gamedll_funcs.newapi_table, 0, sizeof(NEW_DLL_FUNCTIONS));
 	}
+
+	// 2022-07-02 Added by hzqst, but it's not given by server yet?
+	if (!gamedll_funcs.studio_blend_api) {
+		gamedll_funcs.studio_blend_api = (sv_blending_interface_t *)calloc(1, sizeof(sv_blending_interface_t));
+		if (!gamedll_funcs.studio_blend_api) {
+			META_WARNING("dll: Failed attach plugin '%s': Failed malloc() for studio_blend_api");
+			RETURN_ERRNO(mFALSE, ME_NOMEM);
+		}
+		if (GameDLL.funcs.studio_blend_api)
+			memcpy(gamedll_funcs.studio_blend_api, GameDLL.funcs.studio_blend_api, sizeof(sv_blending_interface_t));
+		else
+			memset(gamedll_funcs.studio_blend_api, 0, sizeof(sv_blending_interface_t));
+	}
+
 	if(!(pfn_attach = (META_ATTACH_FN) DLSYM(handle, "Meta_Attach"))) {
 		META_WARNING("dll: Failed attach plugin '%s': Couldn't find Meta_Attach(): %s", desc, DLERROR());
 		// caller will dlclose()
@@ -943,15 +957,29 @@ mBOOL DLLINTERNAL MPlugin::attach(PLUG_LOADTIME now) {
 			GET_ENGINE_FUNCTIONS_FN, enginefuncs_t, (sizeof(enginefuncs_t) - sizeof(((enginefuncs_t*)0)->extra_functions)),
 			&iface_vers, iface_vers, ENGINE_INTERFACE_VERSION);
 
+
+	// 2022-07-02 Added by hzqst
+	iface_vers = SV_BLENDING_INTERFACE_VERSION;
+	GET_FUNC_TABLE_FROM_PLUGIN(pfnGetStudioBlendingInterface,
+		"GetStudioBlendingInterface", tables.studio_blend_api,
+		GETSTUDIOBLENDINGINTERFACE_FN, sv_blending_interface_t, sizeof(sv_blending_interface_t),
+		&iface_vers, iface_vers, SV_BLENDING_INTERFACE_VERSION);
+	iface_vers = SV_BLENDING_INTERFACE_VERSION;
+	GET_FUNC_TABLE_FROM_PLUGIN(pfnGetStudioBlendingInterface_Post,
+		"GetStudioBlendingInterface_Post", post_tables.studio_blend_api,
+		GETSTUDIOBLENDINGINTERFACE_FN, sv_blending_interface_t, sizeof(sv_blending_interface_t),
+		&iface_vers, iface_vers, SV_BLENDING_INTERFACE_VERSION);
+
 	if(!tables.dllapi && !post_tables.dllapi
 		&& !tables.newapi && !post_tables.newapi
-		&& !tables.engine && !post_tables.engine)
+		&& !tables.engine && !post_tables.engine
+		&& !tables.studio_blend_api && !post_tables.studio_blend_api)
 	{
-		META_LOG("dll: Plugin '%s' isn't catching _any_ functions ??", desc);
+		META_LOG("dll: Plugin '%s' isn't catching _any_ functions wtf ??", desc);
 	}
 	
-	time_loaded=time(NULL);
-	return(mTRUE);
+	time_loaded = time(NULL);
+	return (mTRUE);
 }
 
 // Unload a plugin from plugin request

@@ -29,6 +29,11 @@ int SC_SERVER_DECL CASEngineFuncs__GetRunPlayerMovePlayerIndex(void* pthis SC_SE
 	return GetRunPlayerMovePlayerIndex();
 }
 
+bool SC_SERVER_DECL CASEntityFuncs__CreateSolidOptimizer(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int boneindex, float radius)
+{
+	return gPhysicsManager.CreateSolidOptimizer(ent, boneindex, radius);
+}
+
 bool SC_SERVER_DECL CASEntityFuncs__CreatePhysicBox(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable)
 {
 	return gPhysicsManager.CreatePhysicBox(ent, mass, friction, rollingFriction, restitution, ccdRadius, ccdThreshold, pushable);
@@ -135,6 +140,10 @@ void RegisterAngelScriptMethods(void)
 			(void *)CASEngineFuncs__GetViewEntity, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
+			"Create physic box for entity", "CEntityFuncs", "bool CreateSolidOptimizer(edict_t@ ent, int boneindex, float radius)",
+			(void *)CASEntityFuncs__CreateSolidOptimizer, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
 			"Create physic box for entity", "CEntityFuncs", "bool CreatePhysicBox(edict_t@ ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable)",
 			(void *)CASEntityFuncs__CreatePhysicBox, 3);
 
@@ -160,7 +169,7 @@ void RegisterAngelScriptMethods(void)
 
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Apply impulse on physic object", "CEntityFuncs", "bool ApplyImpulse(edict_t@ ent, const Vector& in impulse, const Vector& in origin)",
-			(void *)CASEntityFuncs__CreatePhysicSphere, 3);
+			(void *)CASEntityFuncs__ApplyImpulse, 3);
 
 	});
 }

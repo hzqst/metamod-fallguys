@@ -563,6 +563,7 @@ typedef struct
 	//    value is "Bad CVAR request" on failure (i.e that user is not connected or the cvar does not exist).
 	//    value is "Bad Player" if invalid player edict.
 	void                    (*pfnCvarValue2)( const edict_t *pEnt, int requestID, const char *cvarName, const char *value );
+
 } NEW_DLL_FUNCTIONS;
 typedef int	(*NEW_DLL_FUNCTIONS_FN)( NEW_DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion );
 

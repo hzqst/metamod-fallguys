@@ -63,7 +63,7 @@
 // Version 5:11 added plugin loading and unloading API [v1.18]
 // Version 5:12 added IS_QUERYING_CLIENT_CVAR to mutils [v1.18]
 // Version 5:13 added MAKE_REQUESTID and GET_HOOK_TABLES to mutils [v1.19]
-// Version 5:14 added Binary Analysis and InlineHook to mutils [v1.20]
+// Version 5:14 added Binary Analysis and InlineHook to mutils [v1.20] by hzqst
 #define META_INTERFACE_VERSION "5:14"
 
 // Flags returned by a plugin's api function.
@@ -106,12 +106,17 @@ typedef struct {
 	GETNEWDLLFUNCTIONS_FN   pfnGetNewDLLFunctions_Post;
 	GET_ENGINE_FUNCTIONS_FN pfnGetEngineFunctions;
 	GET_ENGINE_FUNCTIONS_FN pfnGetEngineFunctions_Post;
+	GETSTUDIOBLENDINGINTERFACE_FN pfnGetStudioBlendingInterface;
+	GETSTUDIOBLENDINGINTERFACE_FN pfnGetStudioBlendingInterface_Post;
 } META_FUNCTIONS;
 
 // Pair of function tables provided by game DLL.
 typedef struct {
 	DLL_FUNCTIONS *dllapi_table;
 	NEW_DLL_FUNCTIONS *newapi_table;
+
+	// 2022-07-02 Added by hzqst
+	sv_blending_interface_t *studio_blend_api;
 } gamedll_funcs_t;
 
 // Declared in plugin; referenced in macros.

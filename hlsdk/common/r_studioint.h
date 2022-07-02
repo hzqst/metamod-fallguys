@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2002, Valve LLC, All rights reserved. ============
+//========= Copyright ?1996-2002, Valve LLC, All rights reserved. ============
 //
 // Purpose: 
 //
@@ -138,8 +138,8 @@ typedef struct sv_blending_interface_s
 	void	( *SV_StudioSetupBones )( struct model_s *pModel, 
 					float frame,
 					int sequence,
-					const vec3_t angles,
-					const vec3_t origin,
+					const float *angles,
+					const float *origin,
 					const byte *pcontroller,
 					const byte *pblending,
 					int iBone,

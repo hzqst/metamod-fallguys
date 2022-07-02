@@ -42,6 +42,11 @@
 #include "comp_dep.h"
 #include "osdep.h"	//unlikely, OPEN_ARGS
 
+
+#include "studio.h"		// me
+#include "r_studioint.h"		// me
+
+
 // Our structure for storing engine references.
 struct engine_t {
 	engine_t() DLLINTERNAL;
@@ -51,17 +56,23 @@ struct engine_t {
 	enginefuncs_t	*funcs;			// engine funcs
 	globalvars_t	*globals;		// engine globals
 	enginefuncs_t	*pl_funcs;		// "modified" eng funcs we give to plugins
+	sv_blending_interface_t *engine_studioblend;
+	server_studio_api_t *engine_studioapi;
+	float(*engine_rotationmatrix)[3][4];
+	float(*engine_bonetransform)[MAXSTUDIOBONES][3][4];
 	EngineInfo       info;          // some special info elements
 };
 
 inline engine_t::engine_t() 
-    : funcs(NULL), globals(NULL), pl_funcs(NULL), info() 
+    : funcs(NULL), globals(NULL), pl_funcs(NULL), 
+	engine_studioblend(NULL), engine_studioapi(NULL), engine_rotationmatrix(NULL), engine_bonetransform(NULL), info()
 {
 }
 
 
 inline engine_t::engine_t(const engine_t& _rhs) 
-    : funcs(_rhs.funcs), globals(_rhs.globals), pl_funcs(_rhs.pl_funcs), info(_rhs.info) 
+    : funcs(_rhs.funcs), globals(_rhs.globals), pl_funcs(_rhs.pl_funcs), 
+	engine_studioblend(_rhs.engine_studioblend), engine_studioapi(_rhs.engine_studioapi), engine_rotationmatrix(_rhs.engine_rotationmatrix), engine_bonetransform(_rhs.engine_bonetransform), info(_rhs.info)
 {
 }
 
@@ -71,6 +82,10 @@ inline engine_t& engine_t::operator=(const engine_t& _rhs)
     funcs = _rhs.funcs;
     globals = _rhs.globals;
     pl_funcs = _rhs.pl_funcs;
+	engine_studioblend = _rhs.engine_studioblend;
+	engine_studioapi = _rhs.engine_studioapi;
+	engine_rotationmatrix = _rhs.engine_rotationmatrix;
+	engine_bonetransform = _rhs.engine_bonetransform;
     info = _rhs.info;
     return *this;
 }

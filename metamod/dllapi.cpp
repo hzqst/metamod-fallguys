@@ -343,7 +343,6 @@ static void mm_CvarValue2(const edict_t *pEnt, int requestID, const char *cvarNa
 	RETURN_API_void();
 }
 
-
 // From SDK dlls/cbase.cpp:
 // "(wd)" indicates my comments on the functions
 static DLL_FUNCTIONS gFunctionTable = 
@@ -508,6 +507,57 @@ C_DLLEXPORT int GetNewDLLFunctions(NEW_DLL_FUNCTIONS *pNewFunctionTable, int *in
 
 	sNewFunctionTable.copy_to(pNewFunctionTable);
 
-
 	return(TRUE);
 }
+
+
+#define META_STUDIOBLENDINGAPI_HANDLE_void(FN_TYPE, pfnName, pack_args_type, pfn_args) \
+	API_START_TSC_TRACKING(); \
+	API_PACK_ARGS(pack_args_type, pfn_args); \
+	main_hook_function_void(offsetof(studioapi_info_t, pfnName), e_api_studioapi, offsetof(sv_blending_interface_t, pfnName), &packed_args); \
+	API_END_TSC_TRACKING()
+
+static void mm_StudioSetupBones(model_t *pModel, float frame, int sequence, const float *angles, const float *origin, const byte *pcontroller, const byte *pblending, int iBone, const edict_t *edict)
+{
+	META_STUDIOBLENDINGAPI_HANDLE_void(FN_STUDIOSETUPBONES, SV_StudioSetupBones, pfi4pip, (pModel, frame, sequence, angles, origin, pcontroller, pblending, iBone, edict));
+	RETURN_API_void();
+}
+
+sv_blending_interface_t mm_Blending =
+{
+	STUDIO_INTERFACE_VERSION,
+	mm_StudioSetupBones
+};
+
+// 2022-07-02 Added by hzqst. Give us opportunity to hijack server studio blending interface
+//"_Server_GetBlendingInterface" as symbol name
+
+#if 1
+
+C_DLLEXPORT int Server_GetBlendingInterface(int version, sv_blending_interface_t **pinterface, server_studio_api_t *pstudio, float(*rotationmatrix)[3][4], float(*bonetransform)[MAXSTUDIOBONES][3][4])
+{
+	Engine.engine_studioapi = pstudio;
+	Engine.engine_studioblend = *pinterface;
+	Engine.engine_rotationmatrix = rotationmatrix;
+	Engine.engine_bonetransform = bonetransform;
+
+	if (GameDLL.handle)
+	{
+		auto GameDLL_GetBlendingInterface = (decltype(Server_GetBlendingInterface) *)DLSYM(GameDLL.handle, "Server_GetBlendingInterface");
+
+		if (GameDLL_GetBlendingInterface && GameDLL_GetBlendingInterface(version, pinterface, pstudio, rotationmatrix, bonetransform))
+		{
+			GameDLL.funcs.studio_blend_api = (*pinterface);
+		}
+		else
+		{
+			GameDLL.funcs.studio_blend_api = (*pinterface);
+		}
+	}
+
+	*pinterface = &mm_Blending;
+
+	return 1;
+}
+
+#endif

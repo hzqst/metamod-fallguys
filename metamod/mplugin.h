@@ -112,6 +112,7 @@ typedef struct {
 	enginefuncs_t *engine;
 	DLL_FUNCTIONS *dllapi;
 	NEW_DLL_FUNCTIONS *newapi;
+	sv_blending_interface_t *studio_blend_api;
 } api_tables_t;
 
 // An individual plugin.
@@ -227,6 +228,9 @@ class MPlugin : public class_metamod_new {
 
 #define SHOW_DEF_NEWAPI(api_table, pre_str, post_str) \
 	SHOW_DEF_API(newapi_info, api_table, pre_str, post_str)
+
+#define SHOW_DEF_STUDIOAPI(api_table, pre_str, post_str) \
+	SHOW_DEF_API(studioapi_info, api_table, pre_str, post_str)
 
 #define SHOW_DEF_ENGINE(api_table, pre_str, post_str) \
 	SHOW_DEF_API(engine_info, api_table, pre_str, post_str)
