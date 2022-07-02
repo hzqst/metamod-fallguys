@@ -1812,8 +1812,8 @@ bool CGameObject::AddToFullPack(struct entity_state_s *state, int entindex, edic
 		{
 			state->solid = SOLID_NOT;
 			//test
-			state->renderamt = 128;
-			state->rendermode = kRenderTransTexture;
+			//state->renderamt = 128;
+			//state->rendermode = kRenderTransTexture;
 		}
 	}
 
