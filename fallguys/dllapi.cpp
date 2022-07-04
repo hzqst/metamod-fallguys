@@ -192,14 +192,14 @@ void NewPlayerPreThink(edict_t *pEntity)
 	g_bIsRunPlayerMove = true;
 	g_iRunPlayerMoveIndex = g_engfuncs.pfnIndexOfEdict(pEntity);
 
-	gPhysicsManager.PM_StartSemiClip(g_iRunPlayerMoveIndex);
+	//gPhysicsManager.PM_StartSemiClip(g_iRunPlayerMoveIndex, pEntity);
 
 	SET_META_RESULT(MRES_IGNORED);
 }
 
 void NewPlayerPostThink(edict_t* pEntity)
 {
-	gPhysicsManager.PM_EndSemiClip(g_iRunPlayerMoveIndex);
+	//gPhysicsManager.PM_EndSemiClip(g_iRunPlayerMoveIndex, pEntity);
 
 	g_bIsRunPlayerMove = false;
 	g_iRunPlayerMoveIndex = 0;

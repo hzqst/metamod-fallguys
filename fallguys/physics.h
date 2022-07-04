@@ -82,6 +82,16 @@ public:
 		return false;
 	}
 
+	virtual bool IsGhost() const
+	{
+		return false;
+	}
+
+	virtual bool IsSolidOptimizerGhost() const
+	{
+		return false;
+	}
+
 	virtual void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
 	{
 
@@ -145,6 +155,11 @@ public:
 		}
 	}
 
+	virtual bool IsGhost() const
+	{
+		return true;
+	}
+
 	virtual void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
 	{
 		if (m_ghostobj)
@@ -185,7 +200,7 @@ CSolidOptimizerGhostPhysicObject : public CGhostPhysicObject
 {
 public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
-	CSolidOptimizerGhostPhysicObject(CGameObject *obj, int boneindex) : CGhostPhysicObject(obj), m_boneindex(boneindex)
+	CSolidOptimizerGhostPhysicObject(CGameObject *obj, int boneindex, int type) : CGhostPhysicObject(obj), m_boneindex(boneindex), m_type(type)
 	{
 		m_cached_sequence = -1;
 		m_cached_frame = 0;
@@ -193,6 +208,16 @@ public:
 	~CSolidOptimizerGhostPhysicObject()
 	{
 
+	}
+
+	int GetOptimizerType() const
+	{
+		return m_type;
+	}
+
+	virtual bool IsSolidOptimizerGhost() const
+	{
+		return true;
 	}
 
 	virtual void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
@@ -210,6 +235,7 @@ public:
 	virtual void StartFrame_Post(btDiscreteDynamicsWorld* world);
 
 private:
+	int m_type;
 	int m_boneindex;
 	vec3_t m_cached_boneorigin;
 	vec3_t m_cached_boneangles;
@@ -676,8 +702,8 @@ public:
 	bool CreatePhysicSphere(edict_t* ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable);
 	bool CreatePhysicBox(edict_t* ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable);
 	bool CreatePlayerBox(edict_t* ent);
-	//bool CreateSolidOptimizer(edict_t* ent, int boneindex, const Vector &mins, const Vector &maxs);
-	bool CreateSolidOptimizer(edict_t* ent, int boneindex, float radius);
+	bool CreateSolidOptimizer(edict_t* ent, int boneindex, const Vector &mins, const Vector &maxs);
+	//bool CreateSolidOptimizer(edict_t* ent, int boneindex, float radius);
 	bool SetEntityLevelOfDetail(edict_t* ent, int flags, int body_0, float scale_0, int body_1, float scale_1, float distance_1, int body_2, float scale_2, float distance_2, int body_3, float scale_3, float distance_3);
 	bool SetEntityPartialViewer(edict_t* ent, int partial_viewer_mask);
 	bool SetEntitySuperPusher(edict_t* ent, bool enable);
@@ -688,8 +714,8 @@ public:
 	bool SetAbsBox(edict_t *pent);
 	bool AddToFullPack(struct entity_state_s *state, int entindex, edict_t *ent, edict_t *host, int hostflags, int player);
 	
-	void PM_StartSemiClip(int playerIndex);
-	void PM_EndSemiClip(int playerIndex);
+	void PM_StartSemiClip(int playerIndex, edict_t *ent);
+	void PM_EndSemiClip(int playerIndex, edict_t *ent);
 	bool PM_ShouldCollide(int info);
 	void PM_StartMove();
 	void PM_EndMove(); 

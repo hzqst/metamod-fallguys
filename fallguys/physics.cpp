@@ -811,7 +811,7 @@ void CSolidOptimizerGhostPhysicObject::StartFrame(btDiscreteDynamicsWorld* world
 
 		m_cached_boneorigin = bone_origin;
 		m_cached_boneangles = bone_angles;
-#if 0
+#if 1
 		btVector3 GoldSrcOrigin(bone_origin.x, bone_origin.y, bone_origin.z);
 
 		Vector3GoldSrcToBullet(GoldSrcOrigin);
@@ -833,7 +833,7 @@ void CSolidOptimizerGhostPhysicObject::StartFrame(btDiscreteDynamicsWorld* world
 		bone_angles = m_cached_boneangles;
 	}
 
-#if	1
+#if	0
 	for (int i = 1; i < gpGlobals->maxClients; ++i)
 	{
 		if ((gPhysicsManager.GetSolidPlayerMask() & (1 << (i - 1)) ) == 0)
@@ -897,7 +897,7 @@ void CSolidOptimizerGhostPhysicObject::StartFrame_Post(btDiscreteDynamicsWorld* 
 			{
 				const btManifoldPoint& Point = ManifoldArray[j]->getContactPoint(p);
 
-				if (Point.getDistance() < 0.0f)
+				//if (Point.getDistance() < 0.0f)
 				{
 					auto rigidbody = btRigidBody::upcast(ManifoldArray[j]->getBody0());
 
@@ -923,7 +923,6 @@ void CSolidOptimizerGhostPhysicObject::StartFrame_Post(btDiscreteDynamicsWorld* 
 	}
 }
 
-
 void CCachedBoneSolidOptimizer::StartFrame(CGameObject *obj)
 {
 	vec3_t bone_origin, bone_angles;
@@ -948,7 +947,7 @@ void CCachedBoneSolidOptimizer::StartFrame(CGameObject *obj)
 		bone_origin = m_cached_boneorigin;
 		bone_angles = m_cached_boneangles;
 	}
-
+#if 0
 	for (int i = 1; i < gpGlobals->maxClients; ++i)
 	{
 		if ((gPhysicsManager.GetSolidPlayerMask() & (1 << (i - 1))) == 0)
@@ -979,6 +978,7 @@ void CCachedBoneSolidOptimizer::StartFrame(CGameObject *obj)
 			}
 		}
 	}
+#endif
 }
 
 
@@ -1032,13 +1032,16 @@ qboolean CPhysicsManager::PM_AddToTouched(pmtrace_t tr, vec3_t impactvelocity)
 	tr.hitgroup = 1;
 
 	if (pmove->numtouch >= MAX_PHYSENTS)
-		return false;// pmove->Con_DPrintf("Too many entities were touched!\n");
+	{
+		pmove->Con_DPrintf("Too many entities were touched!\n");
+		return false;
+	}
 
 	pmove->touchindex[pmove->numtouch++] = tr;
 	return true;
 }
 
-#if 0
+#if 1
 
 bool CPhysicsManager::PM_ShouldCollide(int info)
 {
@@ -1062,8 +1065,12 @@ bool CPhysicsManager::PM_ShouldCollide(int info)
 }
 #endif
 
-void CPhysicsManager::PM_StartSemiClip(int playerIndex)
+#if 0
+void CPhysicsManager::PM_StartSemiClip(int playerIndex, edict_t *ent)
 {
+	if (!IsEntitySolidPlayer(playerIndex, ent))
+		return;
+
 	for (int i = 1; i <= m_maxIndexGameObject; ++i)
 	{
 		auto obj = m_gameObjects[i];
@@ -1082,8 +1089,11 @@ void CPhysicsManager::PM_StartSemiClip(int playerIndex)
 	}
 }
 
-void CPhysicsManager::PM_EndSemiClip(int playerIndex)
+void CPhysicsManager::PM_EndSemiClip(int playerIndex, edict_t *ent)
 {
+	if (!IsEntitySolidPlayer(playerIndex, ent))
+		return;
+
 	for (int i = 1; i <= m_maxIndexGameObject; ++i)
 	{
 		auto obj = m_gameObjects[i];
@@ -1096,10 +1106,11 @@ void CPhysicsManager::PM_EndSemiClip(int playerIndex)
 		}
 	}
 }
+#endif
 
 void CPhysicsManager::PM_StartMove()
 {
-#if 0
+#if 1
 	std::remove_if(pmove->physents, pmove->physents + pmove->numphysent, [this](const physent_t& ps) {
 		return !PM_ShouldCollide(ps.info);
 	});
@@ -1286,7 +1297,7 @@ bool CPhysicsManager::SetEntitySuperPusher(edict_t* ent, bool enable)
 	return false;
 }
 
-bool CPhysicsManager::CreateSolidOptimizer(edict_t* ent, int boneindex, float radius)
+bool CPhysicsManager::CreateSolidOptimizer(edict_t* ent, int boneindex, const Vector& halfext, const Vector& halfext2)
 {
 	auto obj = GetGameObject(ent);
 
@@ -1323,9 +1334,9 @@ bool CPhysicsManager::CreateSolidOptimizer(edict_t* ent, int boneindex, float ra
 	//	return false;
 	//}
 
-#if 0
+#if 1
 
-	btVector3 boxSize((maxs.x - mins.x) * 0.5f, (maxs.y - mins.y) * 0.5f, (maxs.z - mins.z) * 0.5f);
+	btVector3 boxSize(halfext.x, halfext.y, halfext.z);
 	
 	Vector3GoldSrcToBullet(boxSize);
 
@@ -1335,15 +1346,40 @@ bool CPhysicsManager::CreateSolidOptimizer(edict_t* ent, int boneindex, float ra
 		return false;
 	}
 
-	auto ghost = new CSolidOptimizerGhostPhysicObject(obj, boneindex);
+	btVector3 boxSize2(halfext2.x, halfext2.y, halfext2.z);
 
-	ghost->SetGhostObject(new btPairCachingGhostObject());
-	ghost->GetGhostObject()->setCollisionShape(new btBoxShape(boxSize));
-	ghost->GetGhostObject()->setCollisionFlags(ghost->GetGhostObject()->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
+	Vector3GoldSrcToBullet(boxSize2);
 
-	obj->AddPhysicObject(ghost, m_dynamicsWorld, &m_numDynamicObjects);
+	if (boxSize2.x() <= 0 || boxSize2.y() <= 0 || boxSize2.z() <= 0)
+	{
+		//Must be valid size
+		return false;
+	}
+
+	if (1)
+	{
+		auto ghost = new CSolidOptimizerGhostPhysicObject(obj, boneindex, 0);
+
+		ghost->SetGhostObject(new btPairCachingGhostObject());
+		ghost->GetGhostObject()->setCollisionShape(new btBoxShape(boxSize));
+		ghost->GetGhostObject()->setCollisionFlags(ghost->GetGhostObject()->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
+
+		obj->AddPhysicObject(ghost, m_dynamicsWorld, &m_numDynamicObjects);
+	}
+
+	if (1)
+	{
+		auto ghost = new CSolidOptimizerGhostPhysicObject(obj, boneindex, 1);
+
+		ghost->SetGhostObject(new btPairCachingGhostObject());
+		ghost->GetGhostObject()->setCollisionShape(new btBoxShape(boxSize2));
+		ghost->GetGhostObject()->setCollisionFlags(ghost->GetGhostObject()->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
+
+		obj->AddPhysicObject(ghost, m_dynamicsWorld, &m_numDynamicObjects);
+	}
+
 #endif
-	obj->AddSolidOptimizer(boneindex, radius);
+	obj->AddSolidOptimizer(boneindex, 0);
 
 	return true;
 }
@@ -1536,13 +1572,13 @@ struct GameFilterCallback : public btOverlapFilterCallback
 	
 		if (collides)
 		{
-			auto body0 = (btRigidBody *)proxy0->m_clientObject;
-			auto body1 = (btRigidBody *)proxy1->m_clientObject;
+			auto body0 = (btCollisionObject *)proxy0->m_clientObject;
+			auto body1 = (btCollisionObject *)proxy1->m_clientObject;
 
 			auto physobj0 = (CPhysicObject *)body0->getUserPointer();
 			auto physobj1 = (CPhysicObject *)body1->getUserPointer();
 
-			if (physobj0->IsKinematic())
+			if (physobj0->IsKinematic() || physobj0->IsPlayer())
 			{
 				auto ent0 = physobj0->GetGameObject()->GetEdict();
 
@@ -1550,12 +1586,34 @@ struct GameFilterCallback : public btOverlapFilterCallback
 					return false;
 			}
 
-			if (physobj1->IsKinematic())
+			if (physobj1->IsKinematic() || physobj1->IsPlayer())
 			{
 				auto ent1 = physobj1->GetGameObject()->GetEdict();
 
 				if (ent1->v.solid <= SOLID_TRIGGER)
 					return false;
+			}
+
+			if (physobj0->IsSolidOptimizerGhost() && physobj1->IsPlayer())
+			{
+				auto optimizer0 = (CSolidOptimizerGhostPhysicObject *)physobj0;
+				auto player1 = (CPlayerObject *)physobj1;
+
+				btTransform body0_worldTrans = optimizer0->GetGhostObject()->getWorldTransform();
+				btTransform player1_worldTrans = player1->GetRigidBody()->getWorldTransform();
+				btVector3 player1_velocity = player1->GetRigidBody()->getLinearVelocity();
+				btVector3 origin_diff = body0_worldTrans.getOrigin() - player1_worldTrans.getOrigin();
+				origin_diff.normalize();
+				if (player1_velocity.dot(origin_diff) > 350)
+				{
+					if (optimizer0->GetOptimizerType() == 0)
+						return false;
+				}
+				else
+				{
+					if (optimizer0->GetOptimizerType() == 1)
+						return false;
+				}
 			}
 		}
 		return collides;
@@ -1607,11 +1665,11 @@ void CPhysicsManager::StepSimulation(double frametime)
 {
 	if (bv_simrate->value < 32)
 	{
-		g_engfuncs.pfnCVarSetFloat("bv_simrate", 32);
+		g_engfuncs.pfnCVarSetFloat("bv_tickrate", 32);
 	}
 	else if (bv_simrate->value > 128)
 	{
-		g_engfuncs.pfnCVarSetFloat("bv_simrate", 128);
+		g_engfuncs.pfnCVarSetFloat("bv_tickrate", 128);
 	}
 
 	if (!gPhysicsManager.GetNumDynamicBodies())
@@ -1696,10 +1754,19 @@ void CGameObject::StartFrame(btDiscreteDynamicsWorld* world)
 	{
 		SetSemiClipMask(gPhysicsManager.GetSolidPlayerMask());
 
+#if 0
 		for (size_t i = 0; i < m_solid_optimizer.size(); ++i)
 		{
 			m_solid_optimizer[i].StartFrame(this);
 		}
+#endif
+
+		for (size_t i = 0; i < m_physics.size(); ++i)
+		{
+			m_physics[i]->StartFrame(world);
+		}
+
+		return;
 	}
 
 	for (size_t i = 0; i < m_physics.size(); ++i)
@@ -1712,10 +1779,15 @@ void CGameObject::StartFrame_Post(btDiscreteDynamicsWorld* world)
 {
 	if (IsSolidOptimizerEnabled())
 	{
-		if (GetSemiClipMask() == gPhysicsManager.GetSolidPlayerMask())
-			GetEdict()->v.solid = SOLID_NOT;
-		else
-			GetEdict()->v.solid = SOLID_BBOX;
+		for (size_t i = 0; i < m_physics.size(); ++i)
+		{
+			m_physics[i]->StartFrame_Post(world);
+		}
+
+		//if (GetSemiClipMask() == gPhysicsManager.GetSolidPlayerMask())
+		//	GetEdict()->v.solid = SOLID_NOT;
+		//else
+		//	GetEdict()->v.solid = SOLID_BBOX;
 
 		return;
 	}

@@ -29,9 +29,9 @@ int SC_SERVER_DECL CASEngineFuncs__GetRunPlayerMovePlayerIndex(void* pthis SC_SE
 	return GetRunPlayerMovePlayerIndex();
 }
 
-bool SC_SERVER_DECL CASEntityFuncs__CreateSolidOptimizer(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int boneindex, float radius)
+bool SC_SERVER_DECL CASEntityFuncs__CreateSolidOptimizer(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int boneindex, const Vector& halfext, const Vector& halfext2)
 {
-	return gPhysicsManager.CreateSolidOptimizer(ent, boneindex, radius);
+	return gPhysicsManager.CreateSolidOptimizer(ent, boneindex, halfext, halfext2);
 }
 
 bool SC_SERVER_DECL CASEntityFuncs__CreatePhysicBox(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable)
@@ -140,7 +140,7 @@ void RegisterAngelScriptMethods(void)
 			(void *)CASEngineFuncs__GetViewEntity, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Create physic box for entity", "CEntityFuncs", "bool CreateSolidOptimizer(edict_t@ ent, int boneindex, float radius)",
+			"Create physic box for entity", "CEntityFuncs", "bool CreateSolidOptimizer(edict_t@ ent, int boneindex, const Vector& in halfextent, const Vector& in halfextent2)",
 			(void *)CASEntityFuncs__CreateSolidOptimizer, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
