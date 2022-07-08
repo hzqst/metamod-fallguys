@@ -103,6 +103,7 @@ class MRegCmdList : public class_metamod_new {
 	public:
 	// constructor:
 		MRegCmdList(void) DLLINTERNAL;
+		~MRegCmdList() DLLINTERNAL;
 
 	// functions:
 		MRegCmd * DLLINTERNAL find(const char *findname);	// find by MRegCmd->name
@@ -145,6 +146,7 @@ class MRegCvarList : public class_metamod_new {
 	public:
 	// constructor:
 		MRegCvarList(void) DLLINTERNAL;
+		~MRegCvarList() DLLINTERNAL;
 
 	// functions:
 		MRegCvar * DLLINTERNAL add(const char *addname);

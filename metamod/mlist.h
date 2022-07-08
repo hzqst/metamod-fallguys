@@ -45,7 +45,7 @@
 // Max number of plugins we can manage.  This is an arbitrary, fixed number,
 // for convenience.  It would probably be better to dynamically grow the
 // list as needed, but we do this for now.
-#define MAX_PLUGINS 50
+#define MAX_PLUGINS 256
 // Width required to printf above MAX, for show() functions.
 #define WIDTH_MAX_PLUGINS	2
 
@@ -83,6 +83,7 @@ class MPluginList : public class_metamod_new {
 		MPlugin * DLLINTERNAL plugin_addload(plid_t plid, const char *fname, PLUG_LOADTIME now); //load from plugin
 
 		mBOOL DLLINTERNAL load(void);				// load the list, at startup
+		mBOOL DLLINTERNAL unload(void);
 		mBOOL DLLINTERNAL refresh(PLUG_LOADTIME now);		// update from re-read inifile
 		void DLLINTERNAL unpause_all(void);			// unpause any paused plugins
 		void DLLINTERNAL retry_all(PLUG_LOADTIME now);		// retry any pending plugin actions

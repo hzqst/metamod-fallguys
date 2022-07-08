@@ -1274,6 +1274,8 @@ void DLLINTERNAL MPlugin::free_api_pointers(void) {
 		free(gamedll_funcs.dllapi_table);
 	if(gamedll_funcs.newapi_table)
 		free(gamedll_funcs.newapi_table);
+	if (gamedll_funcs.studio_blend_api)
+		free(gamedll_funcs.studio_blend_api);
 	
 	if(tables.dllapi)
 		free(tables.dllapi);

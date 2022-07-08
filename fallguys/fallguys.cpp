@@ -71,11 +71,22 @@ int GetRunPlayerMovePlayerIndex()
 	return g_iRunPlayerMoveIndex;
 }
 
+hook_t *g_phook_SV_PushEntity = NULL;
+hook_t *g_phook_SV_PushMove = NULL;
+hook_t *g_phook_SV_PushRotate = NULL;
+
 void InstallEngineHooks()
 {
 	INSTALL_INLINEHOOK(SV_PushEntity);
 	INSTALL_INLINEHOOK(SV_PushMove);
 	INSTALL_INLINEHOOK(SV_PushRotate);
+}
+
+void UninstallEngineHooks()
+{
+	UNINSTALL_HOOK(SV_PushEntity);
+	UNINSTALL_HOOK(SV_PushMove);
+	UNINSTALL_HOOK(SV_PushRotate);
 }
 
 void RegisterAngelScriptHooks()

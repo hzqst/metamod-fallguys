@@ -62,6 +62,7 @@ typedef enum {
 	PNL_PLG_FORCED,			// forced by plugin function call
 //only used internally for 'meta reload'
 	PNL_RELOAD,			// forced unload by reload()
+	PNL_SHUTDOWN,			
 } PL_UNLOAD_REASON;
 
 // Information plugin provides about itself.

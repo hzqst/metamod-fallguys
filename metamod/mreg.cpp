@@ -111,6 +111,18 @@ MRegCmdList::MRegCmdList(void)
 	endlist=0;
 }
 
+//2022/07/08 dtor added by hzqst
+MRegCmdList::~MRegCmdList()
+{
+	if(mlist)
+	{
+		free(mlist);
+		mlist = NULL;
+	}
+
+	size = 0;
+}
+
 // Try to find a registered function with the given name.
 // meta_errno values:
 //  - ME_NOTFOUND	couldn't find a matching function
@@ -287,6 +299,17 @@ MRegCvarList::MRegCvarList(void)
 	for(i=0; i < size; i++)
 		vlist[i].init(i+1);		// 1-based
 	endlist=0;
+}
+
+//2022/07/08 dtor added by hzqst
+MRegCvarList::~MRegCvarList()
+{
+	if (vlist)
+	{
+		free(vlist);
+		vlist = NULL;
+	}
+	size = 0;
 }
 
 // Add the given cvar name to the list and return the instance.  This only

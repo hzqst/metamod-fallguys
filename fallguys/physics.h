@@ -261,6 +261,20 @@ public:
 		//Should be removed from world before free
 		if (m_rigbody)
 		{
+			if (m_rigbody->getCollisionShape())
+			{
+				if (m_rigbody->getCollisionShape()->getShapeType() == TRIANGLE_MESH_SHAPE_PROXYTYPE &&
+					m_rigbody->getCollisionShape()->getUserPointer())
+				{
+					delete (btTriangleIndexVertexArray *)m_rigbody->getCollisionShape()->getUserPointer();
+				}
+
+				delete m_rigbody->getCollisionShape();
+			}
+			if (m_rigbody->getMotionState())
+			{
+				delete m_rigbody->getMotionState();
+			}
 			delete m_rigbody;
 			m_rigbody = NULL;
 		}
@@ -473,7 +487,7 @@ public:
 		m_original_solid = 0;
 	}
 
-	~CGameObject()
+	virtual ~CGameObject()
 	{
 		m_entindex = -1;
 		m_ent = NULL;
@@ -495,21 +509,17 @@ public:
 
 		m_physics.emplace_back(physobj);
 	}
-	//cpp14 not support
-#if 0
-	void RemovePhysicObject(CPhysicObject *physobj, btDiscreteDynamicsWorld* world, int *numDynamicObjects)
-	{
-		physobj->RemoveFromPhysicWorld(world, numDynamicObjects);
 
-		m_physics.erase(std::find(m_physics.begin(), m_physics.end(), physobj));
-	}
-#endif
 	void RemoveAllPhysicObjects(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
 	{
 		for (size_t i = 0; i < m_physics.size(); ++i)
 		{
-			m_physics[i]->RemoveFromPhysicWorld(world, numDynamicObjects);
-			delete m_physics[i];
+			auto physobj = m_physics[i];
+			if (physobj)
+			{
+				physobj->RemoveFromPhysicWorld(world, numDynamicObjects);
+				delete physobj;
+			}
 		}
 
 		m_physics.clear();

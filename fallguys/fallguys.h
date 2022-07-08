@@ -36,6 +36,7 @@ edict_t* GetClientViewEntity(int clientindex);
 edict_t* GetClientViewEntity(edict_t* pClient);
 
 void InstallEngineHooks();
+void UninstallEngineHooks();
 void RegisterAngelScriptHooks();
 void RegisterAngelScriptMethods(void);
 

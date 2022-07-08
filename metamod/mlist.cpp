@@ -696,7 +696,8 @@ mBOOL DLLINTERNAL MPluginList::cmd_addload(const char *args) {
 // Load plugins at startup.
 // meta_errno values:
 //  - errno's from ini_startup()
-mBOOL DLLINTERNAL MPluginList::load() {
+mBOOL DLLINTERNAL MPluginList::load() 
+{
 	int i, n;
 
 	if(!ini_startup()) {
@@ -714,6 +715,28 @@ mBOOL DLLINTERNAL MPluginList::load() {
 		else
 			// all plugins should be loadable at startup...
 			META_WARNING("dll: Failed to load plugin '%s'", plist[i].file);
+	}
+	META_LOG("dll: Finished loading %d plugins", n);
+	return(mTRUE);
+}
+
+mBOOL DLLINTERNAL MPluginList::unload()
+{
+	int n = 0;
+	META_LOG("dll: Unloading plugins...");
+	for (int i = 0; i < endlist; i++) {
+		if (plist[i].status < PL_VALID)
+			continue;
+		plist[i].action = PA_UNLOAD;
+		if (plist[i].unload(PT_STARTUP, PNL_SHUTDOWN, PNL_SHUTDOWN) == mTRUE)
+		{
+			n++;
+		}
+		else
+		{
+			// all plugins should be loadable at startup...
+			META_WARNING("dll: Failed to unload plugin '%s'", plist[i].file);
+		}
 	}
 	META_LOG("dll: Finished loading %d plugins", n);
 	return(mTRUE);

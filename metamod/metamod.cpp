@@ -94,6 +94,55 @@ int metamod_not_loaded = 0;
 
 void mutil_CommitHooks(void);
 
+void metamod_unload()
+{
+	if (Plugins)
+	{
+		Plugins->unload();
+		delete Plugins;
+		Plugins = NULL;
+	}
+	
+	if (RegCmds)
+	{
+		delete RegCmds;
+		RegCmds = NULL;
+	}
+	if (RegCvars)
+	{
+		delete RegCvars;
+		RegCvars = NULL;
+	}
+	if (RegMsgs)
+	{
+		delete RegMsgs;
+		RegMsgs = NULL;
+	}
+
+	if (GameDLL.handle)
+	{
+		DLCLOSE(GameDLL.handle);
+		GameDLL.handle = NULL;
+	}
+	if (GameDLL.funcs.dllapi_table)
+	{
+		free(GameDLL.funcs.dllapi_table);
+		GameDLL.funcs.dllapi_table = NULL;
+	}
+	if (GameDLL.funcs.newapi_table)
+	{
+		free(GameDLL.funcs.newapi_table);
+		GameDLL.funcs.newapi_table = NULL;
+	}
+	if (GameDLL.funcs.studio_blend_api)
+	{
+		free(GameDLL.funcs.studio_blend_api);
+		GameDLL.funcs.studio_blend_api = NULL;
+	}
+
+	uninit_linkent_replacement();
+}
+
 // Very first metamod function that's run.
 // Do startup operations...
 int DLLINTERNAL metamod_startup(void) {	

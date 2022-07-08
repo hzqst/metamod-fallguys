@@ -48,7 +48,7 @@
 
 //Initializes replacement code
 int DLLINTERNAL init_linkent_replacement(DLHANDLE moduleMetamod, DLHANDLE moduleGame);
-
+void DLLINTERNAL uninit_linkent_replacement();
 
 // Comments from SDK dlls/util.h:
 //! This is the glue that hooks .MAP entity class names to our CPP classes.

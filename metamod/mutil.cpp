@@ -564,8 +564,6 @@ void mutil_CommitHooks(void)
 		next = h->pNext;
 		mutil_CommitHook(h);
 	}
-
-	g_pHookBase = NULL;
 }
 
 void mutil_FreeAllHook(void)

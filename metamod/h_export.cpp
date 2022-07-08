@@ -38,6 +38,8 @@
 
 // From SDK dlls/h_export.cpp:
 
+void metamod_unload();
+
 #ifdef _WIN32
 //! Required DLL entry point
 // The above SDK comment indicates this routine is required, but the MSDN

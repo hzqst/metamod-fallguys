@@ -47,6 +47,8 @@
 #include "asext.h"
 #include "serverdef.h"
 
+hook_t *g_phook_CASDocumentation_RegisterObjectType = NULL;
+
 // Must provide at least one of these..
 static META_FUNCTIONS gMetaFunctionTable = {
 	NULL,			// pfnGetEntityAPI				HL SDK; called before game DLL
@@ -69,7 +71,7 @@ plugin_info_t Plugin_info = {
 	"https://github.com/hzqst/metamod-fallguys",	// url
 	"ASEXT",	// logtag, all caps please
 	PT_ANYTIME,	// (when) loadable
-	PT_NEVER,	// (when) unloadable
+	PT_STARTUP,	// (when) unloadable
 };
 
 // Global vars from metamod:
@@ -147,7 +149,6 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectProperty, -7);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectMethod, -7);
 
-
 #else
 
 	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterObjectType);
@@ -168,5 +169,8 @@ C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME /* now */,
 		PL_UNLOAD_REASON /* reason */) 
 {
 	//Nope, AngelScript doesn't provide unloading procedures
-	return FALSE;
+
+	UNINSTALL_HOOK(CASDocumentation_RegisterObjectType);
+
+	return TRUE;
 }

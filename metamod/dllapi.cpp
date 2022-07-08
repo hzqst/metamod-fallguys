@@ -321,8 +321,17 @@ static void mm_OnFreeEntPrivateData(edict_t *pEnt) {
 	META_NEWAPI_HANDLE_void(FN_ONFREEENTPRIVATEDATA, pfnOnFreeEntPrivateData, p, (pEnt));
 	RETURN_API_void();
 }
+
+void mutil_FreeAllHook(void);
+void metamod_unload(void);
+
 static void mm_GameShutdown(void) {
+	
 	META_NEWAPI_HANDLE_void(FN_GAMESHUTDOWN, pfnGameShutdown, void, (VOID_ARG));
+
+	mutil_FreeAllHook();
+	metamod_unload();
+
 	RETURN_API_void();
 }
 static int mm_ShouldCollide(edict_t *pentTouched, edict_t *pentOther) {
@@ -547,11 +556,13 @@ C_DLLEXPORT int Server_GetBlendingInterface(int version, sv_blending_interface_t
 
 		if (GameDLL_GetBlendingInterface && GameDLL_GetBlendingInterface(version, pinterface, pstudio, rotationmatrix, bonetransform))
 		{
-			GameDLL.funcs.studio_blend_api = (*pinterface);
+			GameDLL.funcs.studio_blend_api = (sv_blending_interface_t *)calloc(1, sizeof(sv_blending_interface_t));
+			memcpy(GameDLL.funcs.studio_blend_api, (*pinterface), sizeof(sv_blending_interface_t));
 		}
 		else
 		{
-			GameDLL.funcs.studio_blend_api = (*pinterface);
+			GameDLL.funcs.studio_blend_api = (sv_blending_interface_t *)calloc(1, sizeof(sv_blending_interface_t));
+			memcpy(GameDLL.funcs.studio_blend_api, (*pinterface), sizeof(sv_blending_interface_t));
 		}
 	}
 

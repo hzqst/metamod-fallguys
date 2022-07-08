@@ -120,6 +120,11 @@ static int sort_names_list(const sort_names_t * A, const sort_names_t * B)
 	return(mm_strcmp(str_A, str_B));
 }
 
+static unsigned long  * newFunctions = NULL;
+static sort_names_t   * newSort = NULL;
+
+static unsigned long  * newNames = NULL;
+static unsigned short * newNameOrdinals = NULL;
 //
 // Combines moduleMM and moduleGame export tables and replaces moduleMM table with new one
 //
@@ -130,10 +135,6 @@ static int DLLINTERNAL_NOVIS combine_module_export_tables(HMODULE moduleMM, HMOD
 	
 	unsigned long    newNumberOfFunctions;
 	unsigned long    newNumberOfNames;
-	unsigned long  * newFunctions;
-	unsigned long  * newNames;
-	unsigned short * newNameOrdinals;
-	sort_names_t   * newSort;
 	
 	unsigned long i;
 	unsigned long u;
@@ -155,8 +156,8 @@ static int DLLINTERNAL_NOVIS combine_module_export_tables(HMODULE moduleMM, HMOD
 	newNumberOfNames     = exportMM->NumberOfNames     + exportGame->NumberOfNames;
 	
 	//alloc lists
-	*(void**)&newFunctions = calloc(1, newNumberOfFunctions * sizeof(*newFunctions));
-	*(void**)&newSort      = calloc(1, newNumberOfNames * sizeof(*newSort));
+	*(void**)&newFunctions = calloc(1, newNumberOfFunctions * sizeof(unsigned long));
+	*(void**)&newSort      = calloc(1, newNumberOfNames * sizeof(sort_names_t));
 	
 	//copy moduleMM to new export
 	for(funcCount = 0; funcCount < exportMM->NumberOfFunctions; funcCount++)
@@ -208,6 +209,7 @@ static int DLLINTERNAL_NOVIS combine_module_export_tables(HMODULE moduleMM, HMOD
 	}
 	
 	free(newSort);
+	newSort = NULL;
 	
 	//translate VAs to RVAs
 	for(i = 0; i < newNumberOfFunctions; i++)
@@ -238,8 +240,29 @@ static int DLLINTERNAL_NOVIS combine_module_export_tables(HMODULE moduleMM, HMOD
 
 //
 // ...
-//
+// TODO : free new function when needed?
 int DLLINTERNAL init_linkent_replacement(DLHANDLE moduleMetamod, DLHANDLE moduleGame)
 {
 	return(combine_module_export_tables(moduleMetamod, moduleGame));
+}
+
+//2022/07/08 Added by hzqst free newFunctions shits 
+void DLLINTERNAL uninit_linkent_replacement()
+{
+	if (newFunctions)
+	{
+		free(newFunctions);
+		newFunctions = NULL;
+	}
+
+	if (newNames)
+	{
+		VirtualFree(newNames, 0, MEM_RELEASE);
+		newNames = NULL;
+	}
+	if (newNameOrdinals)
+	{
+		VirtualFree(newNameOrdinals, 0, MEM_RELEASE);
+		newNameOrdinals = NULL;
+	}
 }

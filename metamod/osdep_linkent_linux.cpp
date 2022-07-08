@@ -200,6 +200,8 @@ static void * __replacement_dlsym(void * pmodule, const char * funcname)
 #endif
 }
 
+static hook_t *g_dlsym_hook = NULL;
+
 //
 // Initialize
 //
@@ -217,7 +219,7 @@ int DLLINTERNAL init_linkent_replacement(DLHANDLE MetamodHandle, DLHANDLE GameDl
 	dlsym_original = (dlsym_func)sym_ptr;
 #if 1
 	//Added by hzqst, use mutil
-	MetaUtilFunctions.pfnInlineHook(sym_ptr, (void *)__replacement_dlsym, (void **)&dlsym_original, false);
+	g_dlsym_hook = MetaUtilFunctions.pfnInlineHook(sym_ptr, (void *)__replacement_dlsym, (void **)&dlsym_original, false);
 
 #else
 	//Backup old bytes of "dlsym" function
@@ -253,4 +255,14 @@ int DLLINTERNAL init_linkent_replacement(DLHANDLE MetamodHandle, DLHANDLE GameDl
 #endif
 	//done
 	return(1);
+}
+
+//2022/07/08 Added by hzqst free newFunctions shits 
+void DLLINTERNAL uninit_linkent_replacement()
+{
+	if (g_dlsym_hook)
+	{
+		MetaUtilFunctions.pfnUnHook(g_dlsym_hook);
+		g_dlsym_hook = NULL;
+	}
 }

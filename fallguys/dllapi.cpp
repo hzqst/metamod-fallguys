@@ -182,7 +182,7 @@ int NewSpawn_Post(edict_t *pent)
 
 void NewServerDeactivate()
 {
-	gPhysicsManager.Shutdown();
+	gPhysicsManager.RemoveAllGameBodies();
 
 	SET_META_RESULT(MRES_IGNORED);
 }
@@ -401,6 +401,13 @@ void NewOnFreeEntPrivateData(edict_t* pEnt)
 	gPhysicsManager.FreeEntityPrivateData(pEnt);
 
 	SET_META_RESULT(MRES_HANDLED);
+}
+
+void NewGameShutdown(void)
+{
+	gPhysicsManager.Shutdown();
+
+	SET_META_RESULT(MRES_IGNORED);
 }
 
 static NEW_DLL_FUNCTIONS gNewDllFunctionTable =

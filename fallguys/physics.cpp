@@ -459,6 +459,8 @@ CStaticObject* CPhysicsManager::CreateStaticObject(CGameObject *obj, vertexarray
 
 	auto meshShape = new btBvhTriangleMeshShape(bulletVertexArray, true, true);
 
+	meshShape->setUserPointer(bulletVertexArray);
+
 	btMotionState* motionState = NULL;
 
 	if (kinematic)
@@ -1033,7 +1035,7 @@ qboolean CPhysicsManager::PM_AddToTouched(pmtrace_t tr, vec3_t impactvelocity)
 
 	if (pmove->numtouch >= MAX_PHYSENTS)
 	{
-		pmove->Con_DPrintf("Too many entities were touched!\n");
+		//pmove->Con_DPrintf("Too many entities were touched!\n");
 		return false;
 	}
 
@@ -1658,6 +1660,44 @@ void CPhysicsManager::Shutdown(void)
 	if (m_worldVertexArray) {
 		delete m_worldVertexArray;
 		m_worldVertexArray = NULL;
+	}
+
+	if (m_dynamicsWorld)
+	{
+		delete m_dynamicsWorld;
+		m_dynamicsWorld = NULL;
+	}
+
+	if (m_overlapFilterCallback)
+	{
+		delete m_overlapFilterCallback;
+		m_overlapFilterCallback = NULL;
+	}
+	if (m_ghostPairCallback)
+	{
+		delete m_ghostPairCallback;
+		m_ghostPairCallback = NULL;
+	}
+
+	if (m_collisionConfiguration)
+	{
+		delete m_collisionConfiguration;
+		m_collisionConfiguration = NULL;
+	}
+	if (m_dispatcher)
+	{
+		delete m_dispatcher;
+		m_dispatcher = NULL;
+	}
+	if (m_overlappingPairCache)
+	{
+		delete m_overlappingPairCache;
+		m_overlappingPairCache = NULL;
+	}
+	if (m_solver)
+	{
+		delete m_solver;
+		m_solver = NULL;
 	}
 }
 

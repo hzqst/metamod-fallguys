@@ -36,6 +36,20 @@
 
 #include <cl_entity.h>
 #include <entity_state.h>
+#include "signatures.h"
+
+extern hook_t *g_phook_CASDocumentation_RegisterObjectType;
+extern bool g_ASDocInit;
+
+void NewServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
+{
+	if (g_ASDocInit)
+	{
+		UNINSTALL_HOOK(CASDocumentation_RegisterObjectType);
+	}
+
+	SET_META_RESULT(MRES_IGNORED);
+}
 
 static DLL_FUNCTIONS gFunctionTable = 
 {
@@ -43,12 +57,12 @@ static DLL_FUNCTIONS gFunctionTable =
 	NULL,					// pfnSpawn
 	NULL,					// pfnThink
 	NULL,					// pfnUse
-	NULL,				// pfnTouch
+	NULL,					// pfnTouch
 	NULL,					// pfnBlocked
 	NULL,					// pfnKeyValue
 	NULL,					// pfnSave
 	NULL,					// pfnRestore
-	NULL,			// pfnSetAbsBox
+	NULL,					// pfnSetAbsBox
 
 	NULL,					// pfnSaveWriteFields
 	NULL,					// pfnSaveReadFields
@@ -127,7 +141,7 @@ static DLL_FUNCTIONS gFunctionTable_Post =
 	NULL,					// pfnClientPutInServer
 	NULL,					// pfnClientCommand
 	NULL,					// pfnClientUserInfoChanged
-	NULL,					// pfnServerActivate
+	NewServerActivate,		// pfnServerActivate
 	NULL,					// pfnServerDeactivate
 
 	NULL,					// pfnPlayerPreThink

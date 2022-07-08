@@ -73,7 +73,7 @@ plugin_info_t Plugin_info = {
 	"https://github.com/hzqst/metamod-fallguys",	// url
 	"FGUYS",	// logtag, all caps please
 	PT_ANYTIME,	// (when) loadable
-	PT_NEVER,	// (when) unloadable
+	PT_STARTUP,	// (when) unloadable
 };
 
 // Global vars from metamod:
@@ -197,5 +197,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME /* now */, 
 		PL_UNLOAD_REASON /* reason */) 
 {
-	return FALSE;
+	gPhysicsManager.Shutdown();
+	UninstallEngineHooks();
+
+	return TRUE;
 }
