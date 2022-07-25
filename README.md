@@ -294,14 +294,6 @@ g_EngineFuncs.AppendHTTPRequestFormBlob(request_id, "filedata", pBlob);
 g_EngineFuncs.SetHTTPRequestUploadBlob(request_id, pBlob);
 ```
 
-### Upload using PUT method
-
-```
-//bool SetHTTPRequestUploadBlob(int request_id, const BLOB& in blob )
-
-g_EngineFuncs.SetHTTPRequestUploadBlob(request_id, pBlob);
-```
-
 ### Set asynchronous callback for http request
 
 ```
@@ -580,7 +572,7 @@ You can register your own hooks or methods in AngelScript engine.
 
 #define IMPORT_FUNCTION_DEFINE(name) fn##name name;
 
-#define IMPORT_FUNCTION_DLSYM(dll, name) name = (decltype(name))DLSYM((DLHANDLE)dll, #name);\
+#define IMPORT_FUNCTION_DLSYM(dll, name) name = (decltype(name))DLSYM((DLHANDLE)dll##Handle, #name);\
 if (!name)\
 {\
 	LOG_ERROR(PLID, "Failed to get " #name " from " #dll " dll !");\
