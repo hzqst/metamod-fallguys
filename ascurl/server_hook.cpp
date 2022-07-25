@@ -161,11 +161,11 @@ void RegisterAngelScriptMethods()
 			(void *)CASEngineFuncs__AppendHTTPRequestHeader, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Append http header to request via libcurl", "CEngineFuncs", "bool CASEngineFuncs__AppendHTTPRequestFormString(int request_id, const string& in form, const string& in content )",
+			"Append http header to request via libcurl", "CEngineFuncs", "bool AppendHTTPRequestFormString(int request_id, const string& in form, const string& in content )",
 			(void *)CASEngineFuncs__AppendHTTPRequestFormString, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Append http header to request via libcurl", "CEngineFuncs", "bool CASEngineFuncs__AppendHTTPRequestFormBlob(int request_id, const string& in form, const BLOB& in blob )",
+			"Append http header to request via libcurl", "CEngineFuncs", "bool AppendHTTPRequestFormBlob(int request_id, const string& in form, const BLOB& in blob )",
 			(void *)CASEngineFuncs__AppendHTTPRequestFormBlob, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
