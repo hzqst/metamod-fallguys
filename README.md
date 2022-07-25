@@ -241,10 +241,24 @@ if (!name)\
 }
 
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterDocInitCallback);
+IMPORT_FUNCTION_DEFINE(ASEXT_RegisterDirInitCallback);
+
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectMethod);
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectType);
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectProperty);
+IMPORT_FUNCTION_DEFINE(ASEXT_RegisterFuncDef);
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterHook);
+
+IMPORT_FUNCTION_DEFINE(ASEXT_CreateDirectory);
+IMPORT_FUNCTION_DEFINE(ASEXT_CStringAssign);
+IMPORT_FUNCTION_DEFINE(ASEXT_CStringdtor);
+IMPORT_FUNCTION_DEFINE(ASEXT_GetServerManager);
+IMPORT_FUNCTION_DEFINE(ASEXT_CreateCASFunction);
+IMPORT_FUNCTION_DEFINE(ASEXT_CASRefCountedBaseClass_InternalRelease);
+
+fnASEXT_CallHook *ASEXT_CallHook = NULL;
+
+fnASEXT_CallCASBaseCallable *ASEXT_CallCASBaseCallable = NULL;
 
 ```
 
@@ -257,25 +271,37 @@ IMPORT_FUNCTION_DEFINE(ASEXT_RegisterHook);
 ```
 	//....
 	//Load asext dll
-	void *asext = NULL;
+	void *asextHandle = NULL;
 #ifdef _WIN32
-	LOAD_PLUGIN(PLID, "addons/metamod/dlls/asext.dll", PLUG_LOADTIME::PT_ANYTIME, &asext);
+	LOAD_PLUGIN(PLID, "addons/metamod/dlls/asext.dll", PLUG_LOADTIME::PT_ANYTIME, &asextHandle);
 #else
-	LOAD_PLUGIN(PLID, "addons/metamod/dlls/asext.so", PLUG_LOADTIME::PT_ANYTIME, &asext);
+	LOAD_PLUGIN(PLID, "addons/metamod/dlls/asext.so", PLUG_LOADTIME::PT_ANYTIME, &asextHandle);
 #endif
-	if (!asext)
+	if (!asextHandle)
 	{
 		LOG_ERROR(PLID, "asext dll not found!");
 		return FALSE;
 	}
 
 	//Load asext API
+	IMPORT_FUNCTION_DLSYM(asext, ASEXT_CallHook);
+	IMPORT_FUNCTION_DLSYM(asext, ASEXT_CallCASBaseCallable);
+
 	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterDocInitCallback);
+	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterDirInitCallback);
+
 	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectMethod);
 	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectType);
 	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectProperty);
+	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterFuncDef);
 	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterHook);
-	IMPORT_FUNCTION_DLSYM(asext, ASEXT_CallHook);
+	IMPORT_FUNCTION_DLSYM(asext, ASEXT_CreateDirectory);
+	IMPORT_FUNCTION_DLSYM(asext, ASEXT_CStringAssign);
+	IMPORT_FUNCTION_DLSYM(asext, ASEXT_CStringdtor);
+	IMPORT_FUNCTION_DLSYM(asext, ASEXT_GetServerManager);
+	IMPORT_FUNCTION_DLSYM(asext, ASEXT_CreateCASFunction);
+	IMPORT_FUNCTION_DLSYM(asext, ASEXT_CASRefCountedBaseClass_InternalRelease);
+
 ```
 
 ### Register your own AngelScript methods
