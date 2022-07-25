@@ -46,8 +46,7 @@
 
 #include "enginedef.h"
 #include "serverdef.h"
-#include "fallguys.h"
-#include "physics.h"
+#include "ascurl.h"
 
 // Must provide at least one of these..
 static META_FUNCTIONS gMetaFunctionTable = {
@@ -66,12 +65,12 @@ static META_FUNCTIONS gMetaFunctionTable = {
 // Description of plugin
 plugin_info_t Plugin_info = {
 	META_INTERFACE_VERSION,	// ifvers
-	"FallGuys",	// name
+	"AngelScriptCURL",	// name
 	"1.3",	// version
 	"2022",	// date
 	"hzqst",	// author
 	"https://github.com/hzqst/metamod-fallguys",	// url
-	"FGUYS",	// logtag, all caps please
+	"ASCURL",	// logtag, all caps please
 	PT_ANYTIME,	// (when) loadable
 	PT_STARTUP,	// (when) unloadable
 };
@@ -178,6 +177,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectMethod);
 	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectType);
 	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectProperty);
+	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterFuncDef);
 	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterHook);
 	IMPORT_FUNCTION_DLSYM(asext, ASEXT_CreateDirectory);
 	IMPORT_FUNCTION_DLSYM(asext, ASEXT_CStringAssign);
@@ -186,30 +186,12 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	IMPORT_FUNCTION_DLSYM(asext, ASEXT_CreateCASFunction);
 	IMPORT_FUNCTION_DLSYM(asext, ASEXT_CASRefCountedBaseClass_InternalRelease);
 
-	//Fill private engine functions
-	FILL_FROM_SIGNATURE(engine, SV_PushEntity);
-	FILL_FROM_SIGNATURE(engine, SV_PushMove);
-	FILL_FROM_SIGNATURE(engine, SV_PushRotate);
+	if (!ASCURL_Init())
+	{
+		LOG_ERROR(PLID, "ASCURL_Init failed !");
+		return FALSE;
+	}
 
-#ifdef _WIN32
-
-	VAR_FROM_SIGNATURE_FROM_START(engine, sv_models, 13);
-	VAR_FROM_SIGNATURE_FROM_END(engine, host_frametime, 0);
-
-#else
-
-	void *sv = NULL;
-
-	VAR_FROM_SIGNATURE(engine, sv);
-
-	sv_models = (decltype(sv_models))((char *)sv + 0x276148);
-
-	VAR_FROM_SIGNATURE(engine, host_frametime);
-
-
-#endif
-
-	InstallEngineHooks();
 	RegisterAngelScriptMethods();
 	RegisterAngelScriptHooks();
 
@@ -222,8 +204,6 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME /* now */, 
 		PL_UNLOAD_REASON /* reason */) 
 {
-	gPhysicsManager.Shutdown();
-	UninstallEngineHooks();
 
 	return TRUE;
 }

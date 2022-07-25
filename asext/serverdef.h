@@ -30,10 +30,100 @@ public:
 	int unk4;//36
 };
 
+class CString
+{
+public:
+	const char *c_str()
+	{
+		return m_ptr;
+	}
+	char charAt(size_t offset)
+	{
+		return offset >= m_len ? m_ptr[0] : m_ptr[offset];
+	}
+	bool empty()
+	{
+		return m_len == 0;
+	}
+
+	int unk1;//0
+	int unk2;//4
+	int unk3;//8
+	int unk4;//12
+	int unk5;//16
+	char * m_ptr;//20
+	size_t m_len;//24
+	int unk6;//28
+	int unk7;//32
+};
+
+class CASBLOB
+{
+public:
+	void *data()
+	{
+		return m_buf;
+	}
+	bool empty()
+	{
+		return m_size == 0;
+	}
+
+	int unk1;//0
+	void *m_buf;//4
+	int m_size;//8
+	int m_read_offset;//12
+	int m_write_offset;//16
+	char m_can_resize;//20
+};
+
 class CASDocumentation
 {
 public:
 
+};
+
+class CASDirectoryList
+{
+public:
+
+};
+
+class CASModule
+{
+public:
+
+};
+
+class aslScriptFunction
+{
+public:
+
+};
+
+class CASFunction
+{
+public:
+	virtual void Release(int what) = 0;
+
+	void *getReference()
+	{
+		return &ref;
+	}
+
+	int ref;
+};
+
+class CASServerManager
+{
+public:
+	int unk1;//0
+	int unk2;//4
+	int unk3;//8
+	int unk4;//12
+	int unk5;//16
+	int unk6;//20
+	CASModule *curModule;//24
 };
 
 class CASMethodRegistration
@@ -69,6 +159,7 @@ public:
 #define SC_SERVER_DUMMYARG_NOCOMMA , int dummy
 #define SC_SERVER_DUMMYARG int dummy, 
 #define SC_SERVER_PASS_DUMMYARG dummy, 
+#define SC_SERVER_PASS_DUMMYARG2 ,dummy
 #define SC_SERVER_PASS_DUMMYARG_NOCOMMA dummy
 #define SC_SERVER_DUMMYVAR int dummy = 0;
 #define SERVER_DLL_NAME "server.dll"
@@ -79,6 +170,7 @@ public:
 #define SC_SERVER_DUMMYARG_NOCOMMA
 #define SC_SERVER_DUMMYARG
 #define SC_SERVER_PASS_DUMMYARG
+#define SC_SERVER_PASS_DUMMYARG2 
 #define SC_SERVER_PASS_DUMMYARG_NOCOMMA
 #define SC_SERVER_DUMMYVAR
 #define SERVER_DLL_NAME "server.so"
@@ -107,3 +199,33 @@ PRIVATE_FUNCTION_EXTERN(CASDocumentation_RegisterObjectProperty);
 //CASDocumentation::RegisterObjectMethod __fastcall in Windows
 typedef int (SC_SERVER_DECL *fnCASDocumentation_RegisterObjectMethod)(CASDocumentation *pthis, SC_SERVER_DUMMYARG const char *docs, const char *objectname, const char *funcname, CASMethodRegistration *reg, int a5);
 PRIVATE_FUNCTION_EXTERN(CASDocumentation_RegisterObjectMethod);
+
+typedef int (SC_SERVER_DECL *fnCASDocumentation_RegisterFuncDef)(CASDocumentation *pthis, SC_SERVER_DUMMYARG const char *docs, const char *funcdef);
+PRIVATE_FUNCTION_EXTERN(CASDocumentation_RegisterFuncDef);
+
+typedef void (SC_SERVER_DECL *fnCASDirectoryList_CreateDirectory)(CASDirectoryList *pthis, SC_SERVER_DUMMYARG const char *path, unsigned char flags, unsigned char access_control, unsigned char permanent, unsigned char unk);
+PRIVATE_FUNCTION_EXTERN(CASDirectoryList_CreateDirectory);
+void SC_SERVER_DECL NewCASDirectoryList_CreateDirectory(CASDirectoryList* pthis, SC_SERVER_DUMMYARG const char *path, unsigned char flags, unsigned char access_control, unsigned char permanent, unsigned char unk);
+
+typedef CASFunction *(*fnCASFunction_Create)(aslScriptFunction *aslfn, CASModule *asmodule, bool unk);
+PRIVATE_FUNCTION_EXTERN(CASFunction_Create);
+
+typedef bool (*fnCASRefCountedBaseClass_InternalRelease)(void *ref);
+PRIVATE_FUNCTION_EXTERN(CASRefCountedBaseClass_InternalRelease);
+
+typedef void (*fnCASBaseCallable_Call)(CASFunction *, int dummy, ...);
+PRIVATE_FUNCTION_EXTERN(CASBaseCallable_Call);
+
+typedef void (SC_SERVER_DECL *fnCString_Assign)(CString *pthis, SC_SERVER_DUMMYARG const char *src, size_t len);
+PRIVATE_FUNCTION_EXTERN(CString_Assign);
+
+typedef void (SC_SERVER_DECL *fnCString_dtor)(CString *pthis SC_SERVER_DUMMYARG_NOCOMMA);
+PRIVATE_FUNCTION_EXTERN(CString_dtor);
+
+typedef bool (SC_SERVER_DECL *fnCASBLOB_ReadData)(CASBLOB *pthis, SC_SERVER_DUMMYARG void *outbuf, size_t read_bytes);
+PRIVATE_FUNCTION_EXTERN(CASBLOB_ReadData);
+
+typedef bool (SC_SERVER_DECL *fnCASBLOB_WriteData)(CASBLOB *pthis, SC_SERVER_DUMMYARG  void *outbuf, size_t read_bytes);
+PRIVATE_FUNCTION_EXTERN(CASBLOB_WriteData);
+
+extern CASServerManager **g_pServerManager;

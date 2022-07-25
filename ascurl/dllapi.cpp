@@ -36,24 +36,15 @@
 
 #include <cl_entity.h>
 #include <entity_state.h>
-#include "signatures.h"
 
-extern hook_t *g_phook_CASDocumentation_RegisterObjectType;
-extern hook_t *g_phook_CASDirectoryList_CreateDirectory;
-extern bool g_ASDocInit;
-extern bool g_ASDirInit;
+#include "enginedef.h"
+#include "serverdef.h"
+#include "ascurl.h"
 
-void NewServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
+
+void NewStartFrame(void)
 {
-	if (g_ASDocInit)
-	{
-		UNINSTALL_HOOK(CASDocumentation_RegisterObjectType);
-	}
-
-	if (g_ASDirInit)
-	{
-		UNINSTALL_HOOK(CASDirectoryList_CreateDirectory);
-	}
+	ASCURL_Frame();
 
 	SET_META_RESULT(MRES_IGNORED);
 }
@@ -62,6 +53,70 @@ static DLL_FUNCTIONS gFunctionTable =
 {
 	NULL,					// pfnGameInit
 	NULL,					// pfnSpawn
+	NULL,					// pfnThink
+	NULL,					// pfnUse
+	NULL,				// pfnTouch
+	NULL,					// pfnBlocked
+	NULL,					// pfnKeyValue
+	NULL,					// pfnSave
+	NULL,					// pfnRestore
+	NULL,			// pfnSetAbsBox
+
+	NULL,					// pfnSaveWriteFields
+	NULL,					// pfnSaveReadFields
+
+	NULL,					// pfnSaveGlobalState
+	NULL,					// pfnRestoreGlobalState
+	NULL,					// pfnResetGlobalState
+
+	NULL,					// pfnClientConnect
+	NULL,					// pfnClientDisconnect
+	NULL,					// pfnClientKill
+	NULL,					// pfnClientPutInServer
+	NULL,					// pfnClientCommand
+	NULL,					// pfnClientUserInfoChanged
+	NULL,					// pfnServerActivate
+	NULL,	// pfnServerDeactivate
+
+	NULL,		// pfnPlayerPreThink
+	NULL,		// pfnPlayerPostThink
+
+	NewStartFrame,			// pfnStartFrame
+	NULL,					// pfnParmsNewLevel
+	NULL,					// pfnParmsChangeLevel
+
+	NULL,					// pfnGetGameDescription
+	NULL,					// pfnPlayerCustomization
+
+	NULL,					// pfnSpectatorConnect
+	NULL,					// pfnSpectatorDisconnect
+	NULL,					// pfnSpectatorThink
+	
+	NULL,					// pfnSys_Error
+
+	NULL,				// pfnPM_Move
+	NULL,					// pfnPM_Init
+	NULL,					// pfnPM_FindTextureType
+	
+	NULL,		// pfnSetupVisibility
+	NULL,					// pfnUpdateClientData
+	NULL,					// pfnAddToFullPack
+	NULL,					// pfnCreateBaseline
+	NULL,					// pfnRegisterEncoders
+	NULL,					// pfnGetWeaponData
+	NULL,					// pfnCmdStart
+	NULL,					// pfnCmdEnd
+	NULL,					// pfnConnectionlessPacket
+	NULL,					// pfnGetHullBounds
+	NULL,					// pfnCreateInstancedBaselines
+	NULL,					// pfnInconsistentFile
+	NULL,					// pfnAllowLagCompensation
+};
+
+static DLL_FUNCTIONS gFunctionTable_Post =
+{
+	NULL,		// pfnGameInit
+	NULL,			// pfnSpawn
 	NULL,					// pfnThink
 	NULL,					// pfnUse
 	NULL,					// pfnTouch
@@ -100,80 +155,16 @@ static DLL_FUNCTIONS gFunctionTable =
 	NULL,					// pfnSpectatorConnect
 	NULL,					// pfnSpectatorDisconnect
 	NULL,					// pfnSpectatorThink
-	
-	NULL,					// pfnSys_Error
-
-	NULL,					// pfnPM_Move
-	NULL,					// pfnPM_Init
-	NULL,					// pfnPM_FindTextureType
-	
-	NULL,					// pfnSetupVisibility
-	NULL,					// pfnUpdateClientData
-	NULL,					// pfnAddToFullPack
-	NULL,					// pfnCreateBaseline
-	NULL,					// pfnRegisterEncoders
-	NULL,					// pfnGetWeaponData
-	NULL,					// pfnCmdStart
-	NULL,					// pfnCmdEnd
-	NULL,					// pfnConnectionlessPacket
-	NULL,					// pfnGetHullBounds
-	NULL,					// pfnCreateInstancedBaselines
-	NULL,					// pfnInconsistentFile
-	NULL,					// pfnAllowLagCompensation
-};
-
-static DLL_FUNCTIONS gFunctionTable_Post =
-{
-	NULL,					// pfnGameInit
-	NULL,					// pfnSpawn
-	NULL,					// pfnThink
-	NULL,					// pfnUse
-	NULL,					// pfnTouch
-	NULL,					// pfnBlocked
-	NULL,					// pfnKeyValue
-	NULL,					// pfnSave
-	NULL,					// pfnRestore
-	NULL,					// pfnSetAbsBox
-
-	NULL,					// pfnSaveWriteFields
-	NULL,					// pfnSaveReadFields
-
-	NULL,					// pfnSaveGlobalState
-	NULL,					// pfnRestoreGlobalState
-	NULL,					// pfnResetGlobalState
-
-	NULL,					// pfnClientConnect
-	NULL,					// pfnClientDisconnect
-	NULL,					// pfnClientKill
-	NULL,					// pfnClientPutInServer
-	NULL,					// pfnClientCommand
-	NULL,					// pfnClientUserInfoChanged
-	NewServerActivate,		// pfnServerActivate
-	NULL,					// pfnServerDeactivate
-
-	NULL,					// pfnPlayerPreThink
-	NULL,					// pfnPlayerPostThink
-
-	NULL,					// pfnStartFrame
-	NULL,					// pfnParmsNewLevel
-	NULL,					// pfnParmsChangeLevel
-
-	NULL,					// pfnGetGameDescription
-	NULL,					// pfnPlayerCustomization
-
-	NULL,					// pfnSpectatorConnect
-	NULL,					// pfnSpectatorDisconnect
-	NULL,					// pfnSpectatorThink
 
 	NULL,					// pfnSys_Error
 
-	NULL,					// pfnPM_Move
+	NULL,		// pfnPM_Move
 	NULL,					// pfnPM_Init
 	NULL,					// pfnPM_FindTextureType
 
 	NULL,					// pfnSetupVisibility
 	NULL,					// pfnUpdateClientData
-	NULL,					// pfnAddToFullPack
+	NULL,				// pfnAddToFullPack
 	NULL,					// pfnCreateBaseline
 	NULL,					// pfnRegisterEncoders
 	NULL,					// pfnGetWeaponData
@@ -223,12 +214,19 @@ C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable, int *interfaceVersi
 	return TRUE;
 }
 
+void NewGameShutdown(void)
+{
+	ASCURL_Shutdown();
+
+	SET_META_RESULT(MRES_IGNORED);
+}
+
 static NEW_DLL_FUNCTIONS gNewDllFunctionTable =
 {
 	// Called right before the object's memory is freed. 
 	// Calls its destructor.
 	NULL,
-	NULL,
+	NewGameShutdown,
 	NULL,
 
 	// Added 2005/08/11 (no SDK update):

@@ -591,7 +591,8 @@ MPlugin * DLLINTERNAL MPluginList::plugin_addload(plid_t plid, const char *fname
 		// Already in list
 		META_DEBUG(1, ("Plugin '%s' already in current list; file=%s desc='%s'", 
 				pl_temp.file, pl_found->file, pl_found->desc));
-		RETURN_ERRNO(NULL, ME_ALREADY);
+		meta_errno = ME_NOERROR;
+		return(pl_found);
 	}
 	// new plugin; add to list
 	if(!(pl_added=add(&pl_temp))) {

@@ -48,6 +48,7 @@
 #include "serverdef.h"
 
 hook_t *g_phook_CASDocumentation_RegisterObjectType = NULL;
+hook_t *g_phook_CASDirectoryList_CreateDirectory = NULL;
 
 // Must provide at least one of these..
 static META_FUNCTIONS gMetaFunctionTable = {
@@ -65,7 +66,7 @@ static META_FUNCTIONS gMetaFunctionTable = {
 plugin_info_t Plugin_info = {
 	META_INTERFACE_VERSION,	// ifvers
 	"AngelScriptExt",	// name
-	"1.0",	// version
+	"1.3",	// version
 	"2022",	// date
 	"hzqst",	// author
 	"https://github.com/hzqst/metamod-fallguys",	// url
@@ -140,24 +141,40 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	//Fill private server functions
 	FILL_FROM_SIGNATURE(server, CASHook_CASHook);
 	FILL_FROM_SIGNATURE(server, CASHook_Call);
-
-	ASEXT_CallHook = (fnASEXT_CallHook)g_call_original_CASHook_Call;
+	FILL_FROM_SIGNATURE(server, CString_Assign);
+	FILL_FROM_SIGNATURE(server, CString_dtor);
 
 #ifdef _WIN32
 
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectType, -1);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectProperty, -7);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectMethod, -7);
+	FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDocumentation_RegisterFuncDef, 0);
+	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDirectoryList_CreateDirectory, -1);
+	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASFunction_Create, -1);
+	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASBaseCallable_Call, -1);
+	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASRefCountedBaseClass_InternalRelease, -7);
+	VAR_FROM_SIGNATURE_FROM_START(server, g_pServerManager, 5);
 
 #else
 
 	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterObjectType);
 	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterObjectProperty);
 	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterObjectMethod);
+	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterFuncDef);
+	FILL_FROM_SIGNATURE(server, CASDirectoryList_CreateDirectory);
+	FILL_FROM_SIGNATURE(server, CASFunction_Create);
+	FILL_FROM_SIGNATURE(server, CASBaseCallable_Call);
+	FILL_FROM_SIGNATURE(server, CASRefCountedBaseClass_InternalRelease);
 
 #endif
 
+	ASEXT_CallHook = (fnASEXT_CallHook)g_call_original_CASHook_Call;
+
+	ASEXT_CallCASBaseCallable = (fnASEXT_CallCASBaseCallable)g_call_original_CASBaseCallable_Call;
+
 	INSTALL_INLINEHOOK(CASDocumentation_RegisterObjectType);
+	INSTALL_INLINEHOOK(CASDirectoryList_CreateDirectory);
 
 	return TRUE;
 }
@@ -171,6 +188,8 @@ C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME /* now */,
 	//Nope, AngelScript doesn't provide unloading procedures
 
 	UNINSTALL_HOOK(CASDocumentation_RegisterObjectType);
+	UNINSTALL_HOOK(CASDirectoryList_CreateDirectory);
+
 
 	return TRUE;
 }

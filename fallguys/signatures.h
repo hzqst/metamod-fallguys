@@ -62,10 +62,10 @@ if (!Caller_of_##name)\
 	return FALSE;\
 }\
 g_pfn_##name = g_call_original_##name = (decltype(g_pfn_##name))gpMetaUtilFuncs->pfnGetNextCallAddr(Caller_of_##name + (offset), 1);\
-if (!gpMetaUtilFuncs->pfnIsAddressInModuleRange(((void *)g_pfn_##name, dll##Base))\
+if (!gpMetaUtilFuncs->pfnIsAddressInModuleRange((void *)g_pfn_##name, dll##Base))\
 {\
-LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll ! got %p", ((void *)g_pfn_##name); \
-return FALSE; \
+	LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !"); \
+	return FALSE; \
 }
 
 #define FILL_FROM_SIGNATURED_CALLER_FROM_END(dll, name, offset) auto Caller_of_##name = (char *)LOCATE_FROM_SIGNATURE(dll, name##_Signature);\
@@ -77,8 +77,8 @@ if (!Caller_of_##name)\
 g_pfn_##name = g_call_original_##name = (decltype(g_pfn_##name))gpMetaUtilFuncs->pfnGetNextCallAddr(Caller_of_##name + (sizeof(name##_Signature) - 1) + (offset), 1);\
 if (!gpMetaUtilFuncs->pfnIsAddressInModuleRange((void *)g_pfn_##name, dll##Base))\
 {\
-LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !"); \
-return FALSE; \
+	LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !"); \
+	return FALSE; \
 }
 
 #define VAR_FROM_SIGNATURE(dll, name) name = (decltype(name))LOCATE_FROM_SIGNATURE(dll, name##_Signature);\

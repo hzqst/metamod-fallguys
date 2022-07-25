@@ -45,7 +45,6 @@ public:
 		return &ref;
 	}
 
-	int unk;
 	int ref;
 };
 
@@ -67,7 +66,7 @@ typedef void(*fnASDirInitCallback)(CASDirectoryList *pASDir);
 /*
 	Callbacks must be registered before AngelScript initialization
 */
-typedef bool(*fnASEXT_RegisterDocInitCallback)(fnASDocInitCallback callback);
+typedef bool (*fnASEXT_RegisterDocInitCallback)(fnASDocInitCallback callback);
 
 extern fnASEXT_RegisterDocInitCallback ASEXT_RegisterDocInitCallback;
 
@@ -83,31 +82,31 @@ extern fnASEXT_RegisterDirInitCallback ASEXT_RegisterDirInitCallback;
 /*
 	Must be called inside DocInitCallback
 */
-typedef void(*fnASEXT_RegisterObjectMethod)(CASDocumentation *pASDoc, const char *docs, const char *name, const char *func, void *pfn, int type);
+typedef void (*fnASEXT_RegisterObjectMethod)(CASDocumentation *pASDoc, const char *docs, const char *name, const char *func, void *pfn, int type);
 
 extern fnASEXT_RegisterObjectMethod ASEXT_RegisterObjectMethod;
 
 /*
 	Must be called inside DocInitCallback
 */
-typedef void(*fnASEXT_RegisterObjectType)(CASDocumentation *pASDoc, const char *docs, const char *name, int unk, unsigned int flags);
+typedef void (*fnASEXT_RegisterObjectType)(CASDocumentation *pASDoc, const char *docs, const char *name, int unk, unsigned int flags);
 
 extern fnASEXT_RegisterObjectType ASEXT_RegisterObjectType;
 
 /*
 	Must be called inside DocInitCallback
 */
-typedef void(*fnASEXT_RegisterObjectProperty)(CASDocumentation *pASDoc, const char *docs, const char *name, const char *prop, int offset);
+typedef void (*fnASEXT_RegisterObjectProperty)(CASDocumentation *pASDoc, const char *docs, const char *name, const char *prop, int offset);
 
 extern fnASEXT_RegisterObjectProperty ASEXT_RegisterObjectProperty;
 /*
 	Must be called inside DocInitCallback
 */
-typedef void(*fnASEXT_RegisterFuncDef)(CASDocumentation *pASDoc, const char *docs, const char *funcdef);
+typedef void (*fnASEXT_RegisterFuncDef)(CASDocumentation *pASDoc, const char *docs, const char *funcdef);
 
 extern fnASEXT_RegisterFuncDef ASEXT_RegisterFuncDef;
 
-typedef void(*fnASEXT_CreateDirectory)(void *pASDir, const char *path, unsigned char flags, unsigned char access_control, unsigned char permanent, unsigned char unk);
+typedef void (*fnASEXT_CreateDirectory)(void *pASDir, const char *path, unsigned char flags, unsigned char access_control, unsigned char permanent, unsigned char unk);
 extern fnASEXT_CreateDirectory ASEXT_CreateDirectory;
 
 typedef void(*fnASEXT_CStringAssign)(void *pthis, const char *src, size_t len);
@@ -141,7 +140,7 @@ typedef CASFunction *(*fnASEXT_CreateCASFunction)(aslScriptFunction *aslfn, CASM
 
 extern fnASEXT_CreateCASFunction ASEXT_CreateCASFunction;
 
-typedef bool(*fnASEXT_CASRefCountedBaseClass_InternalRelease)(void *ref);
+typedef bool (*fnASEXT_CASRefCountedBaseClass_InternalRelease)(void *ref);
 
 extern fnASEXT_CASRefCountedBaseClass_InternalRelease ASEXT_CASRefCountedBaseClass_InternalRelease;
 

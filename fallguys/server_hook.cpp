@@ -11,14 +11,6 @@
 #include "fallguys.h"
 #include "physics.h"
 
-IMPORT_FUNCTION_DEFINE(ASEXT_RegisterDocInitCallback);
-IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectMethod);
-IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectType);
-IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectProperty);
-IMPORT_FUNCTION_DEFINE(ASEXT_RegisterHook);
-
-fnASEXT_CallHook *ASEXT_CallHook = NULL;
-
 edict_t* SC_SERVER_DECL CASEngineFuncs__GetViewEntity(void* pthis, SC_SERVER_DUMMYARG edict_t* pClient)
 {
 	return GetClientViewEntity(pClient);
@@ -72,7 +64,7 @@ bool SC_SERVER_DECL CASEntityFuncs__ApplyImpulse(void* pthis, SC_SERVER_DUMMYARG
 
 void RegisterAngelScriptMethods(void)
 {
-	ASEXT_RegisterDocInitCallback([](void *pASDoc) {
+	ASEXT_RegisterDocInitCallback([](CASDocumentation *pASDoc) {
 
 		ASEXT_RegisterObjectType    (pASDoc, "Entity states transmit to client", "entity_state_t", 0, 0x40001u);
 		ASEXT_RegisterObjectProperty(pASDoc, "Fields which are filled in by routines outside of delta compression", "entity_state_t", "int entityType", offsetof(entity_state_t, entityType));

@@ -317,7 +317,8 @@ static int mutil_LoadMetaPlugin(plid_t plid, const char *fname, PLUG_LOADTIME no
 	}
 
 	meta_errno = ME_NOERROR;
-	if(!(pl_loaded=Plugins->plugin_addload(plid, fname, now))) {
+	pl_loaded = Plugins->plugin_addload(plid, fname, now);
+	if(!pl_loaded) {
 		if(plugin_handle)
 			*plugin_handle = NULL;
 		return(meta_errno);
