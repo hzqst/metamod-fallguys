@@ -4,6 +4,9 @@
 
 #include <curl.h>		// of course
 
+#undef read
+#undef write
+
 #include <sstream>		// of course
 #include <map>		// of course
 #include <vector>		// of course
@@ -147,7 +150,7 @@ public:
 	}
 	virtual void UploadBlob(const void *blob, size_t size_of_blob)
 	{
-		m_readstream._write((const char *)blob, size_of_blob);
+		m_readstream.write((const char *)blob, size_of_blob);
 
 		g_pfn_curl_easy_setopt(m_easy_handle, CURLOPT_UPLOAD, 1L);
 		g_pfn_curl_easy_setopt(m_easy_handle, CURLOPT_READFUNCTION, read_stream_callback);
@@ -175,7 +178,7 @@ public:
 	}
 	virtual void AppendFormStream(const char *formname, const void *blob, size_t size_of_blob)
 	{
-		m_readstream._write((const char *)blob, size_of_blob);
+		m_readstream.write((const char *)blob, size_of_blob);
 
 		g_pfn_curl_easy_setopt(m_easy_handle, CURLOPT_READFUNCTION, read_stream_callback);
 
