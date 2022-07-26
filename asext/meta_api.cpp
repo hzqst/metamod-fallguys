@@ -154,6 +154,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASFunction_Create, -1);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASBaseCallable_Call, -1);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASRefCountedBaseClass_InternalRelease, -7);
+
 	VAR_FROM_SIGNATURE_FROM_START(server, g_pServerManager, 5);
 
 #else
@@ -166,6 +167,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	FILL_FROM_SIGNATURE(server, CASFunction_Create);
 	FILL_FROM_SIGNATURE(server, CASBaseCallable_Call);
 	FILL_FROM_SIGNATURE(server, CASRefCountedBaseClass_InternalRelease);
+
+	VAR_FROM_SIGNATURE(server, g_pServerManager);
 
 #endif
 
@@ -189,7 +192,6 @@ C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME /* now */,
 
 	UNINSTALL_HOOK(CASDocumentation_RegisterObjectType);
 	UNINSTALL_HOOK(CASDirectoryList_CreateDirectory);
-
 
 	return TRUE;
 }

@@ -561,7 +561,8 @@ void RegisterAngelScriptHooks()
 
 }
 
-#ifdef _WIN32
+#if _WIN32
+
 #include <windows.h>
 #include <bcrypt.h>
 
@@ -671,6 +672,94 @@ bool ASCURL_md5(const char* Data, int DataByte, std::string &out)
 		BCryptCloseAlgorithmProvider(context, 0);
 	}
 	return bSuccess;
+}
+
+#else
+
+#include <openssl/hmac.h>
+
+bool ASCURL_hmac_sha1(const std::string& pwd, const std::string& msg, std::string& out)
+{
+	bool bSuccess = false;
+
+	auto libcryptoHandle = DLOPEN("libcrypto.so.1.1");
+
+	if (libcryptoHandle)
+	{
+		auto pfnEVP_sha1 = (decltype(EVP_sha1) *)DLSYM(libcryptoHandle, "EVP_sha1");
+
+		auto pfnHMAC = (decltype(HMAC) *)DLSYM(libcryptoHandle, "HMAC");
+
+		auto key = pwd.data();
+		auto keySize = pwd.size();
+
+		auto data = msg.data();
+		auto dataSize = msg.size();
+
+		auto digest = pfnHMAC(pfnEVP_sha1(), key, keySize, (unsigned char*)data, dataSize, NULL, NULL);
+
+		if (digest)
+		{
+			out.resize(20);
+			memcpy((void *)out.data(), digest, 20);
+		}
+
+		bSuccess = true;
+
+		DLCLOSE(libcryptoHandle);
+	}
+
+	return bSuccess;
+}
+
+bool ASCURL_hmac_md5(const std::string& pwd, const std::string& msg, std::string& out)
+{
+	bool bSuccess = false;
+
+	auto libcryptoHandle = DLOPEN("libcrypto.so.1.1");
+
+	if (libcryptoHandle)
+	{
+		auto pfnEEVP_md5 = (decltype(EVP_md5) *)DLSYM(libcryptoHandle, "EVP_md5");
+
+		auto pfnHMAC = (decltype(HMAC) *)DLSYM(libcryptoHandle, "HMAC");
+
+		auto key = pwd.data();
+		auto keySize = pwd.size();
+
+		auto data = msg.data();
+		auto dataSize = msg.size();
+
+		auto digest = pfnHMAC(pfnEEVP_md5(), key, keySize, (unsigned char*)data, dataSize, NULL, NULL);
+
+		if (digest)
+		{
+			out.resize(16);
+			memcpy((void *)out.data(), digest, 16);
+		}
+
+		bSuccess = true;
+
+		DLCLOSE(libcryptoHandle);
+	}
+
+	return bSuccess;
+}
+
+#include <openssl/md5.h>
+
+bool ASCURL_md5(const char* Data, int DataByte, std::string &out)
+{
+	unsigned char digest[16];
+	MD5_CTX md5;
+	MD5_Init(&md5);
+	MD5_Update(&md5, Data, DataByte);
+	MD5_Final(digest, &md5);
+
+	out.resize(16);
+	memcpy((void *)out.data(), digest, 16);
+
+	return true;
 }
 
 #endif

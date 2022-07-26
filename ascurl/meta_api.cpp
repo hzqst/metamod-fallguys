@@ -48,6 +48,8 @@
 #include "serverdef.h"
 #include "ascurl.h"
 
+mBOOL dlclose_handle_invalid;
+
 // Must provide at least one of these..
 static META_FUNCTIONS gMetaFunctionTable = {
 	NULL,			// pfnGetEntityAPI				HL SDK; called before game DLL

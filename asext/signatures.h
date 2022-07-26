@@ -21,6 +21,7 @@
 #define CASFunction_Create_Signature "\xC6\x45\x2A\x01\xA3\x2A\x2A\x2A\x2A\x6A\x01\xFF\x70\x2A\xFF\x75\x2A\xE8"
 #define CASBaseCallable_Call_Signature "\x6A\x00\x2A\x2A\x2A\x6A\x00\xFF\x2A\x0C\xE8"
 #define CASRefCountedBaseClass_InternalRelease_Signature "\x8B\x2A\x0C\x85\xFF\x2A\x2A\x8D\x4F\x04\xE8\x2A\x2A\x2A\x2A\x84\xC0"
+
 #define g_pServerManager_Signature "\xC6\x45\x2A\x01\xA3\x2A\x2A\x2A\x2A\x6A\x01\xFF\x70\x2A\xFF\x75\x2A\xE8"
 
 #else
@@ -41,6 +42,7 @@
 #define CASDirectoryList_CreateDirectory_Signature "_ZN16CASDirectoryList15CreateDirectoryEPKchhhh"
 #define CASFunction_Create_Signature "_ZN11CASFunction6CreateEP17asIScriptFunctionP9CASModuleb"
 
+#define g_pServerManager_Signature "_ZZN16CASServerManager11GetInstanceEvE9pInstance"
 
 #endif
 
