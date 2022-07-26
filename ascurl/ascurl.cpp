@@ -771,9 +771,9 @@ bool ASCURL_md5(const char* Data, int DataByte, std::string &out)
 		{
 			unsigned char digest[16];
 			MD5_CTX md5;
-			MD5_Init(&md5);
-			MD5_Update(&md5, Data, DataByte);
-			MD5_Final(digest, &md5);
+			pfnMD5_Init(&md5);
+			pfnMD5_Update(&md5, Data, DataByte);
+			pfnMD5_Final(digest, &md5);
 
 			out.resize(16);
 			memcpy((void *)out.data(), digest, 16);
