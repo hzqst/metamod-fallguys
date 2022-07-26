@@ -217,7 +217,6 @@ HookReturnCode PlayerTouchImpact( CBasePlayer@ pPlayer, CBaseEntity@ pOther )
 
 ```
 //edict_t@ GetViewEntity(edict_t@ pClient)
-//Warning: pClient must be a valid client edict
 
 edict_t@viewent = g_EngineFuncs.GetViewEntity(pPlayer.edict());
 ```
@@ -705,7 +704,7 @@ void NewPlayerPostThink_Post(edict_t *pEntity)
 
 # Installation
 
-1. Copy everything from `build` directory into `\steamapps\common\Sven Co-op\Sven Co-op\svencoop` *(Warning: `svencoop_addon` and `svencoop_downloads` are not supported)*
+1. Copy everything from `build` directory into `\steamapps\common\Sven Co-op\svencoop` *(Warning: `svencoop_addon` and `svencoop_downloads` are not supported)*
 
 # Build Requirements (Windows)
 
