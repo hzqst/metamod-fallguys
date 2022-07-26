@@ -690,24 +690,26 @@ bool ASCURL_hmac_sha1(const std::string& pwd, const std::string& msg, std::strin
 	if (libcryptoHandle)
 	{
 		auto pfnEVP_sha1 = (decltype(EVP_sha1) *)DLSYM(libcryptoHandle, "EVP_sha1");
-
 		auto pfnHMAC = (decltype(HMAC) *)DLSYM(libcryptoHandle, "HMAC");
 
-		auto key = pwd.data();
-		auto keySize = pwd.size();
-
-		auto data = msg.data();
-		auto dataSize = msg.size();
-
-		auto digest = pfnHMAC(pfnEVP_sha1(), key, keySize, (unsigned char*)data, dataSize, NULL, NULL);
-
-		if (digest)
+		if (pfnEVP_sha1 && pfnHMAC)
 		{
-			out.resize(20);
-			memcpy((void *)out.data(), digest, 20);
-		}
+			auto key = pwd.data();
+			auto keySize = pwd.size();
 
-		bSuccess = true;
+			auto data = msg.data();
+			auto dataSize = msg.size();
+
+			auto digest = pfnHMAC(pfnEVP_sha1(), key, keySize, (unsigned char*)data, dataSize, NULL, NULL);
+
+			if (digest)
+			{
+				out.resize(20);
+				memcpy((void *)out.data(), digest, 20);
+			}
+
+			bSuccess = true;
+		}
 
 		DLCLOSE(libcryptoHandle);
 	}
@@ -724,24 +726,26 @@ bool ASCURL_hmac_md5(const std::string& pwd, const std::string& msg, std::string
 	if (libcryptoHandle)
 	{
 		auto pfnEEVP_md5 = (decltype(EVP_md5) *)DLSYM(libcryptoHandle, "EVP_md5");
-
 		auto pfnHMAC = (decltype(HMAC) *)DLSYM(libcryptoHandle, "HMAC");
 
-		auto key = pwd.data();
-		auto keySize = pwd.size();
-
-		auto data = msg.data();
-		auto dataSize = msg.size();
-
-		auto digest = pfnHMAC(pfnEEVP_md5(), key, keySize, (unsigned char*)data, dataSize, NULL, NULL);
-
-		if (digest)
+		if (pfnEEVP_md5 && pfnHMAC)
 		{
-			out.resize(16);
-			memcpy((void *)out.data(), digest, 16);
-		}
+			auto key = pwd.data();
+			auto keySize = pwd.size();
 
-		bSuccess = true;
+			auto data = msg.data();
+			auto dataSize = msg.size();
+
+			auto digest = pfnHMAC(pfnEEVP_md5(), key, keySize, (unsigned char*)data, dataSize, NULL, NULL);
+
+			if (digest)
+			{
+				out.resize(16);
+				memcpy((void *)out.data(), digest, 16);
+			}
+
+			bSuccess = true;
+		}
 
 		DLCLOSE(libcryptoHandle);
 	}
@@ -753,16 +757,32 @@ bool ASCURL_hmac_md5(const std::string& pwd, const std::string& msg, std::string
 
 bool ASCURL_md5(const char* Data, int DataByte, std::string &out)
 {
-	unsigned char digest[16];
-	MD5_CTX md5;
-	MD5_Init(&md5);
-	MD5_Update(&md5, Data, DataByte);
-	MD5_Final(digest, &md5);
+	bool bSuccess = false;
 
-	out.resize(16);
-	memcpy((void *)out.data(), digest, 16);
+	auto libcryptoHandle = DLOPEN("libcrypto.so.1.1");
 
-	return true;
+	if (libcryptoHandle)
+	{
+		auto pfnMD5_Init = (decltype(MD5_Init) *)DLSYM(libcryptoHandle, "MD5_Init");
+		auto pfnMD5_Update = (decltype(MD5_Update) *)DLSYM(libcryptoHandle, "MD5_Update");
+		auto pfnMD5_Final = (decltype(MD5_Final) *)DLSYM(libcryptoHandle, "MD5_Final");
+
+		if (pfnMD5_Init &&pfnMD5_Update && pfnMD5_Final)
+		{
+			unsigned char digest[16];
+			MD5_CTX md5;
+			MD5_Init(&md5);
+			MD5_Update(&md5, Data, DataByte);
+			MD5_Final(digest, &md5);
+
+			out.resize(16);
+			memcpy((void *)out.data(), digest, 16);
+
+			bSuccess = true;
+		}
+	}
+
+	return bSuccess;
 }
 
 #endif
