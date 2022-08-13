@@ -34,14 +34,14 @@
  *
  */
 
-#include <vector>
-#include <set>
-
 #include <stdio.h>			// vsnprintf(), etc
 #include <stdarg.h>			// vs_start(), etc
 #include <stdlib.h>			// strtol()
 
 #include <extdll.h>			// always
+
+#include <vector>
+#include <set>
 
 #include "meta_api.h"		// 
 #include "mutil.h"			// me
@@ -52,16 +52,15 @@
 #include "osdep.h"			// win32 vsnprintf, etc
 #include "sdk_util.h"		// ALERT, etc
 
+ //2022-07 Added by hzqst
+#include "detours.h"		// ALERT, etc
+#include <capstone.h>
 
 #ifdef _WIN32
 
 #else
-	#include <procmap/MemoryMap.hpp>
+#include <procmap/MemoryMap.hpp>
 #endif
-
-//2022-07 Added by hzqst
-#include "detours.h"		// ALERT, etc
-#include <capstone.h>
 
 static hudtextparms_t default_csay_tparms = {
 	-1, 0.25,			// x, y
