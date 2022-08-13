@@ -4,6 +4,3 @@
 [submodule "capstone"]
 	path = capstone
 	url = https://github.com/capstone-engine/capstone
-[submodule "procmap"]
-	path = procmap
-	url = https://github.com/joaomlneto/procmap
