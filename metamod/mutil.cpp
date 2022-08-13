@@ -34,14 +34,14 @@
  *
  */
 
+#include <vector>
+#include <set>
+
 #include <stdio.h>			// vsnprintf(), etc
 #include <stdarg.h>			// vs_start(), etc
 #include <stdlib.h>			// strtol()
 
 #include <extdll.h>			// always
-
-#include <vector>
-#include <set>
 
 #include "meta_api.h"		// 
 #include "mutil.h"			// me
