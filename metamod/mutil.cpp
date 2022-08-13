@@ -454,7 +454,7 @@ size_t mutil_GetImageSize(void *ImageBase)
 		if (!name.empty() && name == segment.name() && segment.endAddress() > endaddr)
 		{
 			endaddr = segment.endAddress();
-			imageSize = endaddr - startaddr;
+			imageSize = (uintptr_t)endaddr - (uintptr_t)startaddr;
 		}
 	}
 	return imageSize;//wtf?
