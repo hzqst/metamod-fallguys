@@ -10,7 +10,7 @@
 
 #ifdef _WIN32
 
-#define LOCATE_FROM_SIGNATURE(dll, sig) gpMetaUtilFuncs->pfnSearchPattern(dll##Base, gpMetaUtilFuncs->pfnGetModuleSize(dll##Base), sig, sizeof(sig) - 1)
+#define LOCATE_FROM_SIGNATURE(dll, sig) gpMetaUtilFuncs->pfnSearchPattern(dll##Base, gpMetaUtilFuncs->pfnGetImageSize(dll##Base), sig, sizeof(sig) - 1)
 
 #define curl_easy_init_Signature "curl_easy_init"
 

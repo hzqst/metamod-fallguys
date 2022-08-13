@@ -9,16 +9,19 @@
 
 #ifdef _WIN32
    // Don't include winspool.h; clashes with SERVER_EXECUTE from engine
-#  define _WINSPOOL_H	
-#  include <windows.h>
-#  include <winnt.h>     // Header structures
+#define _WINSPOOL_H	
+	#include <windows.h>
+	#include <winnt.h>     // Header structures
 #else 
-#  ifndef _GNU_SOURCE
-#    define _GNU_SOURCE
-#  endif
-#  include <dlfcn.h>			// dladdr()
-#  include <link.h>				// ElfW(Phdr/Ehdr) macros.
+#ifndef _GNU_SOURCE
+	#define _GNU_SOURCE
+#endif
+#include <dlfcn.h>			// dladdr()
+#include <link.h>				// ElfW(Phdr/Ehdr) macros.
                   				// _DYNAMIC, r_debug, link_map, etc.
+
+#include <procmap/MemoryMap.hpp>
+
 #endif /* _WIN32 */ 
 
 #include <string.h>				// strlen(), strrchr(), strcmp()
@@ -36,6 +39,9 @@ const unsigned long c_VacDllEngineFuncsRangeMark = 0x01D00000;
 void* const c_VacDllEngineFuncsRangeStart = (void*)0x01D00000;
 void* const c_VacDllEngineFuncsRangeEnd = (void*)0x01E00000;
 
+void * mutil_GetModuleBaseByHandle(void *hModule);
+size_t mutil_GetImageSize(void *ImageBase);
+void *mutil_GetModuleHandle(const char *name);
 
 bool DLLINTERNAL EngineInfo::check_for_engine_module( const char* _pName )
 {
@@ -147,7 +153,6 @@ int DLLINTERNAL EngineInfo::nthdr_module_name( void )
 	HMODULE hModule = GetModuleHandle( pName );
 
 	pBaseAddr = (unsigned char*)hModule;
-
 
 	// Check if we find a DOS header
 	pDosHeader = (PIMAGE_DOS_HEADER)hModule;
@@ -385,6 +390,21 @@ int DLLINTERNAL EngineInfo::initialise( enginefuncs_t* _pFuncs )
 		ret = phdr_r_debug();
 	}
 
+	if (!m_imageHandle)
+	{
+		m_imageHandle = mutil_GetModuleHandle("engine_i686.so");
+	}
+
+	if (!m_imageHandle)
+	{
+		m_imageHandle = mutil_GetModuleHandle("engine_i386.so");
+	}
+
+	if (!m_imageHandle)
+	{
+		m_imageHandle = mutil_GetModuleHandle("engine_amd.so");
+	}
+
 #endif /* _WIN32 */
 
 	if ( 0 != ret ) {
@@ -393,6 +413,12 @@ int DLLINTERNAL EngineInfo::initialise( enginefuncs_t* _pFuncs )
 	else {
 		META_DEV( "Set engine code range: start address = %p, end address = %p", 
 			 m_codeStart, m_codeEnd );
+	}
+
+	if (!m_imageStart && m_imageHandle)
+	{
+		m_imageStart = (decltype(m_imageStart))mutil_GetModuleBaseByHandle(m_imageHandle);
+		m_imageEnd = (decltype(m_imageEnd))((uintptr_t)m_imageStart + mutil_GetImageSize(m_imageHandle));
 	}
 
 	return 0;

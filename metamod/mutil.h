@@ -114,7 +114,7 @@ typedef struct meta_util_funcs_s {
 	void *   (*pfnGetModuleBaseByHandle)(void *hModule);
 	void *   (*pfnGetModuleHandle)(const char *name);
 	void *   (*pfnGetModuleBase)(const char *name);
-	size_t   (*pfnGetModuleSize)(void *hModule);
+	size_t   (*pfnGetImageSize)(void *ImageBase);
 	qboolean (*pfnIsAddressInModuleRange)(void *lpAddress, void *lpModuleBase);
 	void *   (*pfnGetGameDllHandle)(void);
 	void *   (*pfnGetGameDllBase)(void);

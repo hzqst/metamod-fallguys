@@ -52,6 +52,13 @@
 #include "osdep.h"			// win32 vsnprintf, etc
 #include "sdk_util.h"		// ALERT, etc
 
+
+#ifdef _WIN32
+
+#else
+	#include <procmap/MemoryMap.hpp>
+#endif
+
 //2022-07 Added by hzqst
 #include "detours.h"		// ALERT, etc
 #include <capstone.h>
@@ -431,19 +438,34 @@ void *mutil_GetModuleBase(const char *name)
 	return (void *)mutil_GetModuleBaseByHandle(mutil_GetModuleHandle(name));
 }
 
-size_t mutil_GetModuleSize(void *hModule)
+size_t mutil_GetImageSize(void *ImageBase)
 {
 #ifdef _WIN32
-	return ((IMAGE_NT_HEADERS *)((char *)hModule + ((IMAGE_DOS_HEADER *)hModule)->e_lfanew))->OptionalHeader.SizeOfImage;
+	return ((IMAGE_NT_HEADERS *)((char *)ImageBase + ((IMAGE_DOS_HEADER *)ImageBase)->e_lfanew))->OptionalHeader.SizeOfImage;
 #else
-	return 0;//wtf?
+	std::string name;
+	void *startaddr = ImageBase;
+	void *endaddr = nullptr;
+	size_t imageSize = 0;
+	procmap::MemoryMap m;
+	for (auto &segment : map) {
+		if (startaddr == segment.startAddress()) {
+			name = segment.name();
+		}
+		if (!name.empty() && name == segment.name() && segment.endAddress() > endaddr)
+		{
+			endaddr = segment.endAddress();
+			imageSize = endaddr - startaddr;
+		}
+	}
+	return imageSize;//wtf?
 #endif
 }
 
 qboolean mutil_IsAddressInModuleRange(void *lpAddress, void *lpModuleBase)
 {
 #ifdef _WIN32
-	return (char *)lpAddress > (char *)lpModuleBase && (char *)lpAddress < (char *)lpModuleBase + mutil_GetModuleSize(lpModuleBase);
+	return (char *)lpAddress > (char *)lpModuleBase && (char *)lpAddress < (char *)lpModuleBase + mutil_GetImageSize(lpModuleBase);
 #else
 	Dl_info info;
 	if (dladdr(lpAddress, &info) != 0 && info.dli_fbase == lpModuleBase)
@@ -1152,7 +1174,7 @@ mutil_funcs_t MetaUtilFunctions = {
 	mutil_GetModuleBaseByHandle,
 	mutil_GetModuleHandle,
 	mutil_GetModuleBase,
-	mutil_GetModuleSize,
+	mutil_GetImageSize,
 	mutil_IsAddressInModuleRange,
 	mutil_GetGameDllHandle,
 	mutil_GetGameDllBase,
