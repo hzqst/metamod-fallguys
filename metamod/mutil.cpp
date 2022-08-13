@@ -448,7 +448,7 @@ size_t mutil_GetImageSize(void *ImageBase)
 	void *endaddr = nullptr;
 	size_t imageSize = 0;
 	procmap::MemoryMap m;
-	for (auto &segment : map) {
+	for (auto &segment : m) {
 		if (startaddr == segment.startAddress()) {
 			name = segment.name();
 		}
