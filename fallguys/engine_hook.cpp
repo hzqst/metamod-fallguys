@@ -92,13 +92,15 @@ void NewSV_PushMove(edict_t *pusher, float movetime)
 	g_bIsPushMove = false;
 }
 
-void NewSV_PushRotate(edict_t *pusher, float movetime)
+int NewSV_PushRotate(edict_t *pusher, float movetime)
 {
 	g_bIsPushRotate = true;
 	g_PusherEntity = pusher;
 
-	g_call_original_SV_PushRotate(pusher, movetime);
+	int result = g_call_original_SV_PushRotate(pusher, movetime);
 
 	g_PusherEntity = NULL;
 	g_bIsPushRotate = false;
+
+	return result;
 }

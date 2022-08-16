@@ -46,8 +46,8 @@ void NewSV_PushMove(edict_t *pusher, float movetime);
 PRIVATE_FUNCTION_EXTERN(SV_PushMove);
 
 // SV_PushRotate
-typedef void(*fnSV_PushRotate)(edict_t *pusher, float movetime);
-void NewSV_PushRotate(edict_t *pusher, float movetime);
+typedef int(*fnSV_PushRotate)(edict_t *pusher, float movetime);
+int NewSV_PushRotate(edict_t *pusher, float movetime);
 PRIVATE_FUNCTION_EXTERN(SV_PushRotate);
 
 //model_t* sv_models[8192]
