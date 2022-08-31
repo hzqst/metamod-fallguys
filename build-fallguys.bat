@@ -12,4 +12,5 @@ if exist "%InstallDir%\Common7\Tools\vsdevcmd.bat" (
     MSBuild.exe metamod.sln /t:asext /p:Configuration=Release /p:Platform="Win32"
     MSBuild.exe metamod.sln /t:ascurl /p:Configuration=Release /p:Platform="Win32"
     MSBuild.exe metamod.sln /t:fallguys /p:Configuration=Release /p:Platform="Win32"
+    MSBuild.exe metamod.sln /t:nodlfile /p:Configuration=Release /p:Platform="Win32"
 )
