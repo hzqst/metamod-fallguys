@@ -18,15 +18,8 @@ jobs:
       - name: G++ Build Environment
         run: sudo apt-get install make build-essential gcc gcc-multilib g++-multilib
       
-      - name: Checkout metamod-fallguys
-        uses: hzqst/checkout@main
-        with:
-          repository: 'hzqst/metamod-fallguys'
-          path: 'metamod-fallguys'
-      
       - name: Build metamod-fallguys
         run: |
-          cd metamod-fallguys
           sudo chmod +777 build-all-linux.sh
           ./build-all-linux.sh
           
