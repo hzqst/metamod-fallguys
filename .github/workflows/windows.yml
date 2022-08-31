@@ -46,6 +46,11 @@ jobs:
         run: build-fallguys.bat
         shell: cmd
 
+      - name: Remove placeholder
+        working-directory: ${{env.GITHUB_WORKSPACE}}
+        run: del "build\addons\metamod\dlls\.placeholder"
+        shell: cmd
+
       - name: Zipping the build directory 
         uses: thedoctor0/zip-release@main
         with:

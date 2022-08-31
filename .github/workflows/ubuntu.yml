@@ -26,6 +26,10 @@ jobs:
           sudo chmod +777 build-all-linux.sh
           ./build-all-linux.sh
           
+      - name: Remove placeholder
+        working-directory: ${{env.GITHUB_WORKSPACE}}
+        run: rm -f build/addons/metamod/dlls/.placeholder
+
       - name: Zipping the build directory 
         uses: thedoctor0/zip-release@main
         with:
