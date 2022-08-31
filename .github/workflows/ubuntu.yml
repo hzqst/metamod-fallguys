@@ -3,7 +3,7 @@ name: ubuntu
 on:
   push:
     tags:
-      - "s*v"
+      - "s*v*"
   pull_request:
     tags:
       - "s*v*"
