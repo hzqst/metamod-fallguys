@@ -26,11 +26,13 @@ jobs:
       - name: Zipping the build directory 
         uses: montudor/action-zip@v1
         with:
-          args: zip -qq -r metamod-fallguys-linux-i386.zip build
+          args: zip -qq -r metamod-fallguys-linux-i386.zip build README.md
           
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           name: metamod-fallguys-linux
+          tag_name: main
+          draft: true
           files: |
             metamod-fallguys-linux-i386.zip
