@@ -47,9 +47,12 @@ jobs:
         shell: cmd
 
       - name: Zipping the build directory 
-        uses: montudor/action-zip@v1
+        uses: thedoctor0/zip-release@main
         with:
-          args: zip -qq -r metamod-fallguys-windows-x86.zip build README.md
+          type: 'zip'
+          filename: 'metamod-fallguys-windows-x86.zip'
+          path: 'build'
+          exclusions: '.placeholder'
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
