@@ -2,6 +2,76 @@
 
 This is a metamod plugin for [Fall Guys in Sven Co-op](https://github.com/hzqst/sven-fallguys) as feature expansion.
 
+
+# Installation
+
+1. Copy everything from `build` directory into `\steamapps\common\Sven Co-op\svencoop` *(Warning: `svencoop_addon` and `svencoop_downloads` are not supported)*
+
+It should be something like :
+```
+-- Sven Co-op (or Sven Co-op Dedicated Server)
+---- svencoop
+------ addons
+-------- metamod
+---------- dlls
+------------ ascurl.dll (ascurl.so)
+------------ asext.dll (asext.so)
+------------ fallguys.dll (fallguys.so)
+---------- plugins.ini
+---- svencoop_addons
+---- svencoop_downloads
+---- svencoop.exe (svends.exe / svends_run.sh / svencoop.sh)
+```
+
+2. You should either use `-dll addons/metamod/dlls/metamod.dll`(Windows) or `-dll addons/metamod/dlls/metamod.so` (linux) as launch parameter to launch the game, or edit `Sven Co-op/svencoop/liblist.gam` :
+
+* change
+
+```
+gamedll "dlls/server.dll"
+gamedll_linux "dlls/server.so"
+```
+
+* to
+ 
+```
+gamedll "addons/metamod/dlls/metamod.dll"
+gamedll_linux "addons/metamod/dlls/metamod.so"
+```
+
+
+# Build Requirements (Windows)
+
+1. [Visual Studio 2017 / 2019 / 2022, with vc141 / vc142 / vc143 toolset](https://visualstudio.microsoft.com/)
+
+2. [CMake](https://cmake.org/download/)
+
+3. [Git for Windows](https://gitforwindows.org/)
+
+# Build Instruction (Windows)
+
+1. `git clone https://github.com/hzqst/metamod-fallguys`, then `cd metamod-fallguys`
+
+2. Run `build-win32-all.bat`
+
+3. Be patient, `metamod.dll`, `asext.dll` and `fallguys.dll` will be generated at `build/addons/metamod/dlls` if no error(s) occours.
+
+# Build Requirements (Linux)
+
+1. GNU C++ Build environment. Install with `sudo apt-get install make build-essential gcc gcc-multilib g++-multilib` if missing.
+
+2. CMake. Install with `suto apt-get install cmake` if missing.
+
+3. Git client. Install with `suto apt-get install git` if missing.
+
+# Build Instruction (Linux)
+
+1. `git clone https://github.com/hzqst/metamod-fallguys`, then `cd metamod-fallguys`
+
+2. `sudo chmod +777 build-all-linux.sh` to make it executable, then `./build-all-linux.sh`
+
+3. Be patient, `metamod.so`, `asext.so` and `fallguys.so` will be generated at `build/addons/metamod/dlls` if no error(s) occours.
+
 # What it does ?
 
 ## Better Player vs Brush Entities Interaction
@@ -701,39 +771,3 @@ void NewPlayerPostThink_Post(edict_t *pEntity)
 ```
     g_Hooks.RegisterHook(Hooks::Player::PlayerPostThinkPost, @PlayerPostThinkPost);
 ```
-
-# Installation
-
-1. Copy everything from `build` directory into `\steamapps\common\Sven Co-op\svencoop` *(Warning: `svencoop_addon` and `svencoop_downloads` are not supported)*
-
-# Build Requirements (Windows)
-
-1. [Visual Studio 2017 / 2019 / 2022, with vc141 / vc142 / vc143 toolset](https://visualstudio.microsoft.com/)
-
-2. [CMake](https://cmake.org/download/)
-
-3. [Git for Windows](https://gitforwindows.org/)
-
-# Build Instruction (Windows)
-
-1. `git clone https://github.com/hzqst/metamod-fallguys`, then `cd metamod-fallguys`
-
-2. Run `build-win32-all.bat`
-
-3. Be patient, `metamod.dll`, `asext.dll` and `fallguys.dll` will be generated at `build/addons/metamod/dlls` if no error(s) occours.
-
-# Build Requirements (Linux)
-
-1. GNU C++ Build environment. Install with `sudo apt-get install make build-essential gcc gcc-multilib g++-multilib` if missing.
-
-2. CMake. Install with `suto apt-get install cmake` if missing.
-
-3. Git client. Install with `suto apt-get install git` if missing.
-
-# Build Instruction (Linux)
-
-1. `git clone https://github.com/hzqst/metamod-fallguys`, then `cd metamod-fallguys`
-
-2. `sudo chmod +777 build-all-linux.sh` to make it executable, then `./build-all-linux.sh`
-
-3. Be patient, `metamod.so`, `asext.so` and `fallguys.so` will be generated at `build/addons/metamod/dlls` if no error(s) occours.
