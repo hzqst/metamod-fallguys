@@ -1,0 +1,43 @@
+name: ubuntu
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    if: github.repository == 'hzqst/metamod-fallguys'
+
+    steps:
+      - uses: hzqst/checkout@v2.3.4
+      
+      - name: G++ Build Environment
+        run: sudo apt-get install make build-essential gcc gcc-multilib g++-multilib
+      
+      - name: Checkout metamod-fallguys
+        uses: hzqst/checkout@main
+        with:
+          repository: 'hzqst/metamod-fallguys'
+          path: 'metamod-fallguys'
+      
+      - name: Build metamod-fallguys
+        run: |
+          cd metamod-fallguys
+          sudo chmod +777 build-all-linux.sh
+          ./build-all-linux.sh
+          
+      - name: Zipping the build directory 
+        uses: montudor/action-zip@v1
+        with:
+          args: zip -qq -r metamod-fallguys-linux-i386.zip build
+          
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: metamod-fallguys-linux
+          files: |
+            metamod-fallguys-linux-i386.zip
