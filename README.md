@@ -1,7 +1,8 @@
 # metamod-fallguys
 
-This is a metamod plugin for [Fall Guys in Sven Co-op](https://github.com/hzqst/sven-fallguys) as feature expansion.
+This is a group of metamod plugins for [Fall Guys in Sven Co-op](https://github.com/hzqst/sven-fallguys) as feature expansions.
 
+The metamod core is based on [metamod-p](https://github.com/Bots-United/metamod-p)
 
 # Installation
 
