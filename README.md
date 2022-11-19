@@ -6,6 +6,8 @@ The metamod core is based on [metamod-p](https://github.com/Bots-United/metamod-
 
 # Installation
 
+1. Download from [GitHub Release](https://github.com/hzqst/metamod-fallguys/releases), then unzip it.
+
 1. Copy everything from `build` directory into `\steamapps\common\Sven Co-op\svencoop` *(Warning: `svencoop_addon` and `svencoop_downloads` are not supported)*
 
 It should be something like :
@@ -24,16 +26,18 @@ It should be something like :
 ---- svencoop.exe (svends.exe / svends_run.sh / svencoop.sh)
 ```
 
-2. You should either use `-dll addons/metamod/dlls/metamod.dll`(Windows) or `-dll addons/metamod/dlls/metamod.so` (linux) as launch parameter to launch the game, or edit `Sven Co-op/svencoop/liblist.gam` :
+2. You should either 
 
-* change
+* Use `-dll addons/metamod/dlls/metamod.dll`(Windows) or `-dll addons/metamod/dlls/metamod.so` (linux) as launch parameter to launch the game, 
+
+* Or edit `Sven Co-op/svencoop/liblist.gam` , change
 
 ```
 gamedll "dlls/server.dll"
 gamedll_linux "dlls/server.so"
 ```
 
-* to
+to
  
 ```
 gamedll "addons/metamod/dlls/metamod.dll"
