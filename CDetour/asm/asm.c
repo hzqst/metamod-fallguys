@@ -8,10 +8,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define REG_EAX			0
-#define REG_ECX			1
-#define REG_EDX			2
-#define REG_EBX			3
+#define REG_EAX			0//B8
+#define REG_ECX			1//B9
+#define REG_EDX			2//BA
+#define REG_EBX			3//BB
+#define REG_EBP			5//BD
+#define REG_ESI			6//BE
+#define REG_EDI			7//BF
 
 #define IA32_MOV_REG_IMM		0xB8	// encoding is +r <imm32>
 #endif
@@ -43,24 +46,39 @@ void check_thunks(unsigned char *dest, unsigned char *pc)
 		/* Calculate the correct mov opcode */
 		switch (*(calladdr+1))
 		{
-		case 0x04:
+		case 0x04://eax
 			{
 				movByte += REG_EAX;
 				break;
 			}
-		case 0x1C:
+		case 0x1C://ebx
 			{
 				movByte += REG_EBX;
 				break;
 			}
-		case 0x0C:
+		case 0x0C://ecx
 			{
 				movByte += REG_ECX;
 				break;
 			}
-		case 0x14:
+		case 0x14://edx
 			{
 				movByte += REG_EDX;
+				break;
+			}
+		case 0x2C://ebp
+			{
+				movByte += REG_EBP;
+				break;
+			}
+		case 0x34://esi
+			{
+				movByte += REG_ESI;
+				break;
+			}
+		case 0x3C://edi
+			{
+				movByte += REG_EDI;
 				break;
 			}
 		default:
