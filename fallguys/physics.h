@@ -647,8 +647,10 @@ CPlayerObject : public CCollisionPhysicObject
 {
 public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
-	CPlayerObject(CGameObject *obj, int group, int mask, float mass) : CCollisionPhysicObject(obj, group, mask)
+	CPlayerObject(CGameObject *obj, int group, int mask, float mass, bool duck) : CCollisionPhysicObject(obj, group, mask)
 	{
+		m_duck = duck;
+
 		m_mass = mass;
 		m_PendingVelocity = g_vecZero;
 		m_TickCount = 0;
@@ -678,7 +680,13 @@ public:
 
 	virtual void DispatchImpact(float impulse, const btVector3 &worldpos_on_source, const btVector3 &worldpos_on_hit, const btVector3 &normal, edict_t *hitent);
 
+	bool IsDuck() const
+	{
+		return m_duck;
+	}
+
 protected:
+	bool m_duck;
 	float m_mass;
 	vec3_t m_PendingVelocity;
 	uint32_t m_TickCount;
@@ -1072,7 +1080,7 @@ public:
 
 	CDynamicObject* CreateDynamicObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold);
 	CStaticObject* CreateStaticObject(CGameObject *obj, vertexarray_t* vertexarray, indexarray_t* indexarray, bool kinematic);
-	CPlayerObject* CreatePlayerObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass);
+	CPlayerObject* CreatePlayerObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass, bool duck);
 	CClippingHullObject* CreateClippingHullObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass);
 
 	void AddGameObject(CGameObject *obj);

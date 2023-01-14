@@ -570,14 +570,14 @@ CStaticObject* CPhysicsManager::CreateStaticObject(CGameObject *obj, vertexarray
 	return staticobj;
 }
 
-CPlayerObject* CPhysicsManager::CreatePlayerObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass)
+CPlayerObject* CPhysicsManager::CreatePlayerObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass, bool duck)
 {
 	//Player only collides with pushable objects, clipping hull objects, and world (do we really need to collide with world ?)
 	auto playerobj = new CPlayerObject(
 		obj,
 		btBroadphaseProxy::DefaultFilter | FallGuysCollisionFilterGroups::PlayerFilter,
 		btBroadphaseProxy::AllFilter & ~(FallGuysCollisionFilterGroups::PlayerFilter),
-		mass);
+		mass, duck);
 
 	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, new EntityMotionState(playerobj), collisionShape, localInertia);
 
@@ -926,8 +926,8 @@ void CDynamicObject::EndFrame(btDiscreteDynamicsWorld* world)
 
 			auto ent = clientInfo->GetEdict();
 
-			ent->v.movetype = MOVETYPE_PUSH;
-			ent->v.solid = SOLID_NOT;
+			//ent->v.movetype = MOVETYPE_PUSH;
+			//ent->v.solid = SOLID_NOT;
 
 			SET_ORIGIN(ent, origin);
 
@@ -1573,20 +1573,37 @@ bool CPhysicsManager::CreatePlayerBox(edict_t* ent)
 		AddGameObject(obj);
 	}
 
-	//4 units extended to push other physic objects, and -1 unit to prevent player from crushing objects
+	//4 units extended to push other physic objects, and -1 unit to prevent player from crushing objects into ground
 
-	btVector3 boxSize((ent->v.maxs.x - ent->v.mins.x) * 0.5f + 4, (ent->v.maxs.y - ent->v.mins.y) * 0.5f + 4, (ent->v.maxs.z - ent->v.mins.z) * 0.5f - 1.0f);
-
-	auto shape = new btBoxShape(boxSize);
+	vec3_t hull_player(16, 16, 36);
+	
+	vec3_t hull_duck(16, 16, 18);
 
 	float mass = 20;
 
-	btVector3 localInertia;
-	shape->calculateLocalInertia(mass, localInertia);
+	if (1)
+	{
+		auto shape = new btBoxShape(btVector3(hull_player.x + 4, hull_player.y + 4, hull_player.z - 1.0f));
 
-	auto playerobj = CreatePlayerObject(obj, shape, localInertia, mass);
+		btVector3 localInertia;
+		shape->calculateLocalInertia(mass, localInertia);
 
-	obj->AddPhysicObject(playerobj, m_dynamicsWorld, &m_numDynamicObjects);
+		auto playerobj = CreatePlayerObject(obj, shape, localInertia, mass, false);
+
+		obj->AddPhysicObject(playerobj, m_dynamicsWorld, &m_numDynamicObjects);
+	}
+
+	if (1)
+	{
+		auto shape = new btBoxShape(btVector3(hull_duck.x + 4, hull_duck.y + 4, hull_duck.z - 1.0f));
+
+		btVector3 localInertia;
+		shape->calculateLocalInertia(mass, localInertia);
+
+		auto playerobj = CreatePlayerObject(obj, shape, localInertia, mass, true);
+
+		obj->AddPhysicObject(playerobj, m_dynamicsWorld, &m_numDynamicObjects);
+	}
 
 	return true;
 }
@@ -2139,6 +2156,25 @@ struct GameFilterCallback : public btOverlapFilterCallback
 				auto ent1 = physobj1->GetGameObject()->GetEdict();
 
 				if (ent1->v.solid <= SOLID_TRIGGER)
+					return false;
+			}
+
+			if (physobj0->IsPlayer())
+			{
+				auto ent0 = physobj0->GetGameObject()->GetEdict();
+				auto playerobj0 = (CPlayerObject *)physobj0;
+				if(playerobj0->IsDuck() && !ent0->v.bInDuck)
+					return false;
+				else if (!playerobj0->IsDuck() && ent0->v.bInDuck)
+					return false;
+			}
+			else if (physobj1->IsPlayer())
+			{
+				auto ent1 = physobj1->GetGameObject()->GetEdict();
+				auto playerobj1 = (CPlayerObject *)physobj1;
+				if (playerobj1->IsDuck() && !ent1->v.bInDuck)
+					return false;
+				else if (!playerobj1->IsDuck() && ent1->v.bInDuck)
 					return false;
 			}
 

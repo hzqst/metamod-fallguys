@@ -249,8 +249,8 @@ void SV_SetGlobalTrace(trace_t *ptrace)
 	gpGlobals->trace_allsolid = ptrace->allsolid;
 	gpGlobals->trace_startsolid = ptrace->startsolid;
 
-	gpGlobals->trace_inopen = ptrace->inopen;
-	gpGlobals->trace_inwater = ptrace->inwater;
+	gpGlobals->trace_inopen = (float)ptrace->inopen;
+	gpGlobals->trace_inwater = (float)ptrace->inwater;
 
 	gpGlobals->trace_endpos = ptrace->endpos;
 	gpGlobals->trace_plane_normal = ptrace->plane.normal;
