@@ -56,7 +56,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;FALLGUYS_EXPORTS;_WINDOWS;_USRDLL;PLATFORM_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../hlsdk/common;../hlsdk/dlls;../hlsdk/pm_shared;../hlsdk/engine;../metamod/;../bullet3/src/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../hlsdk/common;../hlsdk/dlls;../hlsdk/pm_shared;../hlsdk/engine;../metamod/;../bullet3/src/;../asext/include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
@@ -78,7 +78,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;FALLGUYS_EXPORTS;_WINDOWS;_USRDLL;PLATFORM_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../hlsdk/common;../hlsdk/dlls;../hlsdk/pm_shared;../hlsdk/engine;../metamod/;../bullet3/src/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../hlsdk/common;../hlsdk/dlls;../hlsdk/pm_shared;../hlsdk/engine;../metamod/;../bullet3/src/;../asext/include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <IntrinsicFunctions>true</IntrinsicFunctions>
     </ClCompile>
@@ -104,7 +104,6 @@
     <ClCompile Include="server_hook.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="asext_api.h" />
     <ClInclude Include="enginedef.h" />
     <ClInclude Include="fallguys.h" />
     <ClInclude Include="physics.h" />

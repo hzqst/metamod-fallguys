@@ -55,8 +55,5 @@
     <ClInclude Include="physics.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="asext_api.h">
-      <Filter>Header</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

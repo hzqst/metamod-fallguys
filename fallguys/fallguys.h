@@ -1,6 +1,10 @@
 #pragma once
 
-//For SuperPusher Brush Entities
+//For Custom StepSound
+extern bool g_bUseCustomStepSound;
+
+//For SuperPusher Entities
+extern bool g_bIsPushPhysics;
 extern bool g_bIsPushMove;
 extern bool g_bIsPushRotate;
 extern edict_t* g_PusherEntity;
@@ -24,6 +28,8 @@ extern void * g_AddToFullPackHook;
 extern void * g_PlayerPostThinkPostHook;
 extern void * g_PlayerTouchTriggerHook;
 extern void * g_PlayerTouchImpactHook;
+extern void * g_PlayerMovePlayStepSoundHook;
+extern void * g_PlayerMovePlaySoundFXHook;
 
 bool IsEntitySolidPlayer(int entindex, edict_t* ent);
 bool IsEntitySolidPlayer(edict_t* ent);
@@ -35,6 +41,10 @@ edict_t* GetCurrentSuperPusher(Vector* out);
 edict_t* GetClientViewEntity(int clientindex);
 edict_t* GetClientViewEntity(edict_t* pClient);
 
+void EnableCustomStepSound(bool bEnabled);
+
+void InstallServerHooks();
+void UninstallServerHooks();
 void InstallEngineHooks();
 void UninstallEngineHooks();
 void RegisterAngelScriptHooks();

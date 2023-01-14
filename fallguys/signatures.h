@@ -1,108 +1,47 @@
 #pragma once
 
-#define IMPORT_FUNCTION_DEFINE(name) fn##name name;
-
-#define IMPORT_FUNCTION_EXTERN(name) extern fn##name name;
-
-#define PRIVATE_FUNCTION_DEFINE(name) fn##name g_pfn_##name; fn##name g_call_original_##name;
-
-#define PRIVATE_FUNCTION_EXTERN(name) extern fn##name g_pfn_##name; extern fn##name g_call_original_##name;
+#include <signatures_template.h>
 
 #ifdef _WIN32
 
-#define LOCATE_FROM_SIGNATURE(dll, sig) gpMetaUtilFuncs->pfnSearchPattern(dll##Base, gpMetaUtilFuncs->pfnGetImageSize(dll##Base), sig, sizeof(sig) - 1)
-
+#define SV_Physics_Signature "\xDD\x05\x2A\x2A\x2A\x2A\x83\xEC\x14\xD9\x1D\x2A\x2A\x2A\x2A\x55\xFF\x15"
 #define SV_PushEntity_Signature "\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC4\x89\x44\x24\x2A\x8B\x84\x24\x2A\x00\x00\x00"
 #define SV_PushMove_Signature "\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC4\x89\x44\x24\x2A\x2A\x8B\xBC\x24\x88\x00\x00\x00\xD9"
 #define SV_PushRotate_Signature "\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC4\x89\x84\x24\x2A\x00\x00\x00\x2A\x8B\xBC\x24\xC0\x00\x00\x00\xD9"
+#define SV_TestEntityPosition_Signature "\x81\xEC\x2A\x2A\x00\x00\xA1\x2A\x2A\x2A\x2A\x33\xC4\x89\x84\x24\x2A\x2A\x00\x00\x2A\x8B\x9C\x24\x2A\x2A\x00\x00\x2A\x2A\x2A\x8B\x83\x24\x02\x00\x00"
+#define SV_LinkEdict_Signature "\x56\x8B\x74\x24\x08\x8B\x4E\x08\x2A\x8D\x7E\x08\x85\xC9\x74"
+#define SV_SingleClipMoveToEntity_Signature "\x81\xEC\x2A\x2A\x00\x00\xA1\x2A\x2A\x2A\x2A\x33\xC4\x89\x84\x24\x94\x00\x00\x00\x8B\x84\x24\xA8\x00\x00\x00"
+#define SV_WriteMovevarsToClient_Signature "\x56\x8B\x74\x24\x08\x6A\x2C\x56\xE8\x2A\x2A\x2A\x2A\xD9\x05"
+
+#define CPlayerMove_PlayStepSound_Signature "\x83\xEC\x0C\x33\xC0\x2A\x8B\x2A\x2A\x8B\x96\x60\x04\x00"
+#define CPlayerMove_PlaySoundFX_Signature "\x53\x8B\x5C\x24\x08\x55\x56\x57\x8B\x7C\x24\x2C\x53\x83\xCF\x08\xE8"
 
 #define sv_models_Signature "\x3D\xFE\x1F\x00\x00\x2A\x2A\x0F\xAE\xE8\xFF\x34\x8D"
 #define host_frametime_Signature "\xD8\x83\xA8\x00\x00\x00\xD9\x9B\xA8\x00\x00\x00\xE8\x2A\x2A\x2A\x2A\xDD\x05"
-
-#define ENGINE_DLL_NAME "hw.dll"
+#define pmovevars_Signature "\x56\x8B\x74\x24\x08\x6A\x2C\x56\xE8\x2A\x2A\x2A\x2A\xD9\x05"
+#define sv_areanodes_Signature "\x8D\x84\x24\xA0\x00\x00\x00\x50\x68\x2A\x2A\x2A\x2A\xE8"
+#define pg_groupop_Signature "\x89\x44\x24\x18\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x15"
+#define pg_groupmask_Signature pg_groupop_Signature
 
 #else
 
-#ifndef _ARRAYSIZE
-#define _ARRAYSIZE(A)   (sizeof(A)/sizeof((A)[0]))
-#endif
-
-#define LOCATE_FROM_SIGNATURE(dll, sig) DLSYM(dll##Handle, sig)
-
+#define SV_Physics_Signature "_Z10SV_Physicsv"
 #define SV_PushEntity_Signature "_Z13SV_PushEntityP7edict_sPf"
 #define SV_PushMove_Signature "_Z11SV_PushMoveP7edict_sf"
 #define SV_PushRotate_Signature "_Z13SV_PushRotateP7edict_sf"
+#define SV_WriteMovevarsToClient_Signature "_Z24SV_WriteMovevarsToClientP9sizebuf_s"
+#define SV_TestEntityPosition_Signature "_Z21SV_TestEntityPositionP7edict_s"
+#define SV_SingleClipMoveToEntity_Signature "_Z25SV_SingleClipMoveToEntityP7edict_sPKfS2_S2_S2_P7trace_t"
+#define SV_LinkEdict_Signature "_Z12SV_LinkEdictP7edict_si"
+
+#define CPlayerMove_PlayStepSound_Signature "_ZN11CPlayerMove13PlayStepSoundEifb"
+#define CPlayerMove_PlaySoundFX_Signature "_ZN11CPlayerMove11PlaySoundFXEiPfiPcffii"
 
 #define sv_Signature "sv"
 #define sv_models_Signature "\x8B\x84\x82\x2A\x2A\x2A\x00\x89\x04\x24\xE8"
 #define host_frametime_Signature "host_frametime"
-
-#define ENGINE_DLL_NAME "hw.so"
+#define pmovevars_Signature "movevars"
+#define sv_areanodes_Signature "sv_areanodes"
+#define sv_areanodes_Signature "sv_areanodes"
 
 #endif
-
-#define IMPORT_FUNCTION_DLSYM(dll, name) name = (decltype(name))DLSYM((DLHANDLE)dll##Handle, #name);\
-if (!name)\
-{\
-	LOG_ERROR(PLID, "Failed to get " #name " from " #dll " dll !");\
-	return FALSE;\
-}
-
-#define FILL_FROM_SIGNATURE(dll, name) g_pfn_##name = g_call_original_##name = (decltype(g_pfn_##name))LOCATE_FROM_SIGNATURE(dll, name##_Signature);\
-if (!g_pfn_##name)\
-{\
-	LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !");\
-	return FALSE;\
-}
-
-#define FILL_FROM_SIGNATURED_CALLER_FROM_START(dll, name, offset) auto Caller_of_##name = (char *)LOCATE_FROM_SIGNATURE(dll, name##_Signature);\
-if (!Caller_of_##name)\
-{\
-	LOG_ERROR(PLID, "Failed to locate Caller of " #name " from " #dll " dll !");\
-	return FALSE;\
-}\
-g_pfn_##name = g_call_original_##name = (decltype(g_pfn_##name))gpMetaUtilFuncs->pfnGetNextCallAddr(Caller_of_##name + (offset), 1);\
-if (!gpMetaUtilFuncs->pfnIsAddressInModuleRange((void *)g_pfn_##name, dll##Base))\
-{\
-	LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !"); \
-	return FALSE; \
-}
-
-#define FILL_FROM_SIGNATURED_CALLER_FROM_END(dll, name, offset) auto Caller_of_##name = (char *)LOCATE_FROM_SIGNATURE(dll, name##_Signature);\
-if (!Caller_of_##name)\
-{\
-	LOG_ERROR(PLID, "Failed to locate Caller of " #name " from " #dll " dll !");\
-	return FALSE;\
-}\
-g_pfn_##name = g_call_original_##name = (decltype(g_pfn_##name))gpMetaUtilFuncs->pfnGetNextCallAddr(Caller_of_##name + (sizeof(name##_Signature) - 1) + (offset), 1);\
-if (!gpMetaUtilFuncs->pfnIsAddressInModuleRange((void *)g_pfn_##name, dll##Base))\
-{\
-	LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !"); \
-	return FALSE; \
-}
-
-#define VAR_FROM_SIGNATURE(dll, name) name = (decltype(name))LOCATE_FROM_SIGNATURE(dll, name##_Signature);\
-if (!name)\
-{\
-	LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !");\
-	return FALSE;\
-}
-
-#define VAR_FROM_SIGNATURE_FROM_START(dll, name, offset) auto name##_Temp = (char *)LOCATE_FROM_SIGNATURE(dll, name##_Signature);\
-if (!name##_Temp)\
-{\
-	LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !");\
-	return FALSE;\
-}\
-name = *(decltype(name) *)(name##_Temp + offset);
-
-#define VAR_FROM_SIGNATURE_FROM_END(dll, name, offset) auto name##_Temp = (char *)LOCATE_FROM_SIGNATURE(dll, name##_Signature);\
-if (!name##_Temp)\
-{\
-	LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !");\
-	return FALSE;\
-}\
-name = *(decltype(name) *)(name##_Temp + (sizeof(name##_Signature) - 1) + offset);
-
-#define INSTALL_INLINEHOOK(name) g_phook_##name = gpMetaUtilFuncs->pfnInlineHook((void*)g_pfn_##name, (void*)New##name, (void**)&g_call_original_##name, true)
-#define UNINSTALL_HOOK(name) if(g_phook_##name) {gpMetaUtilFuncs->pfnUnHook(g_phook_##name); g_phook_##name = NULL;}

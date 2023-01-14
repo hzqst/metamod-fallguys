@@ -49,6 +49,8 @@
 #include "fallguys.h"
 #include "physics.h"
 
+IMPORT_ASEXT_API_DEFINE();
+
 // Must provide at least one of these..
 static META_FUNCTIONS gMetaFunctionTable = {
 	NULL,			// pfnGetEntityAPI				HL SDK; called before game DLL
@@ -67,7 +69,7 @@ static META_FUNCTIONS gMetaFunctionTable = {
 plugin_info_t Plugin_info = {
 	META_INTERFACE_VERSION,	// ifvers
 	"FallGuys",	// name
-	"1.3",	// version
+	"1.4",	// version
 	"2022",	// date
 	"hzqst",	// author
 	"https://github.com/hzqst/metamod-fallguys",	// url
@@ -80,6 +82,10 @@ plugin_info_t Plugin_info = {
 meta_globals_t *gpMetaGlobals;		// metamod globals
 gamedll_funcs_t *gpGamedllFuncs;	// gameDLL function tables
 mutil_funcs_t *gpMetaUtilFuncs;		// metamod utility functions
+
+DLL_FUNCTIONS *gpDllFunctionsTable = NULL;
+
+NEW_DLL_FUNCTIONS *gpNewDllFunctionsTable = NULL;
 
 // Metamod requesting info about this plugin:
 //  ifvers			(given) interface_version metamod is using
@@ -99,27 +105,6 @@ C_DLLEXPORT int Meta_Query(char * interfaceVersion, plugin_info_t **pPlugInfo, m
 	gpMetaUtilFuncs=pMetaUtilFuncs;
 	return TRUE;
 }
-
-IMPORT_FUNCTION_DEFINE(ASEXT_RegisterDocInitCallback);
-IMPORT_FUNCTION_DEFINE(ASEXT_RegisterDirInitCallback);
-
-IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectMethod);
-IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectType);
-IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectProperty);
-IMPORT_FUNCTION_DEFINE(ASEXT_RegisterFuncDef);
-IMPORT_FUNCTION_DEFINE(ASEXT_RegisterHook);
-
-IMPORT_FUNCTION_DEFINE(ASEXT_CreateDirectory);
-IMPORT_FUNCTION_DEFINE(ASEXT_CStringAssign);
-IMPORT_FUNCTION_DEFINE(ASEXT_CStringdtor);
-IMPORT_FUNCTION_DEFINE(ASEXT_GetServerManager);
-IMPORT_FUNCTION_DEFINE(ASEXT_CreateCASFunction);
-IMPORT_FUNCTION_DEFINE(ASEXT_CASRefCountedBaseClass_InternalRelease);
-
-fnASEXT_CallHook *ASEXT_CallHook = NULL;
-
-fnASEXT_CallCASBaseCallable *ASEXT_CallCASBaseCallable = NULL;
-
 
 C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	META_FUNCTIONS* pFunctionTable, meta_globals_t* pMGlobals,
@@ -141,6 +126,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 	gpGamedllFuncs = pGamedllFuncs;
 
+	gpMetaUtilFuncs->pfnGetHookTables(PLID, NULL, &gpDllFunctionsTable, &gpNewDllFunctionsTable);
+
 	auto engineHandle = gpMetaUtilFuncs->pfnGetEngineHandle();
 	auto engineBase = gpMetaUtilFuncs->pfnGetEngineBase();
 
@@ -153,6 +140,21 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	if (!engineBase)
 	{
 		LOG_ERROR(PLID, "engine base not found!");
+		return FALSE;
+	}
+
+	auto serverHandle = gpMetaUtilFuncs->pfnGetGameDllHandle();
+	auto serverBase = gpMetaUtilFuncs->pfnGetGameDllBase();
+
+	if (!serverHandle)
+	{
+		LOG_ERROR(PLID, "server handle not found!");
+		return FALSE;
+}
+
+	if (!serverBase)
+	{
+		LOG_ERROR(PLID, "server base not found!");
 		return FALSE;
 	}
 
@@ -169,32 +171,28 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		return FALSE;
 	}
 
-	IMPORT_FUNCTION_DLSYM(asext, ASEXT_CallHook);
-	IMPORT_FUNCTION_DLSYM(asext, ASEXT_CallCASBaseCallable);
-
-	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterDocInitCallback);
-	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterDirInitCallback);
-
-	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectMethod);
-	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectType);
-	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectProperty);
-	IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterHook);
-	IMPORT_FUNCTION_DLSYM(asext, ASEXT_CreateDirectory);
-	IMPORT_FUNCTION_DLSYM(asext, ASEXT_CStringAssign);
-	IMPORT_FUNCTION_DLSYM(asext, ASEXT_CStringdtor);
-	IMPORT_FUNCTION_DLSYM(asext, ASEXT_GetServerManager);
-	IMPORT_FUNCTION_DLSYM(asext, ASEXT_CreateCASFunction);
-	IMPORT_FUNCTION_DLSYM(asext, ASEXT_CASRefCountedBaseClass_InternalRelease);
+	IMPORT_ASEXT_API(asext);
 
 	//Fill private engine functions
+	FILL_FROM_SIGNATURE(engine, SV_Physics);
 	FILL_FROM_SIGNATURE(engine, SV_PushEntity);
 	FILL_FROM_SIGNATURE(engine, SV_PushMove);
 	FILL_FROM_SIGNATURE(engine, SV_PushRotate);
+	FILL_FROM_SIGNATURE(engine, SV_WriteMovevarsToClient);
+	FILL_FROM_SIGNATURE(engine, SV_SingleClipMoveToEntity);
+
+	FILL_FROM_SIGNATURE(server, CPlayerMove_PlayStepSound);
+	FILL_FROM_SIGNATURE(server, CPlayerMove_PlaySoundFX);
 
 #ifdef _WIN32
 
 	VAR_FROM_SIGNATURE_FROM_START(engine, sv_models, 13);
 	VAR_FROM_SIGNATURE_FROM_END(engine, host_frametime, 0);
+	VAR_FROM_SIGNATURE_FROM_END(engine, pmovevars, 0);
+	VAR_FROM_SIGNATURE_FROM_START(engine, sv_areanodes, 9);
+
+	VAR_FROM_SIGNATURE_FROM_START(engine, pg_groupop, 6);
+	VAR_FROM_SIGNATURE_FROM_START(engine, pg_groupmask, 12);
 
 #else
 
@@ -205,11 +203,14 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	sv_models = (decltype(sv_models))((char *)sv + 0x276148);
 
 	VAR_FROM_SIGNATURE(engine, host_frametime);
-
+	VAR_FROM_SIGNATURE(engine, pmovevars);
+	VAR_FROM_SIGNATURE_RENAME(engine, pg_groupop, g_groupop);
+	VAR_FROM_SIGNATURE_RENAME(engine, pg_groupmask, g_groupmask);
 
 #endif
-
+	
 	InstallEngineHooks();
+	InstallServerHooks();
 	RegisterAngelScriptMethods();
 	RegisterAngelScriptHooks();
 
@@ -223,6 +224,7 @@ C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME /* now */,
 		PL_UNLOAD_REASON /* reason */) 
 {
 	gPhysicsManager.Shutdown();
+	UninstallServerHooks();
 	UninstallEngineHooks();
 
 	return TRUE;

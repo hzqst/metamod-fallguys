@@ -17,11 +17,13 @@ PRIVATE_FUNCTION_DEFINE(CASHook_CASHook);
 PRIVATE_FUNCTION_DEFINE(CASDocumentation_RegisterObjectType);
 PRIVATE_FUNCTION_DEFINE(CASDocumentation_RegisterObjectProperty);
 PRIVATE_FUNCTION_DEFINE(CASDocumentation_RegisterObjectMethod);
+PRIVATE_FUNCTION_DEFINE(CASDocumentation_RegisterObjectBehaviour);
 PRIVATE_FUNCTION_DEFINE(CASDocumentation_RegisterFuncDef);
 PRIVATE_FUNCTION_DEFINE(CASDirectoryList_CreateDirectory);
 PRIVATE_FUNCTION_DEFINE(CASFunction_Create);
 PRIVATE_FUNCTION_DEFINE(CASBaseCallable_Call);
 PRIVATE_FUNCTION_DEFINE(CASRefCountedBaseClass_InternalRelease);
+PRIVATE_FUNCTION_DEFINE(CScriptAny_Release);
 PRIVATE_FUNCTION_DEFINE(CString_Assign);
 PRIVATE_FUNCTION_DEFINE(CString_dtor);
 
@@ -43,17 +45,29 @@ C_DLLEXPORT void ASEXT_RegisterObjectMethod(CASDocumentation *pthis, const char 
 {
 	SC_SERVER_DUMMYVAR;
 
-	CASMethodRegistration reg;
-	reg.pfnMethod = pfn;
+	asSFuncPtr reg;
+	reg.pfn = pfn;
+	reg.flag = 3;//3 = method
 
 	g_call_original_CASDocumentation_RegisterObjectMethod(pthis, SC_SERVER_PASS_DUMMYARG docs, name, func, &reg, type);
 }
 
-C_DLLEXPORT void ASEXT_RegisterObjectType(CASDocumentation *pthis, const char *docs, const char *name, int unk, unsigned int flags)
+C_DLLEXPORT void ASEXT_RegisterObjectBehaviour(CASDocumentation *pthis, const char *docs, const char *name, int behaviour, const char *func, void *pfn, int type)
 {
 	SC_SERVER_DUMMYVAR;
 
-	g_call_original_CASDocumentation_RegisterObjectType(pthis, SC_SERVER_PASS_DUMMYARG docs, name, unk, flags);
+	asSFuncPtr reg;
+	reg.pfn = pfn;
+	reg.flag = 2;//2 = global func
+
+	g_call_original_CASDocumentation_RegisterObjectBehaviour(pthis, SC_SERVER_PASS_DUMMYARG docs, name, behaviour, func, &reg, type, 0);
+}
+
+C_DLLEXPORT void ASEXT_RegisterObjectType(CASDocumentation *pthis, const char *docs, const char *name, int size, unsigned int flags)
+{
+	SC_SERVER_DUMMYVAR;
+
+	g_call_original_CASDocumentation_RegisterObjectType(pthis, SC_SERVER_PASS_DUMMYARG docs, name, size, flags);
 }
 
 C_DLLEXPORT void ASEXT_RegisterObjectProperty(CASDocumentation *pthis, const char *docs, const char *name, const char *prop, int offset)
@@ -70,7 +84,7 @@ C_DLLEXPORT void ASEXT_RegisterFuncDef(CASDocumentation *pthis, const char *docs
 	g_call_original_CASDocumentation_RegisterFuncDef(pthis, SC_SERVER_PASS_DUMMYARG docs, funcdef);
 }
 
-int SC_SERVER_DECL NewCASDocumentation_RegisterObjectType(CASDocumentation *pthis, SC_SERVER_DUMMYARG const char *docs, const char *name, int a4, unsigned int flags)
+int SC_SERVER_DECL NewCASDocumentation_RegisterObjectType(CASDocumentation *pthis, SC_SERVER_DUMMYARG const char *docs, const char *name, int size, unsigned int flags)
 {
 	if (name && docs && !strcmp(name, "CSurvivalMode") && !strcmp(docs, "Survival Mode handler") && flags == 0x40001u)
 	{
@@ -83,7 +97,7 @@ int SC_SERVER_DECL NewCASDocumentation_RegisterObjectType(CASDocumentation *pthi
 		g_ASDocInit = true;
 	} 
 
-	return g_call_original_CASDocumentation_RegisterObjectType(pthis, SC_SERVER_PASS_DUMMYARG docs, name, a4, flags);
+	return g_call_original_CASDocumentation_RegisterObjectType(pthis, SC_SERVER_PASS_DUMMYARG docs, name, size, flags);
 }
 
 void SC_SERVER_DECL NewCASDirectoryList_CreateDirectory(CASDirectoryList *pthis, SC_SERVER_DUMMYARG const char *path, unsigned char flags, unsigned char access_control, unsigned char permanent, unsigned char unk)
@@ -172,4 +186,9 @@ C_DLLEXPORT CASServerManager *ASEXT_GetServerManager()
 C_DLLEXPORT bool ASEXT_CASRefCountedBaseClass_InternalRelease(void *ref)
 {
 	return g_pfn_CASRefCountedBaseClass_InternalRelease(ref);
+}
+
+C_DLLEXPORT void ASEXT_CScriptAny_Release(void *anywhat)
+{
+	g_pfn_CScriptAny_Release(anywhat);
 }

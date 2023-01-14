@@ -150,6 +150,7 @@ int NewAddToFullPack_Post(struct entity_state_s *state, int entindex, edict_t *e
 void NewGameInit_Post(void)
 {
 	sv_gravity = CVAR_GET_POINTER("sv_gravity");
+	mp_footsteps = CVAR_GET_POINTER("mp_footsteps");
 
 	gPhysicsManager.Init();
 
@@ -168,12 +169,24 @@ void NewStartFrame(void)
 	SET_META_RESULT(MRES_IGNORED);
 }
 
+int NewSpawn(edict_t *pent)
+{
+	//Entity 0 = world
+	if (0 == g_engfuncs.pfnIndexOfEdict(pent))
+	{
+		gPhysicsManager.PreSpawn(pent);
+	}
+
+	SET_META_RESULT(MRES_IGNORED);
+	return 1;
+}
+
 int NewSpawn_Post(edict_t *pent)
 {
 	//Entity 0 = world
 	if (0 == g_engfuncs.pfnIndexOfEdict(pent))
 	{
-		gPhysicsManager.NewMap(pent);
+		gPhysicsManager.PostSpawn(pent);
 	}
 
 	SET_META_RESULT(MRES_IGNORED);
@@ -182,6 +195,8 @@ int NewSpawn_Post(edict_t *pent)
 
 void NewServerDeactivate()
 {
+	EnableCustomStepSound(false);
+
 	gPhysicsManager.RemoveAllGameBodies();
 
 	SET_META_RESULT(MRES_IGNORED);
@@ -192,15 +207,11 @@ void NewPlayerPreThink(edict_t *pEntity)
 	g_bIsRunPlayerMove = true;
 	g_iRunPlayerMoveIndex = g_engfuncs.pfnIndexOfEdict(pEntity);
 
-	//gPhysicsManager.PM_StartSemiClip(g_iRunPlayerMoveIndex, pEntity);
-
 	SET_META_RESULT(MRES_IGNORED);
 }
 
 void NewPlayerPostThink(edict_t* pEntity)
 {
-	//gPhysicsManager.PM_EndSemiClip(g_iRunPlayerMoveIndex, pEntity);
-
 	g_bIsRunPlayerMove = false;
 	g_iRunPlayerMoveIndex = 0;
 
@@ -234,7 +245,7 @@ void NewPM_Move_Post(struct playermove_s *ppmove, qboolean server)
 static DLL_FUNCTIONS gFunctionTable = 
 {
 	NULL,					// pfnGameInit
-	NULL,					// pfnSpawn
+	NewSpawn,					// pfnSpawn
 	NULL,					// pfnThink
 	NULL,					// pfnUse
 	NewTouch,				// pfnTouch

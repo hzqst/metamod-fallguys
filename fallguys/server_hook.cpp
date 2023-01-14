@@ -11,6 +11,19 @@
 #include "fallguys.h"
 #include "physics.h"
 
+PRIVATE_FUNCTION_DEFINE(CPlayerMove_PlayStepSound);
+PRIVATE_FUNCTION_DEFINE(CPlayerMove_PlaySoundFX);
+
+void SC_SERVER_DECL CASEngineFuncs__SetPhysicSimRate(void* pthis, SC_SERVER_DUMMYARG float rate)
+{
+	gPhysicsManager.SetSimRate(rate);
+}
+
+void SC_SERVER_DECL CASEngineFuncs__EnableCustomStepSound(void* pthis, SC_SERVER_DUMMYARG bool bEnabled)
+{
+	EnableCustomStepSound(bEnabled);
+}
+
 edict_t* SC_SERVER_DECL CASEngineFuncs__GetViewEntity(void* pthis, SC_SERVER_DUMMYARG edict_t* pClient)
 {
 	return GetClientViewEntity(pClient);
@@ -26,14 +39,40 @@ bool SC_SERVER_DECL CASEntityFuncs__CreateSolidOptimizer(void* pthis, SC_SERVER_
 	return gPhysicsManager.CreateSolidOptimizer(ent, boneindex, halfext, halfext2);
 }
 
-bool SC_SERVER_DECL CASEntityFuncs__CreatePhysicBox(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable)
+bool SC_SERVER_DECL CASEntityFuncs__CreatePhysicObject(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, PhysicShapeParams *shapeParams, PhysicObjectParams *objectParams)
 {
-	return gPhysicsManager.CreatePhysicBox(ent, mass, friction, rollingFriction, restitution, ccdRadius, ccdThreshold, pushable);
+	return gPhysicsManager.CreatePhysicObject(ent, shapeParams, objectParams);
 }
 
-bool SC_SERVER_DECL CASEntityFuncs__CreatePhysicSphere(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable)
+bool SC_SERVER_DECL CASEntityFuncs__CreateCompoundPhysicObject(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, CScriptArray *shapeParamArray, PhysicObjectParams *objectParams)
 {
-	return gPhysicsManager.CreatePhysicSphere(ent, mass, friction, rollingFriction, restitution, ccdRadius, ccdThreshold, pushable);
+	bool bResult = false;
+
+	PhysicShapeParams *pdata = (PhysicShapeParams *)shapeParamArray->data();
+
+	bResult = gPhysicsManager.CreateCompoundPhysicObject(ent, pdata, shapeParamArray->size(), objectParams);
+	
+	ASEXT_CScriptAny_Release(shapeParamArray);
+
+	return bResult;
+}
+
+bool SC_SERVER_DECL CASEntityFuncs__CreatePhysicVehicle(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, CScriptArray *wheelParamArray, PhysicVehicleParams *vehicleParams)
+{
+	bool bResult = false;
+
+	PhysicWheelParams **pdata = (PhysicWheelParams **)wheelParamArray->data();
+
+	bResult = gPhysicsManager.CreatePhysicVehicle(ent, pdata, wheelParamArray->size(), vehicleParams);
+
+	ASEXT_CScriptAny_Release(wheelParamArray);
+
+	return bResult;
+}
+
+bool SC_SERVER_DECL CASEntityFuncs__SetEntityFollow(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, edict_t* follow, int flags, const Vector &origin_offset, const Vector &angles_offset)
+{
+	return gPhysicsManager.SetEntityFollow(ent, follow, flags, origin_offset, angles_offset);
 }
 
 bool SC_SERVER_DECL CASEntityFuncs__SetEntitySuperPusher(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, bool enable)
@@ -52,9 +91,14 @@ bool SC_SERVER_DECL CASEntityFuncs__SetEntityPartialViewer(void* pthis, SC_SERVE
 	return gPhysicsManager.SetEntityPartialViewer(ent, partial_viewer_mask);
 }
 
-edict_t *SC_SERVER_DECL CASEntityFuncs__GetCurrentSuperPusher(void* pthis, SC_SERVER_DUMMYARG Vector* out)
+edict_t *SC_SERVER_DECL CASEntityFuncs__GetCurrentSuperPusher(void* pthis, SC_SERVER_DUMMYARG Vector* vecPushDirection)
 {
-	return GetCurrentSuperPusher(out);
+	return GetCurrentSuperPusher(vecPushDirection);
+}
+
+edict_t *SC_SERVER_DECL CASEntityFuncs__GetCurrentPhysicImpactEntity(void* pthis, SC_SERVER_DUMMYARG Vector* vecImpactPoint, Vector* vecImpactDirection, float *flImpactImpulse)
+{
+	return gPhysicsManager.GetCurrentImpactEntity(vecImpactPoint, vecImpactDirection, flImpactImpulse);
 }
 
 bool SC_SERVER_DECL CASEntityFuncs__ApplyImpulse(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, const Vector& impulse, const Vector& origin)
@@ -62,11 +106,224 @@ bool SC_SERVER_DECL CASEntityFuncs__ApplyImpulse(void* pthis, SC_SERVER_DUMMYARG
 	return gPhysicsManager.ApplyImpulse(ent, impulse, origin);
 }
 
+bool SC_SERVER_DECL CASEntityFuncs__SetVehicleEngineBrakeSteering(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, float engineForce, float brakeForce, float steering)
+{
+	return gPhysicsManager.SetVehicleEngineBrakeSteering(ent, engineForce, brakeForce, steering);
+}
+
+void SC_SERVER_DECL CASPlayerMove_GetTextureName(playermove_t *pthis, SC_SERVER_DUMMYARG CString *str)
+{
+	str->assign(pthis->sztexturename, strlen(pthis->sztexturename));
+}
+
+void SC_SERVER_DECL NewCPlayerMove_PlayStepSound(void *pthis, SC_SERVER_DUMMYARG int iType, float flVolume, bool bIsJump)
+{
+	if (g_bUseCustomStepSound)
+	{
+		playermove_t * playermove = *(playermove_t **)((char *)pthis + 0x460);
+		
+		int uiFlags = 0;
+
+		if (ASEXT_CallHook)
+		{
+			(*ASEXT_CallHook)(g_PlayerMovePlayStepSoundHook, 0, g_engfuncs.pfnPEntityOfEntIndex(g_iRunPlayerMoveIndex)->pvPrivateData, playermove, iType, flVolume, bIsJump, &uiFlags);
+		}
+
+		if (uiFlags & 1)
+			return;
+
+		int footsteps = playermove->movevars->footsteps;
+		playermove->movevars->footsteps = 1;
+
+		g_call_original_CPlayerMove_PlayStepSound(pthis, SC_SERVER_PASS_DUMMYARG iType, flVolume, bIsJump);
+
+		playermove->movevars->footsteps = footsteps;
+	}
+	else
+	{
+		g_call_original_CPlayerMove_PlayStepSound(pthis, SC_SERVER_PASS_DUMMYARG iType, flVolume, bIsJump);
+	}
+}
+
+void NewCPlayerMove_PlaySoundFX(int playerindex, vec3_t *origin, int type, const char *sound, float vol, float att, int flags, int pitch)
+{
+	if (g_bUseCustomStepSound)
+	{
+		int uiFlags = 0;
+		CString str = {0};
+		str.assign(sound, strlen(sound));
+
+		if (ASEXT_CallHook)
+		{
+			(*ASEXT_CallHook)(g_PlayerMovePlaySoundFXHook, 0, g_engfuncs.pfnPEntityOfEntIndex(g_iRunPlayerMoveIndex)->pvPrivateData, playerindex, origin, type, &str, vol, att, flags, pitch, &uiFlags);
+		}
+
+		str.dtor();
+
+		if (uiFlags & 1)
+			return;
+	}
+	g_call_original_CPlayerMove_PlaySoundFX(playerindex, origin, type, sound, vol, att, flags, pitch);
+}
+
+hook_t *g_phook_CPlayerMove_PlayStepSound = NULL;
+hook_t *g_phook_CPlayerMove_PlaySoundFX = NULL;
+
+void InstallServerHooks()
+{
+	INSTALL_INLINEHOOK(CPlayerMove_PlayStepSound);
+	INSTALL_INLINEHOOK(CPlayerMove_PlaySoundFX);
+}
+
+void UninstallServerHooks()
+{
+	UNINSTALL_HOOK(CPlayerMove_PlayStepSound);
+	UNINSTALL_HOOK(CPlayerMove_PlaySoundFX);
+}
+
 void RegisterAngelScriptMethods(void)
 {
 	ASEXT_RegisterDocInitCallback([](CASDocumentation *pASDoc) {
 
-		ASEXT_RegisterObjectType    (pASDoc, "Entity states transmit to client", "entity_state_t", 0, 0x40001u);
+		/* PhysicShapeParams */
+
+		ASEXT_RegisterObjectType(pASDoc, "Physic shape creation parameters", "PhysicShapeParams", sizeof(PhysicShapeParams), asOBJ_VALUE);
+
+		ASEXT_RegisterObjectBehaviour(pASDoc, "Default constructor", "PhysicShapeParams", ObjectBehaviour_Constructor, "void PhysicShapeParams()",										PhysicShapeParams_ctor, 4);
+		ASEXT_RegisterObjectBehaviour(pASDoc, "Copy constructor", "PhysicShapeParams", ObjectBehaviour_Constructor, "void PhysicShapeParams(const PhysicShapeParams& in other)",		PhysicShapeParams_copyctor, 4);
+		ASEXT_RegisterObjectBehaviour(pASDoc, "Destructor", "PhysicShapeParams", ObjectBehaviour_Destructor, "void DestructPhysicShapeParams()",										PhysicShapeParams_dtor, 4);
+		ASEXT_RegisterObjectMethod(pASDoc, "operator=", "PhysicShapeParams", "PhysicShapeParams& opAssign(const PhysicShapeParams& in other)", PhysicShapeParams_opassign, 3);
+
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicShapeParams", "int type", offsetof(PhysicShapeParams, type));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicShapeParams", "int direction", offsetof(PhysicShapeParams, direction));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicShapeParams", "Vector origin", offsetof(PhysicShapeParams, origin));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicShapeParams", "Vector angles", offsetof(PhysicShapeParams, angles));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicShapeParams", "Vector size", offsetof(PhysicShapeParams, size));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicShapeParams", "array<float>@ multispheres", offsetof(PhysicShapeParams, multispheres));
+
+		/* PhysicObjectParams */
+
+		ASEXT_RegisterObjectType(pASDoc, "Physic object creation parameters", "PhysicObjectParams", sizeof(PhysicObjectParams), asOBJ_VALUE);
+
+		ASEXT_RegisterObjectBehaviour(pASDoc, "Default constructor", "PhysicObjectParams", ObjectBehaviour_Constructor, "void PhysicObjectParams()",									PhysicObjectParams_ctor, 4);
+		ASEXT_RegisterObjectBehaviour(pASDoc, "Copy constructor", "PhysicObjectParams", ObjectBehaviour_Constructor, "void PhysicObjectParams(const PhysicObjectParams& in other)",		PhysicObjectParams_copyctor, 4);
+		ASEXT_RegisterObjectBehaviour(pASDoc, "Destructor", "PhysicObjectParams", ObjectBehaviour_Destructor, "void DestructPhysicObjectParams()",										PhysicObjectParams_dtor, 4);
+		ASEXT_RegisterObjectMethod(pASDoc, "operator=", "PhysicObjectParams", "PhysicObjectParams& opAssign(const PhysicObjectParams& in other)", PhysicObjectParams_opassign, 3);
+
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicObjectParams", "float mass", offsetof(PhysicObjectParams, mass));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicObjectParams", "float linearfriction", offsetof(PhysicObjectParams, linearfriction));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicObjectParams", "float rollingfriction", offsetof(PhysicObjectParams, rollingfriction));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicObjectParams", "float restitution", offsetof(PhysicObjectParams, restitution));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicObjectParams", "float ccdradius", offsetof(PhysicObjectParams, ccdradius));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicObjectParams", "float ccdthreshold", offsetof(PhysicObjectParams, ccdthreshold));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicObjectParams", "int flags", offsetof(PhysicObjectParams, flags));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicObjectParams", "float impactimpulse_threshold", offsetof(PhysicObjectParams, impactimpulse_threshold));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicObjectParams", "Vector clippinghull_size", offsetof(PhysicObjectParams, clippinghull_size));
+
+		/* PhysicWheelParams */
+
+		ASEXT_RegisterObjectType(pASDoc, "Physic wheel creation parameters", "PhysicWheelParams", sizeof(PhysicWheelParams), asOBJ_VALUE);
+
+		ASEXT_RegisterObjectBehaviour(pASDoc, "Default constructor", "PhysicWheelParams", ObjectBehaviour_Constructor, "void PhysicWheelParams()", PhysicWheelParams_ctor, 4);
+		ASEXT_RegisterObjectBehaviour(pASDoc, "Copy constructor", "PhysicWheelParams", ObjectBehaviour_Constructor, "void PhysicWheelParams(const PhysicWheelParams& in other)", PhysicWheelParams_copyctor, 4);
+		ASEXT_RegisterObjectBehaviour(pASDoc, "Destructor", "PhysicWheelParams", ObjectBehaviour_Destructor, "void DestructPhysicWheelParams()", PhysicWheelParams_dtor, 4);
+		ASEXT_RegisterObjectMethod(pASDoc, "operator=", "PhysicWheelParams", "PhysicWheelParams& opAssign(const PhysicWheelParams& in other)", PhysicWheelParams_opassign, 3);
+
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "edict_t@ ent", offsetof(PhysicWheelParams, ent));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "Vector connectionPoint", offsetof(PhysicWheelParams, connectionPoint));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "Vector wheelDirection", offsetof(PhysicWheelParams, wheelDirection));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "Vector wheelAxle", offsetof(PhysicWheelParams, wheelAxle));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "float suspensionRestLength", offsetof(PhysicWheelParams, suspensionRestLength));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "float wheelRadius", offsetof(PhysicWheelParams, wheelRadius));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "int flags", offsetof(PhysicWheelParams, flags));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "float suspensionStiffness", offsetof(PhysicWheelParams, suspensionStiffness));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "float wheelsDampingRelaxation", offsetof(PhysicWheelParams, wheelsDampingRelaxation));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "float wheelsDampingCompression", offsetof(PhysicWheelParams, wheelsDampingCompression));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "float frictionSlip", offsetof(PhysicWheelParams, frictionSlip));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "float rollInfluence", offsetof(PhysicWheelParams, rollInfluence));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "float maxSuspensionTravelCm", offsetof(PhysicWheelParams, maxSuspensionTravelCm));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "float maxSuspensionForce", offsetof(PhysicWheelParams, maxSuspensionForce));
+
+		/* PhysicVehicleParams */
+
+		ASEXT_RegisterObjectType(pASDoc, "Physic vehicle creation parameters", "PhysicVehicleParams", sizeof(PhysicVehicleParams), asOBJ_VALUE);
+
+		ASEXT_RegisterObjectBehaviour(pASDoc, "Default constructor", "PhysicVehicleParams", ObjectBehaviour_Constructor, "void PhysicVehicleParams()", PhysicVehicleParams_ctor, 4);
+		ASEXT_RegisterObjectBehaviour(pASDoc, "Copy constructor", "PhysicVehicleParams", ObjectBehaviour_Constructor, "void PhysicVehicleParams(const PhysicVehicleParams& in other)", PhysicVehicleParams_copyctor, 4);
+		ASEXT_RegisterObjectBehaviour(pASDoc, "Destructor", "PhysicVehicleParams", ObjectBehaviour_Destructor, "void DestructPhysicVehicleParams()", PhysicVehicleParams_dtor, 4);
+		ASEXT_RegisterObjectMethod(pASDoc, "operator=", "PhysicVehicleParams", "PhysicVehicleParams& opAssign(const PhysicVehicleParams& in other)", PhysicVehicleParams_opassign, 3);
+
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicVehicleParams", "float suspensionStiffness", offsetof(PhysicVehicleParams, suspensionStiffness));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicVehicleParams", "float suspensionCompression", offsetof(PhysicVehicleParams, suspensionCompression));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicVehicleParams", "float suspensionDamping", offsetof(PhysicVehicleParams, suspensionDamping));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicVehicleParams", "float maxSuspensionTravelCm", offsetof(PhysicVehicleParams, maxSuspensionTravelCm));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicVehicleParams", "float frictionSlip", offsetof(PhysicVehicleParams, frictionSlip));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicVehicleParams", "float maxSuspensionForce", offsetof(PhysicVehicleParams, maxSuspensionForce));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicVehicleParams", "int flags", offsetof(PhysicVehicleParams, flags));
+
+		/* playermove_t */
+
+		ASEXT_RegisterObjectType(pASDoc, "PlayerMove control struct in engine", "playermove_t", 0, asOBJ_REF | asOBJ_NOCOUNT );
+		ASEXT_RegisterObjectProperty(pASDoc, "player index of current player that playing with playermove code", "playermove_t", "int player_index", offsetof(playermove_t, player_index));
+		ASEXT_RegisterObjectProperty(pASDoc, "For debugging, are we running physics code on server side?", "playermove_t", "int server", offsetof(playermove_t, server));
+		ASEXT_RegisterObjectProperty(pASDoc, "1 == multiplayer server", "playermove_t", "int multiplayer", offsetof(playermove_t, multiplayer));
+		ASEXT_RegisterObjectProperty(pASDoc, "realtime on host, for reckoning duck timing", "playermove_t", "float time", offsetof(playermove_t, time));
+		ASEXT_RegisterObjectProperty(pASDoc, "Duration of this frame", "playermove_t", "float frametime", offsetof(playermove_t, frametime));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "Vector forward", offsetof(playermove_t, forward));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "Vector right", offsetof(playermove_t, right));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "Vector up", offsetof(playermove_t, up));
+		ASEXT_RegisterObjectProperty(pASDoc, "Movement origin.", "playermove_t", "Vector origin", offsetof(playermove_t, origin));
+		ASEXT_RegisterObjectProperty(pASDoc, "Movement view angles.", "playermove_t", "Vector angles", offsetof(playermove_t, angles));
+		ASEXT_RegisterObjectProperty(pASDoc, "Angles before movement view angles were looked at.", "playermove_t", "Vector oldangles", offsetof(playermove_t, oldangles));
+		ASEXT_RegisterObjectProperty(pASDoc, "Current movement direction.", "playermove_t", "Vector velocity", offsetof(playermove_t, velocity));
+		ASEXT_RegisterObjectProperty(pASDoc, "For waterjumping, a forced forward velocity so we can fly over lip of ledge.", "playermove_t", "Vector movedir", offsetof(playermove_t, movedir));
+		ASEXT_RegisterObjectProperty(pASDoc, "Velocity of the conveyor we are standing, e.g.", "playermove_t", "Vector basevelocity", offsetof(playermove_t, basevelocity));
+		ASEXT_RegisterObjectProperty(pASDoc, "Our eye position.", "playermove_t", "Vector view_ofs", offsetof(playermove_t, view_ofs));
+		ASEXT_RegisterObjectProperty(pASDoc, "Time we started duck", "playermove_t", "float flDuckTime", offsetof(playermove_t, flDuckTime));
+		ASEXT_RegisterObjectProperty(pASDoc, "In process of ducking or ducked already?", "playermove_t", "int bInDuck", offsetof(playermove_t, bInDuck));
+		ASEXT_RegisterObjectProperty(pASDoc, "Next time we can play a step sound", "playermove_t", "int flTimeStepSound", offsetof(playermove_t, flTimeStepSound));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "int iStepLeft", offsetof(playermove_t, iStepLeft));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "float flFallVelocity", offsetof(playermove_t, flFallVelocity));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "Vector punchangle", offsetof(playermove_t, punchangle));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "float flSwimTime", offsetof(playermove_t, flSwimTime));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "float flNextPrimaryAttack", offsetof(playermove_t, flNextPrimaryAttack));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "int effects", offsetof(playermove_t, effects));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "int flags", offsetof(playermove_t, flags));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "int usehull", offsetof(playermove_t, usehull));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "float gravity", offsetof(playermove_t, gravity));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "float friction", offsetof(playermove_t, friction));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "int oldbuttons", offsetof(playermove_t, oldbuttons));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "float waterjumptime", offsetof(playermove_t, waterjumptime));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "int dead", offsetof(playermove_t, dead));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "int deadflag", offsetof(playermove_t, deadflag));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "int spectator", offsetof(playermove_t, spectator));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "int movetype", offsetof(playermove_t, movetype));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "int onground", offsetof(playermove_t, onground));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "int waterlevel", offsetof(playermove_t, waterlevel));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "int watertype", offsetof(playermove_t, watertype));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "int oldwaterlevel", offsetof(playermove_t, oldwaterlevel));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "char chtexturetype", offsetof(playermove_t, chtexturetype));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "float maxspeed", offsetof(playermove_t, maxspeed));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "float clientmaxspeed", offsetof(playermove_t, clientmaxspeed));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "int iuser1", offsetof(playermove_t, iuser1));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "int iuser2", offsetof(playermove_t, iuser2));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "int iuser3", offsetof(playermove_t, iuser3));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "int iuser4", offsetof(playermove_t, iuser4));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "float fuser1", offsetof(playermove_t, fuser1));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "float fuser2", offsetof(playermove_t, fuser2));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "float fuser3", offsetof(playermove_t, fuser3));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "float fuser4", offsetof(playermove_t, fuser4));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "Vector vuser1", offsetof(playermove_t, vuser1));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "Vector vuser2", offsetof(playermove_t, vuser2));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "Vector vuser3", offsetof(playermove_t, vuser3));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "playermove_t", "Vector vuser4", offsetof(playermove_t, vuser4)); 
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"get texture name", "playermove_t", "void GetTextureName(string& out texture_name)",
+			(void *)CASPlayerMove_GetTextureName, 3);
+
+		/* entity_state_t */
+
+		ASEXT_RegisterObjectType    (pASDoc, "Entity states transmit to client", "entity_state_t", 0, asOBJ_REF | asOBJ_NOCOUNT);
 		ASEXT_RegisterObjectProperty(pASDoc, "Fields which are filled in by routines outside of delta compression", "entity_state_t", "int entityType", offsetof(entity_state_t, entityType));
 		ASEXT_RegisterObjectProperty(pASDoc, "Index into cl_entities array for this entity.", "entity_state_t", "int number", offsetof(entity_state_t, number));
 		ASEXT_RegisterObjectProperty(pASDoc, "", "entity_state_t", "float msg_time", offsetof(entity_state_t, msg_time));
@@ -124,6 +381,14 @@ void RegisterAngelScriptMethods(void)
 		ASEXT_RegisterObjectProperty(pASDoc, "", "entity_state_t", "Vector vuser4", offsetof(entity_state_t, vuser4));
 
 		ASEXT_RegisterObjectMethod(pASDoc,
+			"Disable stepsound temporarily", "CEngineFuncs", "void EnableCustomStepSound(bool bEnabled)",
+			(void *)CASEngineFuncs__EnableCustomStepSound, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Set simulation rate of bullet physics engine world", "CEngineFuncs", "void SetPhysicSimRate(float rate)",
+			(void *)CASEngineFuncs__SetPhysicSimRate, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
 			"Get index of player that is currently running PlayerMove code", "CEngineFuncs", "int GetRunPlayerMovePlayerIndex()",
 			(void *)CASEngineFuncs__GetRunPlayerMovePlayerIndex, 3);
 
@@ -136,12 +401,16 @@ void RegisterAngelScriptMethods(void)
 			(void *)CASEntityFuncs__CreateSolidOptimizer, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Create physic box for entity", "CEntityFuncs", "bool CreatePhysicBox(edict_t@ ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable)",
-			(void *)CASEntityFuncs__CreatePhysicBox, 3);
+			"Create physic object for entity", "CEntityFuncs", "bool CreatePhysicObject(edict_t@ ent, const PhysicShapeParams& in shapeParams, const PhysicObjectParams& in objectParams )",
+			(void *)CASEntityFuncs__CreatePhysicObject, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Create physic sphere for entity", "CEntityFuncs", "bool CreatePhysicSphere(edict_t@ ent, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, bool pushable)",
-			(void *)CASEntityFuncs__CreatePhysicSphere, 3);
+			"Create physic compound shape for entity", "CEntityFuncs", "bool CreateCompoundPhysicObject(edict_t@ ent, array<PhysicShapeParams>@ shapeParamArray, const PhysicObjectParams& in objectParams)",
+			(void *)CASEntityFuncs__CreateCompoundPhysicObject, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Create physic object for entity", "CEntityFuncs", "bool CreatePhysicVehicle(edict_t@ ent, const array<PhysicWheelParams>& in wheels, const PhysicVehicleParams& in vehicleParams )",
+			(void *)CASEntityFuncs__CreatePhysicVehicle, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Enable or disable Super-Pusher for brush entity", "CEntityFuncs", "bool SetEntitySuperPusher(edict_t@ ent, bool enable)",
@@ -156,12 +425,23 @@ void RegisterAngelScriptMethods(void)
 			(void *)CASEntityFuncs__SetEntityPartialViewer, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Get current working Super-Pusher, return valid edict only in pfnTouch", "CEntityFuncs", "edict_t@ GetCurrentSuperPusher(Vector &out)",
+			"Create Level-of-Detail object for entity", "CEntityFuncs", "bool SetEntityFollow(edict_t@ ent, edict_t@ follow, int flags, const Vector& in origin_offset, const Vector& in angles_offset )",
+			(void *)CASEntityFuncs__SetEntityFollow, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Get current working Super-Pusher, return valid edict only in pfnTouch callback", "CEntityFuncs", "edict_t@ GetCurrentSuperPusher(Vector& out vecPushDirection)",
 			(void *)CASEntityFuncs__GetCurrentSuperPusher, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Get current impact entity in Bullet Engine, return valid edict only in pfnTouch callback", "CEntityFuncs", "edict_t@ GetCurrentPhysicImpactEntity(Vector& out vecImpactPoint, Vector& out vecImpactDirection, float& out flImpactImpulse)",
+			(void *)CASEntityFuncs__GetCurrentPhysicImpactEntity, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Apply impulse on physic object", "CEntityFuncs", "bool ApplyImpulse(edict_t@ ent, const Vector& in impulse, const Vector& in origin)",
 			(void *)CASEntityFuncs__ApplyImpulse, 3);
 
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Apply impulse on physic object", "CEntityFuncs", "bool SetVehicleEngineBrakeSteering(edict_t@ ent, float engineForce, float brakeForce, float steering)",
+			(void *)CASEntityFuncs__SetVehicleEngineBrakeSteering, 3);
 	});
 }

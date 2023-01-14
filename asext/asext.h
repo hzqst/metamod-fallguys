@@ -16,6 +16,7 @@ class CASModule;
 class CASServerManager;
 class CASDocumentation;
 class CASDirectoryList;
+class CScriptArray;
 
 typedef void(*fnASDocInitCallback)(CASDocumentation *pASDoc);
 typedef void(*fnASDirInitCallback)(CASDirectoryList *pASDir);
@@ -38,7 +39,12 @@ C_DLLEXPORT void ASEXT_RegisterObjectMethod(CASDocumentation *pASDoc, const char
 /*
 	Must be called inside DocInitCallback
 */
-C_DLLEXPORT void ASEXT_RegisterObjectType(CASDocumentation *pASDoc, const char *docs, const char *name, int unk, unsigned int flags);
+C_DLLEXPORT void ASEXT_RegisterObjectBehaviour(CASDocumentation *pASDoc, const char *docs, const char *name, int behaviour, const char *func, void *pfn, int type);
+
+/*
+	Must be called inside DocInitCallback
+*/
+C_DLLEXPORT void ASEXT_RegisterObjectType(CASDocumentation *pASDoc, const char *docs, const char *name, int size, unsigned int flags);
 
 /*
 	Must be called inside DocInitCallback
@@ -77,3 +83,5 @@ C_DLLEXPORT fnASEXT_CallCASBaseCallable ASEXT_CallCASBaseCallable;
 C_DLLEXPORT CASServerManager *ASEXT_GetServerManager();
 
 C_DLLEXPORT bool ASEXT_CASRefCountedBaseClass_InternalRelease(void *ref);
+
+C_DLLEXPORT void ASEXT_CScriptAny_Release(void *anywhat);

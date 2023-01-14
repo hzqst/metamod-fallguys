@@ -41,7 +41,6 @@
 #include "serverdef.h"
 #include "ascurl.h"
 
-
 void NewStartFrame(void)
 {
 	ASCURL_Frame();

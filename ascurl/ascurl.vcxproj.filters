@@ -30,9 +30,6 @@
     <ClInclude Include="ascurl.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="asext_api.h">
-      <Filter>Header</Filter>
-    </ClInclude>
     <ClInclude Include="enginedef.h">
       <Filter>Header</Filter>
     </ClInclude>

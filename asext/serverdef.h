@@ -77,6 +77,44 @@ public:
 	char m_can_resize;//20
 };
 
+class CScriptArrayBuffer
+{
+public:
+	void *data()
+	{
+		return m_buf;
+	}
+	size_t size()
+	{
+		return m_size;
+	}
+	int m_unk1;//0
+	int m_size;//4
+	char m_buf[1];//+8
+};
+
+class CScriptArray
+{
+public:
+	void *data()
+	{
+		return m_buffer->data();
+	}
+
+	size_t size()
+	{
+		return m_buffer->m_size;
+	}
+
+	int m_unk1;//0
+	int m_unk2;//4
+	int m_unk3;//8
+	int m_unk4;//12
+	CScriptArrayBuffer *m_buffer;//16
+	int m_unk5;//20
+	int m_ElementTypeId;//24
+};
+
 class CASDocumentation
 {
 public:
@@ -120,18 +158,18 @@ public:
 	int unk1;//0
 	int unk2;//4
 	int unk3;//8
-	int unk4;//12
+	void *scriptManager;//12
 	int unk5;//16
 	int unk6;//20
 	CASModule *curModule;//24
 };
 
-class CASMethodRegistration
+class asSFuncPtr
 {
 public:
-	CASMethodRegistration()
+	asSFuncPtr()
 	{
-		pfnMethod = NULL;
+		pfn = NULL;
 		unk1 = 0;
 		unk2 = 0;
 		unk3 = 0;
@@ -139,18 +177,18 @@ public:
 		unk5 = 0;
 		unk6 = 1;
 		unk7 = 0;
-		unk8 = 3;
+		flag = 3;
 	}
 
-	void *pfnMethod;//+0
+	void *pfn;//+0
 	int unk1;//+4
 	int unk2;//+8
-	int unk3;//+12
-	int unk4;//+16
-	int unk5;//+20
-	int unk6;//+24
-	int unk7;//+28
-	int unk8;//+32
+	int unk3;//+C
+	int unk4;//+0x10
+	int unk5;//+0x14
+	int unk6;//+0x18
+	int unk7;//+0x1C
+	unsigned char flag;//+0x20  // 1 = generic, 2 = global func, 3 = method
 };
 
 #ifdef _WIN32
@@ -188,17 +226,21 @@ typedef void(*fnCASHook_Call)(CASHook *pthis, int unk, ...);
 PRIVATE_FUNCTION_EXTERN(CASHook_Call);
 
 //CASDocumentation::RegisterObjectType __fastcall in Windows
-typedef int (SC_SERVER_DECL *fnCASDocumentation_RegisterObjectType)(CASDocumentation *pthis, SC_SERVER_DUMMYARG const char *docs, const char *name, int unk, unsigned int flags);
+typedef int (SC_SERVER_DECL *fnCASDocumentation_RegisterObjectType)(CASDocumentation *pthis, SC_SERVER_DUMMYARG const char *docs, const char *name, int size, unsigned int flags);
 PRIVATE_FUNCTION_EXTERN(CASDocumentation_RegisterObjectType);
-int SC_SERVER_DECL NewCASDocumentation_RegisterObjectType(CASDocumentation* pthis, SC_SERVER_DUMMYARG const char* docs, const char* name, int unk, unsigned int flags);
+int SC_SERVER_DECL NewCASDocumentation_RegisterObjectType(CASDocumentation* pthis, SC_SERVER_DUMMYARG const char* docs, const char* name, int size, unsigned int flags);
 
 //CASDocumentation::RegisterObjectProperty __fastcall in Windows
 typedef int (SC_SERVER_DECL *fnCASDocumentation_RegisterObjectProperty)(CASDocumentation *pthis, SC_SERVER_DUMMYARG const char *docs, const char *name, const char *prop, int offset);
 PRIVATE_FUNCTION_EXTERN(CASDocumentation_RegisterObjectProperty);
 
 //CASDocumentation::RegisterObjectMethod __fastcall in Windows
-typedef int (SC_SERVER_DECL *fnCASDocumentation_RegisterObjectMethod)(CASDocumentation *pthis, SC_SERVER_DUMMYARG const char *docs, const char *objectname, const char *funcname, CASMethodRegistration *reg, int a5);
+typedef int (SC_SERVER_DECL *fnCASDocumentation_RegisterObjectMethod)(CASDocumentation *pthis, SC_SERVER_DUMMYARG const char *docs, const char *objectname, const char *func, asSFuncPtr *reg, int a5);
 PRIVATE_FUNCTION_EXTERN(CASDocumentation_RegisterObjectMethod);
+
+//CASDocumentation::RegisterObjectBehaviour __fastcall in Windows
+typedef int (SC_SERVER_DECL *fnCASDocumentation_RegisterObjectBehaviour)(CASDocumentation *pthis, SC_SERVER_DUMMYARG const char *docs, const char *objectname, int behaviour, const char *func, asSFuncPtr *reg, int a6, int a7);
+PRIVATE_FUNCTION_EXTERN(CASDocumentation_RegisterObjectBehaviour);
 
 typedef int (SC_SERVER_DECL *fnCASDocumentation_RegisterFuncDef)(CASDocumentation *pthis, SC_SERVER_DUMMYARG const char *docs, const char *funcdef);
 PRIVATE_FUNCTION_EXTERN(CASDocumentation_RegisterFuncDef);
@@ -212,6 +254,9 @@ PRIVATE_FUNCTION_EXTERN(CASFunction_Create);
 
 typedef bool (*fnCASRefCountedBaseClass_InternalRelease)(void *ref);
 PRIVATE_FUNCTION_EXTERN(CASRefCountedBaseClass_InternalRelease);
+
+typedef void (SC_SERVER_DECL *fnCScriptAny_Release)(void *anywhat);
+PRIVATE_FUNCTION_EXTERN(CScriptAny_Release);
 
 typedef void (*fnCASBaseCallable_Call)(CASFunction *, int dummy, ...);
 PRIVATE_FUNCTION_EXTERN(CASBaseCallable_Call);

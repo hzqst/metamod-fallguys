@@ -7,7 +7,11 @@
 #include "fallguys.h"
 #include "physics.h"
 
-//For SuperPusher
+//For Custom StepSound
+bool g_bUseCustomStepSound = false;
+
+//For SuperPusher Entities
+bool g_bIsPushPhysics = false;
 bool g_bIsPushMove = false;
 bool g_bIsPushRotate = false;
 edict_t* g_PusherEntity = NULL;
@@ -31,10 +35,12 @@ void * g_AddToFullPackHook = NULL;
 void * g_PlayerPostThinkPostHook = NULL;
 void * g_PlayerTouchTriggerHook = NULL;
 void * g_PlayerTouchImpactHook = NULL;
+void * g_PlayerMovePlayStepSoundHook = NULL;
+void * g_PlayerMovePlaySoundFXHook = NULL;
 
 bool IsEntitySolidPlayer(int entindex, edict_t* ent)
 {
-	return entindex >= 1 && entindex <= gpGlobals->maxClients && ent->v.solid >= SOLID_BBOX && ent->v.solid <= SOLID_SLIDEBOX;
+	return entindex >= 1 && entindex <= gpGlobals->maxClients && ent->v.solid >= SOLID_BBOX && ent->v.solid <= SOLID_SLIDEBOX && ent->v.movetype != MOVETYPE_NOCLIP;
 }
 
 bool IsEntitySolidPlayer(edict_t* ent)
@@ -68,25 +74,29 @@ edict_t *GetCurrentSuperPusher(Vector *out)
 
 int GetRunPlayerMovePlayerIndex()
 {
+	if (!g_bIsRunPlayerMove)
+		return 0;
+
 	return g_iRunPlayerMoveIndex;
 }
 
-hook_t *g_phook_SV_PushEntity = NULL;
-hook_t *g_phook_SV_PushMove = NULL;
-hook_t *g_phook_SV_PushRotate = NULL;
+static float g_saved_footsteps = 1;
 
-void InstallEngineHooks()
+void EnableCustomStepSound(bool bEnabled)
 {
-	INSTALL_INLINEHOOK(SV_PushEntity);
-	INSTALL_INLINEHOOK(SV_PushMove);
-	INSTALL_INLINEHOOK(SV_PushRotate);
-}
+	if (!g_bUseCustomStepSound && bEnabled)
+	{
+		g_saved_footsteps = mp_footsteps->value;
+		mp_footsteps->value = 0;
 
-void UninstallEngineHooks()
-{
-	UNINSTALL_HOOK(SV_PushEntity);
-	UNINSTALL_HOOK(SV_PushMove);
-	UNINSTALL_HOOK(SV_PushRotate);
+		g_bUseCustomStepSound = true;
+	}
+	else if (g_bUseCustomStepSound && !bEnabled)
+	{
+		g_bUseCustomStepSound = false;
+
+		g_engfuncs.pfnCVarSetFloat("mp_footsteps", g_saved_footsteps);
+	}
 }
 
 void RegisterAngelScriptHooks()
@@ -98,4 +108,8 @@ void RegisterAngelScriptHooks()
 	g_PlayerTouchTriggerHook = ASEXT_RegisterHook("Get called when player touches a trigger", StopMode_CALL_ALL, 2, ASFlag_MapScript | ASFlag_Plugin, "Player", "PlayerTouchTrigger", "CBasePlayer@ pPlayer, CBaseEntity@ pOther");
 
 	g_PlayerTouchImpactHook = ASEXT_RegisterHook("Get called when player impacts a solid entities or world, player's velocity is temporarily set to impactvelocity", StopMode_CALL_ALL, 2, ASFlag_MapScript | ASFlag_Plugin, "Player", "PlayerTouchImpact", "CBasePlayer@ pPlayer, CBaseEntity@ pOther");
+
+	g_PlayerMovePlayStepSoundHook = ASEXT_RegisterHook("Get called when playing step sound", StopMode_CALL_ALL, 2, ASFlag_MapScript | ASFlag_Plugin, "Player", "PlayerMovePlayStepSound", "CBasePlayer@ pPlayer, playermove_t@ playermove, int iType, float flVolume, bool bIsJump, uint& out uiFlags");
+
+	g_PlayerMovePlaySoundFXHook = ASEXT_RegisterHook("Get called when playing player move sound", StopMode_CALL_ALL, 2, ASFlag_MapScript | ASFlag_Plugin, "Player", "PlayerMovePlaySoundFX", "CBasePlayer@ pPlayer, int playerindex, Vector origin, int type, const string& in sound, float vol, float att, int flags, int pitch, uint& out uiFlags");
 }

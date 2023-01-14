@@ -45,6 +45,7 @@
 #include "sdk_util.h"		// UTIL_LogPrintf, etc
 
 #include "asext.h"
+
 #include "serverdef.h"
 
 hook_t *g_phook_CASDocumentation_RegisterObjectType = NULL;
@@ -66,7 +67,7 @@ static META_FUNCTIONS gMetaFunctionTable = {
 plugin_info_t Plugin_info = {
 	META_INTERFACE_VERSION,	// ifvers
 	"AngelScriptExt",	// name
-	"1.3",	// version
+	"1.4",	// version
 	"2022",	// date
 	"hzqst",	// author
 	"https://github.com/hzqst/metamod-fallguys",	// url
@@ -149,11 +150,13 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectType, -1);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectProperty, -7);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectMethod, -7);
+	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectBehaviour, -8);
 	FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDocumentation_RegisterFuncDef, 0);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDirectoryList_CreateDirectory, -1);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASFunction_Create, -1);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASBaseCallable_Call, -1);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASRefCountedBaseClass_InternalRelease, -7);
+	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CScriptAny_Release, -1);
 
 	VAR_FROM_SIGNATURE_FROM_START(server, g_pServerManager, 5);
 
@@ -167,6 +170,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	FILL_FROM_SIGNATURE(server, CASFunction_Create);
 	FILL_FROM_SIGNATURE(server, CASBaseCallable_Call);
 	FILL_FROM_SIGNATURE(server, CASRefCountedBaseClass_InternalRelease);
+	FILL_FROM_SIGNATURE(server, CScriptAny_Release, -1);
 
 	VAR_FROM_SIGNATURE(server, g_pServerManager);
 
