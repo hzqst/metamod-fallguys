@@ -58,7 +58,7 @@ static META_FUNCTIONS gMetaFunctionTable = {
 	GetEntityAPI2_Post,			// pfnGetEntityAPI2_Post		META; called after game DLL
 	GetNewDLLFunctions,			// pfnGetNewDLLFunctions		HL SDK2; called before game DLL
 	NULL,			// pfnGetNewDLLFunctions_Post	META; called after game DLL
-	GetEngineFunctions,	// pfnGetEngineFunctions	META; called before HL engine
+	NULL,			// pfnGetEngineFunctions	META; called before HL engine
 	NULL,			// pfnGetEngineFunctions_Post	META; called after HL engine
 	NULL,			// pfnGetStudioBlendingInterface 2022/07/02 Added by hzqst
 	NULL,			// pfnGetStudioBlendingInterface_Post 2022/07/02 Added by hzqst
@@ -68,7 +68,7 @@ static META_FUNCTIONS gMetaFunctionTable = {
 plugin_info_t Plugin_info = {
 	META_INTERFACE_VERSION,	// ifvers
 	"AngelScriptCURL",	// name
-	"1.3",	// version
+	"1.4",	// version
 	"2022",	// date
 	"hzqst",	// author
 	"https://github.com/hzqst/metamod-fallguys",	// url

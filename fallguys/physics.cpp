@@ -89,16 +89,10 @@ void PhysicWheelParams_ctor(PhysicWheelParams *pthis)
 	pthis->connectionPoint = g_vecZero;
 	pthis->wheelDirection = g_vecZero;
 	pthis->wheelAxle = g_vecZero;
-	pthis->suspensionRestLength = 0;
-	pthis->wheelRadius = 0;
-	pthis->flags = 0;
 	pthis->suspensionStiffness = 0;
-	pthis->wheelsDampingRelaxation = 0;
-	pthis->wheelsDampingCompression = 0;
-	pthis->frictionSlip = 0;
-	pthis->rollInfluence = 0;
-	pthis->maxSuspensionTravelCm = 0;
-	pthis->maxSuspensionForce = 0;
+	pthis->suspensionDamping = 0;
+	pthis->flags = 0;
+	pthis->index = 0;
 }
 
 void PhysicWheelParams_copyctor(PhysicWheelParams *a1, PhysicWheelParams *a2)
@@ -107,16 +101,10 @@ void PhysicWheelParams_copyctor(PhysicWheelParams *a1, PhysicWheelParams *a2)
 	a1->connectionPoint = a2->connectionPoint;
 	a1->wheelDirection = a2->wheelDirection;
 	a1->wheelAxle = a2->wheelAxle;
-	a1->suspensionRestLength = a2->suspensionRestLength;
-	a1->wheelRadius = a2->wheelRadius;
-	a1->flags = a2->flags;
 	a1->suspensionStiffness = a2->suspensionStiffness;
-	a1->wheelsDampingRelaxation = a2->wheelsDampingRelaxation;
-	a1->wheelsDampingCompression = a2->wheelsDampingCompression;
-	a1->frictionSlip = a2->frictionSlip;
-	a1->rollInfluence = a2->rollInfluence;
-	a1->maxSuspensionTravelCm = a2->maxSuspensionTravelCm;
-	a1->maxSuspensionForce = a2->maxSuspensionForce;
+	a1->suspensionDamping = a2->suspensionDamping;
+	a1->flags = a2->flags;
+	a1->index = a2->index;
 }
 
 PhysicWheelParams * SC_SERVER_DECL PhysicWheelParams_opassign(PhysicWheelParams *a1, SC_SERVER_DUMMYARG PhysicWheelParams *a2)
@@ -655,6 +643,27 @@ void MatrixEuler(const btMatrix3x3& in_matrix, btVector3& out_euler) {
 	out_euler *= SIMD_DEGS_PER_RAD;
 }
 
+void EntityMotionState::ResetWorldTransform(const Vector &origin, const Vector &angles)
+{
+	btVector3 vecOrigin(origin.x, origin.y, origin.z);
+
+	btTransform worldTrans = btTransform(btQuaternion(0, 0, 0, 1), vecOrigin);
+
+	btVector3 vecAngles(angles.x, angles.y, angles.z);
+
+	if (GetPhysicObject()->IsPlayer())
+	{
+		vecAngles.setX(0);
+		vecAngles.setY(0);
+		vecAngles.setZ(0);
+	}
+
+	EulerMatrix(vecAngles, worldTrans.getBasis());
+
+	m_worldTransform = worldTrans;
+	m_worldTransformInitialized = true;
+}
+
 //Upload GoldSrc origin and angles to bullet engine
 
 void EntityMotionState::getWorldTransform(btTransform& worldTrans) const
@@ -670,22 +679,20 @@ void EntityMotionState::getWorldTransform(btTransform& worldTrans) const
 	//Player and brush upload origin and angles in normal way
 	if (!GetPhysicObject()->IsDynamic())
 	{
-		btVector3 GoldSrcOrigin(ent->v.origin.x, ent->v.origin.y, ent->v.origin.z);
+		btVector3 vecOrigin(ent->v.origin.x, ent->v.origin.y, ent->v.origin.z);
 
-		worldTrans = btTransform(btQuaternion(0, 0, 0, 1), GoldSrcOrigin);
+		worldTrans = btTransform(btQuaternion(0, 0, 0, 1), vecOrigin);
 
-		vec3_t GoldSrcAngles = ent->v.angles;
+		btVector3 vecAngles(ent->v.angles.x, ent->v.angles.y, ent->v.angles.z);
 
 		if (GetPhysicObject()->IsPlayer())
 		{
-			GoldSrcAngles.x = 0;
-			GoldSrcAngles.y = 0;
-			GoldSrcAngles.z = 0;
+			vecAngles.setX(0);
+			vecAngles.setY(0);
+			vecAngles.setZ(0);
 		}
 
-		btVector3 angles;
-		GoldSrcAngles.CopyToArray(angles.m_floats);
-		EulerMatrix(angles, worldTrans.getBasis());
+		EulerMatrix(vecAngles, worldTrans.getBasis());
 	}
 	else
 	{
@@ -851,28 +858,6 @@ void CDynamicObject::StartFrame(btDiscreteDynamicsWorld* world)
 	btVector3 vecNewVelocity(ent->v.vuser1.x, ent->v.vuser1.y, ent->v.vuser1.z);
 	
 	GetRigidBody()->setLinearVelocity(vecNewVelocity);
-
-	if (m_vehicle)
-	{
-		//Upload engine force and steering to bullet engine
-
-		for (int i = 0; i < m_vehicle->getNumWheels(); ++i)
-		{
-			auto clientInfo = (PhysicWheelClientInfo *)m_vehicle->getWheelInfo(i).m_clientInfo;
-			if (clientInfo->IsEngineWheel())
-			{
-				m_vehicle->applyEngineForce(m_flEngineForce, i);
-			}
-			if (clientInfo->IsBrakeWheel())
-			{
-				m_vehicle->setBrake(m_flBreakForce, i);
-			}
-			if (clientInfo->IsSteeringWheel())
-			{
-				m_vehicle->setSteeringValue(m_flSteering, i);
-			}
-		}
-	}
 }
 
 void CDynamicObject::StartFrame_Post(btDiscreteDynamicsWorld* world)
@@ -908,31 +893,25 @@ void CDynamicObject::StartFrame_Post(btDiscreteDynamicsWorld* world)
 
 void CDynamicObject::EndFrame(btDiscreteDynamicsWorld* world)
 {
-	if (m_vehicle)
+	
+}
+
+void CDynamicObject::SetPhysicTransform(const Vector &origin, const Vector &angles)
+{
+	auto MotionState = (EntityMotionState *)GetRigidBody()->getMotionState();
+
+	MotionState->ResetWorldTransform(origin, angles);
+}
+
+void CDynamicObject::SetPhysicFreeze(bool freeze)
+{
+	if (freeze)
 	{
-		//Download wheel transform from bullet engine
-
-		for (int i = 0; i < m_vehicle->getNumWheels(); ++i)
-		{
-			auto clientInfo = (PhysicWheelClientInfo *)m_vehicle->getWheelInfo(i).m_clientInfo;
-
-			btTransform tr = m_vehicle->getWheelInfo(i).m_worldTransform;
-			btVector3 pos = tr.getOrigin();
-			btVector3 ang;
-			MatrixEuler(tr.getBasis(), ang);
-
-			vec3_t origin(pos.x(), pos.y(), pos.z());
-			vec3_t angles(ang.x(), ang.y(), ang.z());
-
-			auto ent = clientInfo->GetEdict();
-
-			//ent->v.movetype = MOVETYPE_PUSH;
-			//ent->v.solid = SOLID_NOT;
-
-			SET_ORIGIN(ent, origin);
-
-			ent->v.angles = angles;
-		}
+		GetRigidBody()->setActivationState(DISABLE_SIMULATION);
+	}
+	else if (!freeze && GetRigidBody()->getActivationState() == DISABLE_SIMULATION)
+	{
+		GetRigidBody()->forceActivationState(ACTIVE_TAG);
 	}
 }
 
@@ -1532,6 +1511,10 @@ bool CPhysicsManager::CreateBrushModel(edict_t* ent)
 		AddGameObject(obj);
 	}
 
+	//Already created as physic brush entit y?
+	if (obj->GetNumPhysicObject() > 0)
+		return false;
+
 	int modelindex = ent->v.modelindex;
 	if (modelindex == -1)
 	{
@@ -1639,7 +1622,7 @@ bool CPhysicsManager::ApplyImpulse(edict_t* ent, const Vector& impulse, const Ve
 	return true;
 }
 
-bool CPhysicsManager::SetVehicleEngineBrakeSteering(edict_t* ent, float engineForce, float brakeForce, float steering)
+bool CPhysicsManager::SetVehicleEngine(edict_t* ent, int wheelIndex, bool enableMotor, float angularVelcoity, float maxMotorForce)
 {
 	auto obj = GetGameObject(ent);
 
@@ -1660,7 +1643,47 @@ bool CPhysicsManager::SetVehicleEngineBrakeSteering(edict_t* ent, float engineFo
 
 	auto dynObject = (CDynamicObject *)physObject;
 
-	dynObject->SetVehicleEngineBrakeSteering(engineForce, brakeForce, steering);
+	if (!dynObject->GetVehicleManager())
+		return false;
+
+	auto pConstraint = dynObject->GetVehicleManager()->GetConstraint(wheelIndex);
+
+	pConstraint->enableMotor(3, enableMotor);
+	pConstraint->setTargetVelocity(3, angularVelcoity);
+	pConstraint->setMaxMotorForce(3, maxMotorForce);
+
+	return true;
+}
+
+bool CPhysicsManager::SetVehicleSteering(edict_t* ent, int wheelIndex, float angularTarget, float angularVelocity, float maxMotorForce)
+{
+	auto obj = GetGameObject(ent);
+
+	if (!obj)
+	{
+		obj = new CGameObject(ent, g_engfuncs.pfnIndexOfEdict(ent));
+
+		AddGameObject(obj);
+	}
+
+	if (!obj->GetNumPhysicObject())
+		return false;
+
+	auto physObject = obj->GetPhysicObjectByIndex(0);
+
+	if (!physObject->IsDynamic())
+		return false;
+
+	auto dynObject = (CDynamicObject *)physObject;
+
+	if (!dynObject->GetVehicleManager())
+		return false;
+
+	auto pConstraint = dynObject->GetVehicleManager()->GetConstraint(wheelIndex);
+
+	pConstraint->setServoTarget(5, angularTarget);
+	pConstraint->setTargetVelocity(5, angularVelocity);
+	pConstraint->setMaxMotorForce(5, maxMotorForce);
 
 	return true;
 }
@@ -1695,6 +1718,52 @@ bool CPhysicsManager::SetEntityPartialViewer(edict_t* ent, int partial_viewer_ma
 	obj->SetPartialViewer(partial_viewer_mask);
 
 	return false;
+}
+
+bool CPhysicsManager::SetPhysicObjectTransform(edict_t* ent, const Vector &origin, const Vector &angles)
+{
+	auto obj = GetGameObject(ent);
+
+	if (!obj)
+	{
+		obj = new CGameObject(ent, g_engfuncs.pfnIndexOfEdict(ent));
+
+		AddGameObject(obj);
+	}
+
+	for (size_t i = 0; i < obj->GetNumPhysicObject(); ++i)
+	{
+		auto physobj = obj->GetPhysicObjectByIndex(i);
+
+		physobj->SetPhysicTransform(origin, angles);
+	}
+
+	SET_ORIGIN(ent, origin);
+
+	ent->v.angles = angles;
+
+	return true;
+}
+
+bool CPhysicsManager::SetPhysicObjectFreeze(edict_t* ent, bool freeze)
+{
+	auto obj = GetGameObject(ent);
+
+	if (!obj)
+	{
+		obj = new CGameObject(ent, g_engfuncs.pfnIndexOfEdict(ent));
+
+		AddGameObject(obj);
+	}
+
+	for (size_t i = 0; i < obj->GetNumPhysicObject(); ++i)
+	{
+		auto physobj = obj->GetPhysicObjectByIndex(i);
+
+		physobj->SetPhysicFreeze(freeze);
+	}
+
+	return true;
 }
 
 bool CPhysicsManager::SetEntityFollow(edict_t* ent, edict_t* follow, int flags, const Vector &origin_offset, const Vector &angles_offset)
@@ -1754,52 +1823,61 @@ bool CPhysicsManager::CreatePhysicVehicle(edict_t* ent, PhysicWheelParams **whee
 
 	auto dynObject = (CDynamicObject *)physObject;
 
-	dynObject->GetRigidBody()->setActivationState(DISABLE_DEACTIVATION);
-
-	auto raycaster = new btDefaultVehicleRaycaster(m_dynamicsWorld);
-
-	btRaycastVehicle::btVehicleTuning tuning;
-
-	tuning.m_suspensionStiffness = btScalar(vehicleParams->suspensionStiffness);
-	tuning.m_suspensionDamping = btScalar(vehicleParams->suspensionDamping);
-	tuning.m_suspensionCompression = btScalar(vehicleParams->suspensionCompression);
-	tuning.m_maxSuspensionForce = btScalar(vehicleParams->maxSuspensionForce);
-	tuning.m_maxSuspensionTravelCm = btScalar(vehicleParams->maxSuspensionTravelCm);
-	tuning.m_frictionSlip = btScalar(vehicleParams->frictionSlip);
-
-	auto vehicle = new PhysicRaycastVehicle(tuning, dynObject->GetRigidBody(), raycaster);
-
-	vehicle->setCoordinateSystem(1, 2, 0);
-
-	dynObject->SetVehicleAction(vehicle);
-	dynObject->AddAction(m_dynamicsWorld, vehicle);
+	dynObject->SetVehicleManager(new CPhysicVehicleManager());
 
 	for (size_t i = 0; i < numWheelParam; ++i)
 	{
-		btVector3 connectionPoint		(wheelParamArray[i]->connectionPoint.x, wheelParamArray[i]->connectionPoint.y,	wheelParamArray[i]->connectionPoint.z);
-		btVector3 wheelDirection		(wheelParamArray[i]->wheelDirection.x,	wheelParamArray[i]->wheelDirection.y,	wheelParamArray[i]->wheelDirection.z);
-		btVector3 wheelAxle				(wheelParamArray[i]->wheelAxle.x,		wheelParamArray[i]->wheelAxle.y,			wheelParamArray[i]->wheelAxle.z);
-		btScalar suspensionRestLength	(wheelParamArray[i]->suspensionRestLength);
-		btScalar wheelRadius			(wheelParamArray[i]->wheelRadius);
+		auto wheelEnt = wheelParamArray[i]->ent;
 
-		auto &wheelInfo = vehicle->addWheel(connectionPoint, wheelDirection, wheelAxle, suspensionRestLength, wheelRadius, tuning, (wheelParamArray[i]->flags & PhysicWheel_Front) ? true : false);
+		auto wheelObject = GetGameObject(wheelEnt);
 
-		btScalar suspensionStiffness		(wheelParamArray[i]->suspensionStiffness);
-		btScalar wheelsDampingRelaxation	(wheelParamArray[i]->wheelsDampingRelaxation);
-		btScalar wheelsDampingCompression	(wheelParamArray[i]->wheelsDampingCompression);
-		btScalar frictionSlip				(wheelParamArray[i]->frictionSlip);
-		btScalar rollInfluence				(wheelParamArray[i]->rollInfluence);
-		btScalar maxSuspensionTravelCm		(wheelParamArray[i]->maxSuspensionTravelCm);
-		btScalar maxSuspensionForce			(wheelParamArray[i]->maxSuspensionForce);
+		if (wheelObject->GetNumPhysicObject() > 0)
+		{
+			auto wheelPhysObject = wheelObject->GetPhysicObjectByIndex(0);
 
-		wheelInfo.m_suspensionStiffness = suspensionStiffness;
-		wheelInfo.m_wheelsDampingRelaxation = wheelsDampingRelaxation;
-		wheelInfo.m_wheelsDampingCompression = wheelsDampingCompression;
-		wheelInfo.m_frictionSlip = frictionSlip;
-		wheelInfo.m_rollInfluence = rollInfluence;
-		wheelInfo.m_maxSuspensionTravelCm = maxSuspensionTravelCm;
-		wheelInfo.m_maxSuspensionForce = maxSuspensionForce;
-		wheelInfo.m_clientInfo = new PhysicWheelClientInfo(wheelParamArray[i]->ent, wheelParamArray[i]->flags);
+			if (wheelPhysObject->IsDynamic())
+			{
+				auto wheelDynObject = (CDynamicObject *)wheelPhysObject;
+
+				btVector3 anchor(wheelParamArray[i]->connectionPoint.x, wheelParamArray[i]->connectionPoint.y, wheelParamArray[i]->connectionPoint.z);
+				btVector3 parentAxis(wheelParamArray[i]->wheelDirection.x, wheelParamArray[i]->wheelDirection.y, wheelParamArray[i]->wheelDirection.z);
+				btVector3 childAxis(wheelParamArray[i]->wheelAxle.x, wheelParamArray[i]->wheelAxle.y, wheelParamArray[i]->wheelAxle.z);
+				btScalar suspensionStiffness(wheelParamArray[i]->suspensionStiffness);
+				btScalar suspensionDamping(wheelParamArray[i]->suspensionDamping);
+
+				auto pConstraint = new btHinge2Constraint(*dynObject->GetRigidBody(), *wheelDynObject->GetRigidBody(), anchor, parentAxis, childAxis);
+
+				pConstraint->setParam(BT_CONSTRAINT_CFM, 0.15f, 2);
+				pConstraint->setParam(BT_CONSTRAINT_ERP, 0.35f, 2);
+
+				pConstraint->setStiffness(2, suspensionStiffness);
+				pConstraint->setDamping(2, suspensionDamping);
+
+				if (wheelParamArray[i]->flags & PhysicWheel_Engine)
+				{
+					pConstraint->enableMotor(3, true);
+					pConstraint->setMaxMotorForce(3, 0);
+					pConstraint->setTargetVelocity(3, 0);
+				}
+
+				if (wheelParamArray[i]->flags & PhysicWheel_Steering)
+				{
+					pConstraint->enableMotor(5, true);
+					pConstraint->setMaxMotorForce(5, 0);
+					pConstraint->setTargetVelocity(5, 10);
+					pConstraint->setServo(5, true);
+					pConstraint->setServoTarget(5, 0);
+				}
+				else if (wheelParamArray[i]->flags & PhysicWheel_NoSteering)
+				{
+					pConstraint->setLimit(5, 0, 0);
+				}
+
+				obj->AddConstraint(pConstraint, m_dynamicsWorld, true);
+
+				dynObject->GetVehicleManager()->SetConstraint(wheelParamArray[i]->index, pConstraint);
+			}
+		}	
 	}
 
 	return true;
@@ -1993,6 +2071,11 @@ bool CPhysicsManager::CreatePhysicObjectPost(edict_t *ent, CGameObject *obj, btC
 	if (objectParams->flags & PhysicObject_HasImpactImpulse)
 	{
 		dynamicobj->EnableImpactImpulse(true, objectParams->impactimpulse_threshold);
+	}
+
+	if (objectParams->flags & PhysicObject_Freeze)
+	{
+		dynamicobj->GetRigidBody()->setActivationState(DISABLE_SIMULATION);
 	}
 
 	return true;

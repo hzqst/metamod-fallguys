@@ -140,7 +140,6 @@ int NewAddToFullPack_Post(struct entity_state_s *state, int entindex, edict_t *e
 				return 0;
 			}
 		}
-
 	}
 
 	SET_META_RESULT(MRES_IGNORED);

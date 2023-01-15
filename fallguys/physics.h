@@ -19,11 +19,13 @@ const int PhysicShape_MultiSphere = 5;
 
 const int PhysicObject_HasClippingHull = 1;
 const int PhysicObject_HasImpactImpulse = 2;
+const int PhysicObject_Freeze = 4;
 
 const int PhysicWheel_Front = 1;
 const int PhysicWheel_Engine = 2;
 const int PhysicWheel_Brake = 4;
 const int PhysicWheel_Steering = 8;
+const int PhysicWheel_NoSteering = 0x10;
 
 class PhysicShapeParams
 {
@@ -73,16 +75,10 @@ public:
 	Vector connectionPoint;
 	Vector wheelDirection;
 	Vector wheelAxle;
-	float suspensionRestLength;
-	float wheelRadius;
-	int flags;
 	float suspensionStiffness;
-	float wheelsDampingRelaxation;
-	float wheelsDampingCompression;
-	float frictionSlip;
-	float rollInfluence;
-	float maxSuspensionTravelCm;
-	float maxSuspensionForce;
+	float suspensionDamping;
+	int flags;
+	int index;
 };
 
 void PhysicWheelParams_ctor(PhysicWheelParams *pthis);
@@ -272,6 +268,16 @@ public:
 	virtual bool UseEdictSolid() const
 	{
 		return false;
+	}
+	
+	virtual void SetPhysicTransform(const Vector &origin, const Vector &angles)
+	{
+		
+	}
+
+	virtual void SetPhysicFreeze(bool freeze)
+	{
+
 	}
 
 	virtual void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
@@ -556,6 +562,41 @@ protected:
 };
 
 ATTRIBUTE_ALIGNED16(class)
+CPhysicVehicleManager
+{
+public:
+	BT_DECLARE_ALIGNED_ALLOCATOR();
+	CPhysicVehicleManager()
+	{
+
+	}
+
+	virtual ~CPhysicVehicleManager()
+	{
+
+	}
+
+	btHinge2Constraint * GetConstraint(int index)
+	{
+		if (index < 0 || index >(int)m_constraints.size())
+			return NULL;
+
+		return m_constraints[index];
+	}
+
+	void SetConstraint(int index, btHinge2Constraint *pConstraint)
+	{
+		if (index + 1 > (int)m_constraints.size())
+		{
+			m_constraints.resize(index + 1);
+		}
+		m_constraints[index] = pConstraint;
+	}
+
+	std::vector<btHinge2Constraint *> m_constraints;
+};
+
+ATTRIBUTE_ALIGNED16(class)
 CDynamicObject : public CCollisionPhysicObject
 {
 public:
@@ -569,10 +610,17 @@ public:
 		m_ImpactPoint = g_vecZero;
 		m_ImpactDirection = g_vecZero;
 		m_ImpactEntity = NULL;
-		m_vehicle = NULL;
-		m_flEngineForce = 0;
-		m_flBreakForce = 0;
-		m_flSteering = 0;
+
+		m_VehicleManager = NULL;
+	}
+
+	~CDynamicObject()
+	{
+		if (m_VehicleManager)
+		{
+			delete m_VehicleManager;
+			m_VehicleManager = NULL;
+		}
 	}
 
 	virtual bool IsDynamic() const
@@ -584,6 +632,10 @@ public:
 	{
 		return true;
 	}
+
+	virtual void SetPhysicTransform(const Vector &origin, const Vector &angles);
+
+	virtual void SetPhysicFreeze(bool freeze);
 
 	virtual void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
 	{
@@ -615,16 +667,14 @@ public:
 		m_flImpactImpulseThreshold = flThreshold;
 	}
 
-	void SetVehicleAction(PhysicRaycastVehicle *vehicle)
+	void SetVehicleManager(CPhysicVehicleManager *manager)
 	{
-		m_vehicle = vehicle;
+		m_VehicleManager = manager;
 	}
-	
-	void SetVehicleEngineBrakeSteering(float engineForce, float brakeForce, float steering)
+
+	CPhysicVehicleManager *GetVehicleManager() const
 	{
-		m_flEngineForce = engineForce;
-		m_flBreakForce = brakeForce;
-		m_flSteering = steering;
+		return m_VehicleManager;
 	}
 
 protected:
@@ -635,11 +685,7 @@ protected:
 	vec3_t m_ImpactPoint;
 	vec3_t m_ImpactDirection;
 	edict_t *m_ImpactEntity;
-
-	PhysicRaycastVehicle *m_vehicle;
-	float m_flEngineForce;
-	float m_flBreakForce;
-	float m_flSteering;
+	CPhysicVehicleManager *m_VehicleManager;
 };
 
 ATTRIBUTE_ALIGNED16(class)
@@ -737,6 +783,8 @@ public:
 		m_worldTransform.setIdentity();
 		m_worldTransformInitialized = false;
 	}
+
+	void ResetWorldTransform(const Vector &origin, const Vector &angles);
 
 	CPhysicObject* GetPhysicObject() const
 	{
@@ -1076,7 +1124,8 @@ public:
 
 	bool IsEntitySuperPusher(edict_t* ent);
 	bool ApplyImpulse(edict_t* ent, const Vector& impulse, const Vector& origin);
-	bool SetVehicleEngineBrakeSteering(edict_t* ent, float engineForce, float brakeForce, float steering);
+	bool SetVehicleEngine(edict_t* ent, int wheelIndex, bool enableMotor, float angularVelcoity, float maxMotorForce);
+	bool SetVehicleSteering(edict_t* ent, int wheelIndex, float angularTarget, float angularVelocity, float maxMotorForce);
 
 	CDynamicObject* CreateDynamicObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold);
 	CStaticObject* CreateStaticObject(CGameObject *obj, vertexarray_t* vertexarray, indexarray_t* indexarray, bool kinematic);
@@ -1097,6 +1146,9 @@ public:
 	bool SetEntityPartialViewer(edict_t* ent, int partial_viewer_mask);
 	bool SetEntitySuperPusher(edict_t* ent, bool enable);
 	bool SetEntityFollow(edict_t* ent, edict_t* follow, int flags, const Vector &origin_offset, const Vector &angles_offset);
+
+	bool SetPhysicObjectTransform(edict_t* ent, const Vector &origin, const Vector &angles);
+	bool SetPhysicObjectFreeze(edict_t* ent, bool freeze);
 
 	void EntityStartFrame(void);
 	void EntityStartFrame_Post(void);

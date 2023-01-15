@@ -142,7 +142,10 @@ public:
 class CASFunction
 {
 public:
-	virtual void Release(int what) = 0;
+#ifdef _WIN32
+	virtual void Unknown() = 0;
+#endif
+	virtual void Release(void *pthis) = 0;
 
 	void *getReference()
 	{
@@ -252,7 +255,7 @@ void SC_SERVER_DECL NewCASDirectoryList_CreateDirectory(CASDirectoryList* pthis,
 typedef CASFunction *(*fnCASFunction_Create)(aslScriptFunction *aslfn, CASModule *asmodule, bool unk);
 PRIVATE_FUNCTION_EXTERN(CASFunction_Create);
 
-typedef bool (*fnCASRefCountedBaseClass_InternalRelease)(void *ref);
+typedef bool (SC_SERVER_DECL *fnCASRefCountedBaseClass_InternalRelease)(void *ref);
 PRIVATE_FUNCTION_EXTERN(CASRefCountedBaseClass_InternalRelease);
 
 typedef void (SC_SERVER_DECL *fnCScriptAny_Release)(void *anywhat);

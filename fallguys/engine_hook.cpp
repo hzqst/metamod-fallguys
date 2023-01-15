@@ -246,8 +246,8 @@ trace_t SV_MoveEx(vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int type, 
 
 void SV_SetGlobalTrace(trace_t *ptrace)
 {
-	gpGlobals->trace_allsolid = ptrace->allsolid;
-	gpGlobals->trace_startsolid = ptrace->startsolid;
+	gpGlobals->trace_allsolid = (float)ptrace->allsolid;
+	gpGlobals->trace_startsolid = (float)ptrace->startsolid;
 
 	gpGlobals->trace_inopen = (float)ptrace->inopen;
 	gpGlobals->trace_inwater = (float)ptrace->inwater;

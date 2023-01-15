@@ -70,6 +70,16 @@ bool SC_SERVER_DECL CASEntityFuncs__CreatePhysicVehicle(void* pthis, SC_SERVER_D
 	return bResult;
 }
 
+bool SC_SERVER_DECL CASEntityFuncs__SetPhysicObjectTransform(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, const Vector &origin, const Vector &angles)
+{
+	return gPhysicsManager.SetPhysicObjectTransform(ent, origin, angles);
+}
+
+bool SC_SERVER_DECL CASEntityFuncs__SetPhysicObjectFreeze(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, bool freeze)
+{
+	return gPhysicsManager.SetPhysicObjectFreeze(ent, freeze);
+}
+
 bool SC_SERVER_DECL CASEntityFuncs__SetEntityFollow(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, edict_t* follow, int flags, const Vector &origin_offset, const Vector &angles_offset)
 {
 	return gPhysicsManager.SetEntityFollow(ent, follow, flags, origin_offset, angles_offset);
@@ -106,9 +116,14 @@ bool SC_SERVER_DECL CASEntityFuncs__ApplyImpulse(void* pthis, SC_SERVER_DUMMYARG
 	return gPhysicsManager.ApplyImpulse(ent, impulse, origin);
 }
 
-bool SC_SERVER_DECL CASEntityFuncs__SetVehicleEngineBrakeSteering(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, float engineForce, float brakeForce, float steering)
+bool SC_SERVER_DECL CASEntityFuncs__SetVehicleEngine(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int wheelIndex, bool enableMotor, float angularVelcoity, float maxMotorForce)
 {
-	return gPhysicsManager.SetVehicleEngineBrakeSteering(ent, engineForce, brakeForce, steering);
+	return gPhysicsManager.SetVehicleEngine(ent, wheelIndex, enableMotor, angularVelcoity, maxMotorForce);
+}
+
+bool SC_SERVER_DECL CASEntityFuncs__SetVehicleSteering(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int wheelIndex, float angularTarget, float angularVelocity, float maxMotorForce)
+{
+	return gPhysicsManager.SetVehicleSteering(ent, wheelIndex, angularTarget, angularVelocity, maxMotorForce);
 }
 
 void SC_SERVER_DECL CASPlayerMove_GetTextureName(playermove_t *pthis, SC_SERVER_DUMMYARG CString *str)
@@ -233,16 +248,10 @@ void RegisterAngelScriptMethods(void)
 		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "Vector connectionPoint", offsetof(PhysicWheelParams, connectionPoint));
 		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "Vector wheelDirection", offsetof(PhysicWheelParams, wheelDirection));
 		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "Vector wheelAxle", offsetof(PhysicWheelParams, wheelAxle));
-		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "float suspensionRestLength", offsetof(PhysicWheelParams, suspensionRestLength));
-		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "float wheelRadius", offsetof(PhysicWheelParams, wheelRadius));
-		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "int flags", offsetof(PhysicWheelParams, flags));
 		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "float suspensionStiffness", offsetof(PhysicWheelParams, suspensionStiffness));
-		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "float wheelsDampingRelaxation", offsetof(PhysicWheelParams, wheelsDampingRelaxation));
-		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "float wheelsDampingCompression", offsetof(PhysicWheelParams, wheelsDampingCompression));
-		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "float frictionSlip", offsetof(PhysicWheelParams, frictionSlip));
-		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "float rollInfluence", offsetof(PhysicWheelParams, rollInfluence));
-		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "float maxSuspensionTravelCm", offsetof(PhysicWheelParams, maxSuspensionTravelCm));
-		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "float maxSuspensionForce", offsetof(PhysicWheelParams, maxSuspensionForce));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "float suspensionDamping", offsetof(PhysicWheelParams, suspensionDamping));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "int flags", offsetof(PhysicWheelParams, flags));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "int index", offsetof(PhysicWheelParams, index));
 
 		/* PhysicVehicleParams */
 
@@ -413,6 +422,14 @@ void RegisterAngelScriptMethods(void)
 			(void *)CASEntityFuncs__CreatePhysicVehicle, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
+			"Set physic object's transform", "CEntityFuncs", "bool SetPhysicObjectTransform(edict_t@ ent, const Vector& in origin, const Vector& in angles )",
+			(void *)CASEntityFuncs__SetPhysicObjectTransform, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Set physic object's transform", "CEntityFuncs", "bool SetPhysicObjectFreeze(edict_t@ ent, bool freeze )",
+			(void *)CASEntityFuncs__SetPhysicObjectFreeze, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
 			"Enable or disable Super-Pusher for brush entity", "CEntityFuncs", "bool SetEntitySuperPusher(edict_t@ ent, bool enable)",
 			(void *)CASEntityFuncs__SetEntitySuperPusher, 3);
 
@@ -441,7 +458,11 @@ void RegisterAngelScriptMethods(void)
 			(void *)CASEntityFuncs__ApplyImpulse, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Apply impulse on physic object", "CEntityFuncs", "bool SetVehicleEngineBrakeSteering(edict_t@ ent, float engineForce, float brakeForce, float steering)",
-			(void *)CASEntityFuncs__SetVehicleEngineBrakeSteering, 3);
+			"Apply impulse on physic object", "CEntityFuncs", "bool SetVehicleEngine(edict_t@ ent, int wheelIndex, bool enableMotor, float angularVelcoity, float maxMotorForce)",
+			(void *)CASEntityFuncs__SetVehicleEngine, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Apply impulse on physic object", "CEntityFuncs", "bool SetVehicleSteering(edict_t@ ent, int wheelIndex, float angularTarget, float angularVelocity, float maxMotorForce)",
+			(void *)CASEntityFuncs__SetVehicleSteering, 3);
 	});
 }
