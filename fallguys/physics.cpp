@@ -1593,6 +1593,9 @@ bool CPhysicsManager::CreatePlayerBox(edict_t* ent)
 
 bool CPhysicsManager::ApplyImpulse(edict_t* ent, const Vector& impulse, const Vector& origin)
 {
+	if (ent->free)
+		return false;
+
 	auto obj = GetGameObject(ent);
 
 	if (!obj)
@@ -1602,22 +1605,22 @@ bool CPhysicsManager::ApplyImpulse(edict_t* ent, const Vector& impulse, const Ve
 		AddGameObject(obj);
 	}
 
-	//TODO: WTF?
+	for (int i = 0; i < obj->GetNumPhysicObject(); ++i)
+	{
+		auto physicObject = obj->GetPhysicObjectByIndex(i);
+		if (physicObject->IsDynamic())
+		{
+			btVector3 vecImpulse(impulse.x, impulse.y, impulse.z);
 
-	/*auto dynamicobj = (CDynamicObject *)obj;
+			btVector3 vecOrigin(origin.x, origin.y, origin.z);
 
-	btVector3 vecImpulse;
-	impulse.CopyToArray(vecImpulse.m_floats);
-	Vector3GoldSrcToBullet(vecImpulse);
+			auto dynamicObject = (CDynamicObject *)physicObject;
 
-	vec3_t relpos;
-	relpos = ent->v.origin - origin;
+			btVector3 vecRelPos = vecOrigin - dynamicObject->GetRigidBody()->getCenterOfMassPosition();
 
-	btVector3 vecRelPos;
-	relpos.CopyToArray(vecRelPos.m_floats);
-	Vector3GoldSrcToBullet(vecRelPos);
-
-	dynamicobj->GetRigidBody()->applyImpulse(vecImpulse, vecRelPos);*/
+			dynamicObject->GetRigidBody()->applyImpulse(vecImpulse, vecRelPos);
+		}
+	}
 
 	return true;
 }
@@ -1690,6 +1693,9 @@ bool CPhysicsManager::SetVehicleSteering(edict_t* ent, int wheelIndex, float ang
 
 bool CPhysicsManager::SetEntityLevelOfDetail(edict_t* ent, int flags, int body_0, float scale_0, int body_1, float scale_1, float distance_1, int body_2, float scale_2, float distance_2, int body_3, float scale_3, float distance_3)
 {
+	if (ent->free)
+		return false;
+
 	auto obj = GetGameObject(ent);
 
 	if (!obj)
@@ -1704,8 +1710,11 @@ bool CPhysicsManager::SetEntityLevelOfDetail(edict_t* ent, int flags, int body_0
 	return false;
 }
 
-bool CPhysicsManager::SetEntityPartialViewer(edict_t* ent, int partial_viewer_mask)
+bool CPhysicsManager::SetEntitySemiVisible(edict_t* ent, int player_mask)
 {
+	if (ent->free)
+		return false;
+
 	auto obj = GetGameObject(ent);
 
 	if (!obj)
@@ -1715,13 +1724,16 @@ bool CPhysicsManager::SetEntityPartialViewer(edict_t* ent, int partial_viewer_ma
 		AddGameObject(obj);
 	}
 
-	obj->SetPartialViewer(partial_viewer_mask);
+	obj->SetSemiVisibleMask(player_mask);
 
-	return false;
+	return true;
 }
 
 bool CPhysicsManager::SetPhysicObjectTransform(edict_t* ent, const Vector &origin, const Vector &angles)
 {
+	if (ent->free)
+		return false;
+
 	auto obj = GetGameObject(ent);
 
 	if (!obj)
@@ -1747,6 +1759,9 @@ bool CPhysicsManager::SetPhysicObjectTransform(edict_t* ent, const Vector &origi
 
 bool CPhysicsManager::SetPhysicObjectFreeze(edict_t* ent, bool freeze)
 {
+	if (ent->free)
+		return false;
+
 	auto obj = GetGameObject(ent);
 
 	if (!obj)
@@ -1768,6 +1783,9 @@ bool CPhysicsManager::SetPhysicObjectFreeze(edict_t* ent, bool freeze)
 
 bool CPhysicsManager::SetEntityFollow(edict_t* ent, edict_t* follow, int flags, const Vector &origin_offset, const Vector &angles_offset)
 {
+	if (ent->free)
+		return false;
+
 	auto obj = GetGameObject(ent);
 
 	if (!obj)
@@ -1784,6 +1802,9 @@ bool CPhysicsManager::SetEntityFollow(edict_t* ent, edict_t* follow, int flags, 
 
 bool CPhysicsManager::SetEntitySuperPusher(edict_t* ent, bool enable)
 {
+	if (ent->free)
+		return false;
+
 	auto obj = GetGameObject(ent);
 
 	if (!obj)
@@ -1795,7 +1816,7 @@ bool CPhysicsManager::SetEntitySuperPusher(edict_t* ent, bool enable)
 
 	obj->SetSuperPusherEnabled(enable);
 
-	return false;
+	return true;
 }
 
 bool CPhysicsManager::CreatePhysicVehicle(edict_t* ent, PhysicWheelParams **wheelParamArray, size_t numWheelParam, PhysicVehicleParams *vehicleParams)
@@ -2692,24 +2713,23 @@ void CGameObject::ApplyLevelOfDetail(float distance, int *body, int *modelindex,
 
 bool CGameObject::AddToFullPack(struct entity_state_s *state, int entindex, edict_t *ent, edict_t *host, int hostflags, int player)
 {
-	if (GetPartialViewerMask())
+	if (GetSemiVisibleMask() != 0)
 	{
 		int hostindex = g_engfuncs.pfnIndexOfEdict(host);
-		if ((GetPartialViewerMask() & (1 << (hostindex - 1))) == 0)
+
+		if ((GetSemiVisibleMask() & (1 << (hostindex - 1))) == 0)
 		{
 			return false;
 		}
 	}
 
-	if (GetSemiClipMask())
+	if (GetSemiClipMask() != 0)
 	{
 		int hostindex = g_engfuncs.pfnIndexOfEdict(host);
+
 		if ((GetSemiClipMask() & (1 << (hostindex - 1))) != 0)
 		{
 			state->solid = SOLID_NOT;
-			//test
-			//state->renderamt = 128;
-			//state->rendermode = kRenderTransTexture;
 		}
 	}
 

@@ -39,6 +39,30 @@ bool SC_SERVER_DECL CASEntityFuncs__CreateSolidOptimizer(void* pthis, SC_SERVER_
 	return gPhysicsManager.CreateSolidOptimizer(ent, boneindex, halfext, halfext2);
 }
 
+//Legacy call for "Fall Guys in Sven Co-op Season 2", this goes into CreatePhysicObject in Season 3
+bool SC_SERVER_DECL CASEntityFuncs__CreatePhysicBox(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, float mass, float linearfriction, float rollingfriction, float restitution, float ccdradius, float ccdthreshold, bool hasclippinghull)
+{
+	PhysicShapeParams shapeParams;
+	shapeParams.type = PhysicShape_Box;
+	shapeParams.size = Vector((ent->v.maxs.x - ent->v.mins.x) * 0.5f, (ent->v.maxs.y - ent->v.mins.y) * 0.5f, (ent->v.maxs.z - ent->v.mins.z) * 0.5f);
+
+	PhysicObjectParams objectParams;
+	objectParams.mass = mass;
+	objectParams.linearfriction = linearfriction;
+	objectParams.rollingfriction = rollingfriction;
+	objectParams.restitution = restitution;
+	objectParams.ccdradius = ccdradius;
+	objectParams.ccdthreshold = ccdthreshold;
+
+	if (hasclippinghull)
+	{
+		objectParams.flags = PhysicObject_HasClippingHull;
+		objectParams.clippinghull_size = Vector((ent->v.maxs.x - ent->v.mins.x) * 0.5f, (ent->v.maxs.y - ent->v.mins.y) * 0.5f, (ent->v.maxs.z - ent->v.mins.z) * 0.5f);
+	}
+
+	return gPhysicsManager.CreatePhysicObject(ent, &shapeParams, &objectParams);
+}
+
 bool SC_SERVER_DECL CASEntityFuncs__CreatePhysicObject(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, PhysicShapeParams *shapeParams, PhysicObjectParams *objectParams)
 {
 	return gPhysicsManager.CreatePhysicObject(ent, shapeParams, objectParams);
@@ -96,9 +120,9 @@ bool SC_SERVER_DECL CASEntityFuncs__SetEntityLevelOfDetail(void* pthis, SC_SERVE
 	return gPhysicsManager.SetEntityLevelOfDetail(ent, flags, body_0, scale_0, body_1, scale_1, distance_1, body_2, scale_2, distance_2, body_3, scale_3, distance_3);
 }
 
-bool SC_SERVER_DECL CASEntityFuncs__SetEntityPartialViewer(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int partial_viewer_mask)
+bool SC_SERVER_DECL CASEntityFuncs__SetEntitySemiVisible(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int player_mask)
 {
-	return gPhysicsManager.SetEntityPartialViewer(ent, partial_viewer_mask);
+	return gPhysicsManager.SetEntitySemiVisible(ent, player_mask);
 }
 
 edict_t *SC_SERVER_DECL CASEntityFuncs__GetCurrentSuperPusher(void* pthis, SC_SERVER_DUMMYARG Vector* vecPushDirection)
@@ -390,11 +414,11 @@ void RegisterAngelScriptMethods(void)
 		ASEXT_RegisterObjectProperty(pASDoc, "", "entity_state_t", "Vector vuser4", offsetof(entity_state_t, vuser4));
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Disable stepsound temporarily", "CEngineFuncs", "void EnableCustomStepSound(bool bEnabled)",
+			"Disable stepsound temporarily until level changes", "CEngineFuncs", "void EnableCustomStepSound(bool bEnabled)",
 			(void *)CASEngineFuncs__EnableCustomStepSound, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Set simulation rate of bullet physics engine world", "CEngineFuncs", "void SetPhysicSimRate(float rate)",
+			"Set simulation rate of Bullet Engine world", "CEngineFuncs", "void SetPhysicSimRate(float rate)",
 			(void *)CASEngineFuncs__SetPhysicSimRate, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
@@ -410,6 +434,10 @@ void RegisterAngelScriptMethods(void)
 			(void *)CASEntityFuncs__CreateSolidOptimizer, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
+			"Create physic object for entity", "CEntityFuncs", "bool CreatePhysicBox(edict_t@ ent, float mass, float linearfriction, float rollingfriction, float restitution, float ccdradius, float ccdthreshold, bool hasclippinghull )",
+			(void *)CASEntityFuncs__CreatePhysicBox, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
 			"Create physic object for entity", "CEntityFuncs", "bool CreatePhysicObject(edict_t@ ent, const PhysicShapeParams& in shapeParams, const PhysicObjectParams& in objectParams )",
 			(void *)CASEntityFuncs__CreatePhysicObject, 3);
 
@@ -418,7 +446,7 @@ void RegisterAngelScriptMethods(void)
 			(void *)CASEntityFuncs__CreateCompoundPhysicObject, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Create physic object for entity", "CEntityFuncs", "bool CreatePhysicVehicle(edict_t@ ent, const array<PhysicWheelParams>& in wheels, const PhysicVehicleParams& in vehicleParams )",
+			"Enable vehicle for physic entity", "CEntityFuncs", "bool CreatePhysicVehicle(edict_t@ ent, const array<PhysicWheelParams>& in wheels, const PhysicVehicleParams& in vehicleParams )",
 			(void *)CASEntityFuncs__CreatePhysicVehicle, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
@@ -426,7 +454,7 @@ void RegisterAngelScriptMethods(void)
 			(void *)CASEntityFuncs__SetPhysicObjectTransform, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Set physic object's transform", "CEntityFuncs", "bool SetPhysicObjectFreeze(edict_t@ ent, bool freeze )",
+			"Set physic object's activation state to freeze or unfreeze", "CEntityFuncs", "bool SetPhysicObjectFreeze(edict_t@ ent, bool freeze )",
 			(void *)CASEntityFuncs__SetPhysicObjectFreeze, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
@@ -438,19 +466,23 @@ void RegisterAngelScriptMethods(void)
 			(void *)CASEntityFuncs__SetEntityLevelOfDetail, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Create Level-of-Detail object for entity", "CEntityFuncs", "bool SetEntityPartialViewer(edict_t@ ent, int partial_viewer_mask)",
-			(void *)CASEntityFuncs__SetEntityPartialViewer, 3);
+			"Enable Semi-Visible for entity", "CEntityFuncs", "bool SetEntityPartialViewer(edict_t@ ent, int player_mask)",
+			(void *)CASEntityFuncs__SetEntitySemiVisible, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Create Level-of-Detail object for entity", "CEntityFuncs", "bool SetEntityFollow(edict_t@ ent, edict_t@ follow, int flags, const Vector& in origin_offset, const Vector& in angles_offset )",
+			"Enable Semi-Visible for entity", "CEntityFuncs", "bool SetEntitySemiVisible(edict_t@ ent, int player_mask)",
+			(void *)CASEntityFuncs__SetEntitySemiVisible, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Enable follow for the entity", "CEntityFuncs", "bool SetEntityFollow(edict_t@ ent, edict_t@ follow, int flags, const Vector& in origin_offset, const Vector& in angles_offset )",
 			(void *)CASEntityFuncs__SetEntityFollow, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Get current working Super-Pusher, return valid edict only in pfnTouch callback", "CEntityFuncs", "edict_t@ GetCurrentSuperPusher(Vector& out vecPushDirection)",
+			"Get current working Super-Pusher entity and push direction, return valid edict only in pfnTouch callback", "CEntityFuncs", "edict_t@ GetCurrentSuperPusher(Vector& out vecPushDirection)",
 			(void *)CASEntityFuncs__GetCurrentSuperPusher, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Get current impact entity in Bullet Engine, return valid edict only in pfnTouch callback", "CEntityFuncs", "edict_t@ GetCurrentPhysicImpactEntity(Vector& out vecImpactPoint, Vector& out vecImpactDirection, float& out flImpactImpulse)",
+			"Get current impact information from Bullet Engine, return valid edict only in pfnTouch callback", "CEntityFuncs", "edict_t@ GetCurrentPhysicImpactEntity(Vector& out vecImpactPoint, Vector& out vecImpactDirection, float& out flImpactImpulse)",
 			(void *)CASEntityFuncs__GetCurrentPhysicImpactEntity, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
@@ -458,11 +490,11 @@ void RegisterAngelScriptMethods(void)
 			(void *)CASEntityFuncs__ApplyImpulse, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Apply impulse on physic object", "CEntityFuncs", "bool SetVehicleEngine(edict_t@ ent, int wheelIndex, bool enableMotor, float angularVelcoity, float maxMotorForce)",
+			"Set engine wheel's motor and servo for the vehicle", "CEntityFuncs", "bool SetVehicleEngine(edict_t@ ent, int wheelIndex, bool enableMotor, float angularVelcoity, float maxMotorForce)",
 			(void *)CASEntityFuncs__SetVehicleEngine, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Apply impulse on physic object", "CEntityFuncs", "bool SetVehicleSteering(edict_t@ ent, int wheelIndex, float angularTarget, float angularVelocity, float maxMotorForce)",
+			"Set steering wheel's motor and servo for the vehicle", "CEntityFuncs", "bool SetVehicleSteering(edict_t@ ent, int wheelIndex, float angularTarget, float angularVelocity, float maxMotorForce)",
 			(void *)CASEntityFuncs__SetVehicleSteering, 3);
 	});
 }

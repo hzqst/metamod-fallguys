@@ -841,8 +841,8 @@ public:
 		m_lod_distance1 = 0;
 		m_lod_distance2 = 0;
 		m_lod_distance3 = 0;
-		m_partial_viewer_mask = 0;
 		m_super_pusher = false;
+		m_semi_vis_mask = 0;
 		m_semi_clip_mask = 0;
 		m_original_solid = 0;
 		m_follow_flags = 0;
@@ -994,24 +994,29 @@ public:
 		m_lod_distance3 = distance_3;
 	}
 
-	void SetPartialViewer(int viewer_mask)
+	void SetSemiVisibleMask(int player_mask)
 	{
-		m_partial_viewer_mask = viewer_mask;
+		m_semi_vis_mask = player_mask;
 	}
 
-	int GetPartialViewerMask() const
+	void RemoveSemiVisibleMask(int player_mask)
 	{
-		return m_partial_viewer_mask;
+		m_semi_vis_mask &= ~player_mask;
 	}
 
-	void SetSemiClipMask(int clip_mask)
+	int GetSemiVisibleMask() const
 	{
-		m_semi_clip_mask = clip_mask;
+		return m_semi_vis_mask;
 	}
 
-	void RemoveSemiClipMask(int clip_mask)
+	void SetSemiClipMask(int player_mask)
 	{
-		m_semi_clip_mask &= ~clip_mask;
+		m_semi_clip_mask = player_mask;
+	}
+
+	void RemoveSemiClipMask(int player_mask)
+	{
+		m_semi_clip_mask &= ~player_mask;
 	}
 
 	int GetSemiClipMask() const
@@ -1074,7 +1079,7 @@ private:
 
 	bool m_super_pusher;
 
-	int m_partial_viewer_mask;
+	int m_semi_vis_mask;
 
 	int m_semi_clip_mask;
 
@@ -1143,7 +1148,7 @@ public:
 	bool CreateSolidOptimizer(edict_t* ent, int boneindex, const Vector &mins, const Vector &maxs);
 	bool CreatePhysicVehicle(edict_t* ent, PhysicWheelParams **wheelParamArray, size_t numWheelParam, PhysicVehicleParams *vehicleParams);
 	bool SetEntityLevelOfDetail(edict_t* ent, int flags, int body_0, float scale_0, int body_1, float scale_1, float distance_1, int body_2, float scale_2, float distance_2, int body_3, float scale_3, float distance_3);
-	bool SetEntityPartialViewer(edict_t* ent, int partial_viewer_mask);
+	bool SetEntitySemiVisible(edict_t* ent, int player_mask);
 	bool SetEntitySuperPusher(edict_t* ent, bool enable);
 	bool SetEntityFollow(edict_t* ent, edict_t* follow, int flags, const Vector &origin_offset, const Vector &angles_offset);
 
