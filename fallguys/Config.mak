@@ -1,6 +1,7 @@
 MODNAME = fallguys
 SRCFILES = dllapi.cpp engine_api.cpp engine_hook.cpp fallguys.cpp h_export.cpp meta_api.cpp physics.cpp server_hook.cpp
 INCLUDEDIRS+=-I$(SDKSRC)/../bullet3/src
+INCLUDEDIRS+=-I$(SDKSRC)/../asext/include
 EXTRA_CFLAGS+=-DPLATFORM_POSIX
 EXTRA_LINK+=-L$(SDKSRC)/../bullet3/build/src/Bullet3Dynamics
 EXTRA_LINK+=-L$(SDKSRC)/../bullet3/build/src/Bullet3Collision
