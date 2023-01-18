@@ -44,4 +44,4 @@ jobs:
         with:
           name: metamod-fallguys-${{ github.ref }}
           files: |
-            metamod-fallguys-linux-i386.zip
+            metamod-fallguys-linux-ubuntu-i386.zip

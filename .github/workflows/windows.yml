@@ -41,9 +41,9 @@ jobs:
         run: build-bullet3.bat
         shell: cmd
 
-      - name: Build fallguys
+      - name: Build metamod
         working-directory: ${{env.GITHUB_WORKSPACE}}
-        run: build-fallguys.bat
+        run: build-metamod.bat
         shell: cmd
 
       - name: Remove placeholder
