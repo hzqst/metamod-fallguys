@@ -3,10 +3,10 @@ name: windows
 on:
   push:
     tags:
-      - "s*v*"
+      - "v*"
   pull_request:
     tags:
-      - "s*v*"
+      - "v*"
 
 env:
   # Path to the solution file relative to the root of the project.

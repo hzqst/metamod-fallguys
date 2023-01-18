@@ -3,10 +3,10 @@ name: ubuntu
 on:
   push:
     tags:
-      - "s*v*"
+      - "v*"
   pull_request:
     tags:
-      - "s*v*"
+      - "v*"
 
 jobs:
   build:
