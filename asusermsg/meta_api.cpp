@@ -46,7 +46,7 @@
 
 #include "enginedef.h"
 #include "serverdef.h"
-#include "asqcvar.h"
+#include "asusermsg.h"
 
 IMPORT_ASEXT_API_DEFINE();
 
@@ -58,7 +58,7 @@ static META_FUNCTIONS gMetaFunctionTable = {
 	NULL,			// pfnGetEntityAPI2_Post		META; called after game DLL
 	GetNewDLLFunctions,			// pfnGetNewDLLFunctions		HL SDK2; called before game DLL
 	NULL,			// pfnGetNewDLLFunctions_Post	META; called after game DLL
-	NULL,			// pfnGetEngineFunctions	META; called before HL engine
+	GetEngineFunctions,			// pfnGetEngineFunctions	META; called before HL engine
 	NULL,			// pfnGetEngineFunctions_Post	META; called after HL engine
 	NULL,			// pfnGetStudioBlendingInterface 2022/07/02 Added by hzqst
 	NULL,			// pfnGetStudioBlendingInterface_Post 2022/07/02 Added by hzqst
@@ -67,12 +67,12 @@ static META_FUNCTIONS gMetaFunctionTable = {
 // Description of plugin
 plugin_info_t Plugin_info = {
 	META_INTERFACE_VERSION,	// ifvers
-	"AngelScriptQueryCvar",	// name
+	"AngelScriptUserMsg",	// name
 	"1.0",	// version
 	"2023",	// date
 	"hzqst",	// author
 	"https://github.com/hzqst/metamod-fallguys",	// url
-	"ASQCVAR",	// logtag, all caps please
+	"ASUSERMSG",	// logtag, all caps please
 	PT_ANYTIME,	// (when) loadable
 	PT_STARTUP,	// (when) unloadable
 };

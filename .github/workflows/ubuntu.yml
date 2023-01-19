@@ -34,7 +34,7 @@ jobs:
         uses: thedoctor0/zip-release@main
         with:
           type: 'zip'
-          filename: 'metamod-fallguys-linux-i386.zip'
+          filename: 'metamod-fallguys-ubuntu-i386.zip'
           path: 'build'
           exclusions: '.placeholder'
           
@@ -44,4 +44,4 @@ jobs:
         with:
           name: metamod-fallguys-${{ github.ref }}
           files: |
-            metamod-fallguys-linux-ubuntu-i386.zip
+            metamod-fallguys-ubuntu-i386.zip

@@ -24,6 +24,10 @@ The metamod core is based on [metamod-p](https://github.com/Bots-United/metamod-
 
 [Documentation](README_ASQCVAR.md)
 
+### asusermsg.dll (asusermsg.so)
+
+[Documentation](README_ASUSERMSG.md)
+
 # Installation
 
 1. Download from [GitHub Release](https://github.com/hzqst/metamod-fallguys/releases), then unzip it.

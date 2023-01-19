@@ -76,7 +76,7 @@ typedef void(*fnASEXT_CallHook)(void *hook, int dummy, ...);
 
 C_DLLEXPORT fnASEXT_CallHook ASEXT_CallHook;
 
-typedef void(*fnASEXT_CallCASBaseCallable)(void *callable, int dummy, ...);
+typedef int(*fnASEXT_CallCASBaseCallable)(void *callable, int dummy, ...);
 
 C_DLLEXPORT fnASEXT_CallCASBaseCallable ASEXT_CallCASBaseCallable;
 

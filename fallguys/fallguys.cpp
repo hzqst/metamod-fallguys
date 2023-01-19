@@ -101,7 +101,7 @@ void EnableCustomStepSound(bool bEnabled)
 
 void RegisterAngelScriptHooks()
 {
-	g_AddToFullPackHook = ASEXT_RegisterHook("Post call of gEntityInterface.pfnAddToFullPack, only visible entity goes here", StopMode_CALL_ALL, 2, ASFlag_MapScript | ASFlag_Plugin, "Player", "PlayerAddToFullPack", "entity_state_t@ state, int entindex, edict_t @ent, edict_t@ host, int hostflags, int player, uint& out");
+	g_AddToFullPackHook = ASEXT_RegisterHook("Post call of gEntityInterface.pfnAddToFullPack, only visible entity goes here", StopMode_CALL_ALL, 2, ASFlag_MapScript | ASFlag_Plugin, "Player", "PlayerAddToFullPack", "entity_state_t@ state, int entindex, edict_t @ent, edict_t@ host, int hostflags, int player, uint& out result");
 
 	g_PlayerPostThinkPostHook = ASEXT_RegisterHook("Post call of gEntityInterface.pfnPlayerPostThink", StopMode_CALL_ALL, 2, ASFlag_MapScript | ASFlag_Plugin, "Player", "PlayerPostThinkPost", "CBasePlayer@ pPlayer");
 

@@ -95,10 +95,42 @@ public:
 
 };
 
+class asContext
+{
+public:
+	virtual void unk0() = 0;
+	virtual void unk1() = 0;
+	virtual void unk2() = 0;
+	virtual void unk3() = 0;
+	virtual void unk4() = 0;
+	virtual void unk5() = 0;
+	virtual void unk6() = 0;
+	virtual void unk7() = 0;
+	virtual void unk8() = 0;
+	virtual void unk9() = 0;
+	virtual void unk10() = 0;
+	virtual void unk11() = 0;
+	virtual void unk12() = 0;
+	virtual void unk13() = 0;
+	virtual void unk14() = 0;
+	virtual void unk15() = 0;
+	virtual void unk16() = 0;
+	virtual void unk17() = 0;
+	virtual void unk18() = 0;
+	virtual void unk19() = 0;
+	virtual void unk20() = 0;
+	virtual void unk21() = 0;
+	virtual void unk22() = 0;
+	virtual void unk23() = 0;
+	virtual int unk24() = 0;
+	virtual int unk25() = 0;
+	virtual int unk26() = 0;
+};
+
 class aslScriptFunction
 {
 public:
-
+	
 };
 
 class CASFunction
@@ -118,7 +150,25 @@ public:
 		return &ref;
 	}
 
+	aslScriptFunction *getScriptFunction()
+	{
+		return aslfn;
+	}
+
+	CASModule *getModule()
+	{
+		return asmodule;
+	}
+
+	asContext *getContext()
+	{
+		return ascontext;
+	}
+
 	int ref;
+	aslScriptFunction *aslfn;
+	CASModule *asmodule;
+	asContext *ascontext;
 };
 
 #define ASEXT_DereferenceCASFunction(callback)	if (ASEXT_CASRefCountedBaseClass_InternalRelease(callback->getReference()))\
@@ -216,7 +266,7 @@ typedef void(*fnASEXT_CallHook)(void *hook, int unk, ...);
 
 extern fnASEXT_CallHook *ASEXT_CallHook;
 
-typedef void(*fnASEXT_CallCASBaseCallable)(void *callable, int dummy, ...);
+typedef int(*fnASEXT_CallCASBaseCallable)(void *callable, int dummy, ...);
 
 extern fnASEXT_CallCASBaseCallable *ASEXT_CallCASBaseCallable;
 
