@@ -241,23 +241,13 @@ void RegisterAngelScriptMethods(void)
 
 		/* PhysicPlayerConfigs */
 
-		ASEXT_RegisterObjectType(pASDoc, "Physic player creation configs", "PhysicPlayerConfigs", sizeof(PhysicPlayerConfigs), asOBJ_VALUE);
-
-		ASEXT_RegisterObjectBehaviour(pASDoc, "Default constructor", "PhysicPlayerConfigs", ObjectBehaviour_Constructor, "void PhysicPlayerConfigs()", PhysicPlayerConfigs_ctor, 4);
-		ASEXT_RegisterObjectBehaviour(pASDoc, "Copy constructor", "PhysicPlayerConfigs", ObjectBehaviour_Constructor, "void PhysicPlayerConfigs(const PhysicPlayerConfigs& in other)", PhysicPlayerConfigs_copyctor, 4);
-		ASEXT_RegisterObjectBehaviour(pASDoc, "Destructor", "PhysicPlayerConfigs", ObjectBehaviour_Destructor, "void DestructPhysicPlayerConfigs()", PhysicPlayerConfigs_dtor, 4);
-		ASEXT_RegisterObjectMethod(pASDoc, "operator=", "PhysicPlayerConfigs", "PhysicPlayerConfigs& opAssign(const PhysicPlayerConfigs& in other)", PhysicPlayerConfigs_opassign, 3);
+		REGISTER_PLAIN_VALUE_OBJECT(PhysicPlayerConfigs);
 
 		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicPlayerConfigs", "float mass", offsetof(PhysicPlayerConfigs, mass));
 
 		/* PhysicShapeParams */
 
-		ASEXT_RegisterObjectType(pASDoc, "Physic shape creation parameters", "PhysicShapeParams", sizeof(PhysicShapeParams), asOBJ_VALUE);
-
-		ASEXT_RegisterObjectBehaviour(pASDoc, "Default constructor", "PhysicShapeParams", ObjectBehaviour_Constructor, "void PhysicShapeParams()",										PhysicShapeParams_ctor, 4);
-		ASEXT_RegisterObjectBehaviour(pASDoc, "Copy constructor", "PhysicShapeParams", ObjectBehaviour_Constructor, "void PhysicShapeParams(const PhysicShapeParams& in other)",		PhysicShapeParams_copyctor, 4);
-		ASEXT_RegisterObjectBehaviour(pASDoc, "Destructor", "PhysicShapeParams", ObjectBehaviour_Destructor, "void DestructPhysicShapeParams()",										PhysicShapeParams_dtor, 4);
-		ASEXT_RegisterObjectMethod(pASDoc, "operator=", "PhysicShapeParams", "PhysicShapeParams& opAssign(const PhysicShapeParams& in other)", PhysicShapeParams_opassign, 3);
+		REGISTER_PLAIN_VALUE_OBJECT(PhysicShapeParams);
 
 		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicShapeParams", "int type", offsetof(PhysicShapeParams, type));
 		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicShapeParams", "int direction", offsetof(PhysicShapeParams, direction));
@@ -268,12 +258,7 @@ void RegisterAngelScriptMethods(void)
 
 		/* PhysicObjectParams */
 
-		ASEXT_RegisterObjectType(pASDoc, "Physic object creation parameters", "PhysicObjectParams", sizeof(PhysicObjectParams), asOBJ_VALUE);
-
-		ASEXT_RegisterObjectBehaviour(pASDoc, "Default constructor", "PhysicObjectParams", ObjectBehaviour_Constructor, "void PhysicObjectParams()",									PhysicObjectParams_ctor, 4);
-		ASEXT_RegisterObjectBehaviour(pASDoc, "Copy constructor", "PhysicObjectParams", ObjectBehaviour_Constructor, "void PhysicObjectParams(const PhysicObjectParams& in other)",		PhysicObjectParams_copyctor, 4);
-		ASEXT_RegisterObjectBehaviour(pASDoc, "Destructor", "PhysicObjectParams", ObjectBehaviour_Destructor, "void DestructPhysicObjectParams()",										PhysicObjectParams_dtor, 4);
-		ASEXT_RegisterObjectMethod(pASDoc, "operator=", "PhysicObjectParams", "PhysicObjectParams& opAssign(const PhysicObjectParams& in other)", PhysicObjectParams_opassign, 3);
+		REGISTER_PLAIN_VALUE_OBJECT(PhysicObjectParams);
 
 		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicObjectParams", "float mass", offsetof(PhysicObjectParams, mass));
 		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicObjectParams", "float linearfriction", offsetof(PhysicObjectParams, linearfriction));
@@ -287,12 +272,7 @@ void RegisterAngelScriptMethods(void)
 
 		/* PhysicWheelParams */
 
-		ASEXT_RegisterObjectType(pASDoc, "Physic wheel creation parameters", "PhysicWheelParams", sizeof(PhysicWheelParams), asOBJ_VALUE);
-
-		ASEXT_RegisterObjectBehaviour(pASDoc, "Default constructor", "PhysicWheelParams", ObjectBehaviour_Constructor, "void PhysicWheelParams()", PhysicWheelParams_ctor, 4);
-		ASEXT_RegisterObjectBehaviour(pASDoc, "Copy constructor", "PhysicWheelParams", ObjectBehaviour_Constructor, "void PhysicWheelParams(const PhysicWheelParams& in other)", PhysicWheelParams_copyctor, 4);
-		ASEXT_RegisterObjectBehaviour(pASDoc, "Destructor", "PhysicWheelParams", ObjectBehaviour_Destructor, "void DestructPhysicWheelParams()", PhysicWheelParams_dtor, 4);
-		ASEXT_RegisterObjectMethod(pASDoc, "operator=", "PhysicWheelParams", "PhysicWheelParams& opAssign(const PhysicWheelParams& in other)", PhysicWheelParams_opassign, 3);
+		REGISTER_PLAIN_VALUE_OBJECT(PhysicWheelParams);
 
 		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "edict_t@ ent", offsetof(PhysicWheelParams, ent));
 		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "Vector connectionPoint", offsetof(PhysicWheelParams, connectionPoint));
@@ -305,12 +285,7 @@ void RegisterAngelScriptMethods(void)
 
 		/* PhysicVehicleParams */
 
-		ASEXT_RegisterObjectType(pASDoc, "Physic vehicle creation parameters", "PhysicVehicleParams", sizeof(PhysicVehicleParams), asOBJ_VALUE);
-
-		ASEXT_RegisterObjectBehaviour(pASDoc, "Default constructor", "PhysicVehicleParams", ObjectBehaviour_Constructor, "void PhysicVehicleParams()", PhysicVehicleParams_ctor, 4);
-		ASEXT_RegisterObjectBehaviour(pASDoc, "Copy constructor", "PhysicVehicleParams", ObjectBehaviour_Constructor, "void PhysicVehicleParams(const PhysicVehicleParams& in other)", PhysicVehicleParams_copyctor, 4);
-		ASEXT_RegisterObjectBehaviour(pASDoc, "Destructor", "PhysicVehicleParams", ObjectBehaviour_Destructor, "void DestructPhysicVehicleParams()", PhysicVehicleParams_dtor, 4);
-		ASEXT_RegisterObjectMethod(pASDoc, "operator=", "PhysicVehicleParams", "PhysicVehicleParams& opAssign(const PhysicVehicleParams& in other)", PhysicVehicleParams_opassign, 3);
+		REGISTER_PLAIN_VALUE_OBJECT(PhysicVehicleParams);
 
 		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicVehicleParams", "float suspensionStiffness", offsetof(PhysicVehicleParams, suspensionStiffness));
 		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicVehicleParams", "float suspensionCompression", offsetof(PhysicVehicleParams, suspensionCompression));

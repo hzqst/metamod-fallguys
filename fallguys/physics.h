@@ -112,30 +112,15 @@ public:
 	int flags;
 };
 
-void PhysicPlayerConfigs_ctor(PhysicPlayerConfigs *pthis);
-void PhysicPlayerConfigs_copyctor(PhysicPlayerConfigs *a1, PhysicPlayerConfigs *a2);
-void PhysicPlayerConfigs_dtor(PhysicPlayerConfigs *pthis);
-PhysicPlayerConfigs * SC_SERVER_DECL PhysicPlayerConfigs_opassign(PhysicPlayerConfigs *a1, SC_SERVER_DUMMYARG PhysicPlayerConfigs *a2);
+EXTERN_PLAIN_VALUE_OBJECT(PhysicPlayerConfigs);
 
-void PhysicShapeParams_ctor(PhysicShapeParams *pthis);
-void PhysicShapeParams_copyctor(PhysicShapeParams *a1, PhysicShapeParams *a2);
-void PhysicShapeParams_dtor(PhysicShapeParams *pthis);
-PhysicShapeParams * SC_SERVER_DECL PhysicShapeParams_opassign(PhysicShapeParams *a1, SC_SERVER_DUMMYARG PhysicShapeParams *a2);
+EXTERN_PLAIN_VALUE_OBJECT(PhysicShapeParams);
 
-void PhysicObjectParams_ctor(PhysicObjectParams *pthis);
-void PhysicObjectParams_copyctor(PhysicObjectParams *a1, PhysicObjectParams *a2);
-void PhysicObjectParams_dtor(PhysicObjectParams *pthis);
-PhysicObjectParams * SC_SERVER_DECL PhysicObjectParams_opassign(PhysicObjectParams *a1, SC_SERVER_DUMMYARG PhysicObjectParams *a2);
+EXTERN_PLAIN_VALUE_OBJECT(PhysicObjectParams);
 
-void PhysicWheelParams_ctor(PhysicWheelParams *pthis);
-void PhysicWheelParams_copyctor(PhysicWheelParams *a1, PhysicWheelParams *a2);
-void PhysicWheelParams_dtor(PhysicWheelParams *pthis);
-PhysicWheelParams * SC_SERVER_DECL PhysicWheelParams_opassign(PhysicWheelParams *a1, SC_SERVER_DUMMYARG PhysicWheelParams *a2);
+EXTERN_PLAIN_VALUE_OBJECT(PhysicWheelParams);
 
-void PhysicVehicleParams_ctor(PhysicVehicleParams *pthis);
-void PhysicVehicleParams_copyctor(PhysicVehicleParams *a1, PhysicVehicleParams *a2);
-void PhysicVehicleParams_dtor(PhysicVehicleParams *pthis);
-PhysicVehicleParams * SC_SERVER_DECL PhysicVehicleParams_opassign(PhysicVehicleParams *a1, SC_SERVER_DUMMYARG PhysicVehicleParams *a2);
+EXTERN_PLAIN_VALUE_OBJECT(PhysicVehicleParams);
 
 class PhysicWheelClientInfo
 {
