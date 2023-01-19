@@ -367,6 +367,7 @@ IMPORT_FUNCTION_DLSYM(asext, ASEXT_CreateCASFunction);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CASRefCountedBaseClass_InternalRelease);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptAny_Release);
 
+
 #define IMPORT_ASEXT_API_DEFINE() IMPORT_FUNCTION_DEFINE(ASEXT_RegisterDocInitCallback);\
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterDirInitCallback);\
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectMethod);\
