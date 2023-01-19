@@ -49,8 +49,3 @@ void InstallEngineHooks();
 void UninstallEngineHooks();
 void RegisterAngelScriptHooks();
 void RegisterAngelScriptMethods(void);
-
-#define LOD_BODY 1
-#define LOD_MODELINDEX 2
-#define LOD_SCALE 4
-#define LOD_SCALE_INTERP 8

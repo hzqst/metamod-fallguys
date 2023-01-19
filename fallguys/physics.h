@@ -27,6 +27,33 @@ const int PhysicWheel_Brake = 4;
 const int PhysicWheel_Steering = 8;
 const int PhysicWheel_NoSteering = 0x10;
 
+const int FollowEnt_CopyOriginX = 1;
+const int FollowEnt_CopyOriginY = 2;
+const int FollowEnt_CopyOriginZ = 4;
+const int FollowEnt_CopyAnglesP = 8;
+const int FollowEnt_CopyAnglesY = 0x10;
+const int FollowEnt_CopyAnglesR = 0x20;
+const int FollowEnt_CopyOrigin = (FollowEnt_CopyOriginX | FollowEnt_CopyOriginY | FollowEnt_CopyOriginZ);
+const int FollowEnt_CopyAngles = (FollowEnt_CopyAnglesP | FollowEnt_CopyAnglesY | FollowEnt_CopyAnglesR);
+const int FollowEnt_CopyNoDraw = 0x40;
+const int FollowEnt_CopyRenderMode = 0x80;
+const int FollowEnt_CopyRenderAmt = 0x100;
+const int FollowEnt_ApplyLinearVelocity = 0x200;
+const int FollowEnt_ApplyAngularVelocity = 0x400;
+
+const int LOD_BODY = 1;
+const int LOD_MODELINDEX = 2;
+const int LOD_SCALE = 4;
+const int LOD_SCALE_INTERP = 8;
+
+class PhysicPlayerConfigs
+{
+public:
+	PhysicPlayerConfigs();
+
+	float mass;
+};
+
 class PhysicShapeParams
 {
 public:
@@ -39,11 +66,6 @@ public:
 	Vector size;
 	CScriptArray *multispheres;
 };
-
-void PhysicShapeParams_ctor(PhysicShapeParams *pthis);
-void PhysicShapeParams_copyctor(PhysicShapeParams *a1, PhysicShapeParams *a2);
-void PhysicShapeParams_dtor(PhysicShapeParams *pthis);
-PhysicShapeParams * SC_SERVER_DECL PhysicShapeParams_opassign(PhysicShapeParams *a1, SC_SERVER_DUMMYARG PhysicShapeParams *a2);
 
 class PhysicObjectParams
 {
@@ -61,11 +83,6 @@ public:
 	Vector clippinghull_size;
 };
 
-void PhysicObjectParams_ctor(PhysicObjectParams *pthis);
-void PhysicObjectParams_copyctor(PhysicObjectParams *a1, PhysicObjectParams *a2);
-void PhysicObjectParams_dtor(PhysicObjectParams *pthis);
-PhysicObjectParams * SC_SERVER_DECL PhysicObjectParams_opassign(PhysicObjectParams *a1, SC_SERVER_DUMMYARG PhysicObjectParams *a2);
-
 class PhysicWheelParams
 {
 public:
@@ -81,11 +98,6 @@ public:
 	int index;
 };
 
-void PhysicWheelParams_ctor(PhysicWheelParams *pthis);
-void PhysicWheelParams_copyctor(PhysicWheelParams *a1, PhysicWheelParams *a2);
-void PhysicWheelParams_dtor(PhysicWheelParams *pthis);
-PhysicWheelParams * SC_SERVER_DECL PhysicWheelParams_opassign(PhysicWheelParams *a1, SC_SERVER_DUMMYARG PhysicWheelParams *a2);
-
 class PhysicVehicleParams
 {
 public:
@@ -100,11 +112,30 @@ public:
 	int flags;
 };
 
+void PhysicPlayerConfigs_ctor(PhysicPlayerConfigs *pthis);
+void PhysicPlayerConfigs_copyctor(PhysicPlayerConfigs *a1, PhysicPlayerConfigs *a2);
+void PhysicPlayerConfigs_dtor(PhysicPlayerConfigs *pthis);
+PhysicPlayerConfigs * SC_SERVER_DECL PhysicPlayerConfigs_opassign(PhysicPlayerConfigs *a1, SC_SERVER_DUMMYARG PhysicPlayerConfigs *a2);
+
+void PhysicShapeParams_ctor(PhysicShapeParams *pthis);
+void PhysicShapeParams_copyctor(PhysicShapeParams *a1, PhysicShapeParams *a2);
+void PhysicShapeParams_dtor(PhysicShapeParams *pthis);
+PhysicShapeParams * SC_SERVER_DECL PhysicShapeParams_opassign(PhysicShapeParams *a1, SC_SERVER_DUMMYARG PhysicShapeParams *a2);
+
+void PhysicObjectParams_ctor(PhysicObjectParams *pthis);
+void PhysicObjectParams_copyctor(PhysicObjectParams *a1, PhysicObjectParams *a2);
+void PhysicObjectParams_dtor(PhysicObjectParams *pthis);
+PhysicObjectParams * SC_SERVER_DECL PhysicObjectParams_opassign(PhysicObjectParams *a1, SC_SERVER_DUMMYARG PhysicObjectParams *a2);
+
+void PhysicWheelParams_ctor(PhysicWheelParams *pthis);
+void PhysicWheelParams_copyctor(PhysicWheelParams *a1, PhysicWheelParams *a2);
+void PhysicWheelParams_dtor(PhysicWheelParams *pthis);
+PhysicWheelParams * SC_SERVER_DECL PhysicWheelParams_opassign(PhysicWheelParams *a1, SC_SERVER_DUMMYARG PhysicWheelParams *a2);
+
 void PhysicVehicleParams_ctor(PhysicVehicleParams *pthis);
 void PhysicVehicleParams_copyctor(PhysicVehicleParams *a1, PhysicVehicleParams *a2);
 void PhysicVehicleParams_dtor(PhysicVehicleParams *pthis);
 PhysicVehicleParams * SC_SERVER_DECL PhysicVehicleParams_opassign(PhysicVehicleParams *a1, SC_SERVER_DUMMYARG PhysicVehicleParams *a2);
-
 
 class PhysicWheelClientInfo
 {
@@ -155,23 +186,6 @@ private:
 	int m_flags;
 };
 
-class PhysicRaycastVehicle : public btRaycastVehicle
-{
-public:
-	PhysicRaycastVehicle(const btVehicleTuning& tuning, btRigidBody* chassis, btVehicleRaycaster* raycaster) : btRaycastVehicle(tuning, chassis, raycaster)
-	{
-
-	}
-	~PhysicRaycastVehicle()
-	{
-		for (int i = 0; i < m_wheelInfo.size(); ++i)
-		{
-			delete m_wheelInfo[i].m_clientInfo;
-			m_wheelInfo[i].m_clientInfo = NULL;
-		}
-	}
-};
-
 enum FallGuysCollisionFilterGroups
 {
 	PlayerFilter = 0x40,
@@ -185,7 +199,6 @@ typedef struct brushvertex_s
 
 typedef struct brushface_s
 {
-	//int index;
 	int start_vertex;
 	int num_vertexes;
 }brushface_t;
@@ -318,6 +331,11 @@ public:
 
 	}
 
+	virtual btCollisionObject *GetCollisionObject() const
+	{
+		return NULL;
+	}
+
 	CGameObject *GetGameObject() const
 	{
 		return m_gameobj;
@@ -384,6 +402,11 @@ public:
 
 			(*numDynamicObjects)--;
 		}
+	}
+
+	virtual btCollisionObject *GetCollisionObject() const
+	{
+		return m_ghostobj;
 	}
 
 	void SetGhostObject(btPairCachingGhostObject* ghostobj)
@@ -506,6 +529,11 @@ public:
 		{
 			world->removeRigidBody(m_rigbody);
 		}
+	}
+
+	virtual btCollisionObject *GetCollisionObject() const
+	{
+		return m_rigbody;
 	}
 
 	void SetRigidBody(btRigidBody* rigbody)
@@ -855,18 +883,6 @@ public:
 	{
 		m_entindex = -1;
 		m_ent = NULL;
-
-		for (size_t i = 0; i < m_physics.size(); ++i)
-		{
-			delete m_physics[i];
-		}
-		m_physics.clear();
-
-		for (size_t i = 0; i < m_constraints.size(); ++i)
-		{
-			delete m_constraints[i];
-		}
-		m_constraints.clear();
 	}
 
 	bool HasPhysObjects() const
@@ -889,19 +905,36 @@ public:
 	void AddConstraint(btTypedConstraint *constraint, btDiscreteDynamicsWorld* world, bool disableCollisionsBetweenLinkedBodies)
 	{
 		world->addConstraint(constraint, disableCollisionsBetweenLinkedBodies);
-
-		m_constraints.emplace_back(constraint);
 	}
 
 	void RemoveAllConstraints(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
 	{
-		for (size_t i = 0; i < m_constraints.size(); ++i)
+		std::vector<btTypedConstraint *> defRemoves;
+
+		for (int i = 0; i < world->getNumConstraints(); ++i)
 		{
-			world->removeConstraint(m_constraints[i]);
-			delete m_constraints[i];
+			auto constraint = world->getConstraint(i);
+
+			for (int j = 0; j < m_physics.size(); ++j)
+			{
+				auto physObj = m_physics[j];
+
+				if (constraint->getRigidBodyA().getUserPointer() == physObj || constraint->getRigidBodyB().getUserPointer() == physObj)
+				{
+					defRemoves.emplace_back(constraint);
+					break;
+				}
+			}
 		}
 
-		m_constraints.clear();
+		for (size_t i = 0; i < defRemoves.size(); ++i)
+		{
+			auto constraint = defRemoves[i];
+
+			world->removeConstraint(constraint);
+			
+			delete constraint;
+		}
 	}
 
 	void RemoveAllPhysicObjects(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
@@ -1059,7 +1092,6 @@ private:
 	int m_entindex;
 
 	std::vector<CPhysicObject *> m_physics;
-	std::vector<btTypedConstraint *> m_constraints;
 
 	int m_lod_flags;
 
@@ -1127,14 +1159,9 @@ public:
 	void RemoveGameObject(int entindex);
 	void RemoveAllGameBodies();
 
-	bool IsEntitySuperPusher(edict_t* ent);
-	bool ApplyImpulse(edict_t* ent, const Vector& impulse, const Vector& origin);
-	bool SetVehicleEngine(edict_t* ent, int wheelIndex, bool enableMotor, float angularVelcoity, float maxMotorForce);
-	bool SetVehicleSteering(edict_t* ent, int wheelIndex, float angularTarget, float angularVelocity, float maxMotorForce);
-
 	CDynamicObject* CreateDynamicObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold);
 	CStaticObject* CreateStaticObject(CGameObject *obj, vertexarray_t* vertexarray, indexarray_t* indexarray, bool kinematic);
-	CPlayerObject* CreatePlayerObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass, bool duck);
+	CPlayerObject* CreatePlayerObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass, float ccdRadius, float ccdThreshold, bool duck);
 	CClippingHullObject* CreateClippingHullObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass);
 
 	void AddGameObject(CGameObject *obj);
@@ -1146,7 +1173,13 @@ public:
 	bool CreatePhysicObjectPost(edict_t *ent, CGameObject *obj, btCollisionShape *shape, PhysicObjectParams *objectParams);
 	bool CreatePlayerBox(edict_t* ent);
 	bool CreateSolidOptimizer(edict_t* ent, int boneindex, const Vector &mins, const Vector &maxs);
+	
 	bool CreatePhysicVehicle(edict_t* ent, PhysicWheelParams **wheelParamArray, size_t numWheelParam, PhysicVehicleParams *vehicleParams);
+	bool SetVehicleEngine(edict_t* ent, int wheelIndex, bool enableMotor, float angularVelcoity, float maxMotorForce);
+	bool SetVehicleSteering(edict_t* ent, int wheelIndex, float angularTarget, float angularVelocity, float maxMotorForce);
+	bool ApplyPhysicImpulse(edict_t* ent, const Vector& impulse, const Vector& origin);
+	bool ApplyPhysicForce(edict_t* ent, const Vector& force, const Vector& origin);
+	
 	bool SetEntityLevelOfDetail(edict_t* ent, int flags, int body_0, float scale_0, int body_1, float scale_1, float distance_1, int body_2, float scale_2, float distance_2, int body_3, float scale_3, float distance_3);
 	bool SetEntitySemiVisible(edict_t* ent, int player_mask);
 	bool SetEntitySuperPusher(edict_t* ent, bool enable);
@@ -1154,6 +1187,10 @@ public:
 
 	bool SetPhysicObjectTransform(edict_t* ent, const Vector &origin, const Vector &angles);
 	bool SetPhysicObjectFreeze(edict_t* ent, bool freeze);
+
+	void SetPhysicPlayerConfig(PhysicPlayerConfigs *configs);
+
+	bool IsEntitySuperPusher(edict_t* ent);
 
 	void EntityStartFrame(void);
 	void EntityStartFrame_Post(void);
@@ -1188,6 +1225,7 @@ private:
 	vertexarray_t* m_worldVertexArray;
 	float m_gravity;
 	float m_simrate;
+	float m_playerMass;
 
 	int m_solidPlayerMask;
 

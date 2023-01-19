@@ -13,6 +13,28 @@
 extern edict_t* r_worldentity;
 extern model_t* r_worldmodel;
 
+void PhysicPlayerConfigs_ctor(PhysicPlayerConfigs *pthis)
+{
+	pthis->mass = 20;
+}
+
+void PhysicPlayerConfigs_copyctor(PhysicPlayerConfigs *a1, PhysicPlayerConfigs *a2)
+{
+	a1->mass = a2->mass;
+}
+
+PhysicPlayerConfigs * SC_SERVER_DECL PhysicPlayerConfigs_opassign(PhysicPlayerConfigs *a1, SC_SERVER_DUMMYARG PhysicPlayerConfigs *a2)
+{
+	PhysicPlayerConfigs_copyctor(a1, a2);
+
+	return a1;
+}
+
+void PhysicPlayerConfigs_dtor(PhysicPlayerConfigs *pthis)
+{
+
+}
+
 void PhysicShapeParams_ctor(PhysicShapeParams *pthis)
 {
 	pthis->type = 0;
@@ -153,6 +175,11 @@ void PhysicVehicleParams_dtor(PhysicVehicleParams *pthis)
 
 }
 
+PhysicPlayerConfigs::PhysicPlayerConfigs()
+{
+	PhysicPlayerConfigs_ctor(this);
+}
+
 PhysicShapeParams::PhysicShapeParams()
 {
 	PhysicShapeParams_ctor(this);
@@ -192,6 +219,7 @@ CPhysicsManager::CPhysicsManager()
 
 	m_solidPlayerMask = 0;
 	m_simrate = 1 / 60.0f;
+	m_playerMass = 20;
 
 	m_CurrentImpactImpulse = 0;
 	m_CurrentImpactPoint = g_vecZero;
@@ -558,16 +586,17 @@ CStaticObject* CPhysicsManager::CreateStaticObject(CGameObject *obj, vertexarray
 	return staticobj;
 }
 
-CPlayerObject* CPhysicsManager::CreatePlayerObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass, bool duck)
+CPlayerObject* CPhysicsManager::CreatePlayerObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass, float ccdRadius, float ccdThreshold, bool duck)
 {
 	//Player only collides with pushable objects, clipping hull objects, and world (do we really need to collide with world ?)
 	auto playerobj = new CPlayerObject(
 		obj,
 		btBroadphaseProxy::DefaultFilter | FallGuysCollisionFilterGroups::PlayerFilter,
 		btBroadphaseProxy::AllFilter & ~(FallGuysCollisionFilterGroups::PlayerFilter),
-		mass, duck);
+		mass,
+		duck);
 
-	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, new EntityMotionState(playerobj), collisionShape, localInertia);
+	btRigidBody::btRigidBodyConstructionInfo cInfo(m_playerMass, new EntityMotionState(playerobj), collisionShape, localInertia);
 
 	cInfo.m_friction = 1;
 	cInfo.m_rollingFriction = 1;
@@ -577,6 +606,8 @@ CPlayerObject* CPhysicsManager::CreatePlayerObject(CGameObject *obj, btCollision
 
 	//Player clipping hull box never rotates
 	playerobj->GetRigidBody()->setAngularFactor(0);
+	playerobj->GetRigidBody()->setCcdSweptSphereRadius(ccdRadius);
+	playerobj->GetRigidBody()->setCcdMotionThreshold(ccdThreshold);
 
 	return playerobj;
 }
@@ -1556,8 +1587,6 @@ bool CPhysicsManager::CreatePlayerBox(edict_t* ent)
 		AddGameObject(obj);
 	}
 
-	//4 units extended to push other physic objects, and -1 unit to prevent player from crushing objects into ground
-
 	vec3_t hull_player(16, 16, 36);
 	
 	vec3_t hull_duck(16, 16, 18);
@@ -1566,12 +1595,14 @@ bool CPhysicsManager::CreatePlayerBox(edict_t* ent)
 
 	if (1)
 	{
+		//4 units extended to push other physic objects, and -1 unit to prevent player from crushing objects into ground
+
 		auto shape = new btBoxShape(btVector3(hull_player.x + 4, hull_player.y + 4, hull_player.z - 1.0f));
 
 		btVector3 localInertia;
 		shape->calculateLocalInertia(mass, localInertia);
 
-		auto playerobj = CreatePlayerObject(obj, shape, localInertia, mass, false);
+		auto playerobj = CreatePlayerObject(obj, shape, localInertia, mass, 36, 400  * m_simrate, false);
 
 		obj->AddPhysicObject(playerobj, m_dynamicsWorld, &m_numDynamicObjects);
 	}
@@ -1583,7 +1614,7 @@ bool CPhysicsManager::CreatePlayerBox(edict_t* ent)
 		btVector3 localInertia;
 		shape->calculateLocalInertia(mass, localInertia);
 
-		auto playerobj = CreatePlayerObject(obj, shape, localInertia, mass, true);
+		auto playerobj = CreatePlayerObject(obj, shape, localInertia, mass, 18, 400 * m_simrate, true);
 
 		obj->AddPhysicObject(playerobj, m_dynamicsWorld, &m_numDynamicObjects);
 	}
@@ -1591,7 +1622,7 @@ bool CPhysicsManager::CreatePlayerBox(edict_t* ent)
 	return true;
 }
 
-bool CPhysicsManager::ApplyImpulse(edict_t* ent, const Vector& impulse, const Vector& origin)
+bool CPhysicsManager::ApplyPhysicImpulse(edict_t* ent, const Vector& impulse, const Vector& origin)
 {
 	if (ent->free)
 		return false;
@@ -1605,7 +1636,7 @@ bool CPhysicsManager::ApplyImpulse(edict_t* ent, const Vector& impulse, const Ve
 		AddGameObject(obj);
 	}
 
-	for (int i = 0; i < obj->GetNumPhysicObject(); ++i)
+	for (size_t i = 0; i < obj->GetNumPhysicObject(); ++i)
 	{
 		auto physicObject = obj->GetPhysicObjectByIndex(i);
 		if (physicObject->IsDynamic())
@@ -1619,10 +1650,48 @@ bool CPhysicsManager::ApplyImpulse(edict_t* ent, const Vector& impulse, const Ve
 			btVector3 vecRelPos = vecOrigin - dynamicObject->GetRigidBody()->getCenterOfMassPosition();
 
 			dynamicObject->GetRigidBody()->applyImpulse(vecImpulse, vecRelPos);
+
+			return true;
 		}
 	}
 
-	return true;
+	return false;
+}
+
+bool CPhysicsManager::ApplyPhysicForce(edict_t* ent, const Vector& force, const Vector& origin)
+{
+	if (ent->free)
+		return false;
+
+	auto obj = GetGameObject(ent);
+
+	if (!obj)
+	{
+		obj = new CGameObject(ent, g_engfuncs.pfnIndexOfEdict(ent));
+
+		AddGameObject(obj);
+	}
+
+	for (size_t i = 0; i < obj->GetNumPhysicObject(); ++i)
+	{
+		auto physicObject = obj->GetPhysicObjectByIndex(i);
+		if (physicObject->IsDynamic())
+		{
+			btVector3 vecImpulse(force.x, force.y, force.z);
+
+			btVector3 vecOrigin(origin.x, origin.y, origin.z);
+
+			auto dynamicObject = (CDynamicObject *)physicObject;
+
+			btVector3 vecRelPos = vecOrigin - dynamicObject->GetRigidBody()->getCenterOfMassPosition();
+
+			dynamicObject->GetRigidBody()->applyForce(vecImpulse, vecRelPos);
+
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool CPhysicsManager::SetVehicleEngine(edict_t* ent, int wheelIndex, bool enableMotor, float angularVelcoity, float maxMotorForce)
@@ -1902,6 +1971,11 @@ bool CPhysicsManager::CreatePhysicVehicle(edict_t* ent, PhysicWheelParams **whee
 	}
 
 	return true;
+}
+
+void CPhysicsManager::SetPhysicPlayerConfig(PhysicPlayerConfigs *configs)
+{
+
 }
 
 bool CPhysicsManager::CreateSolidOptimizer(edict_t* ent, int boneindex, const Vector& halfext, const Vector& halfext2)
@@ -2498,8 +2572,7 @@ void CPhysicsManager::StepSimulation(double frametime)
 
 void CPhysicsManager::SetSimRate(float rate)
 {
-	rate = max(min(rate, 128), 32);
-	m_simrate = 1 / rate;
+	m_simrate = max(min(rate, 1.0f / 32.0f), 1.0f / 128.0f);
 }
 
 void CPhysicsManager::SetGravity(float velocity)
@@ -2558,6 +2631,7 @@ void CPhysicsManager::RemoveAllGameBodies()
 	}
 
 	m_gameObjects.clear();
+	m_maxIndexGameObject = 0;
 }
 
 bool CPhysicsManager::IsEntitySuperPusher(edict_t* ent)
@@ -2603,32 +2677,39 @@ void CGameObject::EndFrame(btDiscreteDynamicsWorld* world)
 		}
 	}
 
-	const int SF_ENV_STUDIOMODEL_COPY_ORIGIN = 1;
-	const int SF_ENV_STUDIOMODEL_COPY_ANGLES = 2;
-	const int SF_ENV_STUDIOMODEL_COPY_ORIGIN_Z = 32;
-	const int SF_ENV_STUDIOMODEL_COPY_NODRAW = 64;
-
 	if (m_follow_ent)
 	{
-		if (m_follow_ent->free)
+		if (m_follow_ent->free || (m_follow_ent->v.flags & FL_KILLME))
 		{
 			SetEntityFollow(NULL, 0, g_vecZero, g_vecZero);
 		}
 		else
 		{
-			if (m_follow_flags & SF_ENV_STUDIOMODEL_COPY_ORIGIN)
+			if (m_follow_flags & FollowEnt_CopyOriginX)
 			{
-				GetEdict()->v.origin = m_follow_ent->v.origin + m_follow_origin_offet;
+				GetEdict()->v.origin.x = m_follow_ent->v.origin.x + m_follow_origin_offet.x;
 			}
-			if (m_follow_flags & SF_ENV_STUDIOMODEL_COPY_ANGLES)
+			if (m_follow_flags & FollowEnt_CopyOriginY)
 			{
-				GetEdict()->v.angles = m_follow_ent->v.angles + m_follow_angles_offet;
+				GetEdict()->v.origin.y = m_follow_ent->v.origin.y + m_follow_origin_offet.y;
 			}
-			if (m_follow_flags & SF_ENV_STUDIOMODEL_COPY_ORIGIN_Z)
+			if (m_follow_flags & FollowEnt_CopyOriginZ)
 			{
 				GetEdict()->v.origin.z = m_follow_ent->v.origin.z + m_follow_origin_offet.z;
 			}
-			if (m_follow_flags & SF_ENV_STUDIOMODEL_COPY_NODRAW)
+			if (m_follow_flags & FollowEnt_CopyAnglesP)
+			{
+				GetEdict()->v.angles.x = m_follow_ent->v.angles.x + m_follow_angles_offet.x;
+			}
+			if (m_follow_flags & FollowEnt_CopyAnglesY)
+			{
+				GetEdict()->v.angles.y = m_follow_ent->v.angles.y + m_follow_angles_offet.y;
+			}
+			if (m_follow_flags & FollowEnt_CopyAnglesR)
+			{
+				GetEdict()->v.angles.z = m_follow_ent->v.angles.z + m_follow_angles_offet.z;
+			}
+			if (m_follow_flags & FollowEnt_CopyNoDraw)
 			{
 				if ((GetEdict()->v.effects & EF_NODRAW) && !(m_follow_ent->v.effects & EF_NODRAW))
 				{
@@ -2638,6 +2719,22 @@ void CGameObject::EndFrame(btDiscreteDynamicsWorld* world)
 				{
 					GetEdict()->v.effects |= EF_NODRAW;
 				}
+			}
+			if (m_follow_flags & FollowEnt_CopyRenderMode)
+			{
+				GetEdict()->v.rendermode = m_follow_ent->v.rendermode;
+			}
+			if (m_follow_flags & FollowEnt_CopyRenderAmt)
+			{
+				GetEdict()->v.renderamt = m_follow_ent->v.renderamt;
+			}
+			if (m_follow_flags & FollowEnt_ApplyLinearVelocity)
+			{
+				m_follow_origin_offet = m_follow_origin_offet + GetEdict()->v.velocity * (float)(*host_frametime);
+			}
+			if (m_follow_flags & FollowEnt_ApplyAngularVelocity)
+			{
+				m_follow_angles_offet = m_follow_angles_offet + GetEdict()->v.avelocity * (float)(*host_frametime);
 			}
 		}
 	}

@@ -19,6 +19,11 @@ void SC_SERVER_DECL CASEngineFuncs__SetPhysicSimRate(void* pthis, SC_SERVER_DUMM
 	gPhysicsManager.SetSimRate(rate);
 }
 
+void SC_SERVER_DECL CASEngineFuncs__SetPhysicPlayerConfig(void* pthis, SC_SERVER_DUMMYARG PhysicPlayerConfigs *configs)
+{
+	gPhysicsManager.SetPhysicPlayerConfig(configs);
+}
+
 void SC_SERVER_DECL CASEngineFuncs__EnableCustomStepSound(void* pthis, SC_SERVER_DUMMYARG bool bEnabled)
 {
 	EnableCustomStepSound(bEnabled);
@@ -135,9 +140,14 @@ edict_t *SC_SERVER_DECL CASEntityFuncs__GetCurrentPhysicImpactEntity(void* pthis
 	return gPhysicsManager.GetCurrentImpactEntity(vecImpactPoint, vecImpactDirection, flImpactImpulse);
 }
 
-bool SC_SERVER_DECL CASEntityFuncs__ApplyImpulse(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, const Vector& impulse, const Vector& origin)
+bool SC_SERVER_DECL CASEntityFuncs__ApplyPhysicImpulse(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, const Vector& impulse, const Vector& origin)
 {
-	return gPhysicsManager.ApplyImpulse(ent, impulse, origin);
+	return gPhysicsManager.ApplyPhysicImpulse(ent, impulse, origin);
+}
+
+bool SC_SERVER_DECL CASEntityFuncs__ApplyPhysicForce(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, const Vector& impulse, const Vector& origin)
+{
+	return gPhysicsManager.ApplyPhysicForce(ent, impulse, origin);
 }
 
 bool SC_SERVER_DECL CASEntityFuncs__SetVehicleEngine(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int wheelIndex, bool enableMotor, float angularVelcoity, float maxMotorForce)
@@ -223,6 +233,17 @@ void UninstallServerHooks()
 void RegisterAngelScriptMethods(void)
 {
 	ASEXT_RegisterDocInitCallback([](CASDocumentation *pASDoc) {
+
+		/* PhysicPlayerConfigs */
+
+		ASEXT_RegisterObjectType(pASDoc, "Physic player creation configs", "PhysicPlayerConfigs", sizeof(PhysicPlayerConfigs), asOBJ_VALUE);
+
+		ASEXT_RegisterObjectBehaviour(pASDoc, "Default constructor", "PhysicPlayerConfigs", ObjectBehaviour_Constructor, "void PhysicPlayerConfigs()", PhysicPlayerConfigs_ctor, 4);
+		ASEXT_RegisterObjectBehaviour(pASDoc, "Copy constructor", "PhysicPlayerConfigs", ObjectBehaviour_Constructor, "void PhysicPlayerConfigs(const PhysicPlayerConfigs& in other)", PhysicPlayerConfigs_copyctor, 4);
+		ASEXT_RegisterObjectBehaviour(pASDoc, "Destructor", "PhysicPlayerConfigs", ObjectBehaviour_Destructor, "void DestructPhysicPlayerConfigs()", PhysicPlayerConfigs_dtor, 4);
+		ASEXT_RegisterObjectMethod(pASDoc, "operator=", "PhysicPlayerConfigs", "PhysicPlayerConfigs& opAssign(const PhysicPlayerConfigs& in other)", PhysicPlayerConfigs_opassign, 3);
+
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicPlayerConfigs", "float mass", offsetof(PhysicPlayerConfigs, mass));
 
 		/* PhysicShapeParams */
 
@@ -486,8 +507,12 @@ void RegisterAngelScriptMethods(void)
 			(void *)CASEntityFuncs__GetCurrentPhysicImpactEntity, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Apply impulse on physic object", "CEntityFuncs", "bool ApplyImpulse(edict_t@ ent, const Vector& in impulse, const Vector& in origin)",
-			(void *)CASEntityFuncs__ApplyImpulse, 3);
+			"Apply impulse on physic object", "CEntityFuncs", "bool ApplyPhysicImpulse(edict_t@ ent, const Vector& in impulse, const Vector& in origin)",
+			(void *)CASEntityFuncs__ApplyPhysicImpulse, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Apply impulse on physic object", "CEntityFuncs", "bool ApplyPhysicForce(edict_t@ ent, const Vector& in impulse, const Vector& in origin)",
+			(void *)CASEntityFuncs__ApplyPhysicForce, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Set engine wheel's motor and servo for the vehicle", "CEntityFuncs", "bool SetVehicleEngine(edict_t@ ent, int wheelIndex, bool enableMotor, float angularVelcoity, float maxMotorForce)",
