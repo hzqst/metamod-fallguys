@@ -165,12 +165,13 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterObjectType);
 	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterObjectProperty);
 	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterObjectMethod);
+	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterObjectBehaviour);
 	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterFuncDef);
 	FILL_FROM_SIGNATURE(server, CASDirectoryList_CreateDirectory);
 	FILL_FROM_SIGNATURE(server, CASFunction_Create);
 	FILL_FROM_SIGNATURE(server, CASBaseCallable_Call);
 	FILL_FROM_SIGNATURE(server, CASRefCountedBaseClass_InternalRelease);
-	FILL_FROM_SIGNATURE(server, CScriptAny_Release, -1);
+	FILL_FROM_SIGNATURE(server, CScriptAny_Release);
 
 	VAR_FROM_SIGNATURE(server, g_pServerManager);
 

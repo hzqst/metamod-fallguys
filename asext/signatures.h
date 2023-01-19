@@ -28,6 +28,7 @@
 #define CASHook_Call_Signature "_ZN7CASHook4CallEiz"
 #define CString_Assign_Signature "_ZN7CString6AssignEPKcj"
 #define CString_dtor_Signature "_ZN7CStringD2Ev"
+
 #define CASDocumentation_RegisterObjectType_Signature "_ZN16CASDocumentation18RegisterObjectTypeEPKcS1_im"
 #define CASDocumentation_RegisterObjectProperty_Signature "_ZN16CASDocumentation22RegisterObjectPropertyEPKcS1_S1_i"
 #define CASDocumentation_RegisterObjectMethod_Signature "_ZN16CASDocumentation20RegisterObjectMethodEPKcS1_S1_RK10asSFuncPtrm"
