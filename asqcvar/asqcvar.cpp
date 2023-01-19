@@ -73,5 +73,5 @@ void ASQCvar_CallQueryCvar2Callback(void *pPlayer, int request_id, const char *c
 void RegisterAngelScriptHooks()
 {
 	g_QueryCvarHook = ASEXT_RegisterHook("Get called when svc_querycvar response is received", StopMode_CALL_ALL, 2, ASFlag_MapScript | ASFlag_Plugin, "Player", "QueryCvar", "CBasePlayer @pPlayer, const string &in value");
-	g_QueryCvar2Hook = ASEXT_RegisterHook("Get called when svc_querycvar2 response is received", StopMode_CALL_ALL, 2, ASFlag_MapScript | ASFlag_Plugin, "Player", "QueryCvar2", "CBasePlayer @pPlayer, int requestId, const string &in cvar, const string &in value");
+	g_QueryCvar2Hook = ASEXT_RegisterHook("Get called when svc_querycvar2 response is received", StopMode_CALL_ALL, 2, ASFlag_MapScript | ASFlag_Plugin, "Player", "QueryCvar2", "CBasePlayer @pPlayer, int requestId, const string &in cvarName, const string &in value");
 }
