@@ -204,8 +204,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 	VAR_FROM_SIGNATURE(engine, host_frametime);
 	VAR_FROM_SIGNATURE(engine, pmovevars);
-	VAR_FROM_SIGNATURE_RENAME(engine, pg_groupop, g_groupop);
-	VAR_FROM_SIGNATURE_RENAME(engine, pg_groupmask, g_groupmask);
+	VAR_FROM_SIGNATURE(engine, pg_groupop);
+	VAR_FROM_SIGNATURE(engine, pg_groupmask);
 
 #endif
 	
