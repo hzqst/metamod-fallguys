@@ -8,14 +8,11 @@ You can register your own hooks or methods in Sven Co-op AngelScript engine.
 
 // Define this macro in meta_api.cpp
 IMPORT_ASEXT_API_DEFINE();
-
-// Add the following code in meta_api.cpp->Meta_Attach
-
-`C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
-	META_FUNCTIONS* pFunctionTable, meta_globals_t* pMGlobals,
-	gamedll_funcs_t* pGamedllFuncs){`
+```
 
 ```
+// Add the following code in meta_api.cpp->Meta_Attach
+
 	void *asextHandle = NULL;
 
 #ifdef _WIN32
@@ -53,7 +50,7 @@ int SC_SERVER_DECL CASEngineFuncs__TestFunc(void* pthis SC_SERVER_DUMMYARG_NOCOM
 	
 ```
 
-Now you can call this from game, you will get test = 114514 if registeration works fine :
+Now call g_EngineFuncs.TestFunc from angelscript, you will get test = 114514 if the registeration works fine
 
 ```
 int test = g_EngineFuncs.TestFunc();

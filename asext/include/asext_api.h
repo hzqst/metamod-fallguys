@@ -349,8 +349,7 @@ public:
 	int m_ElementTypeId;//24
 };
 
-#define IMPORT_ASEXT_API(asext) \
-IMPORT_FUNCTION_DLSYM(asext, ASEXT_CallHook);\
+#define IMPORT_ASEXT_API(asext) IMPORT_FUNCTION_DLSYM(asext, ASEXT_CallHook);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CallCASBaseCallable);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterDocInitCallback);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterDirInitCallback);\
@@ -368,8 +367,7 @@ IMPORT_FUNCTION_DLSYM(asext, ASEXT_CreateCASFunction);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CASRefCountedBaseClass_InternalRelease);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptAny_Release);
 
-#define IMPORT_ASEXT_API_DEFINE() \
-IMPORT_FUNCTION_DEFINE(ASEXT_RegisterDocInitCallback);\
+#define IMPORT_ASEXT_API_DEFINE() IMPORT_FUNCTION_DEFINE(ASEXT_RegisterDocInitCallback);\
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterDirInitCallback);\
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectMethod);\
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectBehaviour);\

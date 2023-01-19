@@ -6,6 +6,24 @@ The metamod core is based on [metamod-p](https://github.com/Bots-United/metamod-
 
 * You are welcome to request for any new hooks or server-side features which is not implemented by Sven Co-op team yet.
 
+# What it does ?
+
+### fallguys.dll (fallguys.so)
+
+[Documentation](README_FALLGUYS.md)
+
+### asext.dll (asext.so)
+
+[Documentation](README_ASEXT.md)
+
+### ascurl.dll (ascurl.so)
+
+[Documentation](README_ASCURL.md)
+
+### asqcvar.dll (asqcvar.so)
+
+[Documentation](README_ASQCVAR.md)
+
 # Installation
 
 1. Download from [GitHub Release](https://github.com/hzqst/metamod-fallguys/releases), then unzip it.
@@ -80,21 +98,3 @@ gamedll_linux "addons/metamod/dlls/metamod.so"
 2. `sudo chmod +777 build-all-linux.sh` to make it executable, then `./build-all-linux.sh`
 
 3. Be patient, `metamod.so`, `asext.so` and `fallguys.so` will be generated at `build/addons/metamod/dlls` if no error(s) occours.
-
-# What it does ?
-
-### fallguys.dll (fallguys.so)
-
-[Documentation](README_FALLGUYS.md)
-
-### asext.dll (asext.so)
-
-[Documentation](README_ASEXT.md)
-
-### ascurl.dll (ascurl.so)
-
-[Documentation](README_ASCURL.md)
-
-### asqcvar.dll (asqcvar.so)
-
-[Documentation](README_ASQCVAR.md)
