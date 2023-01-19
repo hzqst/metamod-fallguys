@@ -397,7 +397,7 @@ fnASEXT_CallCASBaseCallable *ASEXT_CallCASBaseCallable = NULL;
 ASEXT_RegisterObjectBehaviour(pASDoc, "Default constructor",  #name, ObjectBehaviour_Constructor, "void "#name"()", (void *)name##_ctor, 4);\
 ASEXT_RegisterObjectBehaviour(pASDoc, "Copy constructor",  #name, ObjectBehaviour_Constructor, "void "#name"(const "#name"& in other)", (void *)name##_copyctor, 4);\
 ASEXT_RegisterObjectBehaviour(pASDoc, "Destructor",  #name, ObjectBehaviour_Destructor, "void Destruct"#name"()", (void *)name##_dtor, 4);\
-ASEXT_RegisterObjectMethod(pASDoc, "operator=",  #name,  #name##"& opAssign(const "#name"& in other)", (void *)name##_opassign, 3);
+ASEXT_RegisterObjectMethod(pASDoc, "operator=",  #name,  #name"& opAssign(const "#name"& in other)", (void *)name##_opassign, 3);
 
 #define EXTERN_PLAIN_VALUE_OBJECT(name) void name##_ctor(name *pthis);\
 void name##_copyctor(name *a1, name *a2);\
