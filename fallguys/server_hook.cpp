@@ -34,6 +34,11 @@ edict_t* SC_SERVER_DECL CASEngineFuncs__GetViewEntity(void* pthis, SC_SERVER_DUM
 	return GetClientViewEntity(pClient);
 }
 
+bool SC_SERVER_DECL CASEngineFuncs__SetViewEntity(void* pthis, SC_SERVER_DUMMYARG edict_t* pClient, edict_t* pViewEnt)
+{
+	return SetClientViewEntity(pClient, pViewEnt);
+}
+
 int SC_SERVER_DECL CASEngineFuncs__GetRunPlayerMovePlayerIndex(void* pthis SC_SERVER_DUMMYARG_NOCOMMA)
 {
 	return GetRunPlayerMovePlayerIndex();
@@ -447,8 +452,12 @@ void RegisterAngelScriptMethods(void)
 			(void *)CASEngineFuncs__GetRunPlayerMovePlayerIndex, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Get view entity of specified client", "CEngineFuncs", "edict_t@ GetViewEntity(edict_t@ pClient)",
+			"Get client's view entity", "CEngineFuncs", "edict_t@ GetViewEntity(edict_t@ pClient)",
 			(void *)CASEngineFuncs__GetViewEntity, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Set client's view entity", "CEngineFuncs", "bool SetViewEntity(edict_t@ pClient, edict_t@ pViewEnt)",
+			(void *)CASEngineFuncs__SetViewEntity, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Create physic box for entity", "CEntityFuncs", "bool CreateSolidOptimizer(edict_t@ ent, int boneindex, const Vector& in halfextent, const Vector& in halfextent2)",

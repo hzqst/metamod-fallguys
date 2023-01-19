@@ -40,6 +40,7 @@ int GetRunPlayerMovePlayerIndex();
 edict_t* GetCurrentSuperPusher(Vector* out);
 edict_t* GetClientViewEntity(int clientindex);
 edict_t* GetClientViewEntity(edict_t* pClient);
+bool SetClientViewEntity(edict_t* pClient, edict_t*pViewEnt);
 
 void EnableCustomStepSound(bool bEnabled);
 

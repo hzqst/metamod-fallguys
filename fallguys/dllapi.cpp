@@ -118,6 +118,18 @@ edict_t* GetClientViewEntity(edict_t*pClient)
 	return GetClientViewEntity(g_engfuncs.pfnIndexOfEdict(pClient));
 }
 
+bool SetClientViewEntity(edict_t* pClient, edict_t*pViewEnt)
+{
+	int clientindex = g_engfuncs.pfnIndexOfEdict(pClient);
+	if (clientindex > 0 && clientindex < gpGlobals->maxClients)
+	{
+		g_engfuncs.pfnSetView(pClient, pViewEnt);
+		return true;
+	}
+
+	return false;
+}
+
 int NewAddToFullPack_Post(struct entity_state_s *state, int entindex, edict_t *ent, edict_t *host, int hostflags, int player, unsigned char *pSet)
 {
 	if (META_RESULT_ORIG_RET(int) == 1)

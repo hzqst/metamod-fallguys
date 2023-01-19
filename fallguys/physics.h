@@ -915,7 +915,7 @@ public:
 		{
 			auto constraint = world->getConstraint(i);
 
-			for (int j = 0; j < m_physics.size(); ++j)
+			for (size_t j = 0; j < m_physics.size(); ++j)
 			{
 				auto physObj = m_physics[j];
 

@@ -2572,7 +2572,7 @@ void CPhysicsManager::StepSimulation(double frametime)
 
 void CPhysicsManager::SetSimRate(float rate)
 {
-	m_simrate = max(min(rate, 1.0f / 32.0f), 1.0f / 128.0f);
+	m_simrate = rate;
 }
 
 void CPhysicsManager::SetGravity(float velocity)
