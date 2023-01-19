@@ -1975,7 +1975,7 @@ bool CPhysicsManager::CreatePhysicVehicle(edict_t* ent, PhysicWheelParams **whee
 
 void CPhysicsManager::SetPhysicPlayerConfig(PhysicPlayerConfigs *configs)
 {
-
+	m_playerMass = configs->mass;
 }
 
 bool CPhysicsManager::CreateSolidOptimizer(edict_t* ent, int boneindex, const Vector& halfext, const Vector& halfext2)
