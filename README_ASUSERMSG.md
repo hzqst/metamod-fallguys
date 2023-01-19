@@ -44,7 +44,6 @@ void MapInit()
 				g_EngineFuncs.BlockCurrentUserMsg();
 			}
 		}
-		return 1919810;
 
 	});
 

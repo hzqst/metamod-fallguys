@@ -63,7 +63,7 @@ void RegisterAngelScriptMethods()
 {
 	ASEXT_RegisterDocInitCallback([](CASDocumentation *pASDoc) {
 		
-		ASEXT_RegisterFuncDef(pASDoc, "callback for usermsg hook", "int UserMsgHookCallback(int msgDest, int msgType, Vector origin, edict_t @pEdict)");
+		ASEXT_RegisterFuncDef(pASDoc, "callback for usermsg hook", "void UserMsgHookCallback(int msgDest, int msgType, Vector origin, edict_t @pEdict)");
 
 		ASEXT_RegisterObjectMethod(pASDoc, "Register a usermsg hook", "CEngineFuncs", "bool RegisterUserMsgHook(int msgType, UserMsgHookCallback @callback )", (void *)CASEngineFuncs__RegisterUserMsgHook, 3);
 
