@@ -393,7 +393,7 @@ IMPORT_FUNCTION_DEFINE(ASEXT_CScriptAny_Release);\
 fnASEXT_CallHook *ASEXT_CallHook = NULL;\
 fnASEXT_CallCASBaseCallable *ASEXT_CallCASBaseCallable = NULL;
 
-#define REGISTER_PLAIN_VALUE_OBJECT(name) ASEXT_RegisterObjectType(pASDoc, #name##" plain value object", #name, sizeof(name), asOBJ_VALUE);\
+#define REGISTER_PLAIN_VALUE_OBJECT(name) ASEXT_RegisterObjectType(pASDoc, #name" plain value object", #name, sizeof(name), asOBJ_VALUE);\
 ASEXT_RegisterObjectBehaviour(pASDoc, "Default constructor",  #name, ObjectBehaviour_Constructor, "void "#name"()", (void *)name##_ctor, 4);\
 ASEXT_RegisterObjectBehaviour(pASDoc, "Copy constructor",  #name, ObjectBehaviour_Constructor, "void "#name"(const "#name"& in other)", (void *)name##_copyctor, 4);\
 ASEXT_RegisterObjectBehaviour(pASDoc, "Destructor",  #name, ObjectBehaviour_Destructor, "void Destruct"#name"()", (void *)name##_dtor, 4);\
