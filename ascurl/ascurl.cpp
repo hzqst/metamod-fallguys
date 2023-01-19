@@ -107,7 +107,7 @@ public:
 
 		if (m_callback)
 		{
-			ASEXT_CASRefCountedBaseClass_InternalRelease(m_callback->getReference());
+			ASEXT_DereferenceCASFunction(m_callback);
 		}
 	}
 	virtual bool IsAsync() const = 0;

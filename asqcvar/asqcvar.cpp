@@ -19,10 +19,7 @@ void ASQCvar_Shutdown()
 	{
 		auto callback = itor->second;
 
-		if (ASEXT_CASRefCountedBaseClass_InternalRelease(callback->getReference()))
-		{
-			callback->Release(1);
-		}
+		ASEXT_DereferenceCASFunction(callback);
 
 		itor = g_QueryCvar2Callbacks.erase(itor);
 	}
@@ -64,7 +61,7 @@ void ASQCvar_CallQueryCvar2Callback(void *pPlayer, int request_id, const char *c
 
 	if (ASEXT_CASRefCountedBaseClass_InternalRelease(callback->getReference()))
 	{
-		callback->Release(1);
+		ASEXT_DereferenceCASFunction(callback);
 	}
 
 	g_QueryCvar2Callbacks.erase(itor);

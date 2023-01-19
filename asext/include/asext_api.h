@@ -105,8 +105,10 @@ class CASFunction
 {
 public:
 #ifdef _WIN32
-	virtual void Release(char bFree) = 0;
+#define CASFunction_dtor_firstarg 1
+	virtual void Release(char a1) = 0;
 #else
+#define CASFunction_dtor_firstarg
 	virtual void Unknown() = 0;
 	virtual void Release() = 0;
 #endif
@@ -118,6 +120,11 @@ public:
 
 	int ref;
 };
+
+#define ASEXT_DereferenceCASFunction(callback)	if (ASEXT_CASRefCountedBaseClass_InternalRelease(callback->getReference()))\
+{\
+	callback->Release(CASFunction_dtor_firstarg);\
+}
 
 class CASServerManager
 {
