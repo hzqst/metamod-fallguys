@@ -956,6 +956,12 @@ void CPlayerObject::EndFrame(btDiscreteDynamicsWorld* world)
 	if (ent->v.movetype == MOVETYPE_NOCLIP)
 		return;
 
+	if (!IsDuck() && ent->v.bInDuck)
+		return;
+
+	if (IsDuck() && !ent->v.bInDuck)
+		return;
+
 	m_TickCount++;
 
 	auto hitent = SV_TestEntityPositionEx(ent);
@@ -1589,9 +1595,9 @@ bool CPhysicsManager::CreatePlayerBox(edict_t* ent)
 
 	vec3_t hull_player(16, 16, 36);
 	
-	vec3_t hull_duck(16, 16, 18);
+	//vec3_t hull_duck(16, 16, 18);
 
-	float mass = 20;
+	float mass = m_playerMass;
 
 	if (1)
 	{
@@ -1602,7 +1608,7 @@ bool CPhysicsManager::CreatePlayerBox(edict_t* ent)
 		btVector3 localInertia;
 		shape->calculateLocalInertia(mass, localInertia);
 
-		auto playerobj = CreatePlayerObject(obj, shape, localInertia, mass, 36, 400  * m_simrate, false);
+		auto playerobj = CreatePlayerObject(obj, shape, localInertia, mass, 36, 400 * m_simrate, false);
 
 		obj->AddPhysicObject(playerobj, m_dynamicsWorld, &m_numDynamicObjects);
 	}
@@ -1618,7 +1624,7 @@ bool CPhysicsManager::CreatePlayerBox(edict_t* ent)
 
 		obj->AddPhysicObject(playerobj, m_dynamicsWorld, &m_numDynamicObjects);
 	}
-
+	
 	return true;
 }
 
