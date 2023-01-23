@@ -56,7 +56,7 @@ static void signal_handler_sigsegv(int) {
 	 * GLIBC 2.11+ intercept longjmp with __longjmp_chk. However we want
 	 * binary compability with older versions of GLIBC.
 	 */
-#ifdef __amd64__
+/*#ifdef __amd64__
 	__asm__ volatile(".symver __longjmp_chk,longjmp@GLIBC_2.2.5"
 			 :
 			 :"r"(&signal_jmp_buf)
@@ -65,7 +65,7 @@ static void signal_handler_sigsegv(int) {
 	__asm__ volatile(".symver __longjmp_chk,longjmp@GLIBC_2.11"
 			 :
 			 :"r"(&signal_jmp_buf)
-			 :"memory");
+			 :"memory");*/
 #endif /*__amd64__*/
 	longjmp(signal_jmp_buf, 1);
 }
