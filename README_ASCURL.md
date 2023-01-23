@@ -1,6 +1,6 @@
 # libcurl in AngelScript (aka ascurl)
 
-* Take advantage of `libcurl.dll` or `libcurl.so` via AngelScript
+* Taking advantage of `libcurl.dll` (`libcurl.so`) via AngelScript
 
 ## constants
 

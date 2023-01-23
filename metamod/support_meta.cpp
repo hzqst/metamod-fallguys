@@ -70,7 +70,7 @@ int DLLINTERNAL valid_gamedir_file(const char *path) {
 	else
 		safevoid_snprintf(buf, sizeof(buf), "%s/%s", GameDLL.gamedir, path);
 
-	ret=stat(buf, &st);
+	ret=xxstat(buf, &st);
 	if(ret != 0) {
 		META_DEBUG(5, ("Unable to stat '%s': %s", buf, strerror(errno)));
 		return(FALSE);

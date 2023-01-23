@@ -2,9 +2,9 @@
 
 * Exposes "server.NewDllFunction.pfnCvarValue" and "server.NewDllFunction.pfnCvarValue2" to AngelScript engine
 
-* Being able to read response of network message "svc_sendcvarvalue" and "svc_sendcvarvalue2" from client.
+* Provide ability of reading responses of querycvar request.
 
-## Send a cvar query requset to client
+## Send a querycvar requset to client
 
 ```
 	//NetworkMessages::NetworkMessageType(58) means "svc_sendcvarvalue2"
@@ -15,7 +15,7 @@
 	m.End();
 ```
 
-## Register an asynchronous callback for cvar query response
+## Register an asynchronous callback for querycvar response
 
 ```
 	g_EngineFuncs.SetQueryCvar2Callback(1, function(CBasePlayer@ pPlayer, int requestId, string cvarName, string value){

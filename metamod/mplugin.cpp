@@ -322,7 +322,7 @@ char * DLLINTERNAL MPlugin::resolve_dirs(const char *path) {
 
 	safevoid_snprintf(buf, sizeof(buf), "%s/%s", GameDLL.gamedir, path);
 	// try this path
-	if(stat(buf, &st) == 0 && S_ISREG(st.st_mode))
+	if(xxstat(buf, &st) == 0 && S_ISREG(st.st_mode))
 		return(buf);
 	// try other file prefixes in this path
 	if((found=resolve_prefix(buf)))
@@ -330,7 +330,7 @@ char * DLLINTERNAL MPlugin::resolve_dirs(const char *path) {
 
 	safevoid_snprintf(buf, sizeof(buf), "%s/dlls/%s", GameDLL.gamedir, path);
 	// try this path
-	if(stat(buf, &st) == 0 && S_ISREG(st.st_mode))
+	if(xxstat(buf, &st) == 0 && S_ISREG(st.st_mode))
 		return(buf);
 	// try other file prefixes for this path
 	if((found=resolve_prefix(buf)))
@@ -366,7 +366,7 @@ char * DLLINTERNAL MPlugin::resolve_prefix(const char *path) {
 		safevoid_snprintf(buf, sizeof(buf), "mm_%s", path);
 	}
 	// try this path
-	if(stat(buf, &st) == 0 && S_ISREG(st.st_mode))
+	if(xxstat(buf, &st) == 0 && S_ISREG(st.st_mode))
 		return(buf);
 	// try other suffixes for this path
 	if((found=resolve_suffix(buf)))
@@ -418,32 +418,32 @@ char * DLLINTERNAL MPlugin::resolve_suffix(const char *path) {
 #else
 #error "OS unrecognized"
 #endif /* _WIN32 */
-	if(stat(buf, &st) == 0 && S_ISREG(st.st_mode))
+	if(xxstat(buf, &st) == 0 && S_ISREG(st.st_mode))
 		return(buf);
 
 #ifdef linux
 #ifdef __x86_64__
 	safevoid_snprintf(buf, sizeof(buf), "%s_amd64.so", path);
-	if(stat(buf, &st) == 0 && S_ISREG(st.st_mode))
+	if(xxstat(buf, &st) == 0 && S_ISREG(st.st_mode))
 		return(buf);
 	safevoid_snprintf(buf, sizeof(buf), "%s_x86_64.so", path);
-	if(stat(buf, &st) == 0 && S_ISREG(st.st_mode))
+	if(xxstat(buf, &st) == 0 && S_ISREG(st.st_mode))
 		return(buf);
 	safevoid_snprintf(buf, sizeof(buf), "%s_x86-64.so", path);
-	if(stat(buf, &st) == 0 && S_ISREG(st.st_mode))
+	if(xxstat(buf, &st) == 0 && S_ISREG(st.st_mode))
 		return(buf);
 #else
 	safevoid_snprintf(buf, sizeof(buf), "%s_i386.so", path);
-	if(stat(buf, &st) == 0 && S_ISREG(st.st_mode))
+	if(xxstat(buf, &st) == 0 && S_ISREG(st.st_mode))
 		return(buf);
 	safevoid_snprintf(buf, sizeof(buf), "%s_i486.so", path);
-	if(stat(buf, &st) == 0 && S_ISREG(st.st_mode))
+	if(xxstat(buf, &st) == 0 && S_ISREG(st.st_mode))
 		return(buf);
 	safevoid_snprintf(buf, sizeof(buf), "%s_i586.so", path);
-	if(stat(buf, &st) == 0 && S_ISREG(st.st_mode))
+	if(xxstat(buf, &st) == 0 && S_ISREG(st.st_mode))
 		return(buf);
 	safevoid_snprintf(buf, sizeof(buf), "%s_i686.so", path);
-	if(stat(buf, &st) == 0 && S_ISREG(st.st_mode))
+	if(xxstat(buf, &st) == 0 && S_ISREG(st.st_mode))
 		return(buf);
 #endif /* !__x86_64__ */
 #endif /* linux */
@@ -1419,7 +1419,7 @@ mBOOL DLLINTERNAL MPlugin::newer_file(void) {
 	struct stat st;
 	time_t file_time;
 
-	if(stat(pathname, &st) != 0)
+	if(xxstat(pathname, &st) != 0)
 		RETURN_ERRNO(mFALSE, ME_NOFILE);
 	file_time=st.st_ctime > st.st_mtime ? st.st_ctime : st.st_mtime;
 	META_DEBUG(5, ("newer_file? file=%s; load=%d, file=%d; ctime=%d, mtime=%d",
