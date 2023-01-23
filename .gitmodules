@@ -4,3 +4,6 @@
 [submodule "capstone"]
 	path = capstone
 	url = https://github.com/capstone-engine/capstone
+[submodule "glibc_version_header"]
+	path = glibc_version_header
+	url = https://github.com/hzqst/glibc_version_header
