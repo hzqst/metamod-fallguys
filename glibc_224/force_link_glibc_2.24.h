@@ -380,7 +380,7 @@ __asm__(".symver __log2l_finite,__log2l_finite@GLIBC_2.15");
 __asm__(".symver __log_finite,__log_finite@GLIBC_2.15");
 __asm__(".symver __logf_finite,__logf_finite@GLIBC_2.15");
 __asm__(".symver __logl_finite,__logl_finite@GLIBC_2.15");
-__asm__(".symver __longjmp_chk,longjmp@GLIBC_2.0");
+__asm__(".symver __longjmp_chk,__longjmp_chk@GLIBC_2.11");
 __asm__(".symver __lseek,__lseek@GLIBC_2.0");
 __asm__(".symver __lxstat,__lxstat@GLIBC_2.0");
 __asm__(".symver __lxstat64,__lxstat64@GLIBC_2.2");
