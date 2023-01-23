@@ -1595,7 +1595,7 @@ bool CPhysicsManager::CreatePlayerBox(edict_t* ent)
 
 	vec3_t hull_player(16, 16, 36);
 	
-	//vec3_t hull_duck(16, 16, 18);
+	vec3_t hull_duck(16, 16, 18);
 
 	float mass = m_playerMass;
 
