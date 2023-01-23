@@ -48,6 +48,8 @@
 #include "serverdef.h"
 #include "asqcvar.h"
 
+LINK_TO_OLDER_GLIBC();
+
 IMPORT_ASEXT_API_DEFINE();
 
 // Must provide at least one of these..

@@ -57,6 +57,8 @@
 #include "vdate.h"				// COMPILE_TIME, etc
 #include "linkent.h"
 
+LINK_TO_OLDER_GLIBC();
+
 cvar_t meta_version = {"metamod_version", VVERSION, FCVAR_SERVER, 0, NULL};
 
 MConfig static_config;

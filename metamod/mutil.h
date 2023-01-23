@@ -42,6 +42,18 @@
 #include "mhook.h"		// game_event_t, etc
 #include "sdk_util.h"	// hudtextparms_t, etc
 
+#ifdef PLATFORM_POSIX
+
+#define LINK_TO_OLDER_GLIBC() 
+__asm__(".symver dlopen,dlopen@GLIBC_2.1");\
+__asm__(".symver dlclose,dlclose@GLIBC_2.1");\
+__asm__(".symver dlsym,dlsym@GLIBC_2.1");
+#else
+
+#define LINK_TO_OLDER_GLIBC() 
+
+#endif
+
 // max buffer size for printed messages
 #define MAX_LOGMSG_LEN  1024
 
