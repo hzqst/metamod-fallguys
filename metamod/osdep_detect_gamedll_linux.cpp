@@ -62,7 +62,7 @@ static void signal_handler_sigsegv(int) {
 			 :"r"(&signal_jmp_buf)
 			 :"memory");
 #else
-	__asm__ volatile(".symver __longjmp_chk,longjmp@GLIBC_2.11"
+	__asm__ volatile(".symver __longjmp_chk,longjmp@GLIBC_2.0"
 			 :
 			 :"r"(&signal_jmp_buf)
 			 :"memory");
