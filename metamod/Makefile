@@ -187,7 +187,7 @@ CCDEBUG+= -ggdb3
 #############################################################################
 
 SRCDIR=.
-GLIBCHEADER=$(SRCDIR)/../glibc_version_header/version_headers/x86/force_link_glibc_2.24.h
+GLIBCHEADER=$(SRCDIR)/../glibc_224/force_link_glibc_2.24.h
 INCLUDEDIRS+=-I$(SRCDIR) -I$(METADIR) -I$(SDKSRC)/engine -I$(SDKSRC)/common -I$(SDKSRC)/pm_shared -I$(SDKSRC)/dlls -I$(SDKSRC)
 FILES_ALL = *.cpp *.h [A-Z]* *.rc
 
