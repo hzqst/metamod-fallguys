@@ -48,8 +48,6 @@
 
 #include "serverdef.h"
 
-LINK_TO_OLDER_GLIBC();
-
 hook_t *g_phook_CASDocumentation_RegisterObjectType = NULL;
 hook_t *g_phook_CASDirectoryList_CreateDirectory = NULL;
 

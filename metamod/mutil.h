@@ -42,18 +42,6 @@
 #include "mhook.h"		// game_event_t, etc
 #include "sdk_util.h"	// hudtextparms_t, etc
 
-#ifdef PLATFORM_POSIX
-
-#define LINK_TO_OLDER_GLIBC() 
-__asm__(".symver dlopen,dlopen@GLIBC_2.1");\
-__asm__(".symver dlclose,dlclose@GLIBC_2.0");\
-__asm__(".symver dlsym,dlsym@GLIBC_2.0");
-#else
-
-#define LINK_TO_OLDER_GLIBC() 
-
-#endif
-
 // max buffer size for printed messages
 #define MAX_LOGMSG_LEN  1024
 
@@ -82,7 +70,6 @@ typedef struct hook_s
 typedef void(*fnDisasmSingleCallback)(void *inst, byte *address, size_t instLen, void *context);
 typedef qboolean(*fnDisasmCallback)(void *inst, byte *address, size_t instLen, int instCount, int depth, void *context);
 typedef qboolean(*fnFindAddressCallback)(byte *address);
-
 
 // For GetGameInfo:
 typedef enum {
