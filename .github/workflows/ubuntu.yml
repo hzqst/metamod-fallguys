@@ -37,13 +37,6 @@ jobs:
           path: 'build'
           exclusions: '.placeholder'
     
-      - name: Archive the source directory 
-        uses: thedoctor0/zip-release@main
-        with:
-          type: 'zip'
-          filename: 'metamod-fallguys-ubuntu-src.zip'
-          path: 'metamod'
-          
       - name: Create Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
@@ -51,4 +44,3 @@ jobs:
           name: metamod-fallguys-${{ github.ref }}
           files: |
             metamod-fallguys-ubuntu-i386.zip
-            metamod-fallguys-ubuntu-src.zip

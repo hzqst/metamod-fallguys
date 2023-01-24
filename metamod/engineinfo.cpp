@@ -107,8 +107,8 @@ bool DLLINTERNAL EngineInfo::check_for_engine_module( const char* _pName )
 	// Now we walk further back and check if we find the string 'engine'
 	// backwards.
 	--pC;
-	if ( *pC-- != 'e' || *pC-- != 'n' || *pC-- != 'i' ||
-		 *pC-- != 'g' || *pC-- != 'n' || *pC != 'e' ) {
+	if ( *pC-- != 'e' || *pC-- != 'n' || *pC-- != 'g' ||
+		 *pC-- != 'i' || *pC-- != 'n' || *pC != 'e' ) {
 		return false;
 	}
 
@@ -388,21 +388,6 @@ int DLLINTERNAL EngineInfo::initialise( enginefuncs_t* _pFuncs )
 	// If we have a refererence pointer we try to use it first.
 	if ( 0 != phdr_dladdr(_pFuncs) ) {
 		ret = phdr_r_debug();
-	}
-
-	if (!m_imageHandle)
-	{
-		m_imageHandle = mutil_GetModuleHandle("engine_i686.so");
-	}
-
-	if (!m_imageHandle)
-	{
-		m_imageHandle = mutil_GetModuleHandle("engine_i386.so");
-	}
-
-	if (!m_imageHandle)
-	{
-		m_imageHandle = mutil_GetModuleHandle("engine_amd.so");
 	}
 
 #endif /* _WIN32 */
