@@ -446,7 +446,7 @@ void *mutil_GetProcAddress(DLHANDLE handle, const char *name)
 #ifdef _WIN32
 	return (void *)GetProcAddress(handle, name);
 #else
-	return (void *)dlsym(handle);
+	return (void *)dlsym(handle, name);
 #endif
 }
 
