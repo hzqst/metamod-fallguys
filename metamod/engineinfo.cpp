@@ -39,9 +39,9 @@ const unsigned long c_VacDllEngineFuncsRangeMark = 0x01D00000;
 void* const c_VacDllEngineFuncsRangeStart = (void*)0x01D00000;
 void* const c_VacDllEngineFuncsRangeEnd = (void*)0x01E00000;
 
-void * mutil_GetModuleBaseByHandle(void *hModule);
+void * mutil_GetModuleBaseByHandle(DLHANDLE hModule);
 size_t mutil_GetImageSize(void *ImageBase);
-void *mutil_GetModuleHandle(const char *name);
+DLHANDLE mutil_GetModuleHandle(const char *name);
 
 bool DLLINTERNAL EngineInfo::check_for_engine_module( const char* _pName )
 {
@@ -107,8 +107,8 @@ bool DLLINTERNAL EngineInfo::check_for_engine_module( const char* _pName )
 	// Now we walk further back and check if we find the string 'engine'
 	// backwards.
 	--pC;
-	if ( *pC-- != 'e' || *pC-- != 'n' || *pC-- != 'g' ||
-		 *pC-- != 'i' || *pC-- != 'n' || *pC != 'e' ) {
+	if ( *pC-- != 'e' || *pC-- != 'n' || *pC-- != 'i' ||
+		 *pC-- != 'g' || *pC-- != 'n' || *pC != 'e' ) {
 		return false;
 	}
 
@@ -243,7 +243,7 @@ int DLLINTERNAL EngineInfo::phdr_elfhdr( const char *_pszFileName, void* _pElfHd
 
 	if ( NULL == _pElfHdr ) return INVALID_ARG;
 
-	m_imageHandle = dlopen(_pszFileName, RTLD_NOLOAD);
+	m_imageHandle = dlopen(_pszFileName, RTLD_NOW | RTLD_GLOBAL | RTLD_NOLOAD);
 
 	m_imageStart = _pElfHdr;
 	m_imageEnd = NULL;

@@ -110,14 +110,14 @@ typedef struct meta_util_funcs_s {
 	void (*pfnGetHookTables) (plid_t plid, enginefuncs_t **peng, DLL_FUNCTIONS **pdll, NEW_DLL_FUNCTIONS **pnewdll);
 
 	// 2022-07 Added by hzqst
-	void *   (*pfnGetModuleBaseByHandle)(void *hModule);
-	void *   (*pfnGetModuleHandle)(const char *name);
-	void *   (*pfnGetModuleBase)(const char *name);
+	void *   (*pfnGetModuleBaseByHandle)(DLHANDLE hModule);
+	DLHANDLE   (*pfnGetModuleHandle)(const char *szModuleName);
+	void *   (*pfnGetModuleBaseByName)(const char *szModuleName);
 	size_t   (*pfnGetImageSize)(void *ImageBase);
 	qboolean (*pfnIsAddressInModuleRange)(void *lpAddress, void *lpModuleBase);
-	void *   (*pfnGetGameDllHandle)(void);
+	DLHANDLE (*pfnGetGameDllHandle)(void);
 	void *   (*pfnGetGameDllBase)(void);
-	void *   (*pfnGetEngineHandle)(void);
+	DLHANDLE (*pfnGetEngineHandle)(void);
 	void *   (*pfnGetEngineBase)(void);
 	void *   (*pfnGetEngineEnd)(void);
 	void *   (*pfnGetEngineCodeBase)(void);
@@ -132,6 +132,9 @@ typedef struct meta_util_funcs_s {
 	qboolean(*pfnDisasmRanges)(void * DisasmBase, size_t DisasmSize, fnDisasmCallback callback, int depth, void *context);
 	void *(*pfnReverseSearchFunctionBegin)(void * SearchBegin, size_t SearchSize);
 	void *(*pfnReverseSearchFunctionBeginEx)(void * SearchBegin, size_t SearchSize, fnFindAddressCallback callback);
+	void (*pfnCloseModuleHandle)(DLHANDLE hModule);
+	DLHANDLE(*pfnLoadLibrary)(const char *szModuleName);
+	void (*pfnFreeLibrary)(DLHANDLE hModule);
 } mutil_funcs_t;
 extern mutil_funcs_t MetaUtilFunctions DLLHIDDEN;
 

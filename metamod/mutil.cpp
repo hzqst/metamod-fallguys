@@ -403,10 +403,10 @@ static void mutil_GetHookTables(plid_t plid, enginefuncs_t **peng, DLL_FUNCTIONS
 
 //2022-07 Added by hzqst
 
-void * mutil_GetModuleBaseByHandle(void *hModule)
+void * mutil_GetModuleBaseByHandle(DLHANDLE hModule)
 {
 #ifdef _WIN32
-	return hModule;
+	return (void *)hModule;
 #else
 	struct link_map *map = NULL;
 	if (0 == dlinfo(hModule, RTLD_DI_LINKMAP, &map))
@@ -416,25 +416,62 @@ void * mutil_GetModuleBaseByHandle(void *hModule)
 		if (0 != dladdr((void *)map->l_ld, &info))
 		{
 			//META_WARNING("mutil_GetModuleBaseByHandle: info.dli_fbase %p", info.dli_fbase);
-			return info.dli_fbase;
+			return (void *)info.dli_fbase;
 		}
 	}
 	return NULL;
 #endif
 }
 
-void *mutil_GetModuleHandle(const char *name)
+DLHANDLE mutil_LoadLibrary(const char *name)
 {
 #ifdef _WIN32
-	return (void *)GetModuleHandleA(name);
+	return LoadLibraryA(name);
 #else
-	return (void *)dlopen(name, RTLD_NOLOAD);
+	return dlopen(name, RTLD_NOW);
 #endif
 }
 
-void *mutil_GetModuleBase(const char *name)
+void mutil_FreeLibrary(DLHANDLE handle)
 {
-	return (void *)mutil_GetModuleBaseByHandle(mutil_GetModuleHandle(name));
+#ifdef _WIN32
+	FreeLibrary(handle);
+#else
+	dlclose(handle);
+#endif
+}
+
+void mutil_CloseModuleHandle(DLHANDLE handle)
+{
+#ifdef _WIN32
+	
+#else
+	dlclose(handle);
+#endif
+}
+
+DLHANDLE mutil_GetModuleHandle(const char *name)
+{
+#ifdef _WIN32
+	return GetModuleHandleA(name);
+#else
+	return dlopen(name, RTLD_NOW | RTLD_GLOBAL | RTLD_NOLOAD);
+#endif
+}
+
+void *mutil_GetModuleBaseByName(const char *name)
+{
+	auto base = (void *)NULL;
+
+	auto handle = mutil_GetModuleHandle(name);
+
+	if (handle != NULL)
+	{
+		base = mutil_GetModuleBaseByHandle(handle);
+
+		mutil_CloseModuleHandle(handle);
+	}
+	return base;
 }
 
 size_t mutil_GetImageSize(void *ImageBase)
@@ -474,9 +511,9 @@ qboolean mutil_IsAddressInModuleRange(void *lpAddress, void *lpModuleBase)
 #endif
 }
 
-void *mutil_GetGameDllHandle(void)
+DLHANDLE mutil_GetGameDllHandle(void)
 {
-	return (void *)GameDLL.handle;
+	return GameDLL.handle;
 }
 
 void *mutil_GetGameDllBase(void)
@@ -484,7 +521,7 @@ void *mutil_GetGameDllBase(void)
 	return (void *)GameDLL.imagebase;
 }
 
-void *mutil_GetEngineHandle(void)
+DLHANDLE mutil_GetEngineHandle(void)
 {
 	return Engine.info.m_imageHandle;
 }
@@ -1172,7 +1209,7 @@ mutil_funcs_t MetaUtilFunctions = {
 	//2022-07 Added by hzqst
 	mutil_GetModuleBaseByHandle,
 	mutil_GetModuleHandle,
-	mutil_GetModuleBase,
+	mutil_GetModuleBaseByName,
 	mutil_GetImageSize,
 	mutil_IsAddressInModuleRange,
 	mutil_GetGameDllHandle,
@@ -1192,4 +1229,7 @@ mutil_funcs_t MetaUtilFunctions = {
 	mutil_DisasmRanges,
 	mutil_ReverseSearchFunctionBegin,
 	mutil_ReverseSearchFunctionBeginEx,
+	mutil_CloseModuleHandle,
+	mutil_LoadLibrary,
+	mutil_FreeLibrary
 };

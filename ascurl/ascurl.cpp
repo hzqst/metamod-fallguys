@@ -316,13 +316,13 @@ static int m_request_index = 1;
 
 bool ASCURL_Init()
 {
-	auto libcurl = DLOPEN(LIBCURL_DLL_NAME);
-	if (!libcurl)
+	auto libcurlHandle = gpMetaUtilFuncs->pfnGetModuleHandle(LIBCURL_DLL_NAME);
+	if (!libcurlHandle)
 	{
 		LOG_ERROR(PLID, "failed to find libcurl dll");
 		return false;
 	}
-#define CURL_DLSYM(name) g_pfn_##name = (decltype(g_pfn_##name))DLSYM(libcurl, #name);\
+#define CURL_DLSYM(name) g_pfn_##name = (decltype(g_pfn_##name))DLSYM(libcurlHandle, #name);\
 	if (!g_pfn_##name)\
 	{\
 		LOG_ERROR(PLID, "failed to find " #name);\
@@ -344,6 +344,8 @@ bool ASCURL_Init()
 	CURL_DLSYM(curl_multi_add_handle);
 	CURL_DLSYM(curl_multi_remove_handle);
 	CURL_DLSYM(curl_multi_cleanup);
+
+	gpMetaUtilFuncs->pfnCloseModuleHandle(libcurlHandle);
 
 	g_multi_handle = g_pfn_curl_multi_init();
 	if (!g_multi_handle)
