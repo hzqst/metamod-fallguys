@@ -48,6 +48,8 @@
 
 #include "serverdef.h"
 
+mBOOL dlclose_handle_invalid;
+
 hook_t *g_phook_CASDocumentation_RegisterObjectType = NULL;
 hook_t *g_phook_CASDirectoryList_CreateDirectory = NULL;
 

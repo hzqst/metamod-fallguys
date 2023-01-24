@@ -48,6 +48,8 @@
 #include "serverdef.h"
 #include "asqcvar.h"
 
+mBOOL dlclose_handle_invalid;
+
 IMPORT_ASEXT_API_DEFINE();
 
 // Must provide at least one of these..

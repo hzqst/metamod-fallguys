@@ -16,7 +16,6 @@
 #include "ascurl.h"
 
 //Missing symbol for linux
-mBOOL dlclose_handle_invalid;
 
 #define LIBCURL_FUNCTION_DEFINE(name) static decltype(name) * g_pfn_##name
 
