@@ -36,6 +36,7 @@ endif
 INCLUDEDIRS+=-I$(SDKSRC)/../CDetour
 INCLUDEDIRS+=-I$(SDKSRC)/../procmap/include
 INCLUDEDIRS+=-I$(SDKSRC)/../capstone/include/capstone
+INCLUDEDIRS+=-include $(GLIBCHEADER)
 EXTRA_LINK+=-L$(SDKSRC)/../capstone/build/lib
 EXTRA_LINK+=-Wl,--whole-archive -lcapstone -Wl,--no-whole-archive
 

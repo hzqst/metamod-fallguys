@@ -187,8 +187,8 @@ CCDEBUG+= -ggdb3
 #############################################################################
 
 SRCDIR=.
-GLIBCHEADER=$(SRCDIR)/../glibc_224/force_link_glibc_2.24.h
-INCLUDEDIRS+=-I$(SRCDIR) -I$(METADIR) -I$(SDKSRC)/engine -I$(SDKSRC)/common -I$(SDKSRC)/pm_shared -I$(SDKSRC)/dlls -I$(SDKSRC)
+GLIBCHEADER=force_link_glibc_2.24.h
+INCLUDEDIRS+=-I$(SRCDIR) -I$(METADIR) -I$(SDKSRC)/engine -I$(SDKSRC)/common -I$(SDKSRC)/pm_shared -I$(SDKSRC)/dlls -I$(SDKSRC) -I$(SRCDIR)/../glibc_224
 FILES_ALL = *.cpp *.h [A-Z]* *.rc
 
 CFLAGS=-Wall -Wno-unknown-pragmas -Wno-attributes -Wno-write-strings
@@ -251,7 +251,7 @@ $(STLOBJ): CFLAGS += -Wno-error
 #############################################################################
 
 # linux .so compile commands
-DO_CC_LINUX=$(CC) $(CFLAGS) -fPIC $(INCLUDEDIRS) -o $@ -c $< $(FILTER) -include $(GLIBCHEADER)
+DO_CC_LINUX=$(CC) $(CFLAGS) -fPIC $(INCLUDEDIRS) -o $@ -c $< $(FILTER)
 LINK_LINUX=$(CC) $(CFLAGS) -o $@ -shared -static-libgcc $(EXTRA_LINK) $(OBJ_LINUX) -lm -ldl
 
 # sort by date
