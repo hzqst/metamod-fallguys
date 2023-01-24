@@ -48,8 +48,6 @@
 #include "serverdef.h"
 #include "asusermsg.h"
 
-mBOOL dlclose_handle_invalid;
-
 IMPORT_ASEXT_API_DEFINE();
 
 // Must provide at least one of these..
@@ -167,12 +165,3 @@ C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME /* now */,
 {
 	return TRUE;
 }
-
-#ifdef PLATFORM_POSIX
-C_DLLEXPORT void meta_linkdl()
-{
-	DLOPEN("");
-	DLSYM(NULL, "");
-	DLCLOSE(NULL);
-}
-#endif

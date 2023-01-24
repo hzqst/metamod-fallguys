@@ -48,8 +48,6 @@
 
 #include "serverdef.h"
 
-mBOOL dlclose_handle_invalid;
-
 hook_t *g_phook_CASDocumentation_RegisterObjectType = NULL;
 hook_t *g_phook_CASDirectoryList_CreateDirectory = NULL;
 
@@ -202,12 +200,3 @@ C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME /* now */,
 
 	return TRUE;
 }
-
-#ifdef PLATFORM_POSIX
-C_DLLEXPORT void meta_linkdl()
-{
-	DLOPEN("");
-	DLSYM(NULL, "");
-	DLCLOSE(NULL);
-}
-#endif

@@ -441,6 +441,15 @@ void mutil_FreeLibrary(DLHANDLE handle)
 #endif
 }
 
+void *mutil_GetProcAddress(DLHANDLE handle, const char *name)
+{
+#ifdef _WIN32
+	return (void *)GetProcAddress(handle, name);
+#else
+	return (void *)dlsym(handle);
+#endif
+}
+
 void mutil_CloseModuleHandle(DLHANDLE handle)
 {
 #ifdef _WIN32
@@ -1231,5 +1240,6 @@ mutil_funcs_t MetaUtilFunctions = {
 	mutil_ReverseSearchFunctionBeginEx,
 	mutil_CloseModuleHandle,
 	mutil_LoadLibrary,
-	mutil_FreeLibrary
+	mutil_FreeLibrary,
+	mutil_GetProcAddress
 };

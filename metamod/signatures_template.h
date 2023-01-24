@@ -22,7 +22,7 @@
 #define _ARRAYSIZE(A)   (sizeof(A)/sizeof((A)[0]))
 #endif
 
-#define LOCATE_FROM_SIGNATURE(dll, sig) DLSYM(dll##Handle, sig)
+#define LOCATE_FROM_SIGNATURE(dll, sig) gpMetaUtilFuncs->pfnGetProcAddress(dll##Handle, sig)
 
 #define ENGINE_DLL_NAME "hw.so"
 

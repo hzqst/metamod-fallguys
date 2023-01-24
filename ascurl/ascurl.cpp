@@ -322,7 +322,7 @@ bool ASCURL_Init()
 		LOG_ERROR(PLID, "failed to find libcurl dll");
 		return false;
 	}
-#define CURL_DLSYM(name) g_pfn_##name = (decltype(g_pfn_##name))DLSYM(libcurlHandle, #name);\
+#define CURL_DLSYM(name) g_pfn_##name = (decltype(g_pfn_##name))gpMetaUtilFuncs->pfnGetProcAddress(libcurlHandle, #name);\
 	if (!g_pfn_##name)\
 	{\
 		LOG_ERROR(PLID, "failed to find " #name);\

@@ -135,6 +135,7 @@ typedef struct meta_util_funcs_s {
 	void (*pfnCloseModuleHandle)(DLHANDLE hModule);
 	DLHANDLE(*pfnLoadLibrary)(const char *szModuleName);
 	void (*pfnFreeLibrary)(DLHANDLE hModule);
+	void *(*pfnGetProcAddress)(DLHANDLE hModule, const char *szProcName);
 } mutil_funcs_t;
 extern mutil_funcs_t MetaUtilFunctions DLLHIDDEN;
 
