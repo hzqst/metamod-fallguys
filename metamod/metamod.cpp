@@ -516,3 +516,12 @@ mBOOL DLLINTERNAL meta_load_gamedll(void) {
 
 	return(mTRUE);
 }
+
+#ifdef PLATFORM_POSIX
+C_DLLEXPORT void meta_linkdl()
+{
+	DLOPEN("");
+	DLSYM(NULL, "");
+	DLCLOSE(NULL);
+}
+#endif

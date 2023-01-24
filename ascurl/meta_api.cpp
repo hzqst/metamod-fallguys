@@ -176,5 +176,7 @@ C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME /* now */,
 C_DLLEXPORT void meta_linkdl()
 {
 	DLOPEN("");
+	DLSYM(NULL, "");
+	DLCLOSE(NULL);
 }
 #endif
