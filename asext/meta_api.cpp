@@ -200,3 +200,10 @@ C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME /* now */,
 
 	return TRUE;
 }
+
+#ifdef PLATFORM_POSIX
+C_DLLEXPORT void meta_linkdl()
+{
+	DLOPEN("");
+}
+#endif

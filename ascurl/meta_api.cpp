@@ -169,6 +169,12 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME /* now */, 
 		PL_UNLOAD_REASON /* reason */) 
 {
-
 	return TRUE;
 }
+
+#ifdef PLATFORM_POSIX
+C_DLLEXPORT void meta_linkdl()
+{
+	DLOPEN("");
+}
+#endif

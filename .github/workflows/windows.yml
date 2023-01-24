@@ -26,7 +26,7 @@ jobs:
     steps:
       - uses: hzqst/checkout@v2.3.4
 
-      - name: Update submodules
+      - name: Get submodules
         working-directory: ${{env.GITHUB_WORKSPACE}}
         run: git submodule update --init --recursive
         shell: cmd
@@ -51,7 +51,7 @@ jobs:
         run: del "build\addons\metamod\dlls\.placeholder"
         shell: cmd
 
-      - name: Zipping the build directory 
+      - name: Archive the build directory 
         uses: thedoctor0/zip-release@main
         with:
           type: 'zip'

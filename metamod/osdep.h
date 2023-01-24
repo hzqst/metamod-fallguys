@@ -317,6 +317,6 @@ __inline int xxstat(char const* const _FileName, struct stat* const _Stat)
 	return stat(_FileName, _Stat);
 #endif
 }
-
+	
 
 #endif /* OSDEP_H */
