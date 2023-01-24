@@ -689,12 +689,12 @@ bool ASCURL_hmac_sha1(const std::string& pwd, const std::string& msg, std::strin
 {
 	bool bSuccess = false;
 
-	auto libcryptoHandle = DLOPEN("libcrypto.so.1.1");
+	auto libcryptoHandle = gpMetaUtilFuncs->pfnLoadLibrary("libcrypto.so.1.1");
 
 	if (libcryptoHandle)
 	{
-		auto pfnEVP_sha1 = (decltype(EVP_sha1) *)DLSYM(libcryptoHandle, "EVP_sha1");
-		auto pfnHMAC = (decltype(HMAC) *)DLSYM(libcryptoHandle, "HMAC");
+		auto pfnEVP_sha1 = (decltype(EVP_sha1) *)gpMetaUtilFuncs->pfnGetProcAddress(libcryptoHandle, "EVP_sha1");
+		auto pfnHMAC = (decltype(HMAC) *)gpMetaUtilFuncs->pfnGetProcAddress(libcryptoHandle, "HMAC");
 
 		if (pfnEVP_sha1 && pfnHMAC)
 		{
@@ -715,7 +715,7 @@ bool ASCURL_hmac_sha1(const std::string& pwd, const std::string& msg, std::strin
 			bSuccess = true;
 		}
 
-		DLCLOSE(libcryptoHandle);
+		gpMetaUtilFuncs->pfnFreeLibrary(libcryptoHandle);
 	}
 
 	return bSuccess;
@@ -725,12 +725,12 @@ bool ASCURL_hmac_md5(const std::string& pwd, const std::string& msg, std::string
 {
 	bool bSuccess = false;
 
-	auto libcryptoHandle = DLOPEN("libcrypto.so.1.1");
+	auto libcryptoHandle = gpMetaUtilFuncs->pfnLoadLibrary("libcrypto.so.1.1");
 
 	if (libcryptoHandle)
 	{
-		auto pfnEEVP_md5 = (decltype(EVP_md5) *)DLSYM(libcryptoHandle, "EVP_md5");
-		auto pfnHMAC = (decltype(HMAC) *)DLSYM(libcryptoHandle, "HMAC");
+		auto pfnEEVP_md5 = (decltype(EVP_md5) *)gpMetaUtilFuncs->pfnGetProcAddress(libcryptoHandle, "EVP_md5");
+		auto pfnHMAC = (decltype(HMAC) *)gpMetaUtilFuncs->pfnGetProcAddress(libcryptoHandle, "HMAC");
 
 		if (pfnEEVP_md5 && pfnHMAC)
 		{
@@ -751,7 +751,7 @@ bool ASCURL_hmac_md5(const std::string& pwd, const std::string& msg, std::string
 			bSuccess = true;
 		}
 
-		DLCLOSE(libcryptoHandle);
+		gpMetaUtilFuncs->pfnFreeLibrary(libcryptoHandle);
 	}
 
 	return bSuccess;
@@ -763,15 +763,15 @@ bool ASCURL_md5(const char* Data, int DataByte, std::string &out)
 {
 	bool bSuccess = false;
 
-	auto libcryptoHandle = DLOPEN("libcrypto.so.1.1");
+	auto libcryptoHandle = gpMetaUtilFuncs->pfnLoadLibrary("libcrypto.so.1.1");
 
 	if (libcryptoHandle)
 	{
-		auto pfnMD5_Init = (decltype(MD5_Init) *)DLSYM(libcryptoHandle, "MD5_Init");
-		auto pfnMD5_Update = (decltype(MD5_Update) *)DLSYM(libcryptoHandle, "MD5_Update");
-		auto pfnMD5_Final = (decltype(MD5_Final) *)DLSYM(libcryptoHandle, "MD5_Final");
+		auto pfnMD5_Init = (decltype(MD5_Init) *)gpMetaUtilFuncs->pfnGetProcAddress(libcryptoHandle, "MD5_Init");
+		auto pfnMD5_Update = (decltype(MD5_Update) *)gpMetaUtilFuncs->pfnGetProcAddress(libcryptoHandle, "MD5_Update");
+		auto pfnMD5_Final = (decltype(MD5_Final) *)gpMetaUtilFuncs->pfnGetProcAddress(libcryptoHandle, "MD5_Final");
 
-		if (pfnMD5_Init &&pfnMD5_Update && pfnMD5_Final)
+		if (pfnMD5_Init && pfnMD5_Update && pfnMD5_Final)
 		{
 			unsigned char digest[16];
 			MD5_CTX md5;
@@ -784,7 +784,10 @@ bool ASCURL_md5(const char* Data, int DataByte, std::string &out)
 
 			bSuccess = true;
 		}
+
+		gpMetaUtilFuncs->pfnFreeLibrary(libcryptoHandle);
 	}
+
 
 	return bSuccess;
 }

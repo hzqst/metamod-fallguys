@@ -119,11 +119,6 @@ void metamod_unload()
 		RegMsgs = NULL;
 	}
 
-	if (GameDLL.handle)
-	{
-		DLCLOSE(GameDLL.handle);
-		GameDLL.handle = NULL;
-	}
 	if (GameDLL.funcs.dllapi_table)
 	{
 		free(GameDLL.funcs.dllapi_table);
@@ -139,8 +134,14 @@ void metamod_unload()
 		free(GameDLL.funcs.studio_blend_api);
 		GameDLL.funcs.studio_blend_api = NULL;
 	}
+	if (GameDLL.handle)
+	{
+		DLCLOSE(GameDLL.handle);
+		GameDLL.handle = NULL;
+	}
 
 	uninit_linkent_replacement();
+	Engine.info.uninitialise();
 }
 
 // Very first metamod function that's run.

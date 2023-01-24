@@ -34,7 +34,7 @@ static const int  c_EngineInfo__typeLen = 10;
 
 class EngineInfo : public class_metamod_new
 {
-	public:
+public:
 
 	DLHANDLE m_imageHandle;
 
@@ -123,6 +123,8 @@ class EngineInfo : public class_metamod_new
         // Initilaise object, determining the bounds of the code segment of
         // the HL engine shared object.
 	int DLLINTERNAL initialise( enginefuncs_t* pFuncs  = NULL );
+
+	void DLLINTERNAL uninitialise();
         
         // Test if pMem is within bounds of the code segment.
 	bool DLLINTERNAL is_valid_code_pointer( void* pMem );

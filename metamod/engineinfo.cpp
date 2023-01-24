@@ -42,6 +42,7 @@ void* const c_VacDllEngineFuncsRangeEnd = (void*)0x01E00000;
 void * mutil_GetModuleBaseByHandle(DLHANDLE hModule);
 size_t mutil_GetImageSize(void *ImageBase);
 DLHANDLE mutil_GetModuleHandle(const char *name);
+void mutil_CloseModuleHandle(DLHANDLE handle);
 
 bool DLLINTERNAL EngineInfo::check_for_engine_module( const char* _pName )
 {
@@ -243,7 +244,7 @@ int DLLINTERNAL EngineInfo::phdr_elfhdr( const char *_pszFileName, void* _pElfHd
 
 	if ( NULL == _pElfHdr ) return INVALID_ARG;
 
-	m_imageHandle = dlopen(_pszFileName, RTLD_NOW | RTLD_GLOBAL | RTLD_NOLOAD);
+	m_imageHandle = mutil_GetModuleHandle(_pszFileName);
 
 	m_imageStart = _pElfHdr;
 	m_imageEnd = NULL;
@@ -356,6 +357,17 @@ void DLLINTERNAL EngineInfo::set_code_range( void* _pBase, ElfW(Phdr)* _pPhdr )
 
 #endif /* _WIN32 */
 
+void DLLINTERNAL EngineInfo::uninitialise()
+{
+	if (m_imageHandle)
+	{
+		mutil_CloseModuleHandle(m_imageHandle);
+		m_imageHandle = NULL;
+	}
+
+	m_imageStart = 0;
+	m_imageEnd = 0;
+}
 
 int DLLINTERNAL EngineInfo::initialise( enginefuncs_t* _pFuncs )
 {
