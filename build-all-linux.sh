@@ -18,8 +18,6 @@ cd capstone/build
 
 make OPT=opt install
 
-strings capstone/build/lib/libcapstone.a | grep GLIBC
-
 cd ../../
 
 make OPT=opt install
