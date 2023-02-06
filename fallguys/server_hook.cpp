@@ -49,8 +49,8 @@ bool SC_SERVER_DECL CASEntityFuncs__CreateSolidOptimizer(void* pthis, SC_SERVER_
 	return gPhysicsManager.CreateSolidOptimizer(ent, boneindex, halfext, halfext2);
 }
 
-//Legacy call for "Fall Guys in Sven Co-op Season 2", this goes into CreatePhysicObject in Season 3
-bool SC_SERVER_DECL CASEntityFuncs__CreatePhysicBox(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, float mass, float linearfriction, float rollingfriction, float restitution, float ccdradius, float ccdthreshold, bool hasclippinghull)
+//Legacy call for "Fall Guys in Sven Co-op Season 2", call CreatePhysicObject instead in Season 3
+bool SC_SERVER_DECL CASEntityFuncs__CreatePhysicBox(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, float mass, float linearfriction, float rollingfriction, float restitution, float ccdradius, float ccdthreshold, bool pushable)
 {
 	PhysicShapeParams shapeParams;
 	shapeParams.type = PhysicShape_Box;
@@ -63,12 +63,6 @@ bool SC_SERVER_DECL CASEntityFuncs__CreatePhysicBox(void* pthis, SC_SERVER_DUMMY
 	objectParams.restitution = restitution;
 	objectParams.ccdradius = ccdradius;
 	objectParams.ccdthreshold = ccdthreshold;
-
-	if (hasclippinghull)
-	{
-		objectParams.flags = PhysicObject_HasClippingHull;
-		objectParams.clippinghull_size = Vector((ent->v.maxs.x - ent->v.mins.x) * 0.5f, (ent->v.maxs.y - ent->v.mins.y) * 0.5f, (ent->v.maxs.z - ent->v.mins.z) * 0.5f);
-	}
 
 	return gPhysicsManager.CreatePhysicObject(ent, &shapeParams, &objectParams);
 }
@@ -117,6 +111,19 @@ bool SC_SERVER_DECL CASEntityFuncs__SetPhysicObjectFreeze(void* pthis, SC_SERVER
 bool SC_SERVER_DECL CASEntityFuncs__SetEntityFollow(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, edict_t* follow, int flags, const Vector &origin_offset, const Vector &angles_offset)
 {
 	return gPhysicsManager.SetEntityFollow(ent, follow, flags, origin_offset, angles_offset);
+}
+
+bool SC_SERVER_DECL CASEntityFuncs__SetEntityEnvStudioAnim(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int flags, CScriptArray *keyframes)
+{
+	bool bResult = false;
+
+	EnvStudioKeyframe **pdata = (EnvStudioKeyframe **)keyframes->data();
+
+	bResult = gPhysicsManager.SetEntityEnvStudioAnim(ent, flags, pdata, keyframes->size());
+
+	ASEXT_CScriptAny_Release(keyframes);
+
+	return bResult;
 }
 
 bool SC_SERVER_DECL CASEntityFuncs__SetEntitySuperPusher(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, bool enable)
@@ -241,9 +248,18 @@ void RegisterAngelScriptMethods(void)
 
 		/* PhysicPlayerConfigs */
 
+		REGISTER_PLAIN_VALUE_OBJECT(EnvStudioKeyframe);
+
+		ASEXT_RegisterObjectProperty(pASDoc, "", "EnvStudioKeyframe", "float frame", offsetof(EnvStudioKeyframe, frame));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "EnvStudioKeyframe", "float renderamt", offsetof(EnvStudioKeyframe, renderamt));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "EnvStudioKeyframe", "float scale", offsetof(EnvStudioKeyframe, scale));
+
+		/* PhysicPlayerConfigs */
+
 		REGISTER_PLAIN_VALUE_OBJECT(PhysicPlayerConfigs);
 
 		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicPlayerConfigs", "float mass", offsetof(PhysicPlayerConfigs, mass));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicPlayerConfigs", "float maxPendingVelocity", offsetof(PhysicPlayerConfigs, maxPendingVelocity));
 
 		/* PhysicShapeParams */
 
@@ -439,7 +455,7 @@ void RegisterAngelScriptMethods(void)
 			(void *)CASEntityFuncs__CreateSolidOptimizer, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Create physic object for entity", "CEntityFuncs", "bool CreatePhysicBox(edict_t@ ent, float mass, float linearfriction, float rollingfriction, float restitution, float ccdradius, float ccdthreshold, bool hasclippinghull )",
+			"Create physic object for entity", "CEntityFuncs", "bool CreatePhysicBox(edict_t@ ent, float mass, float linearfriction, float rollingfriction, float restitution, float ccdradius, float ccdthreshold, bool pushable )",
 			(void *)CASEntityFuncs__CreatePhysicBox, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
@@ -481,6 +497,10 @@ void RegisterAngelScriptMethods(void)
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Enable follow for the entity", "CEntityFuncs", "bool SetEntityFollow(edict_t@ ent, edict_t@ follow, int flags, const Vector& in origin_offset, const Vector& in angles_offset )",
 			(void *)CASEntityFuncs__SetEntityFollow, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Enable follow for the entity", "CEntityFuncs", "bool SetEntityEnvStudioAnim(edict_t@ ent, int flags, array<EnvStudioKeyframe>@ keyframes )",
+			(void *)CASEntityFuncs__SetEntityEnvStudioAnim, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Get current working Super-Pusher entity and push direction, return valid edict only in pfnTouch callback", "CEntityFuncs", "edict_t@ GetCurrentSuperPusher(Vector& out vecPushDirection)",

@@ -13,14 +13,51 @@
 extern edict_t* r_worldentity;
 extern model_t* r_worldmodel;
 
+//EnvStudioKeyframe
+
+void EnvStudioKeyframe_ctor(EnvStudioKeyframe *pthis)
+{
+	pthis->frame = 0;
+	pthis->renderamt = 255;
+	pthis->scale = 1;
+}
+
+EnvStudioKeyframe::EnvStudioKeyframe()
+{
+	EnvStudioKeyframe_ctor(this);
+}
+
+void EnvStudioKeyframe_copyctor(EnvStudioKeyframe *a1, EnvStudioKeyframe *a2)
+{
+	a1->frame = a2->frame;
+	a1->renderamt = a2->renderamt;
+	a1->scale = a2->scale;
+}
+
+EnvStudioKeyframe * SC_SERVER_DECL EnvStudioKeyframe_opassign(EnvStudioKeyframe *a1, SC_SERVER_DUMMYARG EnvStudioKeyframe *a2)
+{
+	EnvStudioKeyframe_copyctor(a1, a2);
+
+	return a1;
+}
+
+void EnvStudioKeyframe_dtor(EnvStudioKeyframe *pthis)
+{
+
+}
+
+//PhysicPlayerConfigs
+
 void PhysicPlayerConfigs_ctor(PhysicPlayerConfigs *pthis)
 {
 	pthis->mass = 20;
+	pthis->maxPendingVelocity = 1000;
 }
 
 void PhysicPlayerConfigs_copyctor(PhysicPlayerConfigs *a1, PhysicPlayerConfigs *a2)
 {
 	a1->mass = a2->mass;
+	a1->maxPendingVelocity = a2->maxPendingVelocity;
 }
 
 PhysicPlayerConfigs * SC_SERVER_DECL PhysicPlayerConfigs_opassign(PhysicPlayerConfigs *a1, SC_SERVER_DUMMYARG PhysicPlayerConfigs *a2)
@@ -220,6 +257,7 @@ CPhysicsManager::CPhysicsManager()
 	m_solidPlayerMask = 0;
 	m_simrate = 1 / 60.0f;
 	m_playerMass = 20;
+	m_playerMaxPendingVelocity = 1000;
 
 	m_CurrentImpactImpulse = 0;
 	m_CurrentImpactPoint = g_vecZero;
@@ -586,14 +624,18 @@ CStaticObject* CPhysicsManager::CreateStaticObject(CGameObject *obj, vertexarray
 	return staticobj;
 }
 
-CPlayerObject* CPhysicsManager::CreatePlayerObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass, float ccdRadius, float ccdThreshold, bool duck)
+CPlayerObject* CPhysicsManager::CreatePlayerObject(CGameObject *obj, btCollisionShape* collisionShape, float ccdRadius, float ccdThreshold, bool duck)
 {
+	btVector3 localInertia;
+	collisionShape->calculateLocalInertia(m_playerMass, localInertia);
+
 	//Player only collides with pushable objects, clipping hull objects, and world (do we really need to collide with world ?)
 	auto playerobj = new CPlayerObject(
 		obj,
 		btBroadphaseProxy::DefaultFilter | FallGuysCollisionFilterGroups::PlayerFilter,
 		btBroadphaseProxy::AllFilter & ~(FallGuysCollisionFilterGroups::PlayerFilter),
-		mass,
+		m_playerMass,
+		m_playerMaxPendingVelocity,
 		duck);
 
 	btRigidBody::btRigidBodyConstructionInfo cInfo(m_playerMass, new EntityMotionState(playerobj), collisionShape, localInertia);
@@ -716,6 +758,11 @@ void EntityMotionState::getWorldTransform(btTransform& worldTrans) const
 
 		btVector3 vecAngles(ent->v.angles.x, ent->v.angles.y, ent->v.angles.z);
 
+		if (ent->v.solid == SOLID_BSP)
+		{
+			vecAngles.setX(-vecAngles.x());
+		}
+
 		if (GetPhysicObject()->IsPlayer())
 		{
 			vecAngles.setX(0);
@@ -733,15 +780,18 @@ void EntityMotionState::getWorldTransform(btTransform& worldTrans) const
 		}
 		else
 		{
-			btVector3 GoldSrcOrigin(ent->v.origin.x, ent->v.origin.y, ent->v.origin.z);
+			btVector3 vecOrigin(ent->v.origin.x, ent->v.origin.y, ent->v.origin.z);
 
-			worldTrans = btTransform(btQuaternion(0, 0, 0, 1), GoldSrcOrigin);
+			worldTrans = btTransform(btQuaternion(0, 0, 0, 1), vecOrigin);
 
-			vec3_t GoldSrcAngles = ent->v.angles;
+			btVector3 vecAngles(ent->v.angles.x, ent->v.angles.y, ent->v.angles.z);
 
-			btVector3 angles;
-			GoldSrcAngles.CopyToArray(angles.m_floats);
-			EulerMatrix(angles, worldTrans.getBasis());
+			if (ent->v.solid == SOLID_BSP)
+			{
+				vecAngles.setX(-vecAngles.x());
+			}
+
+			EulerMatrix(vecAngles, worldTrans.getBasis());
 
 			m_worldTransform = worldTrans;
 			m_worldTransformInitialized = true;
@@ -798,16 +848,13 @@ void CPhysicsManager::EntityStartFrame()
 	{
 		auto ent = g_engfuncs.pfnPEntityOfEntIndex(i);
 
-		if (!ent)
+		if (!ent || ent->free)
 			continue;
 
 		auto obj = m_gameObjects[i];
 
 		if (!obj)
 		{
-			if (ent->free)
-				continue;
-
 			if (IsEntitySolidPusher(ent))
 			{
 				CreateBrushModel(ent);
@@ -827,6 +874,11 @@ void CPhysicsManager::EntityStartFrame()
 				RemoveGameObject(i);
 				continue;
 			}
+			//Just in case not created?
+			if (IsEntitySolidPusher(ent))
+			{
+				CreateBrushModel(ent);
+			}
 
 			if (IsEntitySolidPlayer(i, ent))
 			{
@@ -844,10 +896,7 @@ void CPhysicsManager::EntityStartFrame_Post()
 	{
 		auto ent = g_engfuncs.pfnPEntityOfEntIndex(i);
 
-		if (!ent)
-			continue;
-
-		if (ent->free)
+		if (!ent || ent->free)
 			continue;
 
 		auto body = m_gameObjects[i];
@@ -865,10 +914,7 @@ void CPhysicsManager::EntityEndFrame()
 	{
 		auto ent = g_engfuncs.pfnPEntityOfEntIndex(i);
 
-		if (!ent)
-			continue;
-
-		if (ent->free)
+		if (!ent || ent->free)
 			continue;
 
 		auto body = m_gameObjects[i];
@@ -1060,10 +1106,18 @@ void CPlayerObject::EndFrame(btDiscreteDynamicsWorld* world)
 	}
 	else
 	{
-		//Apply pending velocity
+		//Apply pending velocity when unblocked
 		if (m_TickCount == m_BlockingTickCount + 1)
 		{
-			ent->v.velocity = ent->v.velocity + m_PendingVelocity;
+			auto vecNewVelocity = ent->v.velocity + m_PendingVelocity;
+
+			if (m_flMaxPendingVelocity > 0 && vecNewVelocity.Length() > m_flMaxPendingVelocity)
+			{
+				vecNewVelocity = vecNewVelocity.Normalize() * m_flMaxPendingVelocity;
+			}
+
+			ent->v.velocity = vecNewVelocity;
+
 			m_PendingVelocity = g_vecZero;
 		}
 	}
@@ -1548,7 +1602,7 @@ bool CPhysicsManager::CreateBrushModel(edict_t* ent)
 		AddGameObject(obj);
 	}
 
-	//Already created as physic brush entit y?
+	//Already created as physic brush entity?
 	if (obj->GetNumPhysicObject() > 0)
 		return false;
 
@@ -1567,19 +1621,14 @@ bool CPhysicsManager::CreateBrushModel(edict_t* ent)
 
 	auto staticobj = CreateStaticObject(obj, m_worldVertexArray, m_brushIndexArray[modelindex], bKinematic);
 	
-	if (staticobj)
+	obj->AddPhysicObject(staticobj, m_dynamicsWorld, &m_numDynamicObjects);
+
+	if (ent->v.flags & FL_CONVEYOR)
 	{
-		obj->AddPhysicObject(staticobj, m_dynamicsWorld, &m_numDynamicObjects);
-
-		if (ent->v.flags & FL_CONVEYOR)
-		{
-			staticobj->GetRigidBody()->setCollisionFlags(staticobj->GetRigidBody()->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
-		}
-
-		return true;
+		staticobj->GetRigidBody()->setCollisionFlags(staticobj->GetRigidBody()->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
 	}
 
-	return false;
+	return true;
 }
 
 bool CPhysicsManager::CreatePlayerBox(edict_t* ent)
@@ -1597,18 +1646,13 @@ bool CPhysicsManager::CreatePlayerBox(edict_t* ent)
 	
 	vec3_t hull_duck(16, 16, 18);
 
-	float mass = m_playerMass;
-
 	if (1)
 	{
 		//4 units extended to push other physic objects, and -1 unit to prevent player from crushing objects into ground
 
 		auto shape = new btBoxShape(btVector3(hull_player.x + 4, hull_player.y + 4, hull_player.z - 1.0f));
 
-		btVector3 localInertia;
-		shape->calculateLocalInertia(mass, localInertia);
-
-		auto playerobj = CreatePlayerObject(obj, shape, localInertia, mass, 36, 400 * m_simrate, false);
+		auto playerobj = CreatePlayerObject(obj, shape, 36, 400 * m_simrate, false);
 
 		obj->AddPhysicObject(playerobj, m_dynamicsWorld, &m_numDynamicObjects);
 	}
@@ -1617,10 +1661,7 @@ bool CPhysicsManager::CreatePlayerBox(edict_t* ent)
 	{
 		auto shape = new btBoxShape(btVector3(hull_duck.x + 4, hull_duck.y + 4, hull_duck.z - 1.0f));
 
-		btVector3 localInertia;
-		shape->calculateLocalInertia(mass, localInertia);
-
-		auto playerobj = CreatePlayerObject(obj, shape, localInertia, mass, 18, 400 * m_simrate, true);
+		auto playerobj = CreatePlayerObject(obj, shape, 18, 400 * m_simrate, true);
 
 		obj->AddPhysicObject(playerobj, m_dynamicsWorld, &m_numDynamicObjects);
 	}
@@ -1875,6 +1916,45 @@ bool CPhysicsManager::SetEntityFollow(edict_t* ent, edict_t* follow, int flags, 
 	return true;
 }
 
+bool CPhysicsManager::SetEntityEnvStudioAnim(edict_t* ent, int flags, EnvStudioKeyframe **keyframes, size_t numKeyframes)
+{
+	if (ent->free)
+		return false;
+
+	if (!ent->v.modelindex)
+	{
+		//Must have a model
+		return false;
+	}
+
+	auto mod = (*sv_models)[ent->v.modelindex];
+
+	if (!mod)
+	{
+		//Must have a model
+		return false;
+	}
+
+	if (mod->type != mod_studio || mod->type != mod_sprite)
+	{
+		//Must be studio or sprite
+		return false;
+	}
+
+	auto obj = GetGameObject(ent);
+
+	if (!obj)
+	{
+		obj = new CGameObject(ent, g_engfuncs.pfnIndexOfEdict(ent));
+
+		AddGameObject(obj);
+	}
+
+	obj->SetEntityEnvStudioAnim(flags, keyframes, numKeyframes);
+
+	return true;
+}
+
 bool CPhysicsManager::SetEntitySuperPusher(edict_t* ent, bool enable)
 {
 	if (ent->free)
@@ -1982,6 +2062,7 @@ bool CPhysicsManager::CreatePhysicVehicle(edict_t* ent, PhysicWheelParams **whee
 void CPhysicsManager::SetPhysicPlayerConfig(PhysicPlayerConfigs *configs)
 {
 	m_playerMass = configs->mass;
+	m_playerMaxPendingVelocity = configs->maxPendingVelocity;
 }
 
 bool CPhysicsManager::CreateSolidOptimizer(edict_t* ent, int boneindex, const Vector& halfext, const Vector& halfext2)
@@ -2673,6 +2754,231 @@ void CGameObject::StartFrame_Post(btDiscreteDynamicsWorld* world)
 	}
 }
 
+void CGameObject::SetEntityFollow(edict_t* follow, int flags, const Vector &origin_offset, const Vector &angles_offset)
+{
+	if (flags)
+	{
+		m_follow_flags = flags;
+		m_follow_ent = follow;
+		m_follow_origin_offet = origin_offset;
+		m_follow_angles_offet = angles_offset;
+	}
+	else
+	{
+		m_follow_flags = 0;
+		m_follow_ent = NULL;
+		m_follow_origin_offet = g_vecZero;
+		m_follow_angles_offet = g_vecZero;
+	}
+}
+
+void CGameObject::SetEntityEnvStudioAnim(int flags, EnvStudioKeyframe **keyframes, size_t numKeyframes)
+{
+	m_anim_flags = flags;
+	m_anim_curframe = 0;
+	m_anim_lasttime = gpGlobals->time;
+	m_anim_maxframe = 0;
+
+	if (flags & EnvStudioAnim_AnimatedStudio)
+	{
+		m_anim_maxframe = 256;
+	}
+	else  if (flags & EnvStudioAnim_AnimatedSprite)
+	{
+		for (size_t i = 0; i < numKeyframes; ++i)
+		{
+			m_anim_keyframes.emplace_back(*keyframes[i]);
+
+			if (keyframes[i]->frame > m_anim_maxframe)
+				m_anim_maxframe = keyframes[i]->frame;
+		}
+	}
+	
+	if (flags & EnvStudioAnim_AnimatedStudio)
+	{
+		auto pmodel = GET_MODEL_PTR(GetEdict());
+
+		studiohdr_t *pstudiohdr = (studiohdr_t *)pmodel;
+
+		if (pstudiohdr)
+		{
+			if (GetEdict()->v.sequence >= pstudiohdr->numseq)
+			{
+				m_anim_studio_frametime = 0;
+				m_anim_studio_seqflags = 0;
+			}
+			else
+			{
+				mstudioseqdesc_t *pseqdesc = (mstudioseqdesc_t *)((byte *)pstudiohdr + pstudiohdr->seqindex) + (int)GetEdict()->v.sequence;
+
+				m_anim_studio_seqflags = pseqdesc->flags;
+
+				if (pseqdesc->numframes > 1)
+				{
+					m_anim_studio_frametime = 256 * pseqdesc->fps / (pseqdesc->numframes - 1);
+				}
+				else
+				{
+					m_anim_studio_frametime = 256;
+				}
+			}
+		}
+	}
+
+}
+
+void CGameObject::SpriteFrameAdvance()
+{
+	m_anim_curframe += GetEdict()->v.framerate * (gpGlobals->time - m_anim_lasttime);
+	m_anim_lasttime = gpGlobals->time;
+}
+
+void CGameObject::StudioFrameAdvance()
+{
+	float flInterval = (gpGlobals->time - m_anim_lasttime);
+
+	if (flInterval <= 0.001)
+	{
+		m_anim_lasttime = gpGlobals->time;
+		return;
+	}
+
+	if (!m_anim_lasttime)
+		flInterval = 0;
+
+	m_anim_curframe += flInterval * m_anim_studio_frametime * GetEdict()->v.framerate;
+	m_anim_lasttime = gpGlobals->time;
+
+	if (m_anim_curframe < 0 || m_anim_curframe >= 256)
+	{
+		if (m_anim_studio_seqflags & STUDIO_LOOPING)
+			m_anim_curframe -= (int)(m_anim_curframe / 256.0f) * 256.0f;
+		else
+			m_anim_curframe = (m_anim_curframe < 0) ? 0.0f : 255.0f;
+
+		if (m_anim_flags & EnvStudioAnim_RemoveOnAnimFinished)
+		{
+			GetEdict()->v.flags |= FL_KILLME;
+		}
+	}
+}
+
+void CGameObject::UpdateEnvStudioKeyframeAnim()
+{
+	if (m_anim_keyframes.size() > 0)
+	{
+		for (int i = 1; i < int(m_anim_keyframes.size()); ++i)
+		{
+			float startframe = m_anim_keyframes[i - 1].frame;
+			float endframe = m_anim_keyframes[i].frame;
+			float totalframe = endframe - startframe;
+			if (m_anim_curframe >= startframe && m_anim_curframe < endframe)
+			{
+				float factor = (m_anim_curframe - startframe) / totalframe;
+
+				if (m_anim_flags & EnvStudioAnim_AnimatedRenderAmt)
+				{
+					GetEdict()->v.renderamt = (1.0f - factor) * m_anim_keyframes[i - 1].renderamt + factor * m_anim_keyframes[i].renderamt;
+				}
+
+				if (m_anim_flags & EnvStudioAnim_AnimatedScale)
+				{
+					GetEdict()->v.scale = (1.0f - factor) * m_anim_keyframes[i - 1].scale + factor * m_anim_keyframes[i].scale;
+				}
+
+				break;
+			}
+		}
+	}
+
+	if (m_anim_flags & EnvStudioAnim_RemoveOnBoundExcceeded)
+	{
+		if (GetEdict()->v.origin.x > GetEdict()->v.vuser2.x || GetEdict()->v.origin.y > GetEdict()->v.vuser2.y || GetEdict()->v.origin.z > GetEdict()->v.vuser2.z ||
+			GetEdict()->v.origin.x < GetEdict()->v.vuser1.x || GetEdict()->v.origin.y < GetEdict()->v.vuser1.y || GetEdict()->v.origin.z < GetEdict()->v.vuser1.z)
+		{
+			GetEdict()->v.flags |= FL_KILLME;
+		}
+	}
+	else if (m_anim_curframe >= m_anim_maxframe)
+	{
+		if (m_anim_flags & EnvStudioAnim_RemoveOnAnimFinished)
+		{
+			GetEdict()->v.flags |= FL_KILLME;
+		}
+	}
+	else if (!(m_anim_flags & EnvStudioAnim_StaticFrame))
+	{
+		GetEdict()->v.frame = m_anim_curframe;
+
+		if (m_anim_flags & EnvStudioAnim_AnimatedStudio)
+		{
+			GetEdict()->v.animtime = m_anim_lasttime;
+		}
+	}
+}
+
+void CGameObject::ApplyEntityFollow()
+{
+	if (m_follow_ent->free || (m_follow_ent->v.flags & FL_KILLME))
+	{
+		SetEntityFollow(NULL, 0, g_vecZero, g_vecZero);
+	}
+	else
+	{
+		if (m_follow_flags & FollowEnt_CopyOriginX)
+		{
+			GetEdict()->v.origin.x = m_follow_ent->v.origin.x + m_follow_origin_offet.x;
+		}
+		if (m_follow_flags & FollowEnt_CopyOriginY)
+		{
+			GetEdict()->v.origin.y = m_follow_ent->v.origin.y + m_follow_origin_offet.y;
+		}
+		if (m_follow_flags & FollowEnt_CopyOriginZ)
+		{
+			GetEdict()->v.origin.z = m_follow_ent->v.origin.z + m_follow_origin_offet.z;
+		}
+		if (m_follow_flags & FollowEnt_CopyAnglesP)
+		{
+			GetEdict()->v.angles.x = m_follow_ent->v.angles.x + m_follow_angles_offet.x;
+		}
+		if (m_follow_flags & FollowEnt_CopyAnglesY)
+		{
+			GetEdict()->v.angles.y = m_follow_ent->v.angles.y + m_follow_angles_offet.y;
+		}
+		if (m_follow_flags & FollowEnt_CopyAnglesR)
+		{
+			GetEdict()->v.angles.z = m_follow_ent->v.angles.z + m_follow_angles_offet.z;
+		}
+		if (m_follow_flags & FollowEnt_CopyNoDraw)
+		{
+			if ((GetEdict()->v.effects & EF_NODRAW) && !(m_follow_ent->v.effects & EF_NODRAW))
+			{
+				GetEdict()->v.effects &= ~EF_NODRAW;
+			}
+			else if (!(GetEdict()->v.effects & EF_NODRAW) && (m_follow_ent->v.effects & EF_NODRAW))
+			{
+				GetEdict()->v.effects |= EF_NODRAW;
+			}
+		}
+		if (m_follow_flags & FollowEnt_CopyRenderMode)
+		{
+			GetEdict()->v.rendermode = m_follow_ent->v.rendermode;
+		}
+		if (m_follow_flags & FollowEnt_CopyRenderAmt)
+		{
+			GetEdict()->v.renderamt = m_follow_ent->v.renderamt;
+		}
+		if (m_follow_flags & FollowEnt_ApplyLinearVelocity)
+		{
+			m_follow_origin_offet = m_follow_origin_offet + GetEdict()->v.velocity * (float)(*host_frametime);
+		}
+		if (m_follow_flags & FollowEnt_ApplyAngularVelocity)
+		{
+			m_follow_angles_offet = m_follow_angles_offet + GetEdict()->v.avelocity * (float)(*host_frametime);
+		}
+	}
+}
+
 void CGameObject::EndFrame(btDiscreteDynamicsWorld* world)
 {
 	if (gPhysicsManager.GetNumDynamicBodies() > 0)
@@ -2683,66 +2989,22 @@ void CGameObject::EndFrame(btDiscreteDynamicsWorld* world)
 		}
 	}
 
+	if (m_anim_flags & EnvStudioAnim_AnimatedStudio)
+	{
+		StudioFrameAdvance();
+
+		UpdateEnvStudioKeyframeAnim();
+	}
+	else if (m_anim_flags & EnvStudioAnim_AnimatedSprite)
+	{
+		SpriteFrameAdvance();
+
+		UpdateEnvStudioKeyframeAnim();
+	}
+
 	if (m_follow_ent)
 	{
-		if (m_follow_ent->free || (m_follow_ent->v.flags & FL_KILLME))
-		{
-			SetEntityFollow(NULL, 0, g_vecZero, g_vecZero);
-		}
-		else
-		{
-			if (m_follow_flags & FollowEnt_CopyOriginX)
-			{
-				GetEdict()->v.origin.x = m_follow_ent->v.origin.x + m_follow_origin_offet.x;
-			}
-			if (m_follow_flags & FollowEnt_CopyOriginY)
-			{
-				GetEdict()->v.origin.y = m_follow_ent->v.origin.y + m_follow_origin_offet.y;
-			}
-			if (m_follow_flags & FollowEnt_CopyOriginZ)
-			{
-				GetEdict()->v.origin.z = m_follow_ent->v.origin.z + m_follow_origin_offet.z;
-			}
-			if (m_follow_flags & FollowEnt_CopyAnglesP)
-			{
-				GetEdict()->v.angles.x = m_follow_ent->v.angles.x + m_follow_angles_offet.x;
-			}
-			if (m_follow_flags & FollowEnt_CopyAnglesY)
-			{
-				GetEdict()->v.angles.y = m_follow_ent->v.angles.y + m_follow_angles_offet.y;
-			}
-			if (m_follow_flags & FollowEnt_CopyAnglesR)
-			{
-				GetEdict()->v.angles.z = m_follow_ent->v.angles.z + m_follow_angles_offet.z;
-			}
-			if (m_follow_flags & FollowEnt_CopyNoDraw)
-			{
-				if ((GetEdict()->v.effects & EF_NODRAW) && !(m_follow_ent->v.effects & EF_NODRAW))
-				{
-					GetEdict()->v.effects &= ~EF_NODRAW;
-				}
-				else if (!(GetEdict()->v.effects & EF_NODRAW) && (m_follow_ent->v.effects & EF_NODRAW))
-				{
-					GetEdict()->v.effects |= EF_NODRAW;
-				}
-			}
-			if (m_follow_flags & FollowEnt_CopyRenderMode)
-			{
-				GetEdict()->v.rendermode = m_follow_ent->v.rendermode;
-			}
-			if (m_follow_flags & FollowEnt_CopyRenderAmt)
-			{
-				GetEdict()->v.renderamt = m_follow_ent->v.renderamt;
-			}
-			if (m_follow_flags & FollowEnt_ApplyLinearVelocity)
-			{
-				m_follow_origin_offet = m_follow_origin_offet + GetEdict()->v.velocity * (float)(*host_frametime);
-			}
-			if (m_follow_flags & FollowEnt_ApplyAngularVelocity)
-			{
-				m_follow_angles_offet = m_follow_angles_offet + GetEdict()->v.avelocity * (float)(*host_frametime);
-			}
-		}
+		ApplyEntityFollow();
 	}
 }
 

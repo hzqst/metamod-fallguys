@@ -41,10 +41,30 @@ const int FollowEnt_CopyRenderAmt = 0x100;
 const int FollowEnt_ApplyLinearVelocity = 0x200;
 const int FollowEnt_ApplyAngularVelocity = 0x400;
 
+const int EnvStudioAnim_AnimatedStudio = 1;
+const int EnvStudioAnim_AnimatedSprite = 2;
+const int EnvStudioAnim_StaticFrame = 4;
+const int EnvStudioAnim_RemoveOnAnimFinished = 8;
+const int EnvStudioAnim_RemoveOnBoundExcceeded = 0x10;
+const int EnvStudioAnim_AnimatedRenderAmt = 0x20;
+const int EnvStudioAnim_AnimatedScale = 0x40;
+
+const int EnvStudioAnim_Animated = (EnvStudioAnim_AnimatedStudio | EnvStudioAnim_AnimatedSprite);
+
 const int LOD_BODY = 1;
 const int LOD_MODELINDEX = 2;
 const int LOD_SCALE = 4;
 const int LOD_SCALE_INTERP = 8;
+
+class EnvStudioKeyframe
+{
+public:
+	EnvStudioKeyframe();
+
+	float frame;
+	float renderamt;
+	float scale;
+};
 
 class PhysicPlayerConfigs
 {
@@ -52,6 +72,7 @@ public:
 	PhysicPlayerConfigs();
 
 	float mass;
+	float maxPendingVelocity;
 };
 
 class PhysicShapeParams
@@ -111,6 +132,8 @@ public:
 	float maxSuspensionForce;
 	int flags;
 };
+
+EXTERN_PLAIN_VALUE_OBJECT(EnvStudioKeyframe);
 
 EXTERN_PLAIN_VALUE_OBJECT(PhysicPlayerConfigs);
 
@@ -706,11 +729,13 @@ CPlayerObject : public CCollisionPhysicObject
 {
 public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
-	CPlayerObject(CGameObject *obj, int group, int mask, float mass, bool duck) : CCollisionPhysicObject(obj, group, mask)
+	CPlayerObject(CGameObject *obj, int group, int mask, float mass, float maxPendingVelocity, bool duck) : CCollisionPhysicObject(obj, group, mask)
 	{
 		m_duck = duck;
 
 		m_mass = mass;
+		m_flMaxPendingVelocity = maxPendingVelocity;
+
 		m_PendingVelocity = g_vecZero;
 		m_TickCount = 0;
 		m_BlockingTickCount = 0;
@@ -747,6 +772,7 @@ public:
 protected:
 	bool m_duck;
 	float m_mass;
+	float m_flMaxPendingVelocity;
 	vec3_t m_PendingVelocity;
 	uint32_t m_TickCount;
 	uint32_t m_BlockingTickCount;
@@ -858,6 +884,12 @@ public:
 		m_semi_vis_mask = 0;
 		m_semi_clip_mask = 0;
 		m_original_solid = 0;
+		m_anim_flags = 0;
+		m_anim_curframe = 0;
+		m_anim_lasttime = 0;
+		m_anim_maxframe = 0;
+		m_anim_studio_seqflags = 0;
+		m_anim_studio_frametime = 0;
 		m_follow_flags = 0;
 		m_follow_ent = NULL;
 		m_follow_angles_offet = g_vecZero;
@@ -963,25 +995,15 @@ public:
 		return m_solid_optimizer.size() && !(m_ent->v.effects & EF_NODRAW);
 	}
 
-	void SetEntityFollow(edict_t* follow, int flags, const Vector &origin_offset, const Vector &angles_offset)
-	{
-		if (flags)
-		{
-			m_follow_flags = flags;
-			m_follow_ent = follow;
-			m_follow_origin_offet = origin_offset;
-			m_follow_angles_offet = angles_offset;
-		}
-		else
-		{
-			m_follow_flags = 0;
-			m_follow_ent = NULL;
-			m_follow_origin_offet = g_vecZero;
-			m_follow_angles_offet = g_vecZero;
-		}
-	}
+	void SetEntityEnvStudioAnim(int flags, EnvStudioKeyframe **keyframes, size_t numKeyframes); 
+	void SpriteFrameAdvance();
+	void StudioFrameAdvance();
+	void UpdateEnvStudioKeyframeAnim();
 
-	int GetEntIndex()
+	void SetEntityFollow(edict_t* follow, int flags, const Vector &origin_offset, const Vector &angles_offset);
+	void ApplyEntityFollow();
+
+	int GetEntIndex() const
 	{
 		return m_entindex;
 	}
@@ -1110,6 +1132,14 @@ private:
 
 	vec3_t m_follow_angles_offet;
 
+	int m_anim_flags;
+	float m_anim_curframe;
+	float m_anim_lasttime;
+	float m_anim_maxframe;
+	float m_anim_studio_frametime;
+	int m_anim_studio_seqflags;
+	std::vector<EnvStudioKeyframe> m_anim_keyframes;
+
 	std::vector<CCachedBoneSolidOptimizer> m_solid_optimizer;
 };
 
@@ -1146,7 +1176,7 @@ public:
 
 	CDynamicObject* CreateDynamicObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold);
 	CStaticObject* CreateStaticObject(CGameObject *obj, vertexarray_t* vertexarray, indexarray_t* indexarray, bool kinematic);
-	CPlayerObject* CreatePlayerObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass, float ccdRadius, float ccdThreshold, bool duck);
+	CPlayerObject* CreatePlayerObject(CGameObject *obj, btCollisionShape* collisionShape, float ccdRadius, float ccdThreshold, bool duck);
 	CClippingHullObject* CreateClippingHullObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass);
 
 	void AddGameObject(CGameObject *obj);
@@ -1169,6 +1199,7 @@ public:
 	bool SetEntitySemiVisible(edict_t* ent, int player_mask);
 	bool SetEntitySuperPusher(edict_t* ent, bool enable);
 	bool SetEntityFollow(edict_t* ent, edict_t* follow, int flags, const Vector &origin_offset, const Vector &angles_offset);
+	bool SetEntityEnvStudioAnim(edict_t* ent, int flags, EnvStudioKeyframe **keyframes, size_t numKeyframes);
 
 	bool SetPhysicObjectTransform(edict_t* ent, const Vector &origin, const Vector &angles);
 	bool SetPhysicObjectFreeze(edict_t* ent, bool freeze);
@@ -1211,6 +1242,7 @@ private:
 	float m_gravity;
 	float m_simrate;
 	float m_playerMass;
+	float m_playerMaxPendingVelocity;
 
 	int m_solidPlayerMask;
 
