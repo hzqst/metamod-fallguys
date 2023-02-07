@@ -1,5 +1,8 @@
 #pragma once
 
+//For Fall Guys Season 1 compatibility
+extern bool g_bIsFallGuysSeason1;
+
 //For Custom StepSound
 extern bool g_bUseCustomStepSound;
 
@@ -35,6 +38,10 @@ bool IsEntitySolidPlayer(int entindex, edict_t* ent);
 bool IsEntitySolidPlayer(edict_t* ent);
 bool IsEntitySolidPusher(edict_t* ent);
 bool IsEntityPushee(edict_t* ent);
+
+bool Legacy_IsEntitySuperPusher(edict_t *ent);
+bool Legacy_IsEntitySuperPusherFlexible(edict_t *ent);
+bool Legacy_IsEntitySuperRotator(edict_t *ent);
 
 int GetRunPlayerMovePlayerIndex();
 edict_t* GetCurrentSuperPusher(Vector* out);

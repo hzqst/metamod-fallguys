@@ -87,6 +87,57 @@ void NewTouch(edict_t *pentTouched, edict_t *pentOther)
 	SET_META_RESULT(MRES_IGNORED);
 }
 
+//This is only for season 1
+
+void NewBlocked(edict_t *pentBlocked, edict_t *pentOther)
+{
+	if (g_bIsFallGuysSeason1)
+	{
+		if (Legacy_IsEntitySuperRotator(pentBlocked) && IsEntityPushee(pentOther))
+		{
+			if (pentBlocked->v.avelocity[0] > 1 || pentBlocked->v.avelocity[0] < -1)
+			{
+				vec3_t vecPlayer = pentOther->v.origin;
+				vec3_t vecPusher = pentBlocked->v.origin;
+				vecPusher.y = vecPlayer.y;
+				vec3_t dir2 = vecPlayer - vecPusher;
+				dir2 = dir2.Normalize();
+
+				pentOther->v.velocity = pentOther->v.velocity + dir2 * pentBlocked->v.armorvalue;
+			}
+			else if (pentBlocked->v.avelocity[1] > 1 || pentBlocked->v.avelocity[1] < -1)
+			{
+				vec3_t vecPlayer = pentOther->v.origin;
+				vec3_t vecPusher = pentBlocked->v.origin;
+				vecPusher.x = vecPlayer.x;
+				vec3_t dir2 = vecPlayer - vecPusher;
+				dir2 = dir2.Normalize();
+
+				pentOther->v.velocity = pentOther->v.velocity + dir2 * pentBlocked->v.armorvalue;
+			}
+			SET_META_RESULT(MRES_SUPERCEDE);
+			return;
+		}
+		else if (Legacy_IsEntitySuperPusher(g_PusherEntity))
+		{
+			if (pentBlocked->v.avelocity[2] > 1 || pentBlocked->v.avelocity[2] < -1)
+			{
+				vec3_t vecPlayer = pentOther->v.origin;
+				vec3_t vecPusher = pentBlocked->v.origin;
+				vecPusher.z = vecPlayer.z;
+				vec3_t dir2 = vecPlayer - vecPusher;
+				dir2 = dir2.Normalize();
+
+				pentOther->v.velocity = pentOther->v.velocity + dir2 * pentBlocked->v.armorvalue;
+				pentOther->v.velocity.z += pentBlocked->v.max_health;
+			}
+			SET_META_RESULT(MRES_SUPERCEDE);
+			return;
+		}
+	}
+	SET_META_RESULT(MRES_IGNORED);
+}
+
 void NewSetAbsBox(edict_t *pent)
 {
 	if (gPhysicsManager.SetAbsBox(pent))
@@ -204,8 +255,20 @@ int NewSpawn_Post(edict_t *pent)
 	return 1;
 }
 
+void NewServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
+{
+	if (!stricmp(STRING(gpGlobals->mapname), "fallguys"))
+	{
+		g_bIsFallGuysSeason1 = true;
+	}
+
+	SET_META_RESULT(MRES_IGNORED);
+}
+
 void NewServerDeactivate()
 {
+	g_bIsFallGuysSeason1 = false;
+
 	EnableCustomStepSound(false);
 
 	gPhysicsManager.RemoveAllGameBodies();
@@ -260,7 +323,7 @@ static DLL_FUNCTIONS gFunctionTable =
 	NULL,					// pfnThink
 	NULL,					// pfnUse
 	NewTouch,				// pfnTouch
-	NULL,					// pfnBlocked
+	NewBlocked,				// pfnBlocked
 	NULL,					// pfnKeyValue
 	NULL,					// pfnSave
 	NULL,					// pfnRestore
@@ -279,7 +342,7 @@ static DLL_FUNCTIONS gFunctionTable =
 	NULL,					// pfnClientPutInServer
 	NULL,					// pfnClientCommand
 	NULL,					// pfnClientUserInfoChanged
-	NULL,					// pfnServerActivate
+	NewServerActivate,					// pfnServerActivate
 	NewServerDeactivate,	// pfnServerDeactivate
 
 	NewPlayerPreThink,		// pfnPlayerPreThink

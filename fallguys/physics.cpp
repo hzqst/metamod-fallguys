@@ -857,6 +857,11 @@ void CPhysicsManager::EntityStartFrame()
 		{
 			if (IsEntitySolidPusher(ent))
 			{
+				if (g_bIsFallGuysSeason1 && Legacy_IsEntitySuperPusher(ent))
+				{
+					SetEntitySuperPusher(ent, true);
+				}
+
 				CreateBrushModel(ent);
 				continue;
 			}

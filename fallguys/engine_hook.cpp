@@ -323,12 +323,60 @@ trace_t NewSV_PushEntity(edict_t* ent, vec3_t* push)
 
 			if (IsEntityPushee(pPendingEntity) && pPendingEntity->v.groundentity != g_PusherEntity)
 			{
-				g_CurrentSuperPusherPushingVector = *push;
-				g_CurrentSuperPusher = g_PusherEntity;
+				if (g_bIsFallGuysSeason1)
+				{
+					if (g_PusherEntity->v.armorvalue > 0)
+					{
+						vec3_t dir = *push;
+						dir = dir.Normalize();
 
-				gpGamedllFuncs->dllapi_table->pfnTouch(g_PusherEntity, pPendingEntity);
+						if (Legacy_IsEntitySuperPusherFlexible(g_PusherEntity))
+						{
+							pPendingEntity->v.velocity = dir * g_PusherEntity->v.armorvalue * g_PusherEntity->v.speed;
 
-				g_CurrentSuperPusher = NULL;
+							if (g_PusherEntity->v.max_health > 0)
+							{
+								if (pPendingEntity->v.velocity.z < g_PusherEntity->v.max_health * g_PusherEntity->v.speed)
+									pPendingEntity->v.velocity.z = g_PusherEntity->v.max_health * g_PusherEntity->v.speed;
+							}
+
+							if (g_PusherEntity->v.avelocity[1] != 0 && g_PusherEntity->v.armortype > 0)
+							{
+								vec3_t dir2 = pPendingEntity->v.origin - g_PusherEntity->v.origin;
+								dir2.z = 0;
+								dir2 = dir2.Normalize();
+								pPendingEntity->v.velocity = pPendingEntity->v.velocity + dir2 * g_PusherEntity->v.armortype * g_PusherEntity->v.speed;
+							}
+						}
+						else
+						{
+							pPendingEntity->v.velocity = dir * g_PusherEntity->v.armorvalue;
+
+							if (g_PusherEntity->v.max_health > 0)
+							{
+								if (pPendingEntity->v.velocity.z < g_PusherEntity->v.max_health)
+									pPendingEntity->v.velocity.z = g_PusherEntity->v.max_health;
+							}
+
+							if (g_PusherEntity->v.avelocity[1] != 0 && g_PusherEntity->v.armortype > 0)
+							{
+								vec3_t dir2 = pPendingEntity->v.origin - g_PusherEntity->v.origin;
+								dir2.z = 0;
+								dir2 = dir2.Normalize();
+								pPendingEntity->v.velocity = pPendingEntity->v.velocity + dir2 * g_PusherEntity->v.armortype;
+							}
+						}
+					}
+				}
+				else
+				{
+					g_CurrentSuperPusherPushingVector = *push;
+					g_CurrentSuperPusher = g_PusherEntity;
+
+					gpGamedllFuncs->dllapi_table->pfnTouch(g_PusherEntity, pPendingEntity);
+
+					g_CurrentSuperPusher = NULL;
+				}
 			}
 		}
 	}

@@ -7,6 +7,9 @@
 #include "fallguys.h"
 #include "physics.h"
 
+//For Fall Guys Season 1 compatibility
+bool g_bIsFallGuysSeason1 = false;
+
 //For Custom StepSound
 bool g_bUseCustomStepSound = false;
 
@@ -51,6 +54,21 @@ bool IsEntitySolidPlayer(edict_t* ent)
 bool IsEntitySolidPusher(edict_t* ent)
 {
 	return ent->v.solid == SOLID_BSP && ent->v.movetype == MOVETYPE_PUSH;
+}
+
+bool Legacy_IsEntitySuperPusher(edict_t *ent)
+{
+	return ent && (ent->v.sequence <= 114514 || ent->v.sequence <= 114515);
+}
+
+bool Legacy_IsEntitySuperPusherFlexible(edict_t *ent)
+{
+	return ent && ent->v.sequence == 114515;
+}
+
+bool Legacy_IsEntitySuperRotator(edict_t *ent)
+{
+	return ent && ent->v.sequence == 114516;
 }
 
 bool IsEntityPushee(edict_t* ent)
