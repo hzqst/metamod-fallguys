@@ -257,7 +257,7 @@ int NewSpawn_Post(edict_t *pent)
 
 void NewServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
 {
-	if (!stricmp(STRING(gpGlobals->mapname), "fallguys"))
+	if (!strcasecmp(STRING(gpGlobals->mapname), "fallguys"))
 	{
 		g_bIsFallGuysSeason1 = true;
 	}
