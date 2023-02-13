@@ -31,6 +31,7 @@ extern void * g_AddToFullPackHook;
 extern void * g_PlayerPostThinkPostHook;
 extern void * g_PlayerTouchTriggerHook;
 extern void * g_PlayerTouchImpactHook;
+extern void * g_PlayerTouchPlayerHook;
 extern void * g_PlayerMovePlayStepSoundHook;
 extern void * g_PlayerMovePlaySoundFXHook;
 

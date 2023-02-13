@@ -81,6 +81,12 @@ void NewTouch(edict_t *pentTouched, edict_t *pentOther)
 			{
 				if (ASEXT_CallHook)
 					(*ASEXT_CallHook)(g_PlayerTouchImpactHook, 0, pentTouched->pvPrivateData, pentOther->pvPrivateData);
+
+				if (g_engfuncs.pfnIndexOfEdict(pentOther) >= 1 && g_engfuncs.pfnIndexOfEdict(pentOther) <= gpGlobals->maxClients)
+				{
+					if (ASEXT_CallHook)
+						(*ASEXT_CallHook)(g_PlayerTouchPlayerHook, 0, pentTouched->pvPrivateData, pentOther->pvPrivateData);
+				}
 			}
 		}
 	}

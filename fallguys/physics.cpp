@@ -549,13 +549,13 @@ void CPhysicsManager::GenerateIndexedArrayForBrush(model_t* mod, vertexarray_t* 
 
 CDynamicObject* CPhysicsManager::CreateDynamicObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold)
 {
-	//Dynamic object collide with all other stuffs when pushable, and all non-player stuffs when unpushable
+	//legacy -- dynamic object collide with all other stuffs when pushable, and all non-player stuffs when unpushable
 
-	int mask = btBroadphaseProxy::AllFilter & (~btBroadphaseProxy::SensorTrigger);
+	int mask = btBroadphaseProxy::AllFilter;// &(~btBroadphaseProxy::SensorTrigger);
 
 	mask &= ~FallGuysCollisionFilterGroups::ClippingHullFilter;
 
-	auto dynamicobj = new CDynamicObject(obj, btBroadphaseProxy::DefaultFilter, mask);
+	auto dynamicobj = new CDynamicObject(obj, btBroadphaseProxy::DefaultFilter | FallGuysCollisionFilterGroups::DynamicObjectFilter, mask);
 
 	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, new EntityMotionState(dynamicobj), collisionShape, localInertia);
 	cInfo.m_friction = friction;
@@ -573,33 +573,12 @@ CDynamicObject* CPhysicsManager::CreateDynamicObject(CGameObject *obj, btCollisi
 	return dynamicobj;
 }
 
-CStaticObject* CPhysicsManager::CreateStaticObject(CGameObject *obj, vertexarray_t* vertexarray, indexarray_t* indexarray, bool kinematic)
+CStaticObject* CPhysicsManager::CreateStaticObject(CGameObject *obj, btCollisionShape *collisionShape, bool kinematic)
 {
-	if (!indexarray->vIndiceBuffer.size())
-	{
-		//todo: maybe use clipnode?
-		auto staticobj = new CStaticObject(
-			obj,
-			btBroadphaseProxy::StaticFilter, 
-			btBroadphaseProxy::AllFilter & ~(btBroadphaseProxy::SensorTrigger | btBroadphaseProxy::StaticFilter | btBroadphaseProxy::KinematicFilter | FallGuysCollisionFilterGroups::ClippingHullFilter),
-			vertexarray, indexarray, kinematic);
-
-		return staticobj;
-	}
-
 	auto staticobj = new CStaticObject(
 		obj,
 		btBroadphaseProxy::StaticFilter,
-		btBroadphaseProxy::AllFilter & ~(btBroadphaseProxy::SensorTrigger | btBroadphaseProxy::StaticFilter | btBroadphaseProxy::KinematicFilter | FallGuysCollisionFilterGroups::ClippingHullFilter),
-		vertexarray, indexarray, kinematic);
-
-	auto bulletVertexArray = new btTriangleIndexVertexArray(
-		indexarray->vIndiceBuffer.size() / 3, indexarray->vIndiceBuffer.data(), 3 * sizeof(int),
-		vertexarray->vVertexBuffer.size(), (float*)vertexarray->vVertexBuffer.data(), sizeof(brushvertex_t));
-
-	auto meshShape = new btBvhTriangleMeshShape(bulletVertexArray, true, true);
-
-	meshShape->setUserPointer(bulletVertexArray);
+		btBroadphaseProxy::AllFilter & ~(btBroadphaseProxy::SensorTrigger | btBroadphaseProxy::StaticFilter | btBroadphaseProxy::KinematicFilter | FallGuysCollisionFilterGroups::ClippingHullFilter));
 
 	btMotionState* motionState = NULL;
 
@@ -608,7 +587,7 @@ CStaticObject* CPhysicsManager::CreateStaticObject(CGameObject *obj, vertexarray
 	else
 		motionState = new btDefaultMotionState();
 
-	btRigidBody::btRigidBodyConstructionInfo cInfo(0, motionState, meshShape);
+	btRigidBody::btRigidBodyConstructionInfo cInfo(0, motionState, collisionShape);
 	cInfo.m_friction = 1;
 	cInfo.m_rollingFriction = 1;
 	cInfo.m_restitution = 1;
@@ -937,25 +916,32 @@ void CDynamicObject::StartFrame(btDiscreteDynamicsWorld* world)
 
 	auto ent = GetGameObject()->GetEdict();
 
-	btVector3 vecNewVelocity(ent->v.vuser1.x, ent->v.vuser1.y, ent->v.vuser1.z);
+	btVector3 vecLinearVelocity(ent->v.vuser1.x, ent->v.vuser1.y, ent->v.vuser1.z);
 	
-	GetRigidBody()->setLinearVelocity(vecNewVelocity);
+	GetRigidBody()->setLinearVelocity(vecLinearVelocity);
+
+	btVector3 vecAngularVelocity(ent->v.vuser2.x, ent->v.vuser2.y, ent->v.vuser2.z);
+
+	GetRigidBody()->setAngularVelocity(vecAngularVelocity);
 }
 
 void CDynamicObject::StartFrame_Post(btDiscreteDynamicsWorld* world)
 {
 	//Download linear velocity from bullet engine
 
-	auto vecVelocity = GetRigidBody()->getLinearVelocity();
-
 	auto ent = GetGameObject()->GetEdict();
 
-	Vector vel(vecVelocity.getX(), vecVelocity.getY(), vecVelocity.getZ());
+	auto vecLinearVelocity = GetRigidBody()->getLinearVelocity();
+	auto vecAngularVelocity = GetRigidBody()->getAngularVelocity();
+
+	Vector vel(vecLinearVelocity.getX(), vecLinearVelocity.getY(), vecLinearVelocity.getZ());
+	Vector avel(vecAngularVelocity.getX(), vecAngularVelocity.getY(), vecAngularVelocity.getZ());
 
 	ent->v.basevelocity = g_vecZero;
 	ent->v.velocity = g_vecZero;
 	ent->v.avelocity = g_vecZero;
 	ent->v.vuser1 = vel;
+	ent->v.vuser2 = avel;
 	
 	if (m_ImpactEntity)
 	{
@@ -980,9 +966,19 @@ void CDynamicObject::EndFrame(btDiscreteDynamicsWorld* world)
 
 void CDynamicObject::SetPhysicTransform(const Vector &origin, const Vector &angles)
 {
-	auto MotionState = (EntityMotionState *)GetRigidBody()->getMotionState();
+	/*auto MotionState = (EntityMotionState *)GetRigidBody()->getMotionState();
 
-	MotionState->ResetWorldTransform(origin, angles);
+	MotionState->ResetWorldTransform(origin, angles);*/
+
+	btVector3 vecOrigin(origin.x, origin.y, origin.z);
+
+	btTransform worldTrans = btTransform(btQuaternion(0, 0, 0, 1), vecOrigin);
+
+	btVector3 vecAngles(angles.x, angles.y, angles.z);
+
+	EulerMatrix(vecAngles, worldTrans.getBasis());
+
+	GetRigidBody()->setWorldTransform(worldTrans);
 }
 
 void CDynamicObject::SetPhysicFreeze(bool freeze)
@@ -1216,22 +1212,18 @@ void CSolidOptimizerGhostPhysicObject::StartFrame(btDiscreteDynamicsWorld* world
 		m_cached_sequence = ent->v.sequence;
 		m_cached_frame = ent->v.frame;
 
-		btTransform worldTrans;
-
 		g_engfuncs.pfnGetBonePosition(ent, m_boneindex, bone_origin, bone_angles);
 
 		m_cached_boneorigin = bone_origin;
 		m_cached_boneangles = bone_angles;
 
-		btVector3 GoldSrcOrigin(bone_origin.x, bone_origin.y, bone_origin.z);
+		btVector3 vecOrigin(bone_origin.x, bone_origin.y, bone_origin.z);
 
-		worldTrans = btTransform(btQuaternion(0, 0, 0, 1), GoldSrcOrigin);
+		btTransform	worldTrans = btTransform(btQuaternion(0, 0, 0, 1), vecOrigin);
 
-		vec3_t GoldSrcAngles = bone_angles;
+		btVector3 vecAngles(bone_angles.x, bone_angles.y, bone_angles.z);
 
-		btVector3 angles;
-		GoldSrcAngles.CopyToArray(angles.m_floats);
-		EulerMatrix(angles, worldTrans.getBasis());
+		EulerMatrix(vecAngles, worldTrans.getBasis());
 
 		GetGhostObject()->setWorldTransform(worldTrans);
 	}
@@ -1244,8 +1236,6 @@ void CSolidOptimizerGhostPhysicObject::StartFrame(btDiscreteDynamicsWorld* world
 
 void CSolidOptimizerGhostPhysicObject::StartFrame_Post(btDiscreteDynamicsWorld* world)
 {
-	//Should do this before step simulation?
-
 	btManifoldArray ManifoldArray;
 	btBroadphasePairArray& PairArray = GetGhostObject()->getOverlappingPairCache()->getOverlappingPairArray();
 
@@ -1322,6 +1312,82 @@ void CCachedBoneSolidOptimizer::StartFrame(CGameObject *obj)
 		bone_angles = m_cached_boneangles;
 	}
 }
+
+void CPhysicTriggerGhostPhysicObject::StartFrame(btDiscreteDynamicsWorld* world)
+{
+	auto ent = GetGameObject()->GetEdict();
+
+	btVector3 vecOrigin(ent->v.origin.x, ent->v.origin.y, ent->v.origin.z);
+
+	btTransform worldTrans = btTransform(btQuaternion(0, 0, 0, 1), vecOrigin);
+
+	btVector3 vecAngles(ent->v.angles.x, ent->v.angles.y, ent->v.angles.z);
+
+	if (ent->v.solid == SOLID_BSP)
+	{
+		vecAngles.setX(-vecAngles.x());
+	}
+
+	EulerMatrix(vecAngles, worldTrans.getBasis());
+
+	GetGhostObject()->setWorldTransform(worldTrans);
+}
+
+void CPhysicTriggerGhostPhysicObject::StartFrame_Post(btDiscreteDynamicsWorld* world)
+{
+	auto ent = GetGameObject()->GetEdict();
+
+	btManifoldArray ManifoldArray;
+	btBroadphasePairArray& PairArray = GetGhostObject()->getOverlappingPairCache()->getOverlappingPairArray();
+
+	for (int i = 0; i < PairArray.size(); i++)
+	{
+		ManifoldArray.clear();
+
+		btBroadphasePair* CollisionPair = world->getPairCache()->findPair(PairArray[i].m_pProxy0, PairArray[i].m_pProxy1);
+
+		if (!CollisionPair)
+		{
+			continue;
+		}
+
+		if (CollisionPair->m_algorithm)
+		{
+			CollisionPair->m_algorithm->getAllContactManifolds(ManifoldArray);
+		}
+
+		for (int j = 0; j < ManifoldArray.size(); j++)
+		{
+			for (int p = 0; p < ManifoldArray[j]->getNumContacts(); p++)
+			{
+				const btManifoldPoint& Point = ManifoldArray[j]->getContactPoint(p);
+
+				//if (Point.getDistance() < 0.0f)
+				{
+					auto rigidbody = btRigidBody::upcast(ManifoldArray[j]->getBody0());
+
+					if (!rigidbody)
+					{
+						rigidbody = btRigidBody::upcast(ManifoldArray[j]->getBody1());
+					}
+
+					if (rigidbody)
+					{
+						auto physobj = (CPhysicObject *)rigidbody->getUserPointer();
+
+						if (physobj->IsDynamic())
+						{
+							auto physent = physobj->GetGameObject()->GetEdict();
+
+							gpGamedllFuncs->dllapi_table->pfnTouch(ent, physent);
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 
 void CPhysicsManager::FreeEntityPrivateData(edict_t* ent)
 {
@@ -1611,26 +1677,20 @@ bool CPhysicsManager::CreateBrushModel(edict_t* ent)
 	if (obj->GetNumPhysicObject() > 0)
 		return false;
 
-	int modelindex = ent->v.modelindex;
-	if (modelindex == -1)
-	{
-		return false;
-	}
+	auto shape = CreateTriMeshShapeFromBrushModel(ent);
 
-	if (!m_brushIndexArray[modelindex])
-	{
+	if (!shape)
 		return false;
-	}
 
 	bool bKinematic = ((ent != r_worldentity) && (ent->v.movetype == MOVETYPE_PUSH && ent->v.solid == SOLID_BSP)) ? true : false;
 
-	auto staticobj = CreateStaticObject(obj, m_worldVertexArray, m_brushIndexArray[modelindex], bKinematic);
+	auto staticObject = CreateStaticObject(obj, shape, bKinematic);
 	
-	obj->AddPhysicObject(staticobj, m_dynamicsWorld, &m_numDynamicObjects);
+	obj->AddPhysicObject(staticObject, m_dynamicsWorld, &m_numDynamicObjects);
 
 	if (ent->v.flags & FL_CONVEYOR)
 	{
-		staticobj->GetRigidBody()->setCollisionFlags(staticobj->GetRigidBody()->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
+		staticObject->GetRigidBody()->setCollisionFlags(staticObject->GetRigidBody()->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
 	}
 
 	return true;
@@ -2140,6 +2200,87 @@ bool CPhysicsManager::CreateSolidOptimizer(edict_t* ent, int boneindex, const Ve
 	}
 
 	obj->AddSolidOptimizer(boneindex, 0);
+
+	return true;
+}
+
+btBvhTriangleMeshShape *CPhysicsManager::CreateTriMeshShapeFromBrushModel(edict_t *ent)
+{
+	int modelindex = ent->v.modelindex;
+	if (modelindex == -1)
+	{
+		return NULL;
+	}
+
+	auto mod = (*sv_models)[modelindex];
+
+	if (!mod)
+	{
+		//Must have a model
+		return NULL;
+	}
+
+	if (mod->type != mod_brush)
+	{
+		//Must be brush
+		return NULL;
+	}
+
+	if (!m_brushIndexArray[modelindex])
+	{
+		return NULL;
+	}
+
+	auto vertexarray = m_worldVertexArray;
+	auto indexarray = m_brushIndexArray[modelindex];
+
+	if (!indexarray->vIndiceBuffer.size())
+	{
+		return NULL;
+	}
+
+	auto bulletVertexArray = new btTriangleIndexVertexArray(
+		indexarray->vIndiceBuffer.size() / 3, indexarray->vIndiceBuffer.data(), 3 * sizeof(int),
+		vertexarray->vVertexBuffer.size(), (float*)vertexarray->vVertexBuffer.data(), sizeof(brushvertex_t));
+
+	auto meshShape = new btBvhTriangleMeshShape(bulletVertexArray, true, true);
+
+	meshShape->setUserPointer(bulletVertexArray);
+
+	return meshShape;
+}
+
+/*
+
+Create a ghost object that fire pfnTouch event when colliding with physic objects
+
+*/
+
+bool CPhysicsManager::CreatePhysicTrigger(edict_t* ent)
+{
+	auto obj = GetGameObject(ent);
+
+	if (!obj)
+	{
+		obj = new CGameObject(ent, g_engfuncs.pfnIndexOfEdict(ent));
+
+		AddGameObject(obj);
+	}
+
+	btCollisionShape *shape = CreateTriMeshShapeFromBrushModel(ent);
+
+	if (!shape)
+	{
+		shape = new btBoxShape(btVector3((ent->v.maxs.x - ent->v.mins.x) * 0.5f, (ent->v.maxs.y - ent->v.mins.y) * 0.5f, (ent->v.maxs.z - ent->v.mins.z) * 0.5f));
+	}
+
+	auto ghostobj = new CPhysicTriggerGhostPhysicObject(obj);
+
+	ghostobj->SetGhostObject(new btPairCachingGhostObject());
+	ghostobj->GetGhostObject()->setCollisionShape(shape);
+	ghostobj->GetGhostObject()->setCollisionFlags(ghostobj->GetGhostObject()->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
+
+	obj->AddPhysicObject(ghostobj, m_dynamicsWorld, &m_numDynamicObjects);
 
 	return true;
 }

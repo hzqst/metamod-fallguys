@@ -38,6 +38,7 @@ void * g_AddToFullPackHook = NULL;
 void * g_PlayerPostThinkPostHook = NULL;
 void * g_PlayerTouchTriggerHook = NULL;
 void * g_PlayerTouchImpactHook = NULL;
+void * g_PlayerTouchPlayerHook = NULL;
 void * g_PlayerMovePlayStepSoundHook = NULL;
 void * g_PlayerMovePlaySoundFXHook = NULL;
 
@@ -126,6 +127,8 @@ void RegisterAngelScriptHooks()
 	g_PlayerTouchTriggerHook = ASEXT_RegisterHook("Get called when player touches a trigger", StopMode_CALL_ALL, 2, ASFlag_MapScript | ASFlag_Plugin, "Player", "PlayerTouchTrigger", "CBasePlayer@ pPlayer, CBaseEntity@ pOther");
 
 	g_PlayerTouchImpactHook = ASEXT_RegisterHook("Get called when player impacts a solid entities or world, player's velocity is temporarily set to impactvelocity", StopMode_CALL_ALL, 2, ASFlag_MapScript | ASFlag_Plugin, "Player", "PlayerTouchImpact", "CBasePlayer@ pPlayer, CBaseEntity@ pOther");
+
+	g_PlayerTouchPlayerHook = ASEXT_RegisterHook("Get called when player touches a player, player's velocity is temporarily set to impactvelocity", StopMode_CALL_ALL, 2, ASFlag_MapScript | ASFlag_Plugin, "Player", "PlayerTouchPlayer", "CBasePlayer@ pPlayer, CBasePlayer@ pOther");
 
 	g_PlayerMovePlayStepSoundHook = ASEXT_RegisterHook("Get called when playing step sound", StopMode_CALL_ALL, 2, ASFlag_MapScript | ASFlag_Plugin, "Player", "PlayerMovePlayStepSound", "CBasePlayer@ pPlayer, playermove_t@ playermove, int iType, float flVolume, bool bIsJump, uint& out uiFlags");
 

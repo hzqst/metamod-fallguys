@@ -197,7 +197,8 @@ private:
 enum FallGuysCollisionFilterGroups
 {
 	PlayerFilter = 0x40,
-	ClippingHullFilter = 0x80,
+	DynamicObjectFilter = 0x80,
+	ClippingHullFilter = 0x100,
 };
 
 typedef struct brushvertex_s
@@ -379,6 +380,17 @@ public:
 		//Should be removed from world before free
 		if (m_ghostobj)
 		{
+			if (m_ghostobj->getCollisionShape())
+			{
+				if (m_ghostobj->getCollisionShape()->getShapeType() == TRIANGLE_MESH_SHAPE_PROXYTYPE &&
+					m_ghostobj->getCollisionShape()->getUserPointer())
+				{
+					delete (btTriangleIndexVertexArray *)m_ghostobj->getCollisionShape()->getUserPointer();
+				}
+
+				delete m_ghostobj->getCollisionShape();
+			}
+
 			delete m_ghostobj;
 			m_ghostobj = NULL;
 		}
@@ -484,6 +496,44 @@ private:
 };
 
 ATTRIBUTE_ALIGNED16(class)
+CPhysicTriggerGhostPhysicObject : public CGhostPhysicObject
+{
+public:
+	BT_DECLARE_ALIGNED_ALLOCATOR();
+	CPhysicTriggerGhostPhysicObject(CGameObject *obj) : CGhostPhysicObject(obj)
+	{
+
+	}
+	~CPhysicTriggerGhostPhysicObject()
+	{
+
+	}
+
+	virtual bool IsPhysicTriggerGhost() const
+	{
+		return true;
+	}
+
+	virtual void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
+	{
+		CPhysicObject::AddToPhysicWorld(world, numDynamicObjects);
+
+		if (GetGhostObject())
+		{
+			world->addCollisionObject(GetGhostObject(), btBroadphaseProxy::SensorTrigger, FallGuysCollisionFilterGroups::DynamicObjectFilter | FallGuysCollisionFilterGroups::ClippingHullFilter);
+
+			(*numDynamicObjects)++;
+		}
+	}
+
+	virtual void StartFrame(btDiscreteDynamicsWorld* world);
+
+	virtual void StartFrame_Post(btDiscreteDynamicsWorld* world);
+
+private:
+};
+
+ATTRIBUTE_ALIGNED16(class)
 CCollisionPhysicObject : public CPhysicObject
 {
 public:
@@ -550,7 +600,7 @@ public:
 		m_rigbody->setUserPointer(this);
 	}
 
-	btRigidBody* GetRigidBody()
+	btRigidBody* GetRigidBody() const
 	{
 		return m_rigbody;
 	}
@@ -565,11 +615,9 @@ CStaticObject : public CCollisionPhysicObject
 {
 public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
-	CStaticObject(CGameObject *obj, int group, int mask, vertexarray_t* vertexarray, indexarray_t* indexarray, bool kinematic) : CCollisionPhysicObject(obj, group, mask)
+	CStaticObject(CGameObject *obj, int group, int mask) : CCollisionPhysicObject(obj, group, mask)
 	{
-		m_vertexarray = vertexarray;
-		m_indexarray = indexarray;
-		m_kinematic = kinematic;
+	
 	}
 	~CStaticObject()
 	{
@@ -578,12 +626,12 @@ public:
 
 	virtual bool IsKinematic() const
 	{
-		return m_kinematic;
+		return (GetRigidBody()->getCollisionFlags() & btCollisionObject::CF_KINEMATIC_OBJECT) ? true : false;
 	}
 
 	virtual bool IsStatic() const
 	{
-		return !m_kinematic;
+		return !IsKinematic();
 	}
 
 	virtual bool UseEdictSolid() const
@@ -592,9 +640,6 @@ public:
 	}
 
 protected:
-	vertexarray_t* m_vertexarray;
-	indexarray_t* m_indexarray;
-	bool m_kinematic;
 };
 
 ATTRIBUTE_ALIGNED16(class)
@@ -1174,8 +1219,9 @@ public:
 	void RemoveGameObject(int entindex);
 	void RemoveAllGameBodies();
 
+	btBvhTriangleMeshShape *CreateTriMeshShapeFromBrushModel(edict_t *ent);
 	CDynamicObject* CreateDynamicObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold);
-	CStaticObject* CreateStaticObject(CGameObject *obj, vertexarray_t* vertexarray, indexarray_t* indexarray, bool kinematic);
+	CStaticObject* CreateStaticObject(CGameObject *obj, btCollisionShape *collisionShape, bool kinematic);
 	CPlayerObject* CreatePlayerObject(CGameObject *obj, btCollisionShape* collisionShape, float ccdRadius, float ccdThreshold, bool duck);
 	CClippingHullObject* CreateClippingHullObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass);
 
@@ -1188,6 +1234,7 @@ public:
 	bool CreatePhysicObjectPost(edict_t *ent, CGameObject *obj, btCollisionShape *shape, PhysicObjectParams *objectParams);
 	bool CreatePlayerBox(edict_t* ent);
 	bool CreateSolidOptimizer(edict_t* ent, int boneindex, const Vector &mins, const Vector &maxs);
+	bool CreatePhysicTrigger(edict_t* ent);
 	
 	bool CreatePhysicVehicle(edict_t* ent, PhysicWheelParams **wheelParamArray, size_t numWheelParam, PhysicVehicleParams *vehicleParams);
 	bool SetVehicleEngine(edict_t* ent, int wheelIndex, bool enableMotor, float angularVelcoity, float maxMotorForce);

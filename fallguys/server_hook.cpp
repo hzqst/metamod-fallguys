@@ -98,6 +98,11 @@ bool SC_SERVER_DECL CASEntityFuncs__CreatePhysicVehicle(void* pthis, SC_SERVER_D
 	return bResult;
 }
 
+bool SC_SERVER_DECL CASEntityFuncs__CreatePhysicTrigger(void* pthis, SC_SERVER_DUMMYARG edict_t* ent)
+{
+	return gPhysicsManager.CreatePhysicTrigger(ent);
+}
+
 bool SC_SERVER_DECL CASEntityFuncs__SetPhysicObjectTransform(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, const Vector &origin, const Vector &angles)
 {
 	return gPhysicsManager.SetPhysicObjectTransform(ent, origin, angles);
@@ -467,13 +472,17 @@ void RegisterAngelScriptMethods(void)
 			(void *)CASEntityFuncs__CreateCompoundPhysicObject, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Enable vehicle for physic entity", "CEntityFuncs", "bool CreatePhysicVehicle(edict_t@ ent, const array<PhysicWheelParams>& in wheels, const PhysicVehicleParams& in vehicleParams )",
+			"Create vehicle manager for physic entity", "CEntityFuncs", "bool CreatePhysicVehicle(edict_t@ ent, const array<PhysicWheelParams>& in wheels, const PhysicVehicleParams& in vehicleParams )",
 			(void *)CASEntityFuncs__CreatePhysicVehicle, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Create physic trigger that fires pfnTouch when colliding with physic object", "CEntityFuncs", "bool CreatePhysicTrigger(edict_t@ ent)",
+			(void *)CASEntityFuncs__CreatePhysicTrigger, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Set physic object's transform", "CEntityFuncs", "bool SetPhysicObjectTransform(edict_t@ ent, const Vector& in origin, const Vector& in angles )",
 			(void *)CASEntityFuncs__SetPhysicObjectTransform, 3);
-
+		
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Set physic object's activation state to freeze or unfreeze", "CEntityFuncs", "bool SetPhysicObjectFreeze(edict_t@ ent, bool freeze )",
 			(void *)CASEntityFuncs__SetPhysicObjectFreeze, 3);
