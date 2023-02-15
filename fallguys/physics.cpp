@@ -547,7 +547,7 @@ void CPhysicsManager::GenerateIndexedArrayForBrush(model_t* mod, vertexarray_t* 
 	}
 }
 
-CDynamicObject* CPhysicsManager::CreateDynamicObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold)
+CDynamicObject* CPhysicsManager::CreateDynamicObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, int flags)
 {
 	//legacy -- dynamic object collide with all other stuffs when pushable, and all non-player stuffs when unpushable
 
@@ -555,7 +555,7 @@ CDynamicObject* CPhysicsManager::CreateDynamicObject(CGameObject *obj, btCollisi
 
 	mask &= ~FallGuysCollisionFilterGroups::ClippingHullFilter;
 
-	auto dynamicobj = new CDynamicObject(obj, btBroadphaseProxy::DefaultFilter | FallGuysCollisionFilterGroups::DynamicObjectFilter, mask);
+	auto dynamicobj = new CDynamicObject(obj, btBroadphaseProxy::DefaultFilter | FallGuysCollisionFilterGroups::DynamicObjectFilter, mask, flags);
 
 	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, new EntityMotionState(dynamicobj), collisionShape, localInertia);
 	cInfo.m_friction = friction;
@@ -569,6 +569,12 @@ CDynamicObject* CPhysicsManager::CreateDynamicObject(CGameObject *obj, btCollisi
 	dynamicobj->GetRigidBody()->setCcdSweptSphereRadius(ccdRadius);
 	dynamicobj->GetRigidBody()->setCcdMotionThreshold(ccdThreshold);
 	dynamicobj->GetRigidBody()->setRestitution(restitution);
+
+	if (flags & PhysicObject_Kinematic)
+	{
+		dynamicobj->GetRigidBody()->setCollisionFlags(dynamicobj->GetRigidBody()->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
+		dynamicobj->GetRigidBody()->setActivationState(DISABLE_DEACTIVATION);
+	}
 
 	return dynamicobj;
 }
@@ -703,7 +709,7 @@ void EntityMotionState::ResetWorldTransform(const Vector &origin, const Vector &
 
 	btVector3 vecAngles(angles.x, angles.y, angles.z);
 
-	if (GetPhysicObject()->IsPlayer())
+	if (GetPhysicObject()->IsPlayerObject())
 	{
 		vecAngles.setX(0);
 		vecAngles.setY(0);
@@ -716,8 +722,9 @@ void EntityMotionState::ResetWorldTransform(const Vector &origin, const Vector &
 	m_worldTransformInitialized = true;
 }
 
-//Upload GoldSrc origin and angles to bullet engine
-
+/*
+	Upload GoldSrc origin and angles to bullet engine
+*/
 void EntityMotionState::getWorldTransform(btTransform& worldTrans) const
 {
 	if (!GetPhysicObject()->GetGameObject())
@@ -725,11 +732,12 @@ void EntityMotionState::getWorldTransform(btTransform& worldTrans) const
 
 	auto ent = GetPhysicObject()->GetGameObject()->GetEdict();
 
-	if (!ent)
+	if (!ent || ent->free)
 		return;
 
 	//Player and brush upload origin and angles in normal way
-	if (!GetPhysicObject()->IsDynamic())
+
+	if (!GetPhysicObject()->IsDynamicObject())
 	{
 		btVector3 vecOrigin(ent->v.origin.x, ent->v.origin.y, ent->v.origin.z);
 
@@ -737,12 +745,13 @@ void EntityMotionState::getWorldTransform(btTransform& worldTrans) const
 
 		btVector3 vecAngles(ent->v.angles.x, ent->v.angles.y, ent->v.angles.z);
 
+		//Brush uses reverted pitch
 		if (ent->v.solid == SOLID_BSP)
 		{
 			vecAngles.setX(-vecAngles.x());
 		}
 
-		if (GetPhysicObject()->IsPlayer())
+		if (GetPhysicObject()->IsPlayerObject())
 		{
 			vecAngles.setX(0);
 			vecAngles.setY(0);
@@ -778,12 +787,13 @@ void EntityMotionState::getWorldTransform(btTransform& worldTrans) const
 	}
 }
 
-//Download GoldSrc origin and angles from bullet engine
-
+/*
+	Download GoldSrc origin and angles from bullet engine
+*/
 void EntityMotionState::setWorldTransform(const btTransform& worldTrans)
 {
 	//Never download player state
-	if (GetPhysicObject()->IsPlayer())
+	if (GetPhysicObject()->IsPlayerObject())
 	{
 		return;
 	}
@@ -793,7 +803,7 @@ void EntityMotionState::setWorldTransform(const btTransform& worldTrans)
 
 	auto ent = GetPhysicObject()->GetGameObject()->GetEdict();
 
-	if (!ent)
+	if (!ent || ent->free)
 		return;
 
 	Vector origin = Vector((float*)(worldTrans.getOrigin().m_floats));
@@ -912,37 +922,44 @@ void CPhysicsManager::EntityEndFrame()
 
 void CDynamicObject::StartFrame(btDiscreteDynamicsWorld* world)
 {
-	//Upload linear velocity to bullet engine (if changed by user code)
-
 	auto ent = GetGameObject()->GetEdict();
 
-	btVector3 vecLinearVelocity(ent->v.vuser1.x, ent->v.vuser1.y, ent->v.vuser1.z);
-	
-	GetRigidBody()->setLinearVelocity(vecLinearVelocity);
+	//Upload linear velocity to bullet engine (if changed by user code)
 
-	btVector3 vecAngularVelocity(ent->v.vuser2.x, ent->v.vuser2.y, ent->v.vuser2.z);
+	if (!IsKinematic())
+	{
+		btVector3 vecLinearVelocity(ent->v.vuser1.x, ent->v.vuser1.y, ent->v.vuser1.z);
 
-	GetRigidBody()->setAngularVelocity(vecAngularVelocity);
+		GetRigidBody()->setLinearVelocity(vecLinearVelocity);
+
+		btVector3 vecAngularVelocity(ent->v.vuser2.x, ent->v.vuser2.y, ent->v.vuser2.z);
+
+		GetRigidBody()->setAngularVelocity(vecAngularVelocity);
+	}
 }
 
 void CDynamicObject::StartFrame_Post(btDiscreteDynamicsWorld* world)
 {
-	//Download linear velocity from bullet engine
-
 	auto ent = GetGameObject()->GetEdict();
 
-	auto vecLinearVelocity = GetRigidBody()->getLinearVelocity();
-	auto vecAngularVelocity = GetRigidBody()->getAngularVelocity();
+	//Download linear velocity from bullet engine
 
-	Vector vel(vecLinearVelocity.getX(), vecLinearVelocity.getY(), vecLinearVelocity.getZ());
-	Vector avel(vecAngularVelocity.getX(), vecAngularVelocity.getY(), vecAngularVelocity.getZ());
+	if (!IsKinematic())
+	{
+		auto vecLinearVelocity = GetRigidBody()->getLinearVelocity();
+		auto vecAngularVelocity = GetRigidBody()->getAngularVelocity();
 
-	ent->v.basevelocity = g_vecZero;
-	ent->v.velocity = g_vecZero;
-	ent->v.avelocity = g_vecZero;
-	ent->v.vuser1 = vel;
-	ent->v.vuser2 = avel;
-	
+		Vector vel(vecLinearVelocity.getX(), vecLinearVelocity.getY(), vecLinearVelocity.getZ());
+		Vector avel(vecAngularVelocity.getX(), vecAngularVelocity.getY(), vecAngularVelocity.getZ());
+
+		ent->v.basevelocity = g_vecZero;
+		ent->v.velocity = g_vecZero;
+		ent->v.avelocity = g_vecZero;
+		ent->v.vuser1 = vel;
+		ent->v.vuser2 = avel;
+	}
+
+	//Dispatch impact event
 	if (m_ImpactEntity)
 	{
 		if (gpGlobals->time > m_flImpactTime + 0.1f)
@@ -961,7 +978,20 @@ void CDynamicObject::StartFrame_Post(btDiscreteDynamicsWorld* world)
 
 void CDynamicObject::EndFrame(btDiscreteDynamicsWorld* world)
 {
-	
+	auto ent = GetGameObject()->GetEdict();
+
+	if (m_PhysicObjectFlags & PhysicObject_SemiKinematic)
+	{
+		SetPhysicTransform(ent->v.origin, ent->v.angles);
+
+		btVector3 vecLinearVelocity(ent->v.vuser1.x, ent->v.vuser1.y, ent->v.vuser1.z);
+
+		GetRigidBody()->setLinearVelocity(vecLinearVelocity);
+
+		btVector3 vecAngularVelocity(ent->v.vuser2.x, ent->v.vuser2.y, ent->v.vuser2.z);
+
+		GetRigidBody()->setAngularVelocity(vecAngularVelocity);
+	}
 }
 
 void CDynamicObject::SetPhysicTransform(const Vector &origin, const Vector &angles)
@@ -1154,7 +1184,7 @@ bool CDynamicObject::SetAbsBox(edict_t *ent)
 
 void CDynamicObject::DispatchImpact(float impulse, const btVector3 &worldpos_on_source, const btVector3 &worldpos_on_hit, const btVector3 &normal, edict_t *hitent)
 {
-	if (m_bEnableImpactImpulse && impulse > m_flImpactImpulseThreshold && impulse > m_flImpactImpulse)
+	if ((m_PhysicObjectFlags & PhysicObject_HasImpactImpulse) && impulse > m_flImpactImpulseThreshold && impulse > m_flImpactImpulse)
 	{
 		vec3_t ImpactPoint(worldpos_on_source.getX(), worldpos_on_source.getY(), worldpos_on_source.getZ());
 		vec3_t ImpactDirection(normal.getX(), normal.getY(), normal.getZ());
@@ -1274,7 +1304,7 @@ void CSolidOptimizerGhostPhysicObject::StartFrame_Post(btDiscreteDynamicsWorld* 
 					{
 						auto physobj = (CPhysicObject *)rigidbody->getUserPointer();
 
-						if (physobj->IsPlayer())
+						if (physobj->IsPlayerObject())
 						{
 							int playerIndex = physobj->GetGameObject()->GetEntIndex();
 
@@ -1375,7 +1405,7 @@ void CPhysicTriggerGhostPhysicObject::StartFrame_Post(btDiscreteDynamicsWorld* w
 					{
 						auto physobj = (CPhysicObject *)rigidbody->getUserPointer();
 
-						if (physobj->IsDynamic())
+						if (physobj->IsDynamicObject())
 						{
 							auto physent = physobj->GetGameObject()->GetEdict();
 
@@ -1751,7 +1781,8 @@ bool CPhysicsManager::ApplyPhysicImpulse(edict_t* ent, const Vector& impulse, co
 	for (size_t i = 0; i < obj->GetNumPhysicObject(); ++i)
 	{
 		auto physicObject = obj->GetPhysicObjectByIndex(i);
-		if (physicObject->IsDynamic())
+
+		if (physicObject->IsDynamicObject())
 		{
 			btVector3 vecImpulse(impulse.x, impulse.y, impulse.z);
 
@@ -1787,7 +1818,8 @@ bool CPhysicsManager::ApplyPhysicForce(edict_t* ent, const Vector& force, const 
 	for (size_t i = 0; i < obj->GetNumPhysicObject(); ++i)
 	{
 		auto physicObject = obj->GetPhysicObjectByIndex(i);
-		if (physicObject->IsDynamic())
+
+		if (physicObject->IsDynamicObject())
 		{
 			btVector3 vecImpulse(force.x, force.y, force.z);
 
@@ -1822,7 +1854,7 @@ bool CPhysicsManager::SetVehicleEngine(edict_t* ent, int wheelIndex, bool enable
 
 	auto physObject = obj->GetPhysicObjectByIndex(0);
 
-	if(!physObject->IsDynamic())
+	if(!physObject->IsDynamicObject())
 		return false;
 
 	auto dynObject = (CDynamicObject *)physObject;
@@ -1855,7 +1887,7 @@ bool CPhysicsManager::SetVehicleSteering(edict_t* ent, int wheelIndex, float ang
 
 	auto physObject = obj->GetPhysicObjectByIndex(0);
 
-	if (!physObject->IsDynamic())
+	if (!physObject->IsDynamicObject())
 		return false;
 
 	auto dynObject = (CDynamicObject *)physObject;
@@ -1981,7 +2013,7 @@ bool CPhysicsManager::SetEntityFollow(edict_t* ent, edict_t* follow, int flags, 
 	return true;
 }
 
-bool CPhysicsManager::SetEntityEnvStudioAnim(edict_t* ent, int flags, EnvStudioKeyframe **keyframes, size_t numKeyframes)
+bool CPhysicsManager::SetEntityEnvStudioAnim(edict_t* ent, int flags, float overrideCurFrame, float overrideMaxFrame, EnvStudioKeyframe **keyframes, size_t numKeyframes)
 {
 	if (ent->free)
 		return false;
@@ -2000,7 +2032,7 @@ bool CPhysicsManager::SetEntityEnvStudioAnim(edict_t* ent, int flags, EnvStudioK
 		return false;
 	}
 
-	if (mod->type != mod_studio || mod->type != mod_sprite)
+	if (mod->type != mod_studio && mod->type != mod_sprite)
 	{
 		//Must be studio or sprite
 		return false;
@@ -2015,7 +2047,7 @@ bool CPhysicsManager::SetEntityEnvStudioAnim(edict_t* ent, int flags, EnvStudioK
 		AddGameObject(obj);
 	}
 
-	obj->SetEntityEnvStudioAnim(flags, keyframes, numKeyframes);
+	obj->SetEntityEnvStudioAnim(flags, overrideCurFrame, overrideMaxFrame, keyframes, numKeyframes);
 
 	return true;
 }
@@ -2039,6 +2071,24 @@ bool CPhysicsManager::SetEntitySuperPusher(edict_t* ent, bool enable)
 	return true;
 }
 
+bool CPhysicsManager::SetEntityCustomMoveSize(edict_t* ent, const Vector &mins, const Vector &maxs )
+{
+	if (ent->free)
+		return false;
+
+	auto obj = GetGameObject(ent);
+
+	if (!obj)
+	{
+		obj = new CGameObject(ent, g_engfuncs.pfnIndexOfEdict(ent));
+
+		AddGameObject(obj);
+	}
+
+	obj->SetEntityCustomMoveSize(mins, maxs);
+
+	return true;
+}
 bool CPhysicsManager::CreatePhysicVehicle(edict_t* ent, PhysicWheelParams **wheelParamArray, size_t numWheelParam, PhysicVehicleParams *vehicleParams)
 {
 	auto obj = GetGameObject(ent);
@@ -2057,7 +2107,7 @@ bool CPhysicsManager::CreatePhysicVehicle(edict_t* ent, PhysicWheelParams **whee
 	
 	auto physObject = obj->GetPhysicObjectByIndex(0);
 
-	if(!physObject->IsDynamic())
+	if(!physObject->IsDynamicObject())
 	{
 		return false;
 	}
@@ -2076,7 +2126,7 @@ bool CPhysicsManager::CreatePhysicVehicle(edict_t* ent, PhysicWheelParams **whee
 		{
 			auto wheelPhysObject = wheelObject->GetPhysicObjectByIndex(0);
 
-			if (wheelPhysObject->IsDynamic())
+			if (wheelPhysObject->IsDynamicObject())
 			{
 				auto wheelDynObject = (CDynamicObject *)wheelPhysObject;
 
@@ -2358,7 +2408,14 @@ bool CPhysicsManager::CreatePhysicObjectPost(edict_t *ent, CGameObject *obj, btC
 	btVector3 localInertia;
 	shape->calculateLocalInertia(objectParams->mass, localInertia);
 
-	auto dynamicobj = CreateDynamicObject(obj, shape, localInertia, objectParams->mass, objectParams->linearfriction, objectParams->rollingfriction, objectParams->restitution, objectParams->ccdradius, objectParams->ccdthreshold);
+	auto dynamicobj = CreateDynamicObject(obj, shape, localInertia, 
+		objectParams->mass, 
+		objectParams->linearfriction,
+		objectParams->rollingfriction,
+		objectParams->restitution,
+		objectParams->ccdradius, 
+		objectParams->ccdthreshold,
+		objectParams->flags);
 
 	btVector3 vecLinearVelocity(ent->v.velocity.x, ent->v.velocity.y, ent->v.velocity.z);
 
@@ -2398,12 +2455,14 @@ bool CPhysicsManager::CreatePhysicObjectPost(edict_t *ent, CGameObject *obj, btC
 
 	if (objectParams->flags & PhysicObject_HasImpactImpulse)
 	{
-		dynamicobj->EnableImpactImpulse(true, objectParams->impactimpulse_threshold);
+		dynamicobj->SetImpactImpulseThreshold(objectParams->impactimpulse_threshold);
 	}
 
 	if (objectParams->flags & PhysicObject_Freeze)
 	{
 		dynamicobj->GetRigidBody()->setActivationState(DISABLE_SIMULATION);
+
+		objectParams->flags &= ~PhysicObject_Freeze;
 	}
 
 	return true;
@@ -2570,7 +2629,7 @@ struct GameFilterCallback : public btOverlapFilterCallback
 					return false;
 			}
 
-			if (physobj0->IsPlayer())
+			if (physobj0->IsPlayerObject())
 			{
 				auto ent0 = physobj0->GetGameObject()->GetEdict();
 				auto playerobj0 = (CPlayerObject *)physobj0;
@@ -2579,7 +2638,7 @@ struct GameFilterCallback : public btOverlapFilterCallback
 				else if (!playerobj0->IsDuck() && ent0->v.bInDuck)
 					return false;
 			}
-			else if (physobj1->IsPlayer())
+			else if (physobj1->IsPlayerObject())
 			{
 				auto ent1 = physobj1->GetGameObject()->GetEdict();
 				auto playerobj1 = (CPlayerObject *)physobj1;
@@ -2589,7 +2648,7 @@ struct GameFilterCallback : public btOverlapFilterCallback
 					return false;
 			}
 
-			if (physobj0->IsSolidOptimizerGhost() && physobj1->IsPlayer())
+			if (physobj0->IsSolidOptimizerGhost() && physobj1->IsPlayerObject())
 			{
 				auto optimizer0 = (CSolidOptimizerGhostPhysicObject *)physobj0;
 				auto player1 = (CPlayerObject *)physobj1;
@@ -2633,7 +2692,7 @@ static void InternalTickCallback(btDynamicsWorld* world, btScalar timeStep)
 		auto physobj0 = (CPhysicObject *)body0->getUserPointer();
 		auto physobj1 = (CPhysicObject *)body1->getUserPointer();
 
-		if (physobj0->IsDynamic() && (physobj1->IsPlayer() || physobj1->IsStatic() || physobj1->IsKinematic() || physobj1->IsDynamic()))
+		if (physobj0->IsDynamicObject() && (physobj1->IsPlayerObject() || physobj1->IsStaticObject() || physobj1->IsDynamicObject() || physobj1->IsClippingHullObject()))
 		{
 			auto ent0 = physobj0->GetGameObject()->GetEdict();
 			auto ent1 = physobj1->GetGameObject()->GetEdict();
@@ -2646,11 +2705,11 @@ static void InternalTickCallback(btDynamicsWorld* world, btScalar timeStep)
 				
 				physobj0->DispatchImpact(flImpulse, cp.getPositionWorldOnA(), cp.getPositionWorldOnB(), cp.m_normalWorldOnB, ent1);
 
-				if (physobj1->IsPlayer())
+				if (physobj1->IsPlayerObject())
 					physobj1->DispatchImpact(flImpulse, cp.getPositionWorldOnB(), cp.getPositionWorldOnA(), cp.m_normalWorldOnB, ent0);
 			}
 		}
-		else if (physobj1->IsDynamic() && (physobj0->IsPlayer() || physobj0->IsStatic() || physobj0->IsKinematic() || physobj0->IsDynamic()))
+		else if (physobj1->IsDynamicObject() && (physobj0->IsPlayerObject() || physobj0->IsStaticObject() || physobj0->IsDynamicObject() || physobj1->IsClippingHullObject()))
 		{
 			auto ent0 = physobj0->GetGameObject()->GetEdict();
 			auto ent1 = physobj1->GetGameObject()->GetEdict();
@@ -2663,7 +2722,7 @@ static void InternalTickCallback(btDynamicsWorld* world, btScalar timeStep)
 				
 				physobj1->DispatchImpact(flImpulse, cp.getPositionWorldOnB(), cp.getPositionWorldOnA(), cp.m_normalWorldOnB, ent0);
 
-				if (physobj0->IsPlayer())
+				if (physobj0->IsPlayerObject())
 					physobj0->DispatchImpact(flImpulse, cp.getPositionWorldOnB(), cp.getPositionWorldOnA(), cp.m_normalWorldOnB, ent1);
 			}
 		}
@@ -2678,10 +2737,10 @@ static bool CustomMaterialCombinerCallback(btManifoldPoint& cp, const btCollisio
 	auto physobj0 = (CPhysicObject *)body0->getUserPointer();
 	auto physobj1 = (CPhysicObject *)body1->getUserPointer();
 
-	if (physobj0->IsPlayer() || physobj1->IsPlayer())
+	if (physobj0->IsPlayerObject() || physobj1->IsPlayerObject())
 		return true;
 
-	if (physobj0->IsStatic() || physobj0->IsKinematic())
+	if (physobj0->IsStaticObject())
 	{
 		auto ent0 = physobj0->GetGameObject()->GetEdict();
 
@@ -2695,7 +2754,7 @@ static bool CustomMaterialCombinerCallback(btManifoldPoint& cp, const btCollisio
 			cp.m_contactMotion1 = ent0->v.speed;
 		}
 	}
-	else if (physobj1->IsStatic() || physobj1->IsKinematic())
+	else if (physobj1->IsStaticObject())
 	{
 		auto ent1 = physobj1->GetGameObject()->GetEdict();
 
@@ -2894,239 +2953,32 @@ void CGameObject::StartFrame(btDiscreteDynamicsWorld* world)
 
 void CGameObject::StartFrame_Post(btDiscreteDynamicsWorld* world)
 {
+	auto ent = GetEdict();
+
 	for (size_t i = 0; i < m_physics.size(); ++i)
 	{
 		m_physics[i]->StartFrame_Post(world);
 	}
-}
 
-void CGameObject::SetEntityFollow(edict_t* follow, int flags, const Vector &origin_offset, const Vector &angles_offset)
-{
-	if (flags)
+	if (HasEntityCustomMoveSize())
 	{
-		m_follow_flags = flags;
-		m_follow_ent = follow;
-		m_follow_origin_offet = origin_offset;
-		m_follow_angles_offet = angles_offset;
-	}
-	else
-	{
-		m_follow_flags = 0;
-		m_follow_ent = NULL;
-		m_follow_origin_offet = g_vecZero;
-		m_follow_angles_offet = g_vecZero;
-	}
-}
-
-void CGameObject::SetEntityEnvStudioAnim(int flags, EnvStudioKeyframe **keyframes, size_t numKeyframes)
-{
-	m_anim_flags = flags;
-	m_anim_curframe = 0;
-	m_anim_lasttime = gpGlobals->time;
-	m_anim_maxframe = 0;
-
-	if (flags & EnvStudioAnim_AnimatedStudio)
-	{
-		m_anim_maxframe = 256;
-	}
-	else  if (flags & EnvStudioAnim_AnimatedSprite)
-	{
-		for (size_t i = 0; i < numKeyframes; ++i)
-		{
-			m_anim_keyframes.emplace_back(*keyframes[i]);
-
-			if (keyframes[i]->frame > m_anim_maxframe)
-				m_anim_maxframe = keyframes[i]->frame;
-		}
-	}
-	
-	if (flags & EnvStudioAnim_AnimatedStudio)
-	{
-		auto pmodel = GET_MODEL_PTR(GetEdict());
-
-		studiohdr_t *pstudiohdr = (studiohdr_t *)pmodel;
-
-		if (pstudiohdr)
-		{
-			if (GetEdict()->v.sequence >= pstudiohdr->numseq)
-			{
-				m_anim_studio_frametime = 0;
-				m_anim_studio_seqflags = 0;
-			}
-			else
-			{
-				mstudioseqdesc_t *pseqdesc = (mstudioseqdesc_t *)((byte *)pstudiohdr + pstudiohdr->seqindex) + (int)GetEdict()->v.sequence;
-
-				m_anim_studio_seqflags = pseqdesc->flags;
-
-				if (pseqdesc->numframes > 1)
-				{
-					m_anim_studio_frametime = 256 * pseqdesc->fps / (pseqdesc->numframes - 1);
-				}
-				else
-				{
-					m_anim_studio_frametime = 256;
-				}
-			}
-		}
-	}
-
-}
-
-void CGameObject::SpriteFrameAdvance()
-{
-	m_anim_curframe += GetEdict()->v.framerate * (gpGlobals->time - m_anim_lasttime);
-	m_anim_lasttime = gpGlobals->time;
-}
-
-void CGameObject::StudioFrameAdvance()
-{
-	float flInterval = (gpGlobals->time - m_anim_lasttime);
-
-	if (flInterval <= 0.001)
-	{
-		m_anim_lasttime = gpGlobals->time;
-		return;
-	}
-
-	if (!m_anim_lasttime)
-		flInterval = 0;
-
-	m_anim_curframe += flInterval * m_anim_studio_frametime * GetEdict()->v.framerate;
-	m_anim_lasttime = gpGlobals->time;
-
-	if (m_anim_curframe < 0 || m_anim_curframe >= 256)
-	{
-		if (m_anim_studio_seqflags & STUDIO_LOOPING)
-			m_anim_curframe -= (int)(m_anim_curframe / 256.0f) * 256.0f;
-		else
-			m_anim_curframe = (m_anim_curframe < 0) ? 0.0f : 255.0f;
-
-		if (m_anim_flags & EnvStudioAnim_RemoveOnAnimFinished)
-		{
-			GetEdict()->v.flags |= FL_KILLME;
-		}
-	}
-}
-
-void CGameObject::UpdateEnvStudioKeyframeAnim()
-{
-	if (m_anim_keyframes.size() > 0)
-	{
-		for (int i = 1; i < int(m_anim_keyframes.size()); ++i)
-		{
-			float startframe = m_anim_keyframes[i - 1].frame;
-			float endframe = m_anim_keyframes[i].frame;
-			float totalframe = endframe - startframe;
-			if (m_anim_curframe >= startframe && m_anim_curframe < endframe)
-			{
-				float factor = (m_anim_curframe - startframe) / totalframe;
-
-				if (m_anim_flags & EnvStudioAnim_AnimatedRenderAmt)
-				{
-					GetEdict()->v.renderamt = (1.0f - factor) * m_anim_keyframes[i - 1].renderamt + factor * m_anim_keyframes[i].renderamt;
-				}
-
-				if (m_anim_flags & EnvStudioAnim_AnimatedScale)
-				{
-					GetEdict()->v.scale = (1.0f - factor) * m_anim_keyframes[i - 1].scale + factor * m_anim_keyframes[i].scale;
-				}
-
-				break;
-			}
-		}
-	}
-
-	if (m_anim_flags & EnvStudioAnim_RemoveOnBoundExcceeded)
-	{
-		if (GetEdict()->v.origin.x > GetEdict()->v.vuser2.x || GetEdict()->v.origin.y > GetEdict()->v.vuser2.y || GetEdict()->v.origin.z > GetEdict()->v.vuser2.z ||
-			GetEdict()->v.origin.x < GetEdict()->v.vuser1.x || GetEdict()->v.origin.y < GetEdict()->v.vuser1.y || GetEdict()->v.origin.z < GetEdict()->v.vuser1.z)
-		{
-			GetEdict()->v.flags |= FL_KILLME;
-		}
-	}
-	else if (m_anim_curframe >= m_anim_maxframe)
-	{
-		if (m_anim_flags & EnvStudioAnim_RemoveOnAnimFinished)
-		{
-			GetEdict()->v.flags |= FL_KILLME;
-		}
-	}
-	else if (!(m_anim_flags & EnvStudioAnim_StaticFrame))
-	{
-		GetEdict()->v.frame = m_anim_curframe;
-
-		if (m_anim_flags & EnvStudioAnim_AnimatedStudio)
-		{
-			GetEdict()->v.animtime = m_anim_lasttime;
-		}
-	}
-}
-
-void CGameObject::ApplyEntityFollow()
-{
-	if (m_follow_ent->free || (m_follow_ent->v.flags & FL_KILLME))
-	{
-		SetEntityFollow(NULL, 0, g_vecZero, g_vecZero);
-	}
-	else
-	{
-		if (m_follow_flags & FollowEnt_CopyOriginX)
-		{
-			GetEdict()->v.origin.x = m_follow_ent->v.origin.x + m_follow_origin_offet.x;
-		}
-		if (m_follow_flags & FollowEnt_CopyOriginY)
-		{
-			GetEdict()->v.origin.y = m_follow_ent->v.origin.y + m_follow_origin_offet.y;
-		}
-		if (m_follow_flags & FollowEnt_CopyOriginZ)
-		{
-			GetEdict()->v.origin.z = m_follow_ent->v.origin.z + m_follow_origin_offet.z;
-		}
-		if (m_follow_flags & FollowEnt_CopyAnglesP)
-		{
-			GetEdict()->v.angles.x = m_follow_ent->v.angles.x + m_follow_angles_offet.x;
-		}
-		if (m_follow_flags & FollowEnt_CopyAnglesY)
-		{
-			GetEdict()->v.angles.y = m_follow_ent->v.angles.y + m_follow_angles_offet.y;
-		}
-		if (m_follow_flags & FollowEnt_CopyAnglesR)
-		{
-			GetEdict()->v.angles.z = m_follow_ent->v.angles.z + m_follow_angles_offet.z;
-		}
-		if (m_follow_flags & FollowEnt_CopyNoDraw)
-		{
-			if ((GetEdict()->v.effects & EF_NODRAW) && !(m_follow_ent->v.effects & EF_NODRAW))
-			{
-				GetEdict()->v.effects &= ~EF_NODRAW;
-			}
-			else if (!(GetEdict()->v.effects & EF_NODRAW) && (m_follow_ent->v.effects & EF_NODRAW))
-			{
-				GetEdict()->v.effects |= EF_NODRAW;
-			}
-		}
-		if (m_follow_flags & FollowEnt_CopyRenderMode)
-		{
-			GetEdict()->v.rendermode = m_follow_ent->v.rendermode;
-		}
-		if (m_follow_flags & FollowEnt_CopyRenderAmt)
-		{
-			GetEdict()->v.renderamt = m_follow_ent->v.renderamt;
-		}
-		if (m_follow_flags & FollowEnt_ApplyLinearVelocity)
-		{
-			m_follow_origin_offet = m_follow_origin_offet + GetEdict()->v.velocity * (float)(*host_frametime);
-		}
-		if (m_follow_flags & FollowEnt_ApplyAngularVelocity)
-		{
-			m_follow_angles_offet = m_follow_angles_offet + GetEdict()->v.avelocity * (float)(*host_frametime);
-		}
+		m_backup_mins = ent->v.mins;
+		m_backup_maxs = ent->v.maxs;
+		ent->v.mins = m_custom_movemins;
+		ent->v.maxs = m_custom_movemaxs;
 	}
 }
 
 void CGameObject::EndFrame(btDiscreteDynamicsWorld* world)
 {
+	auto ent = GetEdict();
+
+	if (HasEntityCustomMoveSize())
+	{
+		ent->v.mins = m_backup_mins;
+		ent->v.maxs = m_backup_maxs;
+	}
+
 	if (gPhysicsManager.GetNumDynamicBodies() > 0)
 	{
 		for (size_t i = 0; i < m_physics.size(); ++i)
@@ -3153,6 +3005,249 @@ void CGameObject::EndFrame(btDiscreteDynamicsWorld* world)
 		ApplyEntityFollow();
 	}
 }
+
+void CGameObject::SetEntityFollow(edict_t* follow, int flags, const Vector &origin_offset, const Vector &angles_offset)
+{
+	if (flags)
+	{
+		m_follow_flags = flags;
+		m_follow_ent = follow;
+		m_follow_origin_offet = origin_offset;
+		m_follow_angles_offet = angles_offset;
+	}
+	else
+	{
+		m_follow_flags = 0;
+		m_follow_ent = NULL;
+		m_follow_origin_offet = g_vecZero;
+		m_follow_angles_offet = g_vecZero;
+	}
+}
+
+void CGameObject::SetEntityEnvStudioAnim(int flags, float overrideCurFrame, float overrideMaxFrame, EnvStudioKeyframe **keyframes, size_t numKeyframes)
+{
+	auto ent = GetEdict();
+
+	m_anim_flags = flags;
+	m_anim_curframe = 0;
+	m_anim_lasttime = gpGlobals->time;
+	m_anim_maxframe = 0;
+
+	if (flags & EnvStudioAnim_AnimatedStudio)
+	{
+		m_anim_maxframe = 256;
+	}
+	else  if (flags & EnvStudioAnim_AnimatedSprite)
+	{
+		for (size_t i = 0; i < numKeyframes; ++i)
+		{
+			m_anim_keyframes.emplace_back(*keyframes[i]);
+
+			if (keyframes[i]->frame > m_anim_maxframe)
+				m_anim_maxframe = keyframes[i]->frame;
+		}
+	}
+
+	if (overrideCurFrame > 0)
+		m_anim_curframe = overrideCurFrame;
+
+	if (overrideMaxFrame > 0)
+		m_anim_maxframe = overrideMaxFrame;
+
+	if (flags & EnvStudioAnim_AnimatedStudio)
+	{
+		auto pmodel = GET_MODEL_PTR(ent);
+
+		studiohdr_t *pstudiohdr = (studiohdr_t *)pmodel;
+
+		if (pstudiohdr)
+		{
+			if (ent->v.sequence >= pstudiohdr->numseq)
+			{
+				m_anim_studio_frametime = 0;
+				m_anim_studio_seqflags = 0;
+			}
+			else
+			{
+				mstudioseqdesc_t *pseqdesc = (mstudioseqdesc_t *)((byte *)pstudiohdr + pstudiohdr->seqindex) + (int)ent->v.sequence;
+
+				m_anim_studio_seqflags = pseqdesc->flags;
+
+				if (pseqdesc->numframes > 1)
+				{
+					m_anim_studio_frametime = 256 * pseqdesc->fps / (pseqdesc->numframes - 1);
+				}
+				else
+				{
+					m_anim_studio_frametime = 256;
+				}
+			}
+		}
+	}
+
+}
+
+void CGameObject::SpriteFrameAdvance()
+{
+	m_anim_curframe += GetEdict()->v.framerate * (gpGlobals->time - m_anim_lasttime);
+
+	if (m_anim_curframe > m_anim_maxframe)
+		m_anim_curframe = m_anim_maxframe;
+
+	m_anim_lasttime = gpGlobals->time;
+}
+
+void CGameObject::StudioFrameAdvance()
+{
+	auto ent = GetEdict();
+
+	float flInterval = (gpGlobals->time - m_anim_lasttime);
+
+	if (flInterval <= 0.001)
+	{
+		m_anim_lasttime = gpGlobals->time;
+		return;
+	}
+
+	if (!m_anim_lasttime)
+		flInterval = 0;
+
+	m_anim_curframe += flInterval * m_anim_studio_frametime * ent->v.framerate;
+	m_anim_lasttime = gpGlobals->time;
+
+	if (m_anim_curframe < 0 || m_anim_curframe >= 256)
+	{
+		if (m_anim_studio_seqflags & STUDIO_LOOPING)
+			m_anim_curframe -= (int)(m_anim_curframe / 256.0f) * 256.0f;
+		else
+			m_anim_curframe = (m_anim_curframe < 0) ? 0.0f : 255.0f;
+
+		if (m_anim_flags & EnvStudioAnim_RemoveOnAnimFinished)
+		{
+			ent->v.flags |= FL_KILLME;
+		}
+	}
+}
+
+void CGameObject::UpdateEnvStudioKeyframeAnim()
+{
+	auto ent = GetEdict();
+
+	if (m_anim_keyframes.size() > 0)
+	{
+		for (int i = 1; i < int(m_anim_keyframes.size()); ++i)
+		{
+			float startframe = m_anim_keyframes[i - 1].frame;
+			float endframe = m_anim_keyframes[i].frame;
+			float totalframe = endframe - startframe;
+			if (m_anim_curframe >= startframe && m_anim_curframe < endframe)
+			{
+				float factor = (m_anim_curframe - startframe) / totalframe;
+
+				if (m_anim_flags & EnvStudioAnim_AnimatedRenderAmt)
+				{
+					ent->v.renderamt = (1.0f - factor) * m_anim_keyframes[i - 1].renderamt + factor * m_anim_keyframes[i].renderamt;
+				}
+
+				if (m_anim_flags & EnvStudioAnim_AnimatedScale)
+				{
+					ent->v.scale = (1.0f - factor) * m_anim_keyframes[i - 1].scale + factor * m_anim_keyframes[i].scale;
+				}
+
+				break;
+			}
+		}
+	}
+
+	if (m_anim_flags & EnvStudioAnim_RemoveOnBoundExcceeded)
+	{
+		if (ent->v.origin.x > ent->v.vuser2.x || ent->v.origin.y > ent->v.vuser2.y || ent->v.origin.z > ent->v.vuser2.z ||
+			ent->v.origin.x < ent->v.vuser1.x || ent->v.origin.y < ent->v.vuser1.y || ent->v.origin.z < ent->v.vuser1.z)
+		{
+			ent->v.flags |= FL_KILLME;
+		}
+	}
+	else if (m_anim_curframe >= m_anim_maxframe)
+	{
+		if (m_anim_flags & EnvStudioAnim_RemoveOnAnimFinished)
+		{
+			ent->v.flags |= FL_KILLME;
+		}
+	}
+	else if (!(m_anim_flags & EnvStudioAnim_StaticFrame))
+	{
+		ent->v.frame = m_anim_curframe;
+
+		if (m_anim_flags & EnvStudioAnim_AnimatedStudio)
+		{
+			ent->v.animtime = m_anim_lasttime;
+		}
+	}
+}
+
+void CGameObject::ApplyEntityFollow()
+{
+	if (m_follow_ent->free || (m_follow_ent->v.flags & FL_KILLME))
+	{
+		SetEntityFollow(NULL, 0, g_vecZero, g_vecZero);
+	}
+	else
+	{
+		auto ent = GetEdict();
+		if (m_follow_flags & FollowEnt_CopyOriginX)
+		{
+			ent->v.origin.x = m_follow_ent->v.origin.x + m_follow_origin_offet.x;
+		}
+		if (m_follow_flags & FollowEnt_CopyOriginY)
+		{
+			ent->v.origin.y = m_follow_ent->v.origin.y + m_follow_origin_offet.y;
+		}
+		if (m_follow_flags & FollowEnt_CopyOriginZ)
+		{
+			ent->v.origin.z = m_follow_ent->v.origin.z + m_follow_origin_offet.z;
+		}
+		if (m_follow_flags & FollowEnt_CopyAnglesP)
+		{
+			ent->v.angles.x = m_follow_ent->v.angles.x + m_follow_angles_offet.x;
+		}
+		if (m_follow_flags & FollowEnt_CopyAnglesY)
+		{
+			ent->v.angles.y = m_follow_ent->v.angles.y + m_follow_angles_offet.y;
+		}
+		if (m_follow_flags & FollowEnt_CopyAnglesR)
+		{
+			ent->v.angles.z = m_follow_ent->v.angles.z + m_follow_angles_offet.z;
+		}
+		if (m_follow_flags & FollowEnt_CopyNoDraw)
+		{
+			if ((ent->v.effects & EF_NODRAW) && !(m_follow_ent->v.effects & EF_NODRAW))
+			{
+				ent->v.effects &= ~EF_NODRAW;
+			}
+			else if (!(GetEdict()->v.effects & EF_NODRAW) && (m_follow_ent->v.effects & EF_NODRAW))
+			{
+				ent->v.effects |= EF_NODRAW;
+			}
+		}
+		if (m_follow_flags & FollowEnt_CopyRenderMode)
+		{
+			ent->v.rendermode = m_follow_ent->v.rendermode;
+		}
+		if (m_follow_flags & FollowEnt_CopyRenderAmt)
+		{
+			ent->v.renderamt = m_follow_ent->v.renderamt;
+		}
+		if (m_follow_flags & FollowEnt_ApplyLinearVelocity)
+		{
+			m_follow_origin_offet = m_follow_origin_offet + ent->v.velocity * (float)(*host_frametime);
+		}
+		if (m_follow_flags & FollowEnt_ApplyAngularVelocity)
+		{
+			m_follow_angles_offet = m_follow_angles_offet + ent->v.avelocity * (float)(*host_frametime);
+		}
+	}
+}
+
 
 void CGameObject::ApplyLevelOfDetail(float distance, int *body, int *modelindex, float *scale)
 {

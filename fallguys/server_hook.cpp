@@ -118,17 +118,22 @@ bool SC_SERVER_DECL CASEntityFuncs__SetEntityFollow(void* pthis, SC_SERVER_DUMMY
 	return gPhysicsManager.SetEntityFollow(ent, follow, flags, origin_offset, angles_offset);
 }
 
-bool SC_SERVER_DECL CASEntityFuncs__SetEntityEnvStudioAnim(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int flags, CScriptArray *keyframes)
+bool SC_SERVER_DECL CASEntityFuncs__SetEntityEnvStudioAnim(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int flags, float overrideCurFrame, float overrideMaxFrame, CScriptArray *keyframes)
 {
 	bool bResult = false;
 
 	EnvStudioKeyframe **pdata = (EnvStudioKeyframe **)keyframes->data();
 
-	bResult = gPhysicsManager.SetEntityEnvStudioAnim(ent, flags, pdata, keyframes->size());
+	bResult = gPhysicsManager.SetEntityEnvStudioAnim(ent, flags, overrideCurFrame, overrideMaxFrame, pdata, keyframes->size());
 
 	ASEXT_CScriptAny_Release(keyframes);
 
 	return bResult;
+}
+
+bool SC_SERVER_DECL CASEntityFuncs__SetEntityCustomMoveSize(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, const Vector &mins, const Vector &maxs)
+{
+	return gPhysicsManager.SetEntityCustomMoveSize(ent, mins, maxs);
 }
 
 bool SC_SERVER_DECL CASEntityFuncs__SetEntitySuperPusher(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, bool enable)
@@ -508,8 +513,12 @@ void RegisterAngelScriptMethods(void)
 			(void *)CASEntityFuncs__SetEntityFollow, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Enable follow for the entity", "CEntityFuncs", "bool SetEntityEnvStudioAnim(edict_t@ ent, int flags, array<EnvStudioKeyframe>@ keyframes )",
+			"Enable follow for the entity", "CEntityFuncs", "bool SetEntityEnvStudioAnim(edict_t@ ent, int flags, float overrideCurFrame, float overrideMaxFrame, array<EnvStudioKeyframe>@ keyframes )",
 			(void *)CASEntityFuncs__SetEntityEnvStudioAnim, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Enable follow for the entity", "CEntityFuncs", "bool SetEntityCustomMoveSize(edict_t@ ent, const Vector& in mins, const Vector& in maxs )",
+			(void *)CASEntityFuncs__SetEntityCustomMoveSize, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Get current working Super-Pusher entity and push direction, return valid edict only in pfnTouch callback", "CEntityFuncs", "edict_t@ GetCurrentSuperPusher(Vector& out vecPushDirection)",

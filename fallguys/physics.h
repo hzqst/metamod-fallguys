@@ -20,6 +20,8 @@ const int PhysicShape_MultiSphere = 5;
 const int PhysicObject_HasClippingHull = 1;
 const int PhysicObject_HasImpactImpulse = 2;
 const int PhysicObject_Freeze = 4;
+const int PhysicObject_Kinematic = 8;
+const int PhysicObject_SemiKinematic = 0x10;
 
 const int PhysicWheel_Front = 1;
 const int PhysicWheel_Engine = 2;
@@ -252,7 +254,7 @@ public:
 		m_actions.clear();
 	}
 
-	virtual bool IsDynamic() const
+	virtual bool IsDynamicObject() const
 	{
 		return false;
 	}
@@ -262,17 +264,17 @@ public:
 		return false;
 	}
 
-	virtual bool IsStatic() const
+	virtual bool IsStaticObject() const
 	{
 		return false;
 	}
 
-	virtual bool IsPlayer() const
+	virtual bool IsPlayerObject() const
 	{
 		return false;
 	}
 
-	virtual bool IsClippingHull() const
+	virtual bool IsClippingHullObject() const
 	{
 		return false;
 	}
@@ -594,6 +596,14 @@ public:
 		return m_rigbody;
 	}
 
+	virtual bool IsKinematic() const
+	{
+		if (!GetRigidBody())
+			return false;
+
+		return (GetRigidBody()->getCollisionFlags() & btCollisionObject::CF_KINEMATIC_OBJECT) ? true : false;
+	}
+
 	void SetRigidBody(btRigidBody* rigbody)
 	{
 		m_rigbody = rigbody;
@@ -624,19 +634,14 @@ public:
 		
 	}
 
-	virtual bool IsKinematic() const
+	virtual bool IsStaticObject() const
 	{
-		return (GetRigidBody()->getCollisionFlags() & btCollisionObject::CF_KINEMATIC_OBJECT) ? true : false;
-	}
-
-	virtual bool IsStatic() const
-	{
-		return !IsKinematic();
+		return true;
 	}
 
 	virtual bool UseEdictSolid() const
 	{
-		return IsKinematic();
+		return true;
 	}
 
 protected:
@@ -682,9 +687,9 @@ CDynamicObject : public CCollisionPhysicObject
 {
 public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
-	CDynamicObject(CGameObject *obj, int group, int mask) : CCollisionPhysicObject(obj, group, mask)
+	CDynamicObject(CGameObject *obj, int group, int mask, int flags) : CCollisionPhysicObject(obj, group, mask)
 	{
-		m_bEnableImpactImpulse = false;
+		m_PhysicObjectFlags = flags;
 		m_flImpactTime = 0;
 		m_flImpactImpulse = 0;
 		m_flImpactImpulseThreshold = 0;
@@ -704,7 +709,7 @@ public:
 		}
 	}
 
-	virtual bool IsDynamic() const
+	virtual bool IsDynamicObject() const
 	{
 		return true;
 	}
@@ -742,9 +747,8 @@ public:
 
 	virtual void DispatchImpact(float impulse, const btVector3 &worldpos_on_source, const btVector3 &worldpos_on_hit, const btVector3 &normal, edict_t *hitent);
 
-	void EnableImpactImpulse(bool bEnabled, float flThreshold)
+	void SetImpactImpulseThreshold(float flThreshold)
 	{
-		m_bEnableImpactImpulse = bEnabled;
 		m_flImpactImpulseThreshold = flThreshold;
 	}
 
@@ -759,7 +763,7 @@ public:
 	}
 
 protected:
-	bool m_bEnableImpactImpulse;
+	int m_PhysicObjectFlags;
 	float m_flImpactImpulseThreshold;
 	float m_flImpactImpulse;
 	float m_flImpactTime;
@@ -791,7 +795,7 @@ public:
 		m_ImpactEntity = NULL;
 	}
 
-	virtual bool IsPlayer() const
+	virtual bool IsPlayerObject() const
 	{
 		return true;
 	}
@@ -838,7 +842,7 @@ public:
 		m_mass = mass;
 	}
 
-	virtual bool IsClippingHull() const
+	virtual bool IsClippingHullObject() const
 	{
 		return true;
 	}
@@ -926,6 +930,11 @@ public:
 		m_lod_distance2 = 0;
 		m_lod_distance3 = 0;
 		m_super_pusher = false;
+		m_has_custom_movesize = false;
+		m_custom_movemins = g_vecZero;
+		m_custom_movemaxs = g_vecZero;
+		m_backup_mins = g_vecZero;
+		m_backup_maxs = g_vecZero;
 		m_semi_vis_mask = 0;
 		m_semi_clip_mask = 0;
 		m_original_solid = 0;
@@ -1040,13 +1049,25 @@ public:
 		return m_solid_optimizer.size() && !(m_ent->v.effects & EF_NODRAW);
 	}
 
-	void SetEntityEnvStudioAnim(int flags, EnvStudioKeyframe **keyframes, size_t numKeyframes); 
+	void SetEntityEnvStudioAnim(int flags, float overrideCurFrame, float overrideMaxFrame, EnvStudioKeyframe **keyframes, size_t numKeyframes);
 	void SpriteFrameAdvance();
 	void StudioFrameAdvance();
 	void UpdateEnvStudioKeyframeAnim();
 
 	void SetEntityFollow(edict_t* follow, int flags, const Vector &origin_offset, const Vector &angles_offset);
 	void ApplyEntityFollow();
+
+	void SetEntityCustomMoveSize(const Vector &mins, const Vector &maxs)
+	{
+		m_has_custom_movesize = true;
+		m_custom_movemins = mins;
+		m_custom_movemaxs = maxs;
+	}
+
+	bool HasEntityCustomMoveSize() const
+	{
+		return m_has_custom_movesize;
+	}
 
 	int GetEntIndex() const
 	{
@@ -1162,6 +1183,11 @@ private:
 	float m_lod_distance3;
 
 	bool m_super_pusher;
+	bool m_has_custom_movesize;
+	Vector m_custom_movemins;
+	Vector m_custom_movemaxs;
+	Vector m_backup_mins;
+	Vector m_backup_maxs;
 
 	int m_semi_vis_mask;
 
@@ -1220,7 +1246,7 @@ public:
 	void RemoveAllGameBodies();
 
 	btBvhTriangleMeshShape *CreateTriMeshShapeFromBrushModel(edict_t *ent);
-	CDynamicObject* CreateDynamicObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold);
+	CDynamicObject* CreateDynamicObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, int flags);
 	CStaticObject* CreateStaticObject(CGameObject *obj, btCollisionShape *collisionShape, bool kinematic);
 	CPlayerObject* CreatePlayerObject(CGameObject *obj, btCollisionShape* collisionShape, float ccdRadius, float ccdThreshold, bool duck);
 	CClippingHullObject* CreateClippingHullObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass);
@@ -1246,7 +1272,8 @@ public:
 	bool SetEntitySemiVisible(edict_t* ent, int player_mask);
 	bool SetEntitySuperPusher(edict_t* ent, bool enable);
 	bool SetEntityFollow(edict_t* ent, edict_t* follow, int flags, const Vector &origin_offset, const Vector &angles_offset);
-	bool SetEntityEnvStudioAnim(edict_t* ent, int flags, EnvStudioKeyframe **keyframes, size_t numKeyframes);
+	bool SetEntityEnvStudioAnim(edict_t* ent, int flags, float overrideCurFrame, float overrideMaxFrame, EnvStudioKeyframe **keyframes, size_t numKeyframes);
+	bool SetEntityCustomMoveSize(edict_t* ent, const Vector &mins, const Vector &maxs);
 
 	bool SetPhysicObjectTransform(edict_t* ent, const Vector &origin, const Vector &angles);
 	bool SetPhysicObjectFreeze(edict_t* ent, bool freeze);
