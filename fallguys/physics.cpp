@@ -570,12 +570,6 @@ CDynamicObject* CPhysicsManager::CreateDynamicObject(CGameObject *obj, btCollisi
 	dynamicobj->GetRigidBody()->setCcdMotionThreshold(ccdThreshold);
 	dynamicobj->GetRigidBody()->setRestitution(restitution);
 
-	if (flags & PhysicObject_Kinematic)
-	{
-		dynamicobj->GetRigidBody()->setCollisionFlags(dynamicobj->GetRigidBody()->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
-		dynamicobj->GetRigidBody()->setActivationState(DISABLE_DEACTIVATION);
-	}
-
 	return dynamicobj;
 }
 
@@ -978,20 +972,7 @@ void CDynamicObject::StartFrame_Post(btDiscreteDynamicsWorld* world)
 
 void CDynamicObject::EndFrame(btDiscreteDynamicsWorld* world)
 {
-	auto ent = GetGameObject()->GetEdict();
 
-	if (m_PhysicObjectFlags & PhysicObject_SemiKinematic)
-	{
-		SetPhysicTransform(ent->v.origin, ent->v.angles);
-
-		btVector3 vecLinearVelocity(ent->v.vuser1.x, ent->v.vuser1.y, ent->v.vuser1.z);
-
-		GetRigidBody()->setLinearVelocity(vecLinearVelocity);
-
-		btVector3 vecAngularVelocity(ent->v.vuser2.x, ent->v.vuser2.y, ent->v.vuser2.z);
-
-		GetRigidBody()->setAngularVelocity(vecAngularVelocity);
-	}
 }
 
 void CDynamicObject::SetPhysicTransform(const Vector &origin, const Vector &angles)

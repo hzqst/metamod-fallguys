@@ -20,8 +20,6 @@ const int PhysicShape_MultiSphere = 5;
 const int PhysicObject_HasClippingHull = 1;
 const int PhysicObject_HasImpactImpulse = 2;
 const int PhysicObject_Freeze = 4;
-const int PhysicObject_Kinematic = 8;
-const int PhysicObject_SemiKinematic = 0x10;
 
 const int PhysicWheel_Front = 1;
 const int PhysicWheel_Engine = 2;
