@@ -996,12 +996,12 @@ void CDynamicObject::SetPhysicFreeze(bool freeze)
 {
 	if (freeze)
 	{
-		GetRigidBody()->setLinearVelocity(btVector3(0, 0, 0));
-		GetRigidBody()->setAngularVelocity(btVector3(0, 0, 0));
 		GetRigidBody()->setActivationState(DISABLE_SIMULATION);
 	}
 	else if (!freeze && GetRigidBody()->getActivationState() == DISABLE_SIMULATION)
 	{
+		GetGameObject()->GetEdict()->v.vuser1 = g_vecZero;
+		GetGameObject()->GetEdict()->v.vuser2 = g_vecZero;
 		GetRigidBody()->setLinearVelocity(btVector3(0, 0, 0));
 		GetRigidBody()->setAngularVelocity(btVector3(0, 0, 0));
 		GetRigidBody()->forceActivationState(ACTIVE_TAG);
