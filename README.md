@@ -43,6 +43,7 @@ The directory hierarchy should be something like this :
 ---------- dlls
 ------------ asqcvar.dll (asqcvar.so)
 ------------ ascurl.dll (ascurl.so)
+------------ asusermsg.dll (asusermsg.so)
 ------------ asext.dll (asext.so)
 ------------ fallguys.dll (fallguys.so)
 ---------- plugins.ini
@@ -51,9 +52,11 @@ The directory hierarchy should be something like this :
 ---- svencoop.exe (or svends.exe / svends_run.sh / svencoop.sh)
 ```
 
+2. If you had installed metamod-core and metamod-plugins (which was loaded by metamod-core) from other sources such as [Bots-United's metamod-p](https://github.com/Bots-United/metamod-p) or (jkivilin's metamod-p)[https://github.com/jkivilin/metamod-p], you will have to add those metamod-plugins back to `plugins.ini` which was overwritten in step (1).
+
 3. You should either 
 
-* Use `-dll addons/metamod/dlls/metamod.dll`(Windows) or `-dll addons/metamod/dlls/metamod.so` (linux) as launch parameter to launch the game (or launch the dedicated server)
+* Use `-dll addons/metamod/dlls/metamod.dll`(Windows) or `-dll addons/metamod/dlls/metamod.so` (linux) as launch parameter to launch the game (launch the dedicated server)
 
 or
 
@@ -72,6 +75,8 @@ to
 gamedll "addons/metamod/dlls/metamod.dll"
 gamedll_linux "addons/metamod/dlls/metamod.so"
 ```
+
+The edited `plugins.ini` should be like ![](/img/1.png)
 
 # Build Requirements (Windows)
 
