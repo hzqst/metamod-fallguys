@@ -11,6 +11,10 @@
 #include <pmtrace.h>
 #include <pm_defs.h>
 
+const int PhysicShapeDirection_X = 0;
+const int PhysicShapeDirection_Y = 1;
+const int PhysicShapeDirection_Z = 2;
+
 const int PhysicShape_Box = 1;
 const int PhysicShape_Sphere = 2;
 const int PhysicShape_Capsule = 3;
@@ -101,6 +105,8 @@ public:
 	float ccdthreshold;
 	int flags;
 	float impactimpulse_threshold;
+	int clippinghull_shapetype;
+	int clippinghull_shapedirection;
 	Vector clippinghull_size;
 };
 
@@ -840,6 +846,10 @@ public:
 		m_mass = mass;
 	}
 
+	virtual void SetPhysicTransform(const Vector &origin, const Vector &angles);
+
+	virtual void SetPhysicFreeze(bool freeze);
+
 	virtual bool IsClippingHullObject() const
 	{
 		return true;
@@ -1247,7 +1257,7 @@ public:
 	CDynamicObject* CreateDynamicObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, int flags);
 	CStaticObject* CreateStaticObject(CGameObject *obj, btCollisionShape *collisionShape, bool kinematic);
 	CPlayerObject* CreatePlayerObject(CGameObject *obj, btCollisionShape* collisionShape, float ccdRadius, float ccdThreshold, bool duck);
-	CClippingHullObject* CreateClippingHullObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass);
+	CClippingHullObject* CreateClippingHullObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, const btTransform& initTransform, float mass);
 
 	void AddGameObject(CGameObject *obj);
 

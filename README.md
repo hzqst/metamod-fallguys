@@ -51,11 +51,13 @@ The directory hierarchy should be something like this :
 ---- svencoop.exe (or svends.exe / svends_run.sh / svencoop.sh)
 ```
 
-2. You should either 
+3. You should either 
 
-* Use `-dll addons/metamod/dlls/metamod.dll`(Windows) or `-dll addons/metamod/dlls/metamod.so` (linux) as launch parameter to launch the game (or launch the dedicated server), 
+* Use `-dll addons/metamod/dlls/metamod.dll`(Windows) or `-dll addons/metamod/dlls/metamod.so` (linux) as launch parameter to launch the game (or launch the dedicated server)
 
-* Or edit `Sven Co-op/svencoop/liblist.gam`
+or
+
+* Edit `Sven Co-op/svencoop/liblist.gam`
 
 and change
 

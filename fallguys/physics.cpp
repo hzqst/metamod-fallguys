@@ -114,6 +114,8 @@ void PhysicObjectParams_ctor(PhysicObjectParams *pthis)
 	pthis->ccdthreshold = 0;
 	pthis->flags = 0;
 	pthis->impactimpulse_threshold = 0;
+	pthis->clippinghull_shapetype = PhysicShape_Box;
+	pthis->clippinghull_shapedirection = PhysicShapeDirection_Z;
 	pthis->clippinghull_size = g_vecZero;
 }
 
@@ -127,6 +129,7 @@ void PhysicObjectParams_copyctor(PhysicObjectParams *a1, PhysicObjectParams *a2)
 	a1->ccdthreshold = a2->ccdthreshold;
 	a1->flags = a2->flags;
 	a1->impactimpulse_threshold = a2->impactimpulse_threshold;
+	a1->clippinghull_shapetype = a2->clippinghull_shapetype;
 	a1->clippinghull_size = a2->clippinghull_size;
 }
 
@@ -633,7 +636,7 @@ CPlayerObject* CPhysicsManager::CreatePlayerObject(CGameObject *obj, btCollision
 	return playerobj;
 }
 
-CClippingHullObject* CPhysicsManager::CreateClippingHullObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass)
+CClippingHullObject* CPhysicsManager::CreateClippingHullObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, const btTransform& initTransfrm, float mass)
 {
 	//Cilpping hull only collides with players
 	auto hullobj = new CClippingHullObject(
@@ -652,6 +655,7 @@ CClippingHullObject* CPhysicsManager::CreateClippingHullObject(CGameObject *obj,
 
 	//Clipping hull box never rotates
 	hullobj->GetRigidBody()->setAngularFactor(0);
+	hullobj->GetRigidBody()->setWorldTransform(initTransfrm);
 
 	return hullobj;
 }
@@ -831,7 +835,7 @@ void CPhysicsManager::EntityStartFrame()
 	{
 		auto ent = g_engfuncs.pfnPEntityOfEntIndex(i);
 
-		if (!ent || ent->free)
+		if (!ent || ent->free || (ent->v.flags & FL_KILLME))
 			continue;
 
 		auto obj = m_gameObjects[i];
@@ -884,7 +888,7 @@ void CPhysicsManager::EntityStartFrame_Post()
 	{
 		auto ent = g_engfuncs.pfnPEntityOfEntIndex(i);
 
-		if (!ent || ent->free)
+		if (!ent || ent->free || (ent->v.flags & FL_KILLME))
 			continue;
 
 		auto body = m_gameObjects[i];
@@ -902,7 +906,7 @@ void CPhysicsManager::EntityEndFrame()
 	{
 		auto ent = g_engfuncs.pfnPEntityOfEntIndex(i);
 
-		if (!ent || ent->free)
+		if (!ent || ent->free || (ent->v.flags & FL_KILLME))
 			continue;
 
 		auto body = m_gameObjects[i];
@@ -996,14 +1000,29 @@ void CDynamicObject::SetPhysicFreeze(bool freeze)
 {
 	if (freeze)
 	{
-		GetRigidBody()->setActivationState(DISABLE_SIMULATION);
+		GetRigidBody()->setCollisionFlags(GetRigidBody()->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
 	}
-	else if (!freeze && GetRigidBody()->getActivationState() == DISABLE_SIMULATION)
+	else if (!freeze)
 	{
-		GetGameObject()->GetEdict()->v.vuser1 = g_vecZero;
-		GetGameObject()->GetEdict()->v.vuser2 = g_vecZero;
-		GetRigidBody()->setLinearVelocity(btVector3(0, 0, 0));
-		GetRigidBody()->setAngularVelocity(btVector3(0, 0, 0));
+		GetRigidBody()->setCollisionFlags(GetRigidBody()->getCollisionFlags() & ~btCollisionObject::CF_KINEMATIC_OBJECT);
+		GetRigidBody()->forceActivationState(ACTIVE_TAG);
+	}
+}
+
+void CClippingHullObject::SetPhysicTransform(const Vector &origin, const Vector &angles)
+{
+
+}
+
+void CClippingHullObject::SetPhysicFreeze(bool freeze)
+{
+	if (freeze)
+	{
+		GetRigidBody()->setCollisionFlags(GetRigidBody()->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
+	}
+	else if (!freeze)
+	{
+		GetRigidBody()->setCollisionFlags(GetRigidBody()->getCollisionFlags() & ~btCollisionObject::CF_KINEMATIC_OBJECT);
 		GetRigidBody()->forceActivationState(ACTIVE_TAG);
 	}
 }
@@ -2338,22 +2357,22 @@ btCollisionShape *CPhysicsManager::CreateCollisionShapeFromParams(CGameObject *o
 	}
 	case PhysicShape_Capsule:
 	{
-		if (shapeParams->direction == 0)
+		if (shapeParams->direction == PhysicShapeDirection_X)
 			shape = new btCapsuleShapeX(btScalar(shapeParams->size.x), btScalar(shapeParams->size.y));
-		else if (shapeParams->direction == 1)
+		else if (shapeParams->direction == PhysicShapeDirection_Y)
 			shape = new btCapsuleShape(btScalar(shapeParams->size.x), btScalar(shapeParams->size.y));
-		else if (shapeParams->direction == 2)
+		else if (shapeParams->direction == PhysicShapeDirection_Z)
 			shape = new btCapsuleShapeZ(btScalar(shapeParams->size.x), btScalar(shapeParams->size.y));
 
 		break;
 	}
 	case PhysicShape_Cylinder:
 	{
-		if (shapeParams->direction == 0)
+		if (shapeParams->direction == PhysicShapeDirection_X)
 			shape = new btCylinderShapeX(btVector3(shapeParams->size.x, shapeParams->size.y, shapeParams->size.z));
-		else if (shapeParams->direction == 1)
+		else if (shapeParams->direction == PhysicShapeDirection_Y)
 			shape = new btCylinderShape(btVector3(shapeParams->size.x, shapeParams->size.y, shapeParams->size.z));
-		else if (shapeParams->direction == 2)
+		else if (shapeParams->direction == PhysicShapeDirection_Z)
 			shape = new btCylinderShapeZ(btVector3(shapeParams->size.x, shapeParams->size.y, shapeParams->size.z));
 
 		break;
@@ -2417,27 +2436,6 @@ bool CPhysicsManager::CreatePhysicObjectPost(edict_t *ent, CGameObject *obj, btC
 
 	obj->AddPhysicObject(dynamicobj, m_dynamicsWorld, &m_numDynamicObjects);
 
-	if (objectParams->flags & PhysicObject_HasClippingHull)
-	{
-		auto hullshape = new btBoxShape(btVector3(objectParams->clippinghull_size.x, objectParams->clippinghull_size.y, objectParams->clippinghull_size.z));
-
-		float hullmass = 0.1f;
-
-		btVector3 localInertiaHull;
-		hullshape->calculateLocalInertia(hullmass, localInertiaHull);
-
-		auto hullobj = CreateClippingHullObject(obj, hullshape, localInertiaHull, hullmass);
-
-		if (hullobj)
-		{
-			auto constraint = new btPoint2PointConstraint(*dynamicobj->GetRigidBody(), *hullobj->GetRigidBody(), btVector3(0, 0, 0), btVector3(0, 0, 0));
-
-			obj->AddPhysicObject(hullobj, m_dynamicsWorld, &m_numDynamicObjects);
-
-			obj->AddConstraint(constraint, m_dynamicsWorld, true);
-		}
-	}
-
 	if (objectParams->flags & PhysicObject_HasImpactImpulse)
 	{
 		dynamicobj->SetImpactImpulseThreshold(objectParams->impactimpulse_threshold);
@@ -2445,9 +2443,50 @@ bool CPhysicsManager::CreatePhysicObjectPost(edict_t *ent, CGameObject *obj, btC
 
 	if (objectParams->flags & PhysicObject_Freeze)
 	{
-		dynamicobj->GetRigidBody()->setActivationState(DISABLE_SIMULATION);
+		dynamicobj->SetPhysicFreeze(true);
+	}
 
-		objectParams->flags &= ~PhysicObject_Freeze;
+	if (objectParams->flags & PhysicObject_HasClippingHull)
+	{
+		btCollisionShape * hullshape = NULL;
+
+		if (objectParams->clippinghull_shapetype == PhysicShape_Box)
+		{
+			hullshape = new btBoxShape(btVector3(objectParams->clippinghull_size.x, objectParams->clippinghull_size.y, objectParams->clippinghull_size.z));
+		}
+		else if (objectParams->clippinghull_shapetype == PhysicShape_Cylinder)
+		{
+			if(objectParams->clippinghull_shapedirection == PhysicShapeDirection_X)
+				hullshape = new btCylinderShapeX(btVector3(objectParams->clippinghull_size.x, objectParams->clippinghull_size.y, objectParams->clippinghull_size.z));
+			else if (objectParams->clippinghull_shapedirection == PhysicShapeDirection_Y)
+				hullshape = new btCylinderShape(btVector3(objectParams->clippinghull_size.x, objectParams->clippinghull_size.y, objectParams->clippinghull_size.z));
+			else if (objectParams->clippinghull_shapedirection == PhysicShapeDirection_Z)
+				hullshape = new btCylinderShapeZ(btVector3(objectParams->clippinghull_size.x, objectParams->clippinghull_size.y, objectParams->clippinghull_size.z));
+		}
+
+		if (hullshape)
+		{
+			float hullmass = 0.001f * objectParams->mass;
+
+			btVector3 localInertiaHull;
+			hullshape->calculateLocalInertia(hullmass, localInertiaHull);
+
+			auto hullobj = CreateClippingHullObject(obj, hullshape, localInertiaHull, dynamicobj->GetRigidBody()->getWorldTransform(), hullmass);
+
+			if (hullobj)
+			{
+				auto constraint = new btPoint2PointConstraint(*dynamicobj->GetRigidBody(), *hullobj->GetRigidBody(), btVector3(0, 0, 0), btVector3(0, 0, 0));
+
+				obj->AddPhysicObject(hullobj, m_dynamicsWorld, &m_numDynamicObjects);
+
+				obj->AddConstraint(constraint, m_dynamicsWorld, true);
+
+				if (objectParams->flags & PhysicObject_Freeze)
+				{
+					hullobj->SetPhysicFreeze(true);
+				}
+			}
+		}
 	}
 
 	return true;

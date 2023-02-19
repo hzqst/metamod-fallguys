@@ -294,6 +294,8 @@ void RegisterAngelScriptMethods(void)
 		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicObjectParams", "float ccdthreshold", offsetof(PhysicObjectParams, ccdthreshold));
 		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicObjectParams", "int flags", offsetof(PhysicObjectParams, flags));
 		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicObjectParams", "float impactimpulse_threshold", offsetof(PhysicObjectParams, impactimpulse_threshold));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicObjectParams", "int clippinghull_shapetype", offsetof(PhysicObjectParams, clippinghull_shapetype));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicObjectParams", "int clippinghull_shapedirection", offsetof(PhysicObjectParams, clippinghull_shapedirection));
 		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicObjectParams", "Vector clippinghull_size", offsetof(PhysicObjectParams, clippinghull_size));
 
 		/* PhysicWheelParams */
