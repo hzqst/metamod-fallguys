@@ -156,7 +156,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASFunction_Create, -1);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASBaseCallable_Call, -1);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASRefCountedBaseClass_InternalRelease, -7);
-	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CScriptAny_Release, -1);
+	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CScriptAny_Release, -8);
 
 	VAR_FROM_SIGNATURE_FROM_START(server, g_pServerManager, 5);
 

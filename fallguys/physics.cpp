@@ -79,7 +79,7 @@ void PhysicShapeParams_ctor(PhysicShapeParams *pthis)
 	pthis->origin = g_vecZero;
 	pthis->angles = g_vecZero;
 	pthis->size = g_vecZero;
-	pthis->multispheres = pthis->multispheres;
+	pthis->multispheres = NULL;
 }
 
 void PhysicShapeParams_copyctor(PhysicShapeParams *a1, PhysicShapeParams *a2)
@@ -130,6 +130,7 @@ void PhysicObjectParams_copyctor(PhysicObjectParams *a1, PhysicObjectParams *a2)
 	a1->flags = a2->flags;
 	a1->impactimpulse_threshold = a2->impactimpulse_threshold;
 	a1->clippinghull_shapetype = a2->clippinghull_shapetype;
+	a1->clippinghull_shapedirection = a2->clippinghull_shapedirection;
 	a1->clippinghull_size = a2->clippinghull_size;
 }
 
@@ -678,9 +679,22 @@ void EulerMatrix(const btVector3& in_euler, btMatrix3x3& out_matrix) {
 
 void MatrixEuler(const btMatrix3x3& in_matrix, btVector3& out_euler) {
 	
-	out_euler[0] = btAsin(in_matrix[2][0]);
+	/*float xyDist = btSqrt(in_matrix[0][0] * in_matrix[0][0] + in_matrix[1][0] * in_matrix[1][0]);
 
-	auto matrix20 = btFabs(in_matrix[2][0]);
+	if (xyDist > 0.001f)
+	{
+		out_euler[0] = btAtan2(-in_matrix[2][0], xyDist);
+		out_euler[1] = btAtan2(in_matrix[1][0], in_matrix[0][0]);
+		out_euler[2] = btAtan2(in_matrix[2][1], in_matrix[2][2]);
+	}
+	else
+	{
+		out_euler[0] = btAtan2(-in_matrix[2][0], xyDist);
+		out_euler[1] = btAtan2(-in_matrix[0][1], in_matrix[1][1]);
+		out_euler[2] = 0;
+	}*/
+
+	out_euler[0] = btAsin(in_matrix[2][0]);
 
 	if (in_matrix[2][0] >= (1 - 0.002f) && in_matrix[2][0] < 1.002f) {
 		out_euler[1] = btAtan2(in_matrix[1][0], in_matrix[0][0]);
@@ -694,6 +708,7 @@ void MatrixEuler(const btMatrix3x3& in_matrix, btVector3& out_euler) {
 		out_euler[1] = btAtan2(in_matrix[1][2], in_matrix[1][1]);
 		out_euler[2] = 0;
 	}
+
 	out_euler[3] = 0;
 
 	out_euler *= SIMD_DEGS_PER_RAD;
@@ -804,11 +819,22 @@ void EntityMotionState::setWorldTransform(const btTransform& worldTrans)
 	if (!ent || ent->free)
 		return;
 
-	Vector origin = Vector((float*)(worldTrans.getOrigin().m_floats));
+	auto &vecOrigin = worldTrans.getOrigin();
 
-	btVector3 btAngles;
-	MatrixEuler(worldTrans.getBasis(), btAngles);
-	Vector angles = Vector((float*)btAngles.m_floats);
+	Vector origin = Vector(vecOrigin.getX(), vecOrigin.getY(), vecOrigin.getZ());
+
+	btVector3 vecAngles;
+	MatrixEuler(worldTrans.getBasis(), vecAngles);
+
+	Vector angles = Vector(vecAngles.getX(), vecAngles.getY(), vecAngles.getZ());
+
+	/*if (strstr((*sv_models)[ent->v.modelindex]->name, "log.mdl"))
+	{
+		ALERT(ALERT_TYPE::at_console, "matrix[0] %f %f %f\n", worldTrans.getBasis()[0][0], worldTrans.getBasis()[0][1], worldTrans.getBasis()[0][2]);
+		ALERT(ALERT_TYPE::at_console, "matrix[1] %f %f %f\n", worldTrans.getBasis()[1][0], worldTrans.getBasis()[1][1], worldTrans.getBasis()[1][2]);
+		ALERT(ALERT_TYPE::at_console, "matrix[2] %f %f %f\n", worldTrans.getBasis()[2][0], worldTrans.getBasis()[2][1], worldTrans.getBasis()[2][2]);
+		ALERT(ALERT_TYPE::at_console, "angles %f %f %f\n", angles.x, angles.y, angles.z);
+	}*/
 
 	//Clamp to -3600~3600
 	for (int i = 0; i < 3; i++)
