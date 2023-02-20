@@ -78,6 +78,12 @@ gamedll_linux "addons/metamod/dlls/metamod.so"
 
 The edited `plugins.ini` should be like ![](/img/1.png)
 
+* `addons` must be installed into `/Sven Co-op/svencoop`, neither `/Sven Co-op/svencoop_addons` nor `/Sven Co-op/svencoop_download`
+
+* All plugins from this repository are not binary-compatible with `metamod-p` from other sources. You should always use `metamod-p` from [metamod-fallguys](https://github.com/hzqst/metamod-fallguys/tree/main/metamod) to load those plugins.
+
+* Other third-party plugins ( e.g [amxmodx](https://github.com/alliedmodders/amxmodx) ) are still binary-compatible with [metamod-fallguys](https://github.com/hzqst/metamod-fallguys/tree/main/metamod). You don't have to re-compile them. Just put them in the `plugins.ini`.
+
 # Build Requirements (Windows)
 
 1. [Visual Studio 2017 / 2019 / 2022, with vc141 / vc142 / vc143 toolset](https://visualstudio.microsoft.com/)
