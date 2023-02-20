@@ -2,7 +2,7 @@
 
 * Exposes "server.NewDllFunction.pfnCvarValue" and "server.NewDllFunction.pfnCvarValue2" to AngelScript engine
 
-* Provide ability of reading responses of querycvar request.
+* Provides ability of reading responses of querycvar request.
 
 ## Send a querycvar requset to client
 
