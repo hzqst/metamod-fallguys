@@ -2,14 +2,6 @@
 
 Most features are provided via angelscript interfaces.
 
-### Better Player vs Brush Entities Interaction
-
-1. Players and monsters will be pushed backward along with another players who is trying to block **Super Pusher**.
-
-2. `void Touch( CBaseEntity@ pOther )` will get called when **Super Pusher** impacts or hits any player or monster positively.
-
-### Introduce physic objects that calculate their movements in Bullet Engine instead of GoldSrc's Hull Clipping.
-
 ## AngelScript interfaces
 
 ### Set Brush Entity as **Super Pusher**
@@ -18,9 +10,15 @@ Most features are provided via angelscript interfaces.
 g_EntityFuncs.SetEntitySuperPusher(self.edict(), true);
 ```
 
+* Players and monsters will be pushed backward along with another players who is trying to block **Super Pusher**.
+
+* `void Touch( CBaseEntity@ pOther )` will get called when **Super Pusher** impacts or hits any player or monster positively.
+
 ### Server-Side Level of Detail
 
 ```
+
+//Constant
 
 const int LOD_BODY = 1;
 const int LOD_MODELINDEX = 2;
@@ -106,7 +104,27 @@ g_EntityFuncs.SetEntitySemiVisible(pEntity.edict(), 0 );
 
 Physic objects calculates their simulation (gravity, movement, collision) in Bullet Engine instead of GoldSrc hull clipping.
 
-The following demo creates a physic box with size of (32 x 32 x 32) units
+The following code creates a physic box with size of (32 x 32 x 32) units
+
+```
+
+//Constant
+
+const int PhysicShapeDirection_X = 0;
+const int PhysicShapeDirection_Y = 1;
+const int PhysicShapeDirection_Z = 2;
+
+const int PhysicShape_Box = 1;
+const int PhysicShape_Sphere = 2;
+const int PhysicShape_Capsule = 3;
+const int PhysicShape_Cylinder = 4;
+const int PhysicShape_MultiSphere = 5;
+
+const int PhysicObject_HasClippingHull = 1;
+const int PhysicObject_HasImpactImpulse = 2;
+const int PhysicObject_Freeze = 4;
+
+```
 
 ```
 
@@ -115,7 +133,7 @@ pEntity.pev.solid = SOLID_BBOX;
 
 //or
 
-//pEntity neither collides with players nor other physic objects.
+//pEntity neither collides with players nor other physic objects. but still collides with world.
 pEntity.pev.solid = SOLID_NOT;
 
 //Must be MOVETYPE_NOCLIP, otherwise client interpolation will not work
@@ -141,6 +159,40 @@ g_EntityFuncs.CreatePhysicObject(pEntity.edict(), shapeParams, objectParams);
 ```
 
 * You should add `$flags 512` in the `.qc` or check `HLAM -> Model Flags -> Hitbox Collision` for this studiomodel to force engine to use hitbox as collision shape instead of axis-locked box in playermove simulation.
+
+### Entity follow (similar to trigger_setorigin but save entity count and reduce potential latency)
+
+```
+
+//Constant
+
+const int FollowEnt_CopyOriginX = 1;
+const int FollowEnt_CopyOriginY = 2;
+const int FollowEnt_CopyOriginZ = 4;
+const int FollowEnt_CopyAnglesP = 8;
+const int FollowEnt_CopyAnglesY = 0x10;
+const int FollowEnt_CopyAnglesR = 0x20;
+const int FollowEnt_CopyOrigin = (FollowEnt_CopyOriginX | FollowEnt_CopyOriginY | FollowEnt_CopyOriginZ);
+const int FollowEnt_CopyAngles = (FollowEnt_CopyAnglesP | FollowEnt_CopyAnglesY | FollowEnt_CopyAnglesR);
+const int FollowEnt_CopyNoDraw = 0x40;
+const int FollowEnt_CopyRenderMode = 0x80;
+const int FollowEnt_CopyRenderAmt = 0x100;
+const int FollowEnt_ApplyLinearVelocity = 0x200;
+const int FollowEnt_ApplyAngularVelocity = 0x400;
+
+```
+
+```
+
+Vector vecOriginOffset = Vector(0, 0, 0);
+Vector vecAnglesOffset = Vector(0, 0, 0);
+
+int flags = FollowEnt_CopyOrigin | FollowEnt_CopyAngles;
+
+//pEntity's pev.origin and pev.angles will be copy-pasted from pCopyFromEntity
+g_EntityFuncs.SetEntityFollow(pEntity.edict(), pCopyFromEntity.edict(), flags, vecOriginOffset, vecAnglesOffset);
+
+```
 
 ### Detect who is currently running player move code
 
