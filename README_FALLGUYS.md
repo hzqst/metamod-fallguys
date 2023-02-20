@@ -8,7 +8,7 @@ Most features are provided via angelscript interfaces.
 
 2. `void Touch( CBaseEntity@ pOther )` will get called when **Super Pusher** impacts or hits any player or monster positively.
 
-### Introduce physic objects that does their movements in Bullet Engine.
+### Introduce physic objects that calculate their movements in Bullet Engine instead of GoldSrc's Hull Clipping.
 
 ## AngelScript interfaces
 
@@ -102,10 +102,11 @@ g_EntityFuncs.SetEntitySemiVisible(pEntity.edict(), 0 );
 
 ```
 
-### Create PhysicBox
+### Create a physic object
 
-PhysicBox does it's physic simulation (gravity, movement, collision) in Bullet Engine instead of GoldSrc hull clipping.
+Physic objects calculates their simulation (gravity, movement, collision) in Bullet Engine instead of GoldSrc hull clipping.
 
+The following demo creates a physic box with size of (32 x 32 x 32) units
 
 ```
 
@@ -114,26 +115,32 @@ pEntity.pev.solid = SOLID_BBOX;
 
 //or
 
-//pEntity will not collide with players and other physic objects
+//pEntity neither collides with players nor other physic objects.
 pEntity.pev.solid = SOLID_NOT;
 
-//Must be noclip, otherwise client interpolation will not work
+//Must be MOVETYPE_NOCLIP, otherwise client interpolation will not work
 pEntity.pev.movetype = MOVETYPE_NOCLIP;
 
-//Must be called before setting LevelOfDetail
-g_EntityFuncs.CreatePhysicBox(pEntity.edict(),
-			m_flMass,
-			m_flLinearFriction,
-			m_flRollingFriction,
-			m_flRestitution,
-			m_flCCDRadius,
-			m_flCCDThreshold,
-			bHasClippingHull);
+//Initialize a PhysicShapeParams that will be passed to CreatePhysicObject
+PhysicShapeParams shapeParams;
+shapeParams.type = PhysicShape_Box;
+shapeParams.size = Vector(32, 32, 32);
 
-//A clipping hull with pitch,yaw,roll axis locked and same size as the physic box will be created if bHasClippingHull = true
-//The half extent of box is (pEntity.pev.mins + pEntity.pev.maxs) * 0.5
-//The studiomodel of this box should have modelflags bit 512 set (Hitbox Collision in HLAM -> Model Flags) otherwise the collision with players will be glitchy.
+//Initialize a PhysicObjectParams that will be passed to CreatePhysicObject
+PhysicObjectParams objectParams;
+objectParams.mass = m_flMass;
+objectParams.linearfriction = 1;
+objectParams.rollingfriction = 1;
+objectParams.restitution = 0.5;
+objectParams.ccdradius = 0;
+objectParams.ccdthreshold = 0;
+
+//Call g_EntityFuncs.CreatePhysicObject to create a physic object. (this must be done before setting Level of Detail).
+g_EntityFuncs.CreatePhysicObject(pEntity.edict(), shapeParams, objectParams);
+
 ```
+
+* You should add `$flags 512` in the `.qc` or check `HLAM -> Model Flags -> Hitbox Collision` for this studiomodel to force engine to use hitbox as collision shape instead of axis-locked box in playermove simulation.
 
 ### Detect who is currently running player move code
 
@@ -198,6 +205,27 @@ g_Hooks.RegisterHook(Hooks::Player::PlayerTouchTrigger, @PlayerTouchTrigger);
 ```
 
 HookReturnCode PlayerTouchTrigger( CBasePlayer@ pPlayer, CBaseEntity@ pOther )
+{
+    return HOOK_CONTINUE;
+}
+```
+
+### Hook PlayerTouchPlayer
+
+The PlayerTouchPlayer get called when player touches or impacts a solid player positively.
+
+pPlayer.pev.velocity will be set to impact velocity temporarily in the hook handler.
+
+Any changes to pPlayer.pev.velocity will be dropped and ignored.
+
+```
+g_Hooks.RegisterHook(Hooks::Player::PlayerTouchPlayer, @PlayerTouchPlayer);
+
+```
+
+```
+
+HookReturnCode PlayerTouchPlayer( CBasePlayer@ pPlayer, CBasePlayer@ pOther )
 {
     return HOOK_CONTINUE;
 }
