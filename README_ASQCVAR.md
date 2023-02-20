@@ -4,7 +4,7 @@
 
 * Provides ability of reading responses of querycvar request.
 
-## Send a querycvar requset to client
+## Send a querycvar requset to client (You can do this without metamod but you won't be able to receive response)
 
 ```
 	//NetworkMessages::NetworkMessageType(58) means "svc_sendcvarvalue2"
