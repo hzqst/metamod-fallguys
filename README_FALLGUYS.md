@@ -32,12 +32,12 @@ const int LOD_SCALE_INTERP = 8;
 ```
 
 g_EntityFuncs.SetEntityLevelOfDetail(pEntity.edict(),
-		LOD_MODELINDEX | LOD_SCALE_INTERP, //modelindex LoD
-		g_iPlayerArrowSprite1ModelIndex, 0.15,      //LoD 0
-		g_iPlayerArrowSprite2ModelIndex, 0.15, 300, //Lod 1
-		g_iPlayerArrowSprite3ModelIndex, 0.75, 700, //Lod 2
-		g_iPlayerArrowSprite4ModelIndex, 0.75, 1000 //Lod 3
-	);
+	LOD_MODELINDEX | LOD_SCALE_INTERP, //modelindex LoD
+	g_iPlayerArrowSprite1ModelIndex, 0.15,      //LoD 0
+	g_iPlayerArrowSprite2ModelIndex, 0.15, 300, //Lod 1
+	g_iPlayerArrowSprite3ModelIndex, 0.75, 700, //Lod 2
+	g_iPlayerArrowSprite4ModelIndex, 0.75, 1000 //Lod 3
+);
    
 //pEntity 's modelindex will be changed to g_iPlayerArrowSprite1ModelIndex when it's distance to player ranges from 0 to 300 units
 //pEntity 's modelindex will be changed to g_iPlayerArrowSprite2ModelIndex when it's distance to player ranges from 300 to 700 units
@@ -55,13 +55,13 @@ g_EntityFuncs.SetEntityLevelOfDetail(pEntity.edict(),
 ```
 
 ```
-			g_EntityFuncs.SetEntityLevelOfDetail(pEntity.edict(), 
-				LOD_BODY,
-				0, 0.0, //LoD 0
-				pEntity.pev.iuser1, 0, pEntity.pev.fuser1, //LoD 1
-				pEntity.pev.iuser2, 0, pEntity.pev.fuser2, //LoD 2
-				pEntity.pev.iuser3, 0, pEntity.pev.fuser3 //LoD 3
-			);
+g_EntityFuncs.SetEntityLevelOfDetail(pEntity.edict(), 
+	LOD_BODY,
+	0, 0.0, //LoD 0
+	pEntity.pev.iuser1, 0, pEntity.pev.fuser1, //LoD 1
+	pEntity.pev.iuser2, 0, pEntity.pev.fuser2, //LoD 2
+	pEntity.pev.iuser3, 0, pEntity.pev.fuser3 //LoD 3
+);
          
 //pEntity 's body will be changed to 0 when it's distance to player ranges from 0 to fuser1 units
 //pEntity 's body will be changed to pEntity.pev.iuser1 when it's distance to player ranges from pEntity.pev.fuser1 to pEntity.pev.fuser2 units
