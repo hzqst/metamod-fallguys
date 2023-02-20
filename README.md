@@ -10,33 +10,55 @@ The metamod core is based on [metamod-p](https://github.com/Bots-United/metamod-
 
 ### fallguys.dll (fallguys.so)
 
+* This is required by map `Fall Guys in Sven Co-op`
+
 [Documentation](README_FALLGUYS.md)
 
 ### asext.dll (asext.so)
+
+This plugin provides ability of registering third-party hooks or methods in Sven Co-op's AngelScript engine.
+
+* This is required by map `Fall Guys in Sven Co-op`
 
 [Documentation](README_ASEXT.md)
 
 ### ascurl.dll (ascurl.so)
 
+This plugin provides ability of using libcurl to send HTTP request in angelscript. mainly for server ops and developers to use in their own angelscript plugin.
+
+* This is not required if you just gonna play `Fall Guys in Sven Co-op`
+
 [Documentation](README_ASCURL.md)
 
 ### asqcvar.dll (asqcvar.so)
+
+This plugin provides ability of retreiving cvars from client. mainly for server ops and developers to use in their own angelscript plugin.
+
+
+* This is not required if you just gonna play `Fall Guys in Sven Co-op`
 
 [Documentation](README_ASQCVAR.md)
 
 ### asusermsg.dll (asusermsg.so)
 
+This plugin provides ability of hooking UserMsg. mainly for server ops and developers to use in their own angelscript plugin.
+
+* This is not required if you just gonna play `Fall Guys in Sven Co-op`
+
 [Documentation](README_ASUSERMSG.md)
 
 # Installation
 
-1. Download from [GitHub Release](https://github.com/hzqst/metamod-fallguys/releases), then unzip it.
+1. Download latest build (-windows or -linux depending on your OS) from [GitHub Release](https://github.com/hzqst/metamod-fallguys/releases), then unzip it.
 
-1. Copy everything from `build` directory into `\steamapps\common\Sven Co-op\svencoop` *(Warning: either `svencoop_addon` or `svencoop_downloads` is not supported)*
+2. Copy everything from the previously unarchived `build` directory into `\steamapps\common\Sven Co-op\svencoop` 
 
-The directory hierarchy should be something like this :
+* (Warning: neither `svencoop_addon` nor `svencoop_downloads` is not supported)*
+
+* The directory hierarchy should be something like this :
+
 ```
--- Sven Co-op (or Sven Co-op Dedicated Server)
+-- Sven Co-op (Sven Co-op Dedicated Server)
 ---- svencoop
 ------ addons
 -------- metamod
@@ -52,9 +74,9 @@ The directory hierarchy should be something like this :
 ---- svencoop.exe (or svends.exe / svends_run.sh / svencoop.sh)
 ```
 
-2. If you had installed metamod-core and metamod-plugins (which was loaded by metamod-core) from other sources such as [Bots-United's metamod-p](https://github.com/Bots-United/metamod-p) or (jkivilin's metamod-p)[https://github.com/jkivilin/metamod-p], you will have to add those metamod-plugins back to `plugins.ini` which was overwritten in step (1).
+3. If you had installed metamod-core and metamod-plugins (which was loaded by metamod-core) from other sources such as [Bots-United's metamod-p](https://github.com/Bots-United/metamod-p) or (jkivilin's metamod-p)[https://github.com/jkivilin/metamod-p], you will have to add those metamod-plugins back to `plugins.ini` which was overwritten in step (1).
 
-3. You should either 
+4. You should either 
 
 * Use `-dll addons/metamod/dlls/metamod.dll`(Windows) or `-dll addons/metamod/dlls/metamod.so` (linux) as launch parameter to launch the game (launch the dedicated server)
 
