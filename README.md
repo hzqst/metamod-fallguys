@@ -12,7 +12,7 @@ This metamod is based on [Bots-United's metamod-p](https://github.com/Bots-Unite
 
 ## What's the differences between this metamod and Bots-United's one ?
 
-1. An older version of glibc (iirc it's 2.24, which is literally the linux build of Sven Co-op is using) is forced to be used in the makefile. The compiled binaries (`.so`) are portable now. No need to recompile them when running on an up-to-date linux distribution.
+1. An older version of glibc (iirc it's 2.24, which is literally the glibc that linux build of Sven Co-op is using) is forced to be used in the makefile. The compiled binaries (`.so`) are portable now. No need to recompile them when running on an up-to-date linux distribution.
 
 2. A fallback solution was added to mitigate a problem that GiveFnptrsToDll could not be found in plugin dll (This used to happen when plugin was compiled by a newer version of Visual Studio like VS2022).
 
