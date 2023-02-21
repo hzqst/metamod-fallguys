@@ -1,12 +1,28 @@
 # metamod-fallguys
 
-This is a group of metamod plugins for [Fall Guys in Sven Co-op](https://github.com/hzqst/sven-fallguys) as feature expansions.
+This is a modified version of metamod along with a group of metamod plugins mainly to provide server-side feature expansions for Sven Co-op.
 
-The metamod core is based on [metamod-p](https://github.com/Bots-United/metamod-p)
+This metamod is based on [Bots-United's metamod-p](https://github.com/Bots-United/metamod-p)
+
+* Any third-party plugins such as [amxmodx](https://github.com/alliedmodders/amxmodx) are still compatible with this modified version of metamod.
 
 * You are welcome to request for any new hooks or server-side features which is not implemented by Sven Co-op team yet.
 
-# What it does ?
+* Compatibility with other games (e.g. Counter-Strike) is not guaranteed as it's designed only for Sven Co-op.
+
+## What's the differences between this metamod and Bots-United's one ?
+
+1. An older version of glibc (iirc it's 2.24, which is literally the linux build of Sven Co-op is using) is forced to be used in the makefile. The compiled binaries (`.so`) are portable now. No need to recompile them when running on an up-to-date linux distribution.
+
+2. A fallback solution was added to mitigate a problem that GiveFnptrsToDll could not be found in plugin dll (This used to happen when plugin was compiled by a newer version of Visual Studio like VS2022).
+
+3. A couple of new API was added to mutil API set.
+
+## Related project
+
+[Fall Guys in Sven Co-op](https://github.com/hzqst/sven-fallguys)
+
+# Plugins
 
 ### fallguys.dll (fallguys.so)
 
@@ -33,7 +49,6 @@ This plugin provides ability of using libcurl to send HTTP request in angelscrip
 ### asqcvar.dll (asqcvar.so)
 
 This plugin provides ability of retreiving cvars from client. mainly for server ops and developers to use in their own angelscript plugin.
-
 
 * This is not required if you just gonna play `Fall Guys in Sven Co-op`
 
@@ -74,7 +89,7 @@ This plugin provides ability of hooking UserMsg. mainly for server ops and devel
 ---- svencoop.exe (or svends.exe / svends_run.sh / svencoop.sh)
 ```
 
-3. If you had installed metamod-core and metamod-plugins (which was loaded by metamod-core) from other sources such as [Bots-United's metamod-p](https://github.com/Bots-United/metamod-p) or (jkivilin's metamod-p)[https://github.com/jkivilin/metamod-p], you will have to add those metamod-plugins back to `plugins.ini` which was overwritten in step (1).
+3. If you had installed metamod and metamod-plugins (which was loaded by metamod) from other sources such as [Bots-United's metamod-p](https://github.com/Bots-United/metamod-p) or [jkivilin's metamod-p](https://github.com/jkivilin/metamod-p), you will have to add those metamod-plugins back to `plugins.ini` which might be overwritten in step (1).
 
 4. You should either 
 
@@ -98,11 +113,11 @@ gamedll "addons/metamod/dlls/metamod.dll"
 gamedll_linux "addons/metamod/dlls/metamod.so"
 ```
 
-The edited `plugins.ini` should be like ![](/img/1.png)
+The edited `liblist.gam` should be something like this ![](/img/1.png)
 
 * `addons` must be installed into `/Sven Co-op/svencoop`, neither `/Sven Co-op/svencoop_addons` nor `/Sven Co-op/svencoop_download`
 
-* All plugins from this repository are not binary-compatible with `metamod-p` from other sources. You should always use `metamod-p` from [metamod-fallguys](https://github.com/hzqst/metamod-fallguys/tree/main/metamod) to load those plugins.
+* All plugins from this repository are not binary-compatible with `metamod-p` from other sources. You should always use metamod from [metamod-fallguys](https://github.com/hzqst/metamod-fallguys/tree/main/metamod) to load those plugins.
 
 * Other third-party plugins ( e.g [amxmodx](https://github.com/alliedmodders/amxmodx) ) are still binary-compatible with [metamod-fallguys](https://github.com/hzqst/metamod-fallguys/tree/main/metamod). You don't have to re-compile them. Just put them in the `plugins.ini`.
 
