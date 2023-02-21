@@ -53,7 +53,7 @@ This plugin provides ability of hooking UserMsg. mainly for server ops and devel
 
 2. Copy everything from the previously unarchived `build` directory into `\steamapps\common\Sven Co-op\svencoop` 
 
-* (Warning: neither `svencoop_addon` nor `svencoop_downloads` is not supported)*
+* (Warning: neither `svencoop_addon` nor `svencoop_downloads` is supported)*
 
 * The directory hierarchy should be something like this :
 
