@@ -2,14 +2,6 @@
 
 Most features are provided via angelscript interfaces.
 
-### Better Player vs Brush Entities Interaction
-
-1. Players and monsters will be pushed backward along with another players who is trying to block **Super Pusher**.
-
-2. `void Touch( CBaseEntity@ pOther )` will get called when **Super Pusher** impacts or hits any player or monster positively.
-
-### Introduce physic objects that does their movements in Bullet Engine.
-
 ## AngelScript interfaces
 
 ### Set Brush Entity as **Super Pusher**
@@ -18,9 +10,15 @@ Most features are provided via angelscript interfaces.
 g_EntityFuncs.SetEntitySuperPusher(self.edict(), true);
 ```
 
+* Players and monsters will be pushed backward along with another players who is trying to block **Super Pusher**.
+
+* `void Touch( CBaseEntity@ pOther )` will get called when **Super Pusher** impacts or hits any player or monster positively.
+
 ### Server-Side Level of Detail
 
 ```
+
+//Constant
 
 const int LOD_BODY = 1;
 const int LOD_MODELINDEX = 2;
@@ -32,12 +30,12 @@ const int LOD_SCALE_INTERP = 8;
 ```
 
 g_EntityFuncs.SetEntityLevelOfDetail(pEntity.edict(),
-		LOD_MODELINDEX | LOD_SCALE_INTERP, //modelindex LoD
-		g_iPlayerArrowSprite1ModelIndex, 0.15,      //LoD 0
-		g_iPlayerArrowSprite2ModelIndex, 0.15, 300, //Lod 1
-		g_iPlayerArrowSprite3ModelIndex, 0.75, 700, //Lod 2
-		g_iPlayerArrowSprite4ModelIndex, 0.75, 1000 //Lod 3
-	);
+	LOD_MODELINDEX | LOD_SCALE_INTERP, //modelindex LoD
+	g_iPlayerArrowSprite1ModelIndex, 0.15,      //LoD 0
+	g_iPlayerArrowSprite2ModelIndex, 0.15, 300, //Lod 1
+	g_iPlayerArrowSprite3ModelIndex, 0.75, 700, //Lod 2
+	g_iPlayerArrowSprite4ModelIndex, 0.75, 1000 //Lod 3
+);
    
 //pEntity 's modelindex will be changed to g_iPlayerArrowSprite1ModelIndex when it's distance to player ranges from 0 to 300 units
 //pEntity 's modelindex will be changed to g_iPlayerArrowSprite2ModelIndex when it's distance to player ranges from 300 to 700 units
@@ -55,13 +53,13 @@ g_EntityFuncs.SetEntityLevelOfDetail(pEntity.edict(),
 ```
 
 ```
-			g_EntityFuncs.SetEntityLevelOfDetail(pEntity.edict(), 
-				LOD_BODY,
-				0, 0.0, //LoD 0
-				pEntity.pev.iuser1, 0, pEntity.pev.fuser1, //LoD 1
-				pEntity.pev.iuser2, 0, pEntity.pev.fuser2, //LoD 2
-				pEntity.pev.iuser3, 0, pEntity.pev.fuser3 //LoD 3
-			);
+g_EntityFuncs.SetEntityLevelOfDetail(pEntity.edict(), 
+	LOD_BODY,
+	0, 0.0, //LoD 0
+	pEntity.pev.iuser1, 0, pEntity.pev.fuser1, //LoD 1
+	pEntity.pev.iuser2, 0, pEntity.pev.fuser2, //LoD 2
+	pEntity.pev.iuser3, 0, pEntity.pev.fuser3 //LoD 3
+);
          
 //pEntity 's body will be changed to 0 when it's distance to player ranges from 0 to fuser1 units
 //pEntity 's body will be changed to pEntity.pev.iuser1 when it's distance to player ranges from pEntity.pev.fuser1 to pEntity.pev.fuser2 units
@@ -102,10 +100,31 @@ g_EntityFuncs.SetEntitySemiVisible(pEntity.edict(), 0 );
 
 ```
 
-### Create PhysicBox
+### Create a physic object
 
-PhysicBox does it's physic simulation (gravity, movement, collision) in Bullet Engine instead of GoldSrc hull clipping.
+Physic objects calculates their simulation (gravity, movement, collision) in Bullet Engine instead of GoldSrc hull clipping.
 
+The following code creates a physic box with size of (32 x 32 x 32) units
+
+```
+
+//Constant
+
+const int PhysicShapeDirection_X = 0;
+const int PhysicShapeDirection_Y = 1;
+const int PhysicShapeDirection_Z = 2;
+
+const int PhysicShape_Box = 1;
+const int PhysicShape_Sphere = 2;
+const int PhysicShape_Capsule = 3;
+const int PhysicShape_Cylinder = 4;
+const int PhysicShape_MultiSphere = 5;
+
+const int PhysicObject_HasClippingHull = 1;
+const int PhysicObject_HasImpactImpulse = 2;
+const int PhysicObject_Freeze = 4;
+
+```
 
 ```
 
@@ -114,25 +133,65 @@ pEntity.pev.solid = SOLID_BBOX;
 
 //or
 
-//pEntity will not collide with players and other physic objects
+//pEntity neither collides with players nor other physic objects. but still collides with world.
 pEntity.pev.solid = SOLID_NOT;
 
-//Must be noclip, otherwise client interpolation will not work
+//Must be MOVETYPE_NOCLIP, otherwise client interpolation will not work
 pEntity.pev.movetype = MOVETYPE_NOCLIP;
 
-//Must be called before setting LevelOfDetail
-g_EntityFuncs.CreatePhysicBox(pEntity.edict(),
-			m_flMass,
-			m_flLinearFriction,
-			m_flRollingFriction,
-			m_flRestitution,
-			m_flCCDRadius,
-			m_flCCDThreshold,
-			bHasClippingHull);
+//Initialize a PhysicShapeParams that will be passed to CreatePhysicObject
+PhysicShapeParams shapeParams;
+shapeParams.type = PhysicShape_Box;
+shapeParams.size = Vector(32, 32, 32);
 
-//A clipping hull with pitch,yaw,roll axis locked and same size as the physic box will be created if bHasClippingHull = true
-//The half extent of box is (pEntity.pev.mins + pEntity.pev.maxs) * 0.5
-//The studiomodel of this box should have modelflags bit 512 set (Hitbox Collision in HLAM -> Model Flags) otherwise the collision with players will be glitchy.
+//Initialize a PhysicObjectParams that will be passed to CreatePhysicObject
+PhysicObjectParams objectParams;
+objectParams.mass = m_flMass;
+objectParams.linearfriction = 1;
+objectParams.rollingfriction = 1;
+objectParams.restitution = 0.5;
+objectParams.ccdradius = 0;
+objectParams.ccdthreshold = 0;
+
+//Call g_EntityFuncs.CreatePhysicObject to create a physic object. (this must be done before setting Level of Detail).
+g_EntityFuncs.CreatePhysicObject(pEntity.edict(), shapeParams, objectParams);
+
+```
+
+* You should add `$flags 512` in the `.qc` or check `HLAM -> Model Flags -> Hitbox Collision` for this studiomodel to force engine to use hitbox as collision shape instead of axis-locked box in playermove simulation.
+
+### Entity follow (similar to trigger_setorigin but save entity count and reduce potential latency)
+
+```
+
+//Constant
+
+const int FollowEnt_CopyOriginX = 1;
+const int FollowEnt_CopyOriginY = 2;
+const int FollowEnt_CopyOriginZ = 4;
+const int FollowEnt_CopyAnglesP = 8;
+const int FollowEnt_CopyAnglesY = 0x10;
+const int FollowEnt_CopyAnglesR = 0x20;
+const int FollowEnt_CopyOrigin = (FollowEnt_CopyOriginX | FollowEnt_CopyOriginY | FollowEnt_CopyOriginZ);
+const int FollowEnt_CopyAngles = (FollowEnt_CopyAnglesP | FollowEnt_CopyAnglesY | FollowEnt_CopyAnglesR);
+const int FollowEnt_CopyNoDraw = 0x40;
+const int FollowEnt_CopyRenderMode = 0x80;
+const int FollowEnt_CopyRenderAmt = 0x100;
+const int FollowEnt_ApplyLinearVelocity = 0x200;
+const int FollowEnt_ApplyAngularVelocity = 0x400;
+
+```
+
+```
+
+Vector vecOriginOffset = Vector(0, 0, 0);
+Vector vecAnglesOffset = Vector(0, 0, 0);
+
+int flags = FollowEnt_CopyOrigin | FollowEnt_CopyAngles;
+
+//pEntity's pev.origin and pev.angles will be copy-pasted from pCopyFromEntity
+g_EntityFuncs.SetEntityFollow(pEntity.edict(), pCopyFromEntity.edict(), flags, vecOriginOffset, vecAnglesOffset);
+
 ```
 
 ### Detect who is currently running player move code
@@ -198,6 +257,27 @@ g_Hooks.RegisterHook(Hooks::Player::PlayerTouchTrigger, @PlayerTouchTrigger);
 ```
 
 HookReturnCode PlayerTouchTrigger( CBasePlayer@ pPlayer, CBaseEntity@ pOther )
+{
+    return HOOK_CONTINUE;
+}
+```
+
+### Hook PlayerTouchPlayer
+
+The PlayerTouchPlayer get called when player touches or impacts a solid player positively.
+
+pPlayer.pev.velocity will be set to impact velocity temporarily in the hook handler.
+
+Any changes to pPlayer.pev.velocity will be dropped and ignored.
+
+```
+g_Hooks.RegisterHook(Hooks::Player::PlayerTouchPlayer, @PlayerTouchPlayer);
+
+```
+
+```
+
+HookReturnCode PlayerTouchPlayer( CBasePlayer@ pPlayer, CBasePlayer@ pOther )
 {
     return HOOK_CONTINUE;
 }
