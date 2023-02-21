@@ -10,7 +10,7 @@ This metamod is based on [Bots-United's metamod-p](https://github.com/Bots-Unite
 
 * Compatibility with other games (e.g. Counter-Strike) is not guaranteed as it's designed only for Sven Co-op.
 
-## What's the differences between this metamod and Bots-United's one ?
+## The differences between this metamod and Bots-United's one ?
 
 1. An older version of glibc (iirc it's 2.24, which is literally the glibc that linux build of Sven Co-op is using) is forced to be used in the makefile. The compiled binaries (`.so`) are portable now. No need to recompile them when running on an up-to-date linux distribution.
 
