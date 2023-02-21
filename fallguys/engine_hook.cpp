@@ -88,7 +88,7 @@ void SV_ClipToLinksEx(areanode_t *node, moveclip_t *clip)
 
 		if (pg_groupop)
 		{
-			if (touch->v.groupinfo != 0 && (clip->passedict && clip->passedict->v.groupinfo != 0))
+			if (touch->v.groupinfo != 0 && clip->passedict && clip->passedict->v.groupinfo != 0)
 			{
 				if ((*pg_groupop) == GROUP_OP_AND && (touch->v.groupinfo & clip->passedict->v.groupinfo) == 0)
 					continue;
@@ -104,7 +104,7 @@ void SV_ClipToLinksEx(areanode_t *node, moveclip_t *clip)
 		if (touch == clip->passedict)
 			continue;
 
-		if (gpNewDllFunctionsTable->pfnShouldCollide)
+		if (gpNewDllFunctionsTable && gpNewDllFunctionsTable->pfnShouldCollide)
 		{
 			if (gpNewDllFunctionsTable->pfnShouldCollide(touch, clip->passedict) == 0)
 				continue;

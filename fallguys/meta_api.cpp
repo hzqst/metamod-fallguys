@@ -187,6 +187,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 #ifdef _WIN32
 
 	VAR_FROM_SIGNATURE_FROM_START(engine, sv_models, 13);
+
 	VAR_FROM_SIGNATURE_FROM_END(engine, host_frametime, 0);
 	VAR_FROM_SIGNATURE_FROM_END(engine, pmovevars, 0);
 	VAR_FROM_SIGNATURE_FROM_START(engine, sv_areanodes, 9);
@@ -204,6 +205,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 	VAR_FROM_SIGNATURE(engine, host_frametime);
 	VAR_FROM_SIGNATURE(engine, pmovevars);
+	VAR_FROM_SIGNATURE(engine, sv_areanodes);
+
 	VAR_FROM_SIGNATURE(engine, pg_groupop);
 	VAR_FROM_SIGNATURE(engine, pg_groupmask);
 
