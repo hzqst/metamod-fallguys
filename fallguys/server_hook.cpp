@@ -12,7 +12,7 @@
 #include "physics.h"
 
 PRIVATE_FUNCTION_DEFINE(CPlayerMove_PlayStepSound);
-PRIVATE_FUNCTION_DEFINE(CPlayerMove_PlaySoundFX);
+PRIVATE_FUNCTION_DEFINE(PM_PlaySoundFX_SERVER);
 
 void SC_SERVER_DECL CASEngineFuncs__SetPhysicSimRate(void* pthis, SC_SERVER_DUMMYARG float rate)
 {
@@ -216,7 +216,7 @@ void SC_SERVER_DECL NewCPlayerMove_PlayStepSound(void *pthis, SC_SERVER_DUMMYARG
 	}
 }
 
-void NewCPlayerMove_PlaySoundFX(int playerindex, vec3_t *origin, int type, const char *sound, float vol, float att, int flags, int pitch)
+void NewPM_PlaySoundFX_SERVER(int playerindex, vec3_t *origin, int type, const char *sound, float vol, float att, int flags, int pitch)
 {
 	if (g_bUseCustomStepSound)
 	{
@@ -234,22 +234,22 @@ void NewCPlayerMove_PlaySoundFX(int playerindex, vec3_t *origin, int type, const
 		if (uiFlags & 1)
 			return;
 	}
-	g_call_original_CPlayerMove_PlaySoundFX(playerindex, origin, type, sound, vol, att, flags, pitch);
+	g_call_original_PM_PlaySoundFX_SERVER(playerindex, origin, type, sound, vol, att, flags, pitch);
 }
 
 hook_t *g_phook_CPlayerMove_PlayStepSound = NULL;
-hook_t *g_phook_CPlayerMove_PlaySoundFX = NULL;
+hook_t *g_phook_PM_PlaySoundFX_SERVER = NULL;
 
 void InstallServerHooks()
 {
 	INSTALL_INLINEHOOK(CPlayerMove_PlayStepSound);
-	INSTALL_INLINEHOOK(CPlayerMove_PlaySoundFX);
+	INSTALL_INLINEHOOK(PM_PlaySoundFX_SERVER);
 }
 
 void UninstallServerHooks()
 {
 	UNINSTALL_HOOK(CPlayerMove_PlayStepSound);
-	UNINSTALL_HOOK(CPlayerMove_PlaySoundFX);
+	UNINSTALL_HOOK(PM_PlaySoundFX_SERVER);
 }
 
 void RegisterAngelScriptMethods(void)

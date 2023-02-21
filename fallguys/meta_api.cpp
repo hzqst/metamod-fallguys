@@ -182,7 +182,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	FILL_FROM_SIGNATURE(engine, SV_SingleClipMoveToEntity);
 
 	FILL_FROM_SIGNATURE(server, CPlayerMove_PlayStepSound);
-	FILL_FROM_SIGNATURE(server, CPlayerMove_PlaySoundFX);
+	FILL_FROM_SIGNATURE(server, PM_PlaySoundFX_SERVER);
 
 #ifdef _WIN32
 

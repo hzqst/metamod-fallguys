@@ -14,7 +14,7 @@
 #define SV_WriteMovevarsToClient_Signature "\x56\x8B\x74\x24\x08\x6A\x2C\x56\xE8\x2A\x2A\x2A\x2A\xD9\x05"
 
 #define CPlayerMove_PlayStepSound_Signature "\x83\xEC\x0C\x33\xC0\x2A\x8B\x2A\x2A\x8B\x96\x60\x04\x00"
-#define CPlayerMove_PlaySoundFX_Signature "\x53\x8B\x5C\x24\x08\x55\x56\x57\x8B\x7C\x24\x2C\x53\x83\xCF\x08\xE8"
+#define PM_PlaySoundFX_SERVER_Signature "\x53\x8B\x5C\x24\x08\x55\x56\x57\x8B\x7C\x24\x2C\x53\x83\xCF\x08\xE8"
 
 #define sv_models_Signature "\x3D\xFE\x1F\x00\x00\x2A\x2A\x0F\xAE\xE8\xFF\x34\x8D"
 #define host_frametime_Signature "\xD8\x83\xA8\x00\x00\x00\xD9\x9B\xA8\x00\x00\x00\xE8\x2A\x2A\x2A\x2A\xDD\x05"
@@ -35,7 +35,7 @@
 #define SV_LinkEdict_Signature "_Z12SV_LinkEdictP7edict_si"
 
 #define CPlayerMove_PlayStepSound_Signature "_ZN11CPlayerMove13PlayStepSoundEifb"
-#define CPlayerMove_PlaySoundFX_Signature "_ZN11CPlayerMove11PlaySoundFXEiPfiPcffii"
+#define PM_PlaySoundFX_SERVER_Signature "PM_PlaySoundFX_SERVER"
 
 #define sv_Signature "sv"
 #define sv_models_Signature "\x8B\x84\x82\x2A\x2A\x2A\x00\x89\x04\x24\xE8"
