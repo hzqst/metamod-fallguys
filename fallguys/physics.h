@@ -1226,7 +1226,13 @@ class CPhysicsManager
 {
 public:
 	CPhysicsManager();
+
 	void Init(void);
+
+	bool IsEnabled() const
+	{
+		return m_bEnabled;
+	}
 
 	//Server spawn or shutdown
 	void PreSpawn(edict_t *ent);
@@ -1287,6 +1293,7 @@ public:
 	bool SetPhysicObjectFreeze(edict_t* ent, bool freeze);
 
 	void SetPhysicPlayerConfig(PhysicPlayerConfigs *configs);
+	void EnablePhysicWorld(bool bEnabled);
 
 	bool IsEntitySuperPusher(edict_t* ent);
 
@@ -1332,6 +1339,8 @@ private:
 	Vector m_CurrentImpactPoint;
 	Vector m_CurrentImpactDirection;
 	edict_t *m_CurrentImpactEntity;
+
+	bool m_bEnabled;
 };
 
 extern CPhysicsManager gPhysicsManager;

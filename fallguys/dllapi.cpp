@@ -263,9 +263,15 @@ int NewSpawn_Post(edict_t *pent)
 
 void NewServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
 {
-	if (!strcasecmp(STRING(gpGlobals->mapname), "fallguys"))
+	//Backward-compatibility for season 1
+	auto mapname = STRING(gpGlobals->mapname);
+	if (!strcasecmp(mapname, "fallguys"))
 	{
 		g_bIsFallGuysSeason1 = true;
+	}
+	else if (!strncasecmp(mapname, "fallguys_s", sizeof("fallguys_s") - 1))
+	{
+		gPhysicsManager.EnablePhysicWorld(true);
 	}
 
 	SET_META_RESULT(MRES_IGNORED);
@@ -276,6 +282,8 @@ void NewServerDeactivate()
 	g_bIsFallGuysSeason1 = false;
 
 	EnableCustomStepSound(false);
+
+	gPhysicsManager.EnablePhysicWorld(false);
 
 	gPhysicsManager.RemoveAllGameBodies();
 

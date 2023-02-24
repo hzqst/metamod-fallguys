@@ -29,6 +29,11 @@ void SC_SERVER_DECL CASEngineFuncs__EnableCustomStepSound(void* pthis, SC_SERVER
 	EnableCustomStepSound(bEnabled);
 }
 
+void SC_SERVER_DECL CASEngineFuncs__EnablePhysicWorld(void* pthis, SC_SERVER_DUMMYARG bool bEnabled)
+{
+	gPhysicsManager.EnablePhysicWorld(bEnabled);
+}
+
 edict_t* SC_SERVER_DECL CASEngineFuncs__GetViewEntity(void* pthis, SC_SERVER_DUMMYARG edict_t* pClient)
 {
 	return GetClientViewEntity(pClient);
@@ -445,6 +450,10 @@ void RegisterAngelScriptMethods(void)
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Disable stepsound temporarily until level changes", "CEngineFuncs", "void EnableCustomStepSound(bool bEnabled)",
 			(void *)CASEngineFuncs__EnableCustomStepSound, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Enable physic world temporarily until level changes", "CEngineFuncs", "void EnablePhysicWorld(bool bEnabled)",
+			(void *)CASEngineFuncs__EnablePhysicWorld, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Set simulation rate of Bullet Engine world", "CEngineFuncs", "void SetPhysicSimRate(float rate)",

@@ -267,6 +267,8 @@ CPhysicsManager::CPhysicsManager()
 	m_CurrentImpactPoint = g_vecZero;
 	m_CurrentImpactDirection = g_vecZero;
 	m_CurrentImpactEntity = NULL;
+
+	m_bEnabled = false;
 }
 
 void CPhysicsManager::GenerateBrushIndiceArray(std::vector<glpoly_t*> &glpolys)
@@ -828,14 +830,6 @@ void EntityMotionState::setWorldTransform(const btTransform& worldTrans)
 
 	Vector angles = Vector(vecAngles.getX(), vecAngles.getY(), vecAngles.getZ());
 
-	/*if (strstr((*sv_models)[ent->v.modelindex]->name, "log.mdl"))
-	{
-		ALERT(ALERT_TYPE::at_console, "matrix[0] %f %f %f\n", worldTrans.getBasis()[0][0], worldTrans.getBasis()[0][1], worldTrans.getBasis()[0][2]);
-		ALERT(ALERT_TYPE::at_console, "matrix[1] %f %f %f\n", worldTrans.getBasis()[1][0], worldTrans.getBasis()[1][1], worldTrans.getBasis()[1][2]);
-		ALERT(ALERT_TYPE::at_console, "matrix[2] %f %f %f\n", worldTrans.getBasis()[2][0], worldTrans.getBasis()[2][1], worldTrans.getBasis()[2][2]);
-		ALERT(ALERT_TYPE::at_console, "angles %f %f %f\n", angles.x, angles.y, angles.z);
-	}*/
-
 	//Clamp to -3600~3600
 	for (int i = 0; i < 3; i++)
 	{
@@ -855,6 +849,9 @@ void EntityMotionState::setWorldTransform(const btTransform& worldTrans)
 
 void CPhysicsManager::EntityStartFrame()
 {
+	if (!m_bEnabled)
+		return;
+
 	m_solidPlayerMask = 0;
 
 	for (int i = 1; i < gpGlobals->maxEntities; ++i)
@@ -910,6 +907,9 @@ void CPhysicsManager::EntityStartFrame()
 
 void CPhysicsManager::EntityStartFrame_Post()
 {
+	if (!m_bEnabled)
+		return;
+
 	for (int i = 1; i < gpGlobals->maxEntities; ++i)
 	{
 		auto ent = g_engfuncs.pfnPEntityOfEntIndex(i);
@@ -928,6 +928,9 @@ void CPhysicsManager::EntityStartFrame_Post()
 
 void CPhysicsManager::EntityEndFrame()
 {
+	if (!m_bEnabled)
+		return;
+
 	for (int i = 1; i < gpGlobals->maxEntities; ++i)
 	{
 		auto ent = g_engfuncs.pfnPEntityOfEntIndex(i);
@@ -2210,6 +2213,11 @@ void CPhysicsManager::SetPhysicPlayerConfig(PhysicPlayerConfigs *configs)
 	m_playerMaxPendingVelocity = configs->maxPendingVelocity;
 }
 
+void CPhysicsManager::EnablePhysicWorld(bool bEnabled)
+{
+	m_bEnabled = bEnabled;
+}
+
 bool CPhysicsManager::CreateSolidOptimizer(edict_t* ent, int boneindex, const Vector& halfext, const Vector& halfext2)
 {
 	auto obj = GetGameObject(ent);
@@ -2906,8 +2914,11 @@ void CPhysicsManager::Shutdown(void)
 
 void CPhysicsManager::StepSimulation(double frametime)
 {
-	if (!gPhysicsManager.GetNumDynamicBodies())
+	if (!m_bEnabled)
 		return;
+
+	//if (!gPhysicsManager.GetNumDynamicBodies())
+	//	return;
 
 	m_dynamicsWorld->stepSimulation((btScalar)frametime, 2, m_simrate);
 }
