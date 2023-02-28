@@ -102,7 +102,7 @@ g_EntityFuncs.SetEntitySemiVisible(pEntity.edict(), 0 );
 
 ### Create a physic object
 
-Physic objects calculates their simulation (gravity, movement, collision) in Bullet Engine instead of GoldSrc hull clipping.
+Physic objects run physic simulation (gravity, movement, collision) in Bullet Engine instead of GoldSrc hull clipping.
 
 The following code creates a physic box with size of (32 x 32 x 32) units
 
