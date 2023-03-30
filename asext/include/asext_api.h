@@ -237,6 +237,15 @@ extern fnASEXT_RegisterObjectType ASEXT_RegisterObjectType;
 typedef void(*fnASEXT_RegisterObjectProperty)(CASDocumentation *pASDoc, const char *docs, const char *name, const char *prop, int offset);
 
 extern fnASEXT_RegisterObjectProperty ASEXT_RegisterObjectProperty;
+
+
+/*
+	Must be called inside DocInitCallback
+*/
+typedef void(*fnASEXT_RegisterGlobalProperty)(CASDocumentation *pASDoc, const char *docs, const char *name, void *ptr);
+
+extern fnASEXT_RegisterGlobalProperty ASEXT_RegisterGlobalProperty;
+
 /*
 	Must be called inside DocInitCallback
 */
