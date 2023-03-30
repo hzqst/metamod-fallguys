@@ -16,6 +16,7 @@ PRIVATE_FUNCTION_DEFINE(CASHook_Call);
 PRIVATE_FUNCTION_DEFINE(CASHook_CASHook);
 PRIVATE_FUNCTION_DEFINE(CASDocumentation_RegisterObjectType);
 PRIVATE_FUNCTION_DEFINE(CASDocumentation_RegisterObjectProperty);
+PRIVATE_FUNCTION_DEFINE(CASDocumentation_RegisterGlobalProperty);
 PRIVATE_FUNCTION_DEFINE(CASDocumentation_RegisterObjectMethod);
 PRIVATE_FUNCTION_DEFINE(CASDocumentation_RegisterObjectBehaviour);
 PRIVATE_FUNCTION_DEFINE(CASDocumentation_RegisterFuncDef);
@@ -75,6 +76,13 @@ C_DLLEXPORT void ASEXT_RegisterObjectProperty(CASDocumentation *pthis, const cha
 	SC_SERVER_DUMMYVAR;
 
 	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG docs, name, prop, offset);
+}
+
+C_DLLEXPORT void ASEXT_RegisterGlobalProperty(CASDocumentation *pthis, const char *docs, const char *name, void *ptr)
+{
+	SC_SERVER_DUMMYVAR;
+
+	g_call_original_CASDocumentation_RegisterGlobalProperty(pthis, SC_SERVER_PASS_DUMMYARG docs, name, ptr);
 }
 
 C_DLLEXPORT void ASEXT_RegisterFuncDef(CASDocumentation *pthis, const char *docs, const char *funcdef)

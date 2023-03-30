@@ -54,6 +54,11 @@ C_DLLEXPORT void ASEXT_RegisterObjectProperty(CASDocumentation *pASDoc, const ch
 /*
 	Must be called inside DocInitCallback
 */
+C_DLLEXPORT void ASEXT_RegisterGlobalProperty(CASDocumentation *pASDoc, const char *docs, const char *name, void *ptr);
+
+/*
+	Must be called inside DocInitCallback
+*/
 C_DLLEXPORT void ASEXT_RegisterFuncDef(CASDocumentation *pASDoc, const char *docs, const char *funcdef);
 
 /* Create directory in the virtual file system */

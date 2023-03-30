@@ -67,8 +67,8 @@ static META_FUNCTIONS gMetaFunctionTable = {
 plugin_info_t Plugin_info = {
 	META_INTERFACE_VERSION,	// ifvers
 	"AngelScriptExt",	// name
-	"1.4",	// version
-	"2022",	// date
+	"1.5",	// version
+	"2023",	// date
 	"hzqst",	// author
 	"https://github.com/hzqst/metamod-fallguys",	// url
 	"ASEXT",	// logtag, all caps please
@@ -149,6 +149,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectType, -1);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectProperty, -7);
+	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterGlobalProperty, -15);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectMethod, -7);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectBehaviour, -8);
 	FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDocumentation_RegisterFuncDef, 0);
@@ -164,6 +165,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterObjectType);
 	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterObjectProperty);
+	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterGlobalProperty);
 	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterObjectMethod);
 	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterObjectBehaviour);
 	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterFuncDef);

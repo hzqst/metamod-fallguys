@@ -237,6 +237,10 @@ int SC_SERVER_DECL NewCASDocumentation_RegisterObjectType(CASDocumentation* pthi
 typedef int (SC_SERVER_DECL *fnCASDocumentation_RegisterObjectProperty)(CASDocumentation *pthis, SC_SERVER_DUMMYARG const char *docs, const char *name, const char *prop, int offset);
 PRIVATE_FUNCTION_EXTERN(CASDocumentation_RegisterObjectProperty);
 
+//CASDocumentation::RegisterGlobalProperty __fastcall in Windows
+typedef int (SC_SERVER_DECL *fnCASDocumentation_RegisterGlobalProperty)(CASDocumentation *pthis, SC_SERVER_DUMMYARG const char *docs, const char *name, void *ptr);
+PRIVATE_FUNCTION_EXTERN(CASDocumentation_RegisterGlobalProperty);
+
 //CASDocumentation::RegisterObjectMethod __fastcall in Windows
 typedef int (SC_SERVER_DECL *fnCASDocumentation_RegisterObjectMethod)(CASDocumentation *pthis, SC_SERVER_DUMMYARG const char *docs, const char *objectname, const char *func, asSFuncPtr *reg, int a5);
 PRIVATE_FUNCTION_EXTERN(CASDocumentation_RegisterObjectMethod);

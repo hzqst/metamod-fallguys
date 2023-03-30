@@ -11,6 +11,7 @@
 
 #define CASDocumentation_RegisterObjectType_Signature "\x68\x01\x00\x04\x00\x6A\x00\x68\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\x8B\xCE\xE8"
 #define CASDocumentation_RegisterObjectProperty_Signature "\x6A\x00\x68\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\x8B\xCE\xE8\x2A\x2A\x2A\x2A\x6A\x04"
+#define CASDocumentation_RegisterGlobalProperty_Signature "\xFF\x70\x28\x8B\x2A\x68\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x8B\x2A\x2A\x64\x89\x0D\x00\x00\x00\x00"
 #define CASDocumentation_RegisterObjectMethod_Signature "\x50\x68\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x6A\x03"
 #define CASDocumentation_RegisterObjectBehaviour_Signature "\x50\x68\x2A\x2A\x2A\x2A\x6A\x02\x68\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x6A\x04\x8D"
 #define CASDocumentation_RegisterFuncDef_Signature "\xE8\x2A\x2A\x2A\x2A\x68\x01\x00\x04\x00\x6A\x1C"
@@ -31,6 +32,7 @@
 
 #define CASDocumentation_RegisterObjectType_Signature "_ZN16CASDocumentation18RegisterObjectTypeEPKcS1_im"
 #define CASDocumentation_RegisterObjectProperty_Signature "_ZN16CASDocumentation22RegisterObjectPropertyEPKcS1_S1_i"
+#define CASDocumentation_RegisterGlobalProperty_Signature "_ZN16CASDocumentation22RegisterGlobalPropertyEPKcS1_Pv"
 #define CASDocumentation_RegisterObjectMethod_Signature "_ZN16CASDocumentation20RegisterObjectMethodEPKcS1_S1_RK10asSFuncPtrm"
 #define CASDocumentation_RegisterObjectBehaviour_Signature "_ZN16CASDocumentation23RegisterObjectBehaviourEPKcS1_13asEBehavioursS1_RK10asSFuncPtrmPv"
 #define CASDocumentation_RegisterFuncDef_Signature "_ZN16CASDocumentation15RegisterFuncDefEPKcS1_"
