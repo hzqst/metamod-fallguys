@@ -176,13 +176,15 @@ public:
 	callback->Release(CASFunction_dtor_firstarg);\
 }
 
+class asIScriptEngine;
+
 class CASServerManager
 {
 public:
 	int unk1;//0
 	int unk2;//4
 	int unk3;//8
-	int unk4;//12
+	asIScriptEngine *scriptEngine;//12
 	int unk5;//16
 	int unk6;//20
 	CASModule *curModule;//24
