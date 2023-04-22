@@ -315,8 +315,3 @@ bool CUserMsgHookManager::CallUserMsgHook(int msgDest, int msgType, const Vector
 
 	return false;
 }
-
-void RegisterAngelScriptHooks()
-{
-	
-}

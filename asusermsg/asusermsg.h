@@ -138,6 +138,5 @@ private:
 };
 
 void RegisterAngelScriptMethods();
-void RegisterAngelScriptHooks();
 
 extern CUserMsgHookManager g_UserMsgHookManager;

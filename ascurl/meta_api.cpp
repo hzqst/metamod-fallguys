@@ -160,7 +160,6 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	}
 
 	RegisterAngelScriptMethods();
-	RegisterAngelScriptHooks();
 
 	return TRUE;
 }

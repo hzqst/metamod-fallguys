@@ -217,6 +217,8 @@ int NewAddToFullPack_Post(struct entity_state_s *state, int entindex, edict_t *e
 
 void NewGameInit_Post(void)
 {
+	RegisterAngelScriptHooks();
+
 	sv_gravity = CVAR_GET_POINTER("sv_gravity");
 	mp_footsteps = CVAR_GET_POINTER("mp_footsteps");
 
@@ -333,7 +335,7 @@ void NewPM_Move_Post(struct playermove_s *ppmove, qboolean server)
 static DLL_FUNCTIONS gFunctionTable = 
 {
 	NULL,					// pfnGameInit
-	NewSpawn,					// pfnSpawn
+	NewSpawn,				// pfnSpawn
 	NULL,					// pfnThink
 	NULL,					// pfnUse
 	NewTouch,				// pfnTouch

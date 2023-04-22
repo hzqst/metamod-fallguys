@@ -152,7 +152,6 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	IMPORT_ASEXT_API(asext);
 
 	RegisterAngelScriptMethods();
-	RegisterAngelScriptHooks();
 
 	return TRUE;
 }

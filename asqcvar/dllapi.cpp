@@ -105,9 +105,16 @@ static DLL_FUNCTIONS gFunctionTable =
 	NULL,					// pfnAllowLagCompensation
 };
 
+void NewGameInit_Post(void)
+{
+	RegisterAngelScriptHooks();
+
+	SET_META_RESULT(MRES_IGNORED);
+}
+
 static DLL_FUNCTIONS gFunctionTable_Post =
 {
-	NULL,					// pfnGameInit
+	NewGameInit_Post,					// pfnGameInit
 	NULL,					// pfnSpawn
 	NULL,					// pfnThink
 	NULL,					// pfnUse

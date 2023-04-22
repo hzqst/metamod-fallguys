@@ -563,11 +563,6 @@ bool ASCURL_DestroyHTTPRequest(int request_id)
 	return false;
 }
 
-void RegisterAngelScriptHooks()
-{
-
-}
-
 #if _WIN32
 
 #include <windows.h>
