@@ -554,5 +554,6 @@ void RegisterAngelScriptMethods(void)
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Set steering wheel's motor and servo for the vehicle", "CEntityFuncs", "bool SetVehicleSteering(edict_t@ ent, int wheelIndex, float angularTarget, float angularVelocity, float maxMotorForce)",
 			(void *)CASEntityFuncs__SetVehicleSteering, 3);
+
 	});
 }

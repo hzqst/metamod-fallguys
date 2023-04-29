@@ -3,7 +3,6 @@
 #include <string>
 
 void RegisterAngelScriptMethods();
-void RegisterAngelScriptHooks();
 
 const int ASCURL_METHOD_GET = 0;
 const int ASCURL_METHOD_POST = 1;

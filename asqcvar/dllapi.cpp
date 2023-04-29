@@ -107,14 +107,12 @@ static DLL_FUNCTIONS gFunctionTable =
 
 void NewGameInit_Post(void)
 {
-	RegisterAngelScriptHooks();
-
 	SET_META_RESULT(MRES_IGNORED);
 }
 
 static DLL_FUNCTIONS gFunctionTable_Post =
 {
-	NewGameInit_Post,					// pfnGameInit
+	NULL,					// pfnGameInit
 	NULL,					// pfnSpawn
 	NULL,					// pfnThink
 	NULL,					// pfnUse
