@@ -216,6 +216,13 @@ typedef void(*fnASEXT_RegisterObjectMethod)(CASDocumentation *pASDoc, const char
 
 extern fnASEXT_RegisterObjectMethod ASEXT_RegisterObjectMethod;
 
+/*
+	Must be called inside DocInitCallback
+*/
+typedef void(*fnASEXT_RegisterObjectMethodEx)(CASDocumentation *pASDoc, const char *docs, const char *name, const char *func, void * funcPtr, int type);
+
+extern fnASEXT_RegisterObjectMethodEx ASEXT_RegisterObjectMethodEx;
+
 const int ObjectBehaviour_Constructor = 0;
 const int ObjectBehaviour_Destructor = 2;
 
@@ -225,6 +232,13 @@ const int ObjectBehaviour_Destructor = 2;
 typedef void(*fnASEXT_RegisterObjectBehaviour)(CASDocumentation *pASDoc, const char *docs, const char *name, int behaviour, const char *func, void *pfn, int type);
 
 extern fnASEXT_RegisterObjectBehaviour ASEXT_RegisterObjectBehaviour;
+
+/*
+	Must be called inside DocInitCallback
+*/
+typedef void(*fnASEXT_RegisterObjectBehaviourEx)(CASDocumentation *pASDoc, const char *docs, const char *name, int behaviour, const char *func, void *funcPtr, int type);
+
+extern fnASEXT_RegisterObjectBehaviourEx ASEXT_RegisterObjectBehaviourEx;
 
 /*
 	Must be called inside DocInitCallback
@@ -422,7 +436,9 @@ IMPORT_FUNCTION_DLSYM(asext, ASEXT_CallCASBaseCallable);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterDocInitCallback);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterDirInitCallback);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectMethod);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectMethodEx);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectBehaviour);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectBehaviourEx);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectType);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectProperty);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterGlobalProperty);\
@@ -440,7 +456,9 @@ IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptAny_Release);
 #define IMPORT_ASEXT_API_DEFINE() IMPORT_FUNCTION_DEFINE(ASEXT_RegisterDocInitCallback);\
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterDirInitCallback);\
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectMethod);\
+IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectMethodEx);\
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectBehaviour);\
+IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectBehaviourEx);\
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectType);\
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectProperty);\
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterGlobalProperty);\
