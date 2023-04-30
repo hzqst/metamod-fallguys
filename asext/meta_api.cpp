@@ -144,6 +144,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	FILL_FROM_SIGNATURE(server, CASHook_Call);
 	FILL_FROM_SIGNATURE(server, CString_Assign);
 	FILL_FROM_SIGNATURE(server, CString_dtor);
+	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterEnum);
+	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterEnumValue);
 
 #ifdef _WIN32
 

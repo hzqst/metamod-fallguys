@@ -269,6 +269,21 @@ typedef void(*fnASEXT_RegisterFuncDef)(CASDocumentation *pASDoc, const char *doc
 
 extern fnASEXT_RegisterFuncDef ASEXT_RegisterFuncDef;
 
+/*
+	Must be called inside DocInitCallback
+*/
+typedef void(*fnASEXT_RegisterEnum)(CASDocumentation* pASDoc, const char* docs, const char* enums, int enumtype);
+
+extern fnASEXT_RegisterEnum ASEXT_RegisterEnum;
+
+/*
+	Must be called inside DocInitCallback
+*/
+typedef void(*fnASEXT_RegisterEnumValue)(CASDocumentation* pASDoc, const char* docs, const char* enums, const char* name, int value);
+
+extern fnASEXT_RegisterEnumValue ASEXT_RegisterEnumValue;
+
+
 typedef void(*fnASEXT_CreateDirectory)(void *pASDir, const char *path, unsigned char flags, unsigned char access_control, unsigned char permanent, unsigned char unk);
 extern fnASEXT_CreateDirectory ASEXT_CreateDirectory;
 
@@ -444,6 +459,8 @@ IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectProperty);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterGlobalProperty);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterHook);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterFuncDef);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterEnum);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterEnumValue);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CreateDirectory);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CStringAssign);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CStringdtor);\
@@ -463,6 +480,8 @@ IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectType);\
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectProperty);\
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterGlobalProperty);\
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterFuncDef);\
+IMPORT_FUNCTION_DEFINE(ASEXT_RegisterEnum);\
+IMPORT_FUNCTION_DEFINE(ASEXT_RegisterEnumValue);\
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterHook);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CreateDirectory);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CStringAssign);\
