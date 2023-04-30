@@ -39,7 +39,18 @@ C_DLLEXPORT void ASEXT_RegisterObjectMethod(CASDocumentation *pASDoc, const char
 /*
 	Must be called inside DocInitCallback
 */
+C_DLLEXPORT void ASEXT_RegisterObjectMethodEx(CASDocumentation* pASDoc, const char* docs, const char* name, const char* func, void* funcptr, int type);
+
+
+/*
+	Must be called inside DocInitCallback
+*/
 C_DLLEXPORT void ASEXT_RegisterObjectBehaviour(CASDocumentation *pASDoc, const char *docs, const char *name, int behaviour, const char *func, void *pfn, int type);
+
+/*
+	Must be called inside DocInitCallback
+*/
+C_DLLEXPORT void ASEXT_RegisterObjectBehaviourEx(CASDocumentation* pthis, const char* docs, const char* name, int behaviour, const char* func, void* funcptr, int type);
 
 /*
 	Must be called inside DocInitCallback

@@ -20,6 +20,8 @@ PRIVATE_FUNCTION_DEFINE(CASDocumentation_RegisterGlobalProperty);
 PRIVATE_FUNCTION_DEFINE(CASDocumentation_RegisterObjectMethod);
 PRIVATE_FUNCTION_DEFINE(CASDocumentation_RegisterObjectBehaviour);
 PRIVATE_FUNCTION_DEFINE(CASDocumentation_RegisterFuncDef);
+PRIVATE_FUNCTION_DEFINE(CASDocumentation_RegisterEnum);
+PRIVATE_FUNCTION_DEFINE(CASDocumentation_RegisterEnumValue);
 PRIVATE_FUNCTION_DEFINE(CASDirectoryList_CreateDirectory);
 PRIVATE_FUNCTION_DEFINE(CASFunction_Create);
 PRIVATE_FUNCTION_DEFINE(CASBaseCallable_Call);
@@ -28,7 +30,7 @@ PRIVATE_FUNCTION_DEFINE(CScriptAny_Release);
 PRIVATE_FUNCTION_DEFINE(CString_Assign);
 PRIVATE_FUNCTION_DEFINE(CString_dtor);
 
-CASServerManager** g_pServerManager = NULL;
+CASServerManager **g_pServerManager = NULL;
 
 fnASEXT_CallHook ASEXT_CallHook = NULL;
 
@@ -40,9 +42,9 @@ std::vector<fnASDocInitCallback> g_ASDocInitCallbacks;
 bool g_ASDirInit = false;
 std::vector<fnASDirInitCallback> g_ASDirInitCallbacks;
 
-std::vector<CASHook*> g_ASHooks;
+std::vector<CASHook *> g_ASHooks;
 
-C_DLLEXPORT void ASEXT_RegisterObjectMethod(CASDocumentation* pthis, const char* docs, const char* name, const char* func, void* pfn, int type)
+C_DLLEXPORT void ASEXT_RegisterObjectMethod(CASDocumentation *pthis, const char *docs, const char *name, const char *func, void *pfn, int type)
 {
 	SC_SERVER_DUMMYVAR;
 
@@ -59,7 +61,7 @@ C_DLLEXPORT void ASEXT_RegisterObjectMethodEx(CASDocumentation* pthis, const cha
 	g_call_original_CASDocumentation_RegisterObjectMethod(pthis, SC_SERVER_PASS_DUMMYARG docs, name, func, (asSFuncPtr*)funcptr, type);
 }
 
-C_DLLEXPORT void ASEXT_RegisterObjectBehaviour(CASDocumentation* pthis, const char* docs, const char* name, int behaviour, const char* func, void* pfn, int type)
+C_DLLEXPORT void ASEXT_RegisterObjectBehaviour(CASDocumentation *pthis, const char *docs, const char *name, int behaviour, const char *func, void *pfn, int type)
 {
 	SC_SERVER_DUMMYVAR;
 
@@ -76,35 +78,47 @@ C_DLLEXPORT void ASEXT_RegisterObjectBehaviourEx(CASDocumentation* pthis, const 
 	g_call_original_CASDocumentation_RegisterObjectBehaviour(pthis, SC_SERVER_PASS_DUMMYARG docs, name, behaviour, func, (asSFuncPtr*)funcptr, type, 0);
 }
 
-C_DLLEXPORT void ASEXT_RegisterObjectType(CASDocumentation* pthis, const char* docs, const char* name, int size, unsigned int flags)
+C_DLLEXPORT void ASEXT_RegisterObjectType(CASDocumentation *pthis, const char *docs, const char *name, int size, unsigned int flags)
 {
 	SC_SERVER_DUMMYVAR;
 
 	g_call_original_CASDocumentation_RegisterObjectType(pthis, SC_SERVER_PASS_DUMMYARG docs, name, size, flags);
 }
 
-C_DLLEXPORT void ASEXT_RegisterObjectProperty(CASDocumentation* pthis, const char* docs, const char* name, const char* prop, int offset)
+C_DLLEXPORT void ASEXT_RegisterObjectProperty(CASDocumentation *pthis, const char *docs, const char *name, const char *prop, int offset)
 {
 	SC_SERVER_DUMMYVAR;
 
 	g_call_original_CASDocumentation_RegisterObjectProperty(pthis, SC_SERVER_PASS_DUMMYARG docs, name, prop, offset);
 }
 
-C_DLLEXPORT void ASEXT_RegisterGlobalProperty(CASDocumentation* pthis, const char* docs, const char* name, void* ptr)
+C_DLLEXPORT void ASEXT_RegisterGlobalProperty(CASDocumentation *pthis, const char *docs, const char *name, void *ptr)
 {
 	SC_SERVER_DUMMYVAR;
 
 	g_call_original_CASDocumentation_RegisterGlobalProperty(pthis, SC_SERVER_PASS_DUMMYARG docs, name, ptr);
 }
 
-C_DLLEXPORT void ASEXT_RegisterFuncDef(CASDocumentation* pthis, const char* docs, const char* funcdef)
+C_DLLEXPORT void ASEXT_RegisterFuncDef(CASDocumentation *pthis, const char *docs, const char *funcdef)
 {
 	SC_SERVER_DUMMYVAR;
 
 	g_call_original_CASDocumentation_RegisterFuncDef(pthis, SC_SERVER_PASS_DUMMYARG docs, funcdef);
 }
 
-int SC_SERVER_DECL NewCASDocumentation_RegisterObjectType(CASDocumentation* pthis, SC_SERVER_DUMMYARG const char* docs, const char* name, int size, unsigned int flags)
+C_DLLEXPORT void ASEXT_RegisterEnum(CASDocumentation* pthis, const char* docs, const char* enums, int enumtype)
+{
+	SC_SERVER_DUMMYVAR;
+	g_call_original_CASDocumentation_RegisterEnum(pthis, SC_SERVER_PASS_DUMMYARG docs, enums, enumtype);
+}
+
+C_DLLEXPORT void ASEXT_RegisterEnumValue(CASDocumentation* pthis, const char* docs, const char* enums, const char* name, int value)
+{
+	SC_SERVER_DUMMYVAR;
+	g_call_original_CASDocumentation_RegisterEnumValue(pthis, SC_SERVER_PASS_DUMMYARG docs, enums, name, value);
+}
+
+int SC_SERVER_DECL NewCASDocumentation_RegisterObjectType(CASDocumentation *pthis, SC_SERVER_DUMMYARG const char *docs, const char *name, int size, unsigned int flags)
 {
 	if (name && docs && !strcmp(name, "CSurvivalMode") && !strcmp(docs, "Survival Mode handler") && flags == 0x40001u)
 	{
@@ -115,12 +129,12 @@ int SC_SERVER_DECL NewCASDocumentation_RegisterObjectType(CASDocumentation* pthi
 
 		g_ASDocInitCallbacks.clear();
 		g_ASDocInit = true;
-	}
+	} 
 
 	return g_call_original_CASDocumentation_RegisterObjectType(pthis, SC_SERVER_PASS_DUMMYARG docs, name, size, flags);
 }
 
-void SC_SERVER_DECL NewCASDirectoryList_CreateDirectory(CASDirectoryList* pthis, SC_SERVER_DUMMYARG const char* path, unsigned char flags, unsigned char access_control, unsigned char permanent, unsigned char unk)
+void SC_SERVER_DECL NewCASDirectoryList_CreateDirectory(CASDirectoryList *pthis, SC_SERVER_DUMMYARG const char *path, unsigned char flags, unsigned char access_control, unsigned char permanent, unsigned char unk)
 {
 	if (!strcmp(path, "scripts/plugins/store") && flags == ASFlag_Plugin && access_control == (ASFileAccessControl_Read | ASFileAccessControl_Write) && permanent == 1)
 	{
@@ -136,10 +150,10 @@ void SC_SERVER_DECL NewCASDirectoryList_CreateDirectory(CASDirectoryList* pthis,
 	g_call_original_CASDirectoryList_CreateDirectory(pthis, SC_SERVER_PASS_DUMMYARG path, flags, access_control, permanent, unk);
 }
 
-C_DLLEXPORT void ASEXT_CreateDirectory(void* pthis, const char* path, unsigned char flags, unsigned char access_control, unsigned char permanent, unsigned char unk)
+C_DLLEXPORT void ASEXT_CreateDirectory(void *pthis, const char *path, unsigned char flags, unsigned char access_control, unsigned char permanent, unsigned char unk)
 {
 	SC_SERVER_DUMMYVAR;
-	g_call_original_CASDirectoryList_CreateDirectory((CASDirectoryList*)pthis, SC_SERVER_PASS_DUMMYARG path, flags, access_control, permanent, unk);
+	g_call_original_CASDirectoryList_CreateDirectory((CASDirectoryList *)pthis, SC_SERVER_PASS_DUMMYARG path, flags, access_control, permanent, unk);
 }
 
 C_DLLEXPORT bool ASEXT_RegisterDocInitCallback(fnASDocInitCallback callback)
@@ -162,7 +176,7 @@ C_DLLEXPORT bool ASEXT_RegisterDirInitCallback(fnASDirInitCallback callback)
 	return true;
 }
 
-C_DLLEXPORT void* ASEXT_RegisterHook(const char* docs, int stopMode, int type, int flags, const char* domain, const char* func, const char* args)
+C_DLLEXPORT void *ASEXT_RegisterHook(const char *docs, int stopMode, int type, int flags, const char *domain, const char *func, const char *args)
 {
 	SC_SERVER_DUMMYVAR;
 
@@ -171,7 +185,7 @@ C_DLLEXPORT void* ASEXT_RegisterHook(const char* docs, int stopMode, int type, i
 	reg.stopMode = stopMode;
 	reg.docs = docs;
 
-	CASHook* hook = new CASHook;
+	CASHook *hook = new CASHook;
 	g_ASHooks.emplace_back(hook);
 
 	g_pfn_CASHook_CASHook(hook, SC_SERVER_PASS_DUMMYARG type, flags, domain, func, args, &reg);
@@ -179,36 +193,36 @@ C_DLLEXPORT void* ASEXT_RegisterHook(const char* docs, int stopMode, int type, i
 	return hook;
 }
 
-C_DLLEXPORT void ASEXT_CStringAssign(void* pthis, const char* src, size_t len)
+C_DLLEXPORT void ASEXT_CStringAssign(void *pthis, const char *src, size_t len)
 {
 	SC_SERVER_DUMMYVAR;
 
-	g_pfn_CString_Assign((CString*)pthis, SC_SERVER_PASS_DUMMYARG src, len);
+	g_pfn_CString_Assign((CString *)pthis, SC_SERVER_PASS_DUMMYARG src, len);
 }
 
-C_DLLEXPORT void ASEXT_CStringdtor(void* pthis)
+C_DLLEXPORT void ASEXT_CStringdtor(void *pthis)
 {
 	SC_SERVER_DUMMYVAR;
 
-	g_pfn_CString_dtor((CString*)pthis SC_SERVER_PASS_DUMMYARG2);
+	g_pfn_CString_dtor((CString *)pthis SC_SERVER_PASS_DUMMYARG2);
 }
 
-C_DLLEXPORT CASFunction* ASEXT_CreateCASFunction(aslScriptFunction* aslfn, CASModule* asmodule, int unk)
+C_DLLEXPORT CASFunction *ASEXT_CreateCASFunction(aslScriptFunction *aslfn, CASModule *asmodule, int unk)
 {
 	return g_pfn_CASFunction_Create(aslfn, asmodule, unk);
 }
 
-C_DLLEXPORT CASServerManager* ASEXT_GetServerManager()
+C_DLLEXPORT CASServerManager *ASEXT_GetServerManager()
 {
 	return (*g_pServerManager);
 }
 
-C_DLLEXPORT bool ASEXT_CASRefCountedBaseClass_InternalRelease(void* ref)
+C_DLLEXPORT bool ASEXT_CASRefCountedBaseClass_InternalRelease(void *ref)
 {
 	return g_pfn_CASRefCountedBaseClass_InternalRelease(ref);
 }
 
-C_DLLEXPORT void ASEXT_CScriptAny_Release(void* anywhat)
+C_DLLEXPORT void ASEXT_CScriptAny_Release(void *anywhat)
 {
 	g_pfn_CScriptAny_Release(anywhat);
 }
