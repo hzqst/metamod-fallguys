@@ -104,6 +104,19 @@ g_EntityFuncs.SetEntitySemiVisible(pEntity.edict(), 0 );
 
 Physic objects run physic simulation (gravity, movement, collision) in Bullet Engine instead of GoldSrc hull clipping.
 
+```
+//You have to enable physic world for current session first before using any feature from Bullet Engine.
+
+void MapInit()
+{
+
+//...
+g_EngineFuncs.EnablePhysicWorld(true);
+
+}
+
+```
+
 The following code creates a physic box with size of (32 x 32 x 32) units
 
 ```
