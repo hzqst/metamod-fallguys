@@ -14,6 +14,62 @@ g_EntityFuncs.SetEntitySuperPusher(self.edict(), true);
 
 * `void Touch( CBaseEntity@ pOther )` will get called when **Super Pusher** impacts or hits any player or monster positively.
 
+### Custom Footsteps
+
+//You have to enable custom footsteps for current map.
+
+//Custom footsteps will be automatically disabled after level changes.
+```
+void MapInit()
+{
+   //...
+   g_Hooks.RegisterHook(Hooks::Player::PlayerMovePlaySoundFX, @PlayerMovePlaySoundFX);
+
+	g_EngineFuncs.EnableCustomStepSound(true);
+}
+```
+
+```
+
+//Play whatever footstep sound you want here
+
+//Use uiFlags |= 1 to block original sound;
+
+HookReturnCode PlayerMovePlaySoundFX( CBasePlayer@ pPlayer, int playerindex, Vector origin, int type, const string& in sound, float vol, float att, int flags, int pitch, uint& out uiFlags )
+{
+	if(sound.StartsWith("player/pl_step"))
+	{
+		g_SoundSystem.EmitSoundDyn( pPlayer.edict(), CHAN_BODY, g_szFootStepPlasticSound[Math.RandomLong(0, 6)], 1.0, 1.0, 0, 90 + Math.RandomLong(0, 20) );
+
+		uiFlags |= 1;
+		return HOOK_HANDLED;
+	}
+	else if(sound.StartsWith("player/pl_wade") || sound.StartsWith("player/pl_slosh"))
+	{
+		g_SoundSystem.EmitSoundDyn( pPlayer.edict(), CHAN_BODY, g_szFootStepSlipperySound[Math.RandomLong(0, 6)], 1.0, 1.0, 0, 90 + Math.RandomLong(0, 20) );
+
+		uiFlags |= 1;
+		return HOOK_HANDLED;
+	}
+	else if(sound.StartsWith("player/pl_jump"))
+	{
+		g_SoundSystem.EmitSoundDyn( pPlayer.edict(), CHAN_BODY, g_szJumpPlasticSound[Math.RandomLong(0, 6)], 1.0, 1.0, 0, 90 + Math.RandomLong(0, 20) );
+
+		uiFlags |= 1;
+		return HOOK_HANDLED;
+	}
+	else if(sound == "player/pl_fallpain3.wav")
+	{
+		g_SoundSystem.EmitSoundDyn( pPlayer.edict(), CHAN_BODY, g_szImpactPlasticSound[Math.RandomLong(0, 2)], 1.0, 1.0, 0, 90 + Math.RandomLong(0, 20) );
+
+		uiFlags |= 1;
+		return HOOK_HANDLED;
+	}
+
+    return HOOK_CONTINUE;
+}
+```
+
 ### Server-Side Level of Detail
 
 ```
@@ -105,7 +161,10 @@ g_EntityFuncs.SetEntitySemiVisible(pEntity.edict(), 0 );
 Physic objects run physic simulation (gravity, movement, collision) in Bullet Engine instead of GoldSrc hull clipping.
 
 ```
-//You have to enable physic world for current session first before using any feature from Bullet Engine.
+
+//You have to enable physic world for current map first before using any feature from Bullet Engine.
+
+//PhysicWorld will be automatically disabled after level changes
 
 void MapInit()
 {
