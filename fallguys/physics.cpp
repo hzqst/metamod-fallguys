@@ -2526,7 +2526,7 @@ bool CPhysicsManager::CreatePhysicObjectPost(edict_t *ent, CGameObject *obj, btC
 	return true;
 }
 
-bool CPhysicsManager::CreateCompoundPhysicObject(edict_t* ent, PhysicShapeParams *shapeParams, size_t numShapeParams, PhysicObjectParams *objectParams)
+bool CPhysicsManager::CreateCompoundPhysicObject(edict_t* ent, PhysicShapeParams **shapeParamArray, size_t numShapeParams, PhysicObjectParams *objectParams)
 {
 	auto obj = GetGameObject(ent);
 
@@ -2565,7 +2565,9 @@ bool CPhysicsManager::CreateCompoundPhysicObject(edict_t* ent, PhysicShapeParams
 
 	for (size_t i = 0; i < numShapeParams; ++i)
 	{
-		btCollisionShape *shape = CreateCollisionShapeFromParams(obj, &shapeParams[i]);
+		auto shapeParams = shapeParamArray[i];
+
+		btCollisionShape *shape = CreateCollisionShapeFromParams(obj, shapeParams);
 
 		if (shape)
 		{

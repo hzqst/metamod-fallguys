@@ -1269,7 +1269,7 @@ public:
 
 	bool CreateBrushModel(edict_t* ent);
 	bool CreatePhysicObject(edict_t* ent, PhysicShapeParams *shapeParams, PhysicObjectParams *objectParams);
-	bool CreateCompoundPhysicObject(edict_t* ent, PhysicShapeParams *shapeParamArray, size_t numShapeParam, PhysicObjectParams *objectParams);
+	bool CreateCompoundPhysicObject(edict_t* ent, PhysicShapeParams **shapeParamArray, size_t numShapeParam, PhysicObjectParams *objectParams);
 	btCollisionShape *CreateCollisionShapeFromParams(CGameObject *obj, PhysicShapeParams *shapeParams);
 	bool CreatePhysicObjectPost(edict_t *ent, CGameObject *obj, btCollisionShape *shape, PhysicObjectParams *objectParams);
 	bool CreatePlayerBox(edict_t* ent);

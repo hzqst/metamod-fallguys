@@ -81,7 +81,7 @@ bool SC_SERVER_DECL CASEntityFuncs__CreateCompoundPhysicObject(void* pthis, SC_S
 {
 	bool bResult = false;
 
-	PhysicShapeParams *pdata = (PhysicShapeParams *)shapeParamArray->data();
+	PhysicShapeParams **pdata = (PhysicShapeParams **)shapeParamArray->data();
 
 	bResult = gPhysicsManager.CreateCompoundPhysicObject(ent, pdata, shapeParamArray->size(), objectParams);
 	
@@ -484,7 +484,7 @@ void RegisterAngelScriptMethods(void)
 			(void *)CASEntityFuncs__CreatePhysicObject, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Create physic compound shape for entity", "CEntityFuncs", "bool CreateCompoundPhysicObject(edict_t@ ent, array<PhysicShapeParams>@ shapeParamArray, const PhysicObjectParams& in objectParams)",
+			"Create physic compound shape for entity", "CEntityFuncs", "bool CreateCompoundPhysicObject(edict_t@ ent, const array<PhysicShapeParams>@ shapeParamArray, const PhysicObjectParams& in objectParams)",
 			(void *)CASEntityFuncs__CreateCompoundPhysicObject, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
