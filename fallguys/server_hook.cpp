@@ -302,6 +302,7 @@ void RegisterAngelScriptMethods(void)
 		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicObjectParams", "int clippinghull_shapetype", offsetof(PhysicObjectParams, clippinghull_shapetype));
 		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicObjectParams", "int clippinghull_shapedirection", offsetof(PhysicObjectParams, clippinghull_shapedirection));
 		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicObjectParams", "Vector clippinghull_size", offsetof(PhysicObjectParams, clippinghull_size));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicObjectParams", "Vector centerofmass", offsetof(PhysicObjectParams, centerofmass));
 
 		/* PhysicWheelParams */
 
@@ -313,6 +314,9 @@ void RegisterAngelScriptMethods(void)
 		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "Vector wheelAxle", offsetof(PhysicWheelParams, wheelAxle));
 		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "float suspensionStiffness", offsetof(PhysicWheelParams, suspensionStiffness));
 		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "float suspensionDamping", offsetof(PhysicWheelParams, suspensionDamping));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "int springIndex", offsetof(PhysicWheelParams, springIndex));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "int engineIndex", offsetof(PhysicWheelParams, engineIndex));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "int steerIndex", offsetof(PhysicWheelParams, steerIndex));
 		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "int flags", offsetof(PhysicWheelParams, flags));
 		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicWheelParams", "int index", offsetof(PhysicWheelParams, index));
 
@@ -320,12 +324,9 @@ void RegisterAngelScriptMethods(void)
 
 		REGISTER_PLAIN_VALUE_OBJECT(PhysicVehicleParams);
 
-		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicVehicleParams", "float suspensionStiffness", offsetof(PhysicVehicleParams, suspensionStiffness));
-		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicVehicleParams", "float suspensionCompression", offsetof(PhysicVehicleParams, suspensionCompression));
-		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicVehicleParams", "float suspensionDamping", offsetof(PhysicVehicleParams, suspensionDamping));
-		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicVehicleParams", "float maxSuspensionTravelCm", offsetof(PhysicVehicleParams, maxSuspensionTravelCm));
-		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicVehicleParams", "float frictionSlip", offsetof(PhysicVehicleParams, frictionSlip));
-		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicVehicleParams", "float maxSuspensionForce", offsetof(PhysicVehicleParams, maxSuspensionForce));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicVehicleParams", "float idleEngineForce", offsetof(PhysicVehicleParams, idleEngineForce));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicVehicleParams", "float idleSteeringForce", offsetof(PhysicVehicleParams, idleSteeringForce));
+		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicVehicleParams", "float idleSteeringSpeed", offsetof(PhysicVehicleParams, idleSteeringSpeed));
 		ASEXT_RegisterObjectProperty(pASDoc, "", "PhysicVehicleParams", "int flags", offsetof(PhysicVehicleParams, flags));
 
 		/* playermove_t */
@@ -553,6 +554,10 @@ void RegisterAngelScriptMethods(void)
 
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Set steering wheel's motor and servo for the vehicle", "CEntityFuncs", "bool SetVehicleSteering(edict_t@ ent, int wheelIndex, float angularTarget, float angularVelocity, float maxMotorForce)",
+			(void *)CASEntityFuncs__SetVehicleSteering, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Set seated player for the vehicle", "CEntityFuncs", "bool SetVehicleSeatPlayer(edict_t@ ent, edict_t@ player)",
 			(void *)CASEntityFuncs__SetVehicleSteering, 3);
 
 	});

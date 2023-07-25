@@ -136,6 +136,11 @@ typedef struct meta_util_funcs_s {
 	DLHANDLE(*pfnLoadLibrary)(const char *szModuleName);
 	void (*pfnFreeLibrary)(DLHANDLE hModule);
 	void *(*pfnGetProcAddress)(DLHANDLE hModule, const char *szProcName);
+	sv_blending_interface_t *(*pfnGetServerStudioBlendInterface)();
+	sv_blending_interface_t *(*pfnGetEngineStudioBlendInterface)();
+	server_studio_api_t *(*pfnGetEngineStudioAPI)();
+	float *(*pfnGetRotationMatrix)();
+	float *(*pfnGetBoneMatrix)();
 } mutil_funcs_t;
 extern mutil_funcs_t MetaUtilFunctions DLLHIDDEN;
 

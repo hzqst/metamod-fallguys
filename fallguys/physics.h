@@ -44,6 +44,7 @@ const int FollowEnt_CopyRenderMode = 0x80;
 const int FollowEnt_CopyRenderAmt = 0x100;
 const int FollowEnt_ApplyLinearVelocity = 0x200;
 const int FollowEnt_ApplyAngularVelocity = 0x400;
+const int FollowEnt_UseMoveTypeFollow = 0x800;
 
 const int EnvStudioAnim_AnimatedStudio = 1;
 const int EnvStudioAnim_AnimatedSprite = 2;
@@ -59,6 +60,9 @@ const int LOD_BODY = 1;
 const int LOD_MODELINDEX = 2;
 const int LOD_SCALE = 4;
 const int LOD_SCALE_INTERP = 8;
+
+const int ConstraintType_ClippingHull = 1;
+const int ConstraintType_Wheel = 2;
 
 class EnvStudioKeyframe
 {
@@ -108,6 +112,7 @@ public:
 	int clippinghull_shapetype;
 	int clippinghull_shapedirection;
 	Vector clippinghull_size;
+	Vector centerofmass;
 };
 
 class PhysicWheelParams
@@ -123,6 +128,9 @@ public:
 	float suspensionDamping;
 	int flags;
 	int index;
+	int springIndex;
+	int engineIndex;
+	int steerIndex;
 };
 
 class PhysicVehicleParams
@@ -136,6 +144,9 @@ public:
 	float maxSuspensionTravelCm;
 	float frictionSlip;
 	float maxSuspensionForce;
+	float idleEngineForce;
+	float idleSteeringForce;
+	float idleSteeringSpeed;
 	int flags;
 };
 
@@ -651,6 +662,34 @@ public:
 protected:
 };
 
+//ATTRIBUTE_ALIGNED16(class)
+class CPhysicVehicleWheelInfo
+{
+public:
+	CPhysicVehicleWheelInfo()
+	{
+		m_springIndex = 2;
+		m_engineIndex = 3;
+		m_steerIndex = 5;
+	}
+
+	CPhysicVehicleWheelInfo(PhysicWheelParams *params)
+	{
+		m_springIndex = params->springIndex;
+		m_engineIndex = params->engineIndex;
+		m_steerIndex = params->steerIndex;
+	}
+
+	virtual ~CPhysicVehicleWheelInfo()
+	{
+
+	}
+
+	int m_springIndex;
+	int m_engineIndex;
+	int m_steerIndex;
+};
+
 ATTRIBUTE_ALIGNED16(class)
 CPhysicVehicleManager
 {
@@ -668,7 +707,7 @@ public:
 
 	btHinge2Constraint * GetConstraint(int index)
 	{
-		if (index < 0 || index >(int)m_constraints.size())
+		if (index < 0 || index >= (int)m_constraints.size())
 			return NULL;
 
 		return m_constraints[index];
@@ -676,7 +715,7 @@ public:
 
 	void SetConstraint(int index, btHinge2Constraint *pConstraint)
 	{
-		if (index + 1 > (int)m_constraints.size())
+		if (index >= (int)m_constraints.size())
 		{
 			m_constraints.resize(index + 1);
 		}
@@ -1012,6 +1051,16 @@ public:
 
 			world->removeConstraint(constraint);
 			
+			if (constraint->getUserConstraintType() == ConstraintType_Wheel)
+			{
+				auto ptr = (CPhysicVehicleWheelInfo *)constraint->getUserConstraintPtr();
+
+				if (ptr)
+				{
+					delete ptr;
+				}
+			}
+
 			delete constraint;
 		}
 	}

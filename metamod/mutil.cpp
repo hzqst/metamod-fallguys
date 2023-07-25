@@ -560,9 +560,9 @@ qboolean mutil_IsValidCodePointerInEngine(void *ptr)
 	return Engine.info.is_valid_code_pointer(ptr);
 }
 
-hook_t *g_pHookBase = NULL;
+static hook_t *g_pHookBase = NULL;
 
-hook_t *mutil_NewHook(int iType)
+static hook_t *mutil_NewHook(int iType)
 {
 	hook_t *h = new hook_t;
 	memset(h, 0, sizeof(hook_t));
@@ -572,7 +572,7 @@ hook_t *mutil_NewHook(int iType)
 	return h;
 }
 
-void mutil_CommitHook(hook_t *pHook)
+static void mutil_CommitHook(hook_t *pHook)
 {
 	if (pHook->iType == MH_HOOK_VFTABLE)
 	{
@@ -590,7 +590,7 @@ void mutil_CommitHook(hook_t *pHook)
 	}
 }
 
-void mutil_FreeHook(hook_t *pHook)
+static void mutil_FreeHook(hook_t *pHook)
 {
 	if (pHook->iType == MH_HOOK_VFTABLE)
 	{
@@ -647,7 +647,7 @@ void mutil_FreeAllHook(void)
 	g_pHookBase = NULL;
 }
 
-qboolean mutil_UnHook(hook_t *pHook)
+static qboolean mutil_UnHook(hook_t *pHook)
 {
 	if (!g_pHookBase)
 		return false;
@@ -675,7 +675,7 @@ qboolean mutil_UnHook(hook_t *pHook)
 	return false;
 }
 
-hook_t *mutil_InlineHook(void *pOldFuncAddr, void *pNewFuncAddr, void **pOrginalCall, bool bTranscation)
+static hook_t *mutil_InlineHook(void *pOldFuncAddr, void *pNewFuncAddr, void **pOrginalCall, bool bTranscation)
 {
 	hook_t *h = mutil_NewHook(MH_HOOK_INLINE);
 	h->pOldFuncAddr = pOldFuncAddr;
@@ -704,7 +704,7 @@ hook_t *mutil_InlineHook(void *pOldFuncAddr, void *pNewFuncAddr, void **pOrginal
 	return h;
 }
 
-void *mutil_GetNextCallAddr(void *pAddress, int dwCount)
+static void *mutil_GetNextCallAddr(void *pAddress, int dwCount)
 {
 	static char *pbAddress = NULL;
 
@@ -733,7 +733,7 @@ void *mutil_GetNextCallAddr(void *pAddress, int dwCount)
 	return NULL;
 }
 
-void *mutil_SearchPattern(void *pStartSearch, size_t dwSearchLen, const char *pPattern, size_t dwPatternLen)
+static void *mutil_SearchPattern(void *pStartSearch, size_t dwSearchLen, const char *pPattern, size_t dwPatternLen)
 {
 	char * dwStartAddr = (char *)pStartSearch;
 	char * dwEndAddr = dwStartAddr + dwSearchLen - dwPatternLen;
@@ -762,7 +762,7 @@ void *mutil_SearchPattern(void *pStartSearch, size_t dwSearchLen, const char *pP
 	return NULL;
 }
 
-void *mutil_ReverseSearchPattern(void *pStartSearch, size_t dwSearchLen, const char *pPattern, size_t dwPatternLen)
+static void *mutil_ReverseSearchPattern(void *pStartSearch, size_t dwSearchLen, const char *pPattern, size_t dwPatternLen)
 {
 	char * dwStartAddr = (char *)pStartSearch;
 	char * dwEndAddr = dwStartAddr - dwSearchLen - dwPatternLen;
@@ -791,7 +791,7 @@ void *mutil_ReverseSearchPattern(void *pStartSearch, size_t dwSearchLen, const c
 	return 0;
 }
 
-int mutil_DisasmSingleInstruction(void *address, fnDisasmSingleCallback callback, void *context)
+static int mutil_DisasmSingleInstruction(void *address, fnDisasmSingleCallback callback, void *context)
 {
 	int instLen = 0;
 	csh handle = 0;
@@ -832,7 +832,7 @@ int mutil_DisasmSingleInstruction(void *address, fnDisasmSingleCallback callback
 	return instLen;
 }
 
-qboolean mutil_DisasmRanges(void * DisasmBase, size_t DisasmSize, fnDisasmCallback callback, int depth, void *context)
+static qboolean mutil_DisasmRanges(void * DisasmBase, size_t DisasmSize, fnDisasmCallback callback, int depth, void *context)
 {
 	qboolean success = false;
 
@@ -931,7 +931,7 @@ typedef struct
 	bool bSubEspImm;
 }MH_ReverseSearchFunctionBegin_ctx2;
 
-void *mutil_ReverseSearchFunctionBegin(void * SearchBegin, size_t SearchSize)
+static void *mutil_ReverseSearchFunctionBegin(void * SearchBegin, size_t SearchSize)
 {
 	byte *SearchPtr = (byte *)SearchBegin;
 	byte *SearchEnd = (byte *)SearchBegin - SearchSize;
@@ -1062,7 +1062,7 @@ void *mutil_ReverseSearchFunctionBegin(void * SearchBegin, size_t SearchSize)
 	return NULL;
 }
 
-void *mutil_ReverseSearchFunctionBeginEx(void * SearchBegin, size_t SearchSize, fnFindAddressCallback callback)
+static void *mutil_ReverseSearchFunctionBeginEx(void * SearchBegin, size_t SearchSize, fnFindAddressCallback callback)
 {
 	byte * SearchPtr = (byte *)SearchBegin;
 	byte *SearchEnd = (byte *)SearchBegin - SearchSize;
@@ -1193,6 +1193,30 @@ void *mutil_ReverseSearchFunctionBeginEx(void * SearchBegin, size_t SearchSize, 
 	return NULL;
 }
 
+static sv_blending_interface_t *mutil_GetServerStudioBlendInterface()
+{
+	return GameDLL.funcs.studio_blend_api;
+}
+
+static sv_blending_interface_t *mutil_GetEngineStudioBlendInterface()
+{
+	return Engine.engine_studioblend;
+}
+
+static server_studio_api_t *mutil_GetEngineStudioAPI()
+{
+	return Engine.engine_studioapi;
+}
+
+static float *mutil_GetRotationMatrix()
+{
+	return (float*)Engine.engine_rotationmatrix;
+}
+
+static float* mutil_GetBoneMatrix()
+{
+	return (float*)Engine.engine_bonetransform;
+}
 
 // Meta Utility Function table.
 mutil_funcs_t MetaUtilFunctions = {
@@ -1241,5 +1265,10 @@ mutil_funcs_t MetaUtilFunctions = {
 	mutil_CloseModuleHandle,
 	mutil_LoadLibrary,
 	mutil_FreeLibrary,
-	mutil_GetProcAddress
+	mutil_GetProcAddress,
+	mutil_GetServerStudioBlendInterface,
+	mutil_GetEngineStudioBlendInterface,
+	mutil_GetEngineStudioAPI,
+	mutil_GetRotationMatrix,
+	mutil_GetBoneMatrix,
 };

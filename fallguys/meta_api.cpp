@@ -69,7 +69,7 @@ static META_FUNCTIONS gMetaFunctionTable = {
 plugin_info_t Plugin_info = {
 	META_INTERFACE_VERSION,	// ifvers
 	"FallGuys",	// name
-	"1.4",	// version
+	"1.5",	// version
 	"2022",	// date
 	"hzqst",	// author
 	"https://github.com/hzqst/metamod-fallguys",	// url

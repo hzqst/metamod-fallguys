@@ -65,6 +65,7 @@ public:
 		m_in_as_context = false;
 		m_callback = NULL;
 		m_form_post = NULL;
+		m_form_last = NULL;
 		m_header_list = NULL;
 		m_request_index = index;
 		m_easy_handle = g_pfn_curl_easy_init();
