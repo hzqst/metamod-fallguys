@@ -16,7 +16,7 @@ This metamod is based on [Bots-United's metamod-p](https://github.com/Bots-Unite
 
 2. A fallback solution was added to mitigate a problem that `GiveFnptrsToDll` could not be found in plugin dll (This used to happen when plugin was compiled by a newer version of Visual Studio like VS2022). see also https://github.com/Bots-United/metamod-p/issues/24
 
-3. A couple of new API was added to mutil API set.
+3. A couple of new APIs were added to mutil API set.
 
 ## Related project
 
