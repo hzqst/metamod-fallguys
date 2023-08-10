@@ -38,6 +38,9 @@
     <ClCompile Include="dllmain.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="soundengine.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="enginedef.h">
@@ -49,10 +52,13 @@
     <ClInclude Include="signatures.h">
       <Filter>Header</Filter>
     </ClInclude>
+    <ClInclude Include="physics.h">
+      <Filter>Header</Filter>
+    </ClInclude>
     <ClInclude Include="fallguys.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="physics.h">
+    <ClInclude Include="soundengine.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

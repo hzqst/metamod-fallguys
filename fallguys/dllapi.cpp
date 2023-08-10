@@ -229,7 +229,7 @@ void NewStartFrame(void)
 {
 	gPhysicsManager.EntityStartFrame();
 
-	gPhysicsManager.SetGravity(sv_gravity->value);
+	gPhysicsManager.SetGravityAcceleration(sv_gravity->value);
 	gPhysicsManager.StepSimulation((*host_frametime));
 
 	gPhysicsManager.EntityStartFrame_Post();
@@ -526,8 +526,7 @@ static NEW_DLL_FUNCTIONS gNewDllFunctionTable =
 	NULL,//void(*pfnCvarValue2)(const edict_t *pEnt, int requestID, const char *cvarName, const char *value);
 };
 
-C_DLLEXPORT int GetNewDLLFunctions(NEW_DLL_FUNCTIONS* pNewDllFunctionTable,
-	int* interfaceVersion)
+C_DLLEXPORT int GetNewDLLFunctions(NEW_DLL_FUNCTIONS* pNewDllFunctionTable, int* interfaceVersion)
 {
 	if (!pNewDllFunctionTable) {
 		LOG_ERROR(PLID, "GetNewDLLFunctions called with null pFunctionTable");

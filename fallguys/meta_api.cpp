@@ -48,6 +48,7 @@
 #include "serverdef.h"
 #include "fallguys.h"
 #include "physics.h"
+#include "soundengine.h"
 
 IMPORT_ASEXT_API_DEFINE();
 
@@ -69,8 +70,8 @@ static META_FUNCTIONS gMetaFunctionTable = {
 plugin_info_t Plugin_info = {
 	META_INTERFACE_VERSION,	// ifvers
 	"FallGuys",	// name
-	"1.5",	// version
-	"2022",	// date
+	"1.6",	// version
+	"2023",	// date
 	"hzqst",	// author
 	"https://github.com/hzqst/metamod-fallguys",	// url
 	"FGUYS",	// logtag, all caps please
@@ -150,7 +151,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	{
 		LOG_ERROR(PLID, "server handle not found!");
 		return FALSE;
-}
+	}
 
 	if (!serverBase)
 	{
@@ -211,7 +212,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	VAR_FROM_SIGNATURE(engine, pg_groupmask);
 
 #endif
-	
+
+	LoadFMOD();
 	InstallEngineHooks();
 	InstallServerHooks();
 	RegisterAngelScriptMethods();
@@ -229,6 +231,7 @@ C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME /* now */,
 	gPhysicsManager.Shutdown();
 	UninstallServerHooks();
 	UninstallEngineHooks();
+	UnloadFMOD();
 
 	return TRUE;
 }

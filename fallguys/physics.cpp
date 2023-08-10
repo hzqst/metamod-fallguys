@@ -13,6 +13,88 @@
 extern edict_t* r_worldentity;
 extern model_t* r_worldmodel;
 
+//Utils
+
+Vector GetVectorFromBtVector3(const btVector3 &v)
+{
+	return Vector(v.getX(), v.getY(), v.getZ());
+}
+
+Vector GetBtVector3FromVector(const Vector &v)
+{
+	return Vector(v.x, v.y, v.z);
+}
+
+float GetSignedDistanceToSurface_GoldSrc(const vec3_t &inPoint, const vec3_t &inSurfaceNormal, const float inSurfacePlane)
+{
+	return DotProduct(inPoint, inSurfaceNormal) - inSurfacePlane;
+}
+
+btScalar GetSignedDistanceToSurface(const btVector3 &inPoint, const btVector3 &inSurfaceNormal, const btScalar inSurfacePlane)
+{
+	return inPoint.dot(inSurfaceNormal) - inSurfacePlane;
+}
+
+btScalar CalcVolumeForSphereShape(const btScalar size)
+{
+	return (4.0f / 3.0f * (float)(M_PI)) * (size * size * size);
+}
+
+btScalar CalcVolumeForBoxShape(const btVector3 &size)
+{
+	return size.getX() * size.getY() * size.getZ();
+}
+
+btScalar CalcVolumeForCapsuleShape(btScalar radius, btScalar height)
+{
+	// Calculate the volume of the cylindrical part
+	btScalar cylinderVolume = (float)(M_PI)* radius * radius * height;
+
+	// Calculate the volume of the hemispherical ends
+	btScalar hemisphereVolume = (4.0f / 3.0f) * (float)(M_PI)* radius * radius * radius;
+
+	// Sum the volumes to get the total volume
+	btScalar totalVolume = cylinderVolume + hemisphereVolume;
+
+	return totalVolume;
+}
+
+btScalar CalcVolumeForCylinderShapeX(const btVector3 &halfExtents)
+{
+	// Calculate the full height and radius of the cylinder
+	btScalar height = halfExtents.getX() * 2.0f;
+	btScalar radius = halfExtents.getY(); // or halfExtents.getZ(), they should be the same
+
+	// Calculate the volume of the cylinder
+	btScalar volume = (float)(M_PI)* radius * radius * height;
+
+	return volume;
+}
+
+btScalar CalcVolumeForCylinderShapeY(const btVector3 &halfExtents)
+{
+	// Calculate the full height and radius of the cylinder
+	btScalar height = halfExtents.getY() * 2.0f;
+	btScalar radius = halfExtents.getZ(); // or halfExtents.getZ(), they should be the same
+
+	// Calculate the volume of the cylinder
+	btScalar volume = (float)(M_PI)* radius * radius * height;
+
+	return volume;
+}
+
+btScalar CalcVolumeForCylinderShapeZ(const btVector3 &halfExtents)
+{
+	// Calculate the full height and radius of the cylinder
+	btScalar height = halfExtents.getZ() * 2.0f;
+	btScalar radius = halfExtents.getY(); // or halfExtents.getX(), they should be the same
+
+	// Calculate the volume of the cylinder
+	btScalar volume = (float)(M_PI)* radius * radius * height;
+
+	return volume;
+}
+
 //EnvStudioKeyframe
 
 void EnvStudioKeyframe_ctor(EnvStudioKeyframe *pthis)
@@ -51,12 +133,14 @@ void EnvStudioKeyframe_dtor(EnvStudioKeyframe *pthis)
 void PhysicPlayerConfigs_ctor(PhysicPlayerConfigs *pthis)
 {
 	pthis->mass = 20;
+	pthis->density = 1;
 	pthis->maxPendingVelocity = 1000;
 }
 
 void PhysicPlayerConfigs_copyctor(PhysicPlayerConfigs *a1, PhysicPlayerConfigs *a2)
 {
 	a1->mass = a2->mass;
+	a1->density = a2->density;
 	a1->maxPendingVelocity = a2->maxPendingVelocity;
 }
 
@@ -107,6 +191,7 @@ void PhysicShapeParams_dtor(PhysicShapeParams *pthis)
 void PhysicObjectParams_ctor(PhysicObjectParams *pthis)
 {
 	pthis->mass = 1;
+	pthis->density = 1;
 	pthis->linearfriction = 1;
 	pthis->rollingfriction = 1;
 	pthis->restitution = 0;
@@ -123,6 +208,7 @@ void PhysicObjectParams_ctor(PhysicObjectParams *pthis)
 void PhysicObjectParams_copyctor(PhysicObjectParams *a1, PhysicObjectParams *a2)
 {
 	a1->mass = a2->mass;
+	a1->density = a2->density;
 	a1->linearfriction = a2->linearfriction;
 	a1->rollingfriction = a2->rollingfriction;
 	a1->restitution = a2->restitution;
@@ -156,6 +242,9 @@ void PhysicWheelParams_ctor(PhysicWheelParams *pthis)
 	pthis->wheelAxle = g_vecZero;
 	pthis->suspensionStiffness = 0;
 	pthis->suspensionDamping = 0;
+	pthis->suspensionLowerLimit = -1;
+	pthis->suspensionUpperLimit = 1;
+	pthis->rayCastHeight = 16;
 	pthis->flags = 0;
 	pthis->index = 0;
 	pthis->springIndex = 2;
@@ -171,6 +260,9 @@ void PhysicWheelParams_copyctor(PhysicWheelParams *a1, PhysicWheelParams *a2)
 	a1->wheelAxle = a2->wheelAxle;
 	a1->suspensionStiffness = a2->suspensionStiffness;
 	a1->suspensionDamping = a2->suspensionDamping;
+	a1->suspensionLowerLimit = a2->suspensionLowerLimit;
+	a1->suspensionUpperLimit = a2->suspensionUpperLimit;
+	a1->rayCastHeight = a2->rayCastHeight;
 	a1->flags = a2->flags;
 	a1->index = a2->index;
 	a1->springIndex = a2->springIndex;
@@ -192,18 +284,20 @@ void PhysicWheelParams_dtor(PhysicWheelParams *pthis)
 
 void PhysicVehicleParams_ctor(PhysicVehicleParams *pthis)
 {
+	pthis->type = 0;
+	pthis->flags = 0;
 	pthis->idleEngineForce = 0;
 	pthis->idleSteeringForce = 0;
 	pthis->idleSteeringSpeed = 0;
-	pthis->flags = 0;
 }
 
 void PhysicVehicleParams_copyctor(PhysicVehicleParams *a1, PhysicVehicleParams *a2)
 {
+	a1->type = a2->type;
+	a1->flags = a2->flags;
 	a1->idleEngineForce = a2->idleEngineForce;
 	a1->idleSteeringForce = a2->idleSteeringForce;
 	a1->idleSteeringSpeed = a2->idleSteeringSpeed;
-	a1->flags = a2->flags;
 }
 
 PhysicVehicleParams * SC_SERVER_DECL PhysicVehicleParams_opassign(PhysicVehicleParams *a1, SC_SERVER_DUMMYARG PhysicVehicleParams *a2)
@@ -214,6 +308,38 @@ PhysicVehicleParams * SC_SERVER_DECL PhysicVehicleParams_opassign(PhysicVehicleP
 }
 
 void PhysicVehicleParams_dtor(PhysicVehicleParams *pthis)
+{
+
+}
+
+void PhysicWheelRuntimeInfo_ctor(PhysicWheelRuntimeInfo *pthis)
+{
+	pthis->hitGround = 0;
+	pthis->hitNormalInWorld = g_vecZero;
+	pthis->hitPointInWorld = g_vecZero;
+	pthis->rpm = 0;
+	pthis->waterVolume = 0;
+	pthis->totalVolume = 0;
+}
+
+void PhysicWheelRuntimeInfo_copyctor(PhysicWheelRuntimeInfo *a1, PhysicWheelRuntimeInfo *a2)
+{
+	a1->hitGround = a2->hitGround;
+	a1->hitNormalInWorld = a2->hitNormalInWorld;
+	a1->hitPointInWorld = a2->hitPointInWorld;
+	a1->rpm = a2->rpm;
+	a1->waterVolume = a2->waterVolume;
+	a1->totalVolume = a2->totalVolume;
+}
+
+PhysicWheelRuntimeInfo * SC_SERVER_DECL PhysicWheelRuntimeInfo_opassign(PhysicWheelRuntimeInfo *a1, SC_SERVER_DUMMYARG PhysicWheelRuntimeInfo *a2)
+{
+	PhysicWheelRuntimeInfo_copyctor(a1, a2);
+
+	return a1;
+}
+
+void PhysicWheelRuntimeInfo_dtor(PhysicWheelRuntimeInfo *pthis)
 {
 
 }
@@ -243,6 +369,11 @@ PhysicVehicleParams::PhysicVehicleParams()
 	PhysicVehicleParams_ctor(this);
 }
 
+PhysicWheelRuntimeInfo::PhysicWheelRuntimeInfo()
+{
+	PhysicWheelRuntimeInfo_ctor(this);
+}
+
 CPhysicsManager gPhysicsManager;
 
 CPhysicsManager::CPhysicsManager()
@@ -256,7 +387,7 @@ CPhysicsManager::CPhysicsManager()
 	m_overlapFilterCallback = NULL;
 
 	m_worldVertexArray = NULL;
-	m_gravity = 0;
+	m_gravityAcceleration = 0;
 	m_numDynamicObjects = 0;
 	m_maxIndexGameObject = 0;
 
@@ -288,6 +419,17 @@ void CPhysicsManager::GenerateBrushIndiceArray(std::vector<glpoly_t*> &glpolys)
 
 	m_brushIndexArray.resize(maxNum);
 
+	for (size_t i = 0; i < m_brushVertexArray.size(); ++i)
+	{
+		if (m_brushVertexArray[i])
+		{
+			delete m_brushVertexArray[i];
+			m_brushVertexArray[i] = NULL;
+		}
+	}
+
+	m_brushVertexArray.resize(maxNum);
+
 	for (int i = 0; i < EngineGetMaxPrecacheModel(); ++i)
 	{
 		auto mod = EngineGetPrecachedModelByIndex(i);
@@ -296,7 +438,8 @@ void CPhysicsManager::GenerateBrushIndiceArray(std::vector<glpoly_t*> &glpolys)
 			if (mod->needload == NL_PRESENT || mod->needload == NL_CLIENT)
 			{
 				m_brushIndexArray[i] = new indexarray_t;
-				GenerateIndexedArrayForBrush(mod, m_worldVertexArray, m_brushIndexArray[i]);
+				m_brushVertexArray[i] = new vertexarray_t;
+				GenerateArrayForBrushModel(mod, m_worldVertexArray, m_brushIndexArray[i], m_brushVertexArray[i]);
 			}
 		}
 	}
@@ -434,6 +577,15 @@ void CPhysicsManager::GenerateWorldVerticeArray(std::vector<glpoly_t*> &glpolys)
 		int iStartVert = iNumVerts;
 
 		brushface->start_vertex = iStartVert;
+		brushface->plane_normal = surf[i].plane->normal;
+		brushface->plane_dist = surf[i].plane->dist;
+		brushface->plane_flags = surf[i].flags;
+
+		if (surf[i].flags & SURF_PLANEBACK)
+		{
+			brushface->plane_normal = brushface->plane_normal  * (-1);
+			brushface->plane_dist = brushface->plane_dist  * (-1);
+		}
 
 		for (poly = surf[i].polys; poly; poly = poly->next)
 		{
@@ -456,7 +608,6 @@ void CPhysicsManager::GenerateWorldVerticeArray(std::vector<glpoly_t*> &glpolys)
 				Vertexes[1].pos[0] = Vertexes[2].pos[0];
 				Vertexes[1].pos[1] = Vertexes[2].pos[1];
 				Vertexes[1].pos[2] = Vertexes[2].pos[2];
-				//memcpy(&Vertexes[1], &Vertexes[2], sizeof(brushvertex_t));
 
 				Vertexes[2].pos[0] = v[0];
 				Vertexes[2].pos[1] = v[1];
@@ -473,7 +624,7 @@ void CPhysicsManager::GenerateWorldVerticeArray(std::vector<glpoly_t*> &glpolys)
 	}
 }
 
-void CPhysicsManager::GenerateIndexedArrayForBrushface(brushface_t* brushface, indexarray_t* indexarray)
+void CPhysicsManager::GenerateArrayForBrushface(brushface_t* brushface, indexarray_t* brushindexarray, vertexarray_t* brushvertexarray)
 {
 	int first = -1;
 	int prv0 = -1;
@@ -483,11 +634,11 @@ void CPhysicsManager::GenerateIndexedArrayForBrushface(brushface_t* brushface, i
 	{
 		if (prv0 != -1 && prv1 != -1 && prv2 != -1)
 		{
-			indexarray->vIndiceBuffer.emplace_back(brushface->start_vertex + first);
-			indexarray->vIndiceBuffer.emplace_back(brushface->start_vertex + prv2);
+			brushindexarray->vIndiceBuffer.emplace_back(brushface->start_vertex + first);
+			brushindexarray->vIndiceBuffer.emplace_back(brushface->start_vertex + prv2);
 		}
 
-		indexarray->vIndiceBuffer.emplace_back(brushface->start_vertex + i);
+		brushindexarray->vIndiceBuffer.emplace_back(brushface->start_vertex + i);
 
 		if (first == -1)
 			first = i;
@@ -496,9 +647,11 @@ void CPhysicsManager::GenerateIndexedArrayForBrushface(brushface_t* brushface, i
 		prv1 = prv2;
 		prv2 = i;
 	}
+
+	brushvertexarray->vFaceBuffer.emplace_back(*brushface);
 }
 
-void CPhysicsManager::GenerateIndexedArrayForSurface(msurface_t* psurf, vertexarray_t* vertexarray, indexarray_t* indexarray)
+void CPhysicsManager::GenerateArrayForSurface(msurface_t* psurf, vertexarray_t* worldvertexarray, indexarray_t* brushindexarray, vertexarray_t* brushvertexarray)
 {
 	if (psurf->flags & SURF_DRAWTURB)
 	{
@@ -515,10 +668,10 @@ void CPhysicsManager::GenerateIndexedArrayForSurface(msurface_t* psurf, vertexar
 		return;
 	}
 
-	GenerateIndexedArrayForBrushface(&vertexarray->vFaceBuffer[psurf->polys->flags], indexarray);
+	GenerateArrayForBrushface(&worldvertexarray->vFaceBuffer[psurf->polys->flags], brushindexarray, brushvertexarray);
 }
 
-void CPhysicsManager::GenerateIndexedArrayRecursiveWorldNode(mnode_t* node, vertexarray_t* vertexarray, indexarray_t* indexarray)
+void CPhysicsManager::GenerateArrayRecursiveWorldNode(mnode_t* node, vertexarray_t* worldvertexarray, indexarray_t* brushindexarray, vertexarray_t* brushvertexarray)
 {
 	if (!node)
 		return;
@@ -529,7 +682,7 @@ void CPhysicsManager::GenerateIndexedArrayRecursiveWorldNode(mnode_t* node, vert
 	if (node->contents < 0)
 		return;
 
-	GenerateIndexedArrayRecursiveWorldNode(node->children[0], vertexarray, indexarray);
+	GenerateArrayRecursiveWorldNode(node->children[0], worldvertexarray, brushindexarray, brushvertexarray);
 
 	auto c = node->numsurfaces;
 
@@ -539,23 +692,23 @@ void CPhysicsManager::GenerateIndexedArrayRecursiveWorldNode(mnode_t* node, vert
 
 		for (; c; c--, psurf++)
 		{
-			GenerateIndexedArrayForSurface(psurf, vertexarray, indexarray);
+			GenerateArrayForSurface(psurf, worldvertexarray, brushindexarray, brushvertexarray);
 		}
 	}
 
-	GenerateIndexedArrayRecursiveWorldNode(node->children[1], vertexarray, indexarray);
+	GenerateArrayRecursiveWorldNode(node->children[1], worldvertexarray, brushindexarray, brushvertexarray);
 }
 
-void CPhysicsManager::GenerateIndexedArrayForBrush(model_t* mod, vertexarray_t* vertexarray, indexarray_t* indexarray)
+void CPhysicsManager::GenerateArrayForBrushModel(model_t* mod, vertexarray_t* vertexarray, indexarray_t* brushindexarray, vertexarray_t* brushvertexarray)
 {
 	auto psurf = &mod->surfaces[mod->firstmodelsurface];
 	for (int i = 0; i < mod->nummodelsurfaces; i++, psurf++)
 	{
-		GenerateIndexedArrayForSurface(psurf, vertexarray, indexarray);
+		GenerateArrayForSurface(psurf, vertexarray, brushindexarray, brushvertexarray);
 	}
 }
 
-CDynamicObject* CPhysicsManager::CreateDynamicObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, int flags)
+CDynamicObject* CPhysicsManager::CreateDynamicObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass, float density, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, int flags)
 {
 	//legacy -- dynamic object collide with all other stuffs when pushable, and all non-player stuffs when unpushable
 
@@ -577,6 +730,8 @@ CDynamicObject* CPhysicsManager::CreateDynamicObject(CGameObject *obj, btCollisi
 	dynamicobj->GetRigidBody()->setCcdSweptSphereRadius(ccdRadius);
 	dynamicobj->GetRigidBody()->setCcdMotionThreshold(ccdThreshold);
 	dynamicobj->GetRigidBody()->setRestitution(restitution);
+
+	dynamicobj->SetDensity(density);
 
 	return dynamicobj;
 }
@@ -870,12 +1025,12 @@ void EntityMotionState::setWorldTransform(const btTransform& worldTrans)
 
 	auto &vecOrigin = worldTrans.getOrigin();
 
-	Vector origin = Vector(vecOrigin.getX(), vecOrigin.getY(), vecOrigin.getZ());
+	Vector origin = GetVectorFromBtVector3(vecOrigin);
 
 	btVector3 vecAngles;
 	MatrixEuler(worldTrans.getBasis(), vecAngles);
 
-	Vector angles = Vector(vecAngles.getX(), vecAngles.getY(), vecAngles.getZ());
+	Vector angles = GetVectorFromBtVector3(vecAngles);
 
 	//Clamp to -3600~3600
 	for (int i = 0; i < 3; i++)
@@ -924,7 +1079,7 @@ void CPhysicsManager::EntityStartFrame()
 			}
 			if (IsEntitySolidPlayer(i, ent))
 			{
-				CreatePlayerBox(ent);
+				CreateSolidPlayer(ent);
 				continue;
 			}
 		}
@@ -1009,6 +1164,16 @@ void CDynamicObject::StartFrame(btDiscreteDynamicsWorld* world)
 		btVector3 vecAngularVelocity(ent->v.vuser2.x, ent->v.vuser2.y, ent->v.vuser2.z);
 
 		GetRigidBody()->setAngularVelocity(vecAngularVelocity);
+
+		if (ent->v.gravity > 0)
+		{
+			GetRigidBody()->setGravity(btVector3(0, 0, (-1.0f) * gPhysicsManager.GetGravityAcceleration() * ent->v.gravity));
+		}
+	}
+
+	if (GetVehicleBehaviour())
+	{
+		GetVehicleBehaviour()->StartFrame(world);
 	}
 }
 
@@ -1021,10 +1186,13 @@ void CDynamicObject::StartFrame_Post(btDiscreteDynamicsWorld* world)
 	if (!IsKinematic())
 	{
 		auto vecLinearVelocity = GetRigidBody()->getLinearVelocity();
+
 		auto vecAngularVelocity = GetRigidBody()->getAngularVelocity();
 
-		Vector vel(vecLinearVelocity.getX(), vecLinearVelocity.getY(), vecLinearVelocity.getZ());
-		Vector avel(vecAngularVelocity.getX(), vecAngularVelocity.getY(), vecAngularVelocity.getZ());
+		Vector vel = GetVectorFromBtVector3(vecLinearVelocity);
+
+		//TODO: convert to degree based ?
+		Vector avel = GetVectorFromBtVector3(vecAngularVelocity);
 
 		ent->v.basevelocity = g_vecZero;
 		ent->v.velocity = g_vecZero;
@@ -1048,11 +1216,19 @@ void CDynamicObject::StartFrame_Post(btDiscreteDynamicsWorld* world)
 		}
 		m_ImpactEntity = NULL;
 	}
+
+	if (GetVehicleBehaviour())
+	{
+		GetVehicleBehaviour()->StartFrame_Post(world);
+	}
 }
 
 void CDynamicObject::EndFrame(btDiscreteDynamicsWorld* world)
 {
-
+	if (GetVehicleBehaviour())
+	{
+		GetVehicleBehaviour()->EndFrame(world);
+	}
 }
 
 void CDynamicObject::SetPhysicTransform(const Vector &origin, const Vector &angles)
@@ -1106,14 +1282,39 @@ void CDynamicObject::SetPhysicFreeze(bool freeze)
 	}
 }
 
+void CDynamicObject::SetPhysicNoCollision(bool no_collision)
+{
+	if (no_collision)
+	{
+		GetRigidBody()->setCollisionFlags(GetRigidBody()->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
+	}
+	else
+	{
+		GetRigidBody()->setCollisionFlags(GetRigidBody()->getCollisionFlags() & ~btCollisionObject::CF_NO_CONTACT_RESPONSE);
+	}
+}
+
+
 void CClippingHullObject::SetPhysicTransform(const Vector &origin, const Vector &angles)
 {
 
 }
 
+void CClippingHullObject::SetPhysicNoCollision(bool no_collision)
+{
+	if (no_collision)
+	{
+		GetRigidBody()->setCollisionFlags(GetRigidBody()->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
+	}
+	else
+	{
+		GetRigidBody()->setCollisionFlags(GetRigidBody()->getCollisionFlags() & ~btCollisionObject::CF_NO_CONTACT_RESPONSE);
+	}
+}
+
 void CClippingHullObject::SetPhysicFreeze(bool freeze)
 {
-	if (freeze)
+/*	if (freeze)
 	{
 		GetRigidBody()->setCollisionFlags(GetRigidBody()->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
 	}
@@ -1121,6 +1322,30 @@ void CClippingHullObject::SetPhysicFreeze(bool freeze)
 	{
 		GetRigidBody()->setCollisionFlags(GetRigidBody()->getCollisionFlags() & ~btCollisionObject::CF_KINEMATIC_OBJECT);
 		GetRigidBody()->forceActivationState(ACTIVE_TAG);
+	}*/
+
+	GetRigidBody()->setLinearVelocity(btVector3(0, 0, 0));
+	GetRigidBody()->setAngularVelocity(btVector3(0, 0, 0));
+
+	if (freeze)
+	{
+		GetRigidBody()->setActivationState(DISABLE_SIMULATION);
+	}
+	else if (!freeze && GetRigidBody()->getActivationState() == DISABLE_SIMULATION)
+	{
+		GetRigidBody()->forceActivationState(ACTIVE_TAG);
+	}
+}
+
+void CPlayerObject::SetPhysicNoCollision(bool no_collision)
+{
+	if (no_collision)
+	{
+		GetRigidBody()->setCollisionFlags(GetRigidBody()->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
+	}
+	else
+	{
+		GetRigidBody()->setCollisionFlags(GetRigidBody()->getCollisionFlags() & ~btCollisionObject::CF_NO_CONTACT_RESPONSE);
 	}
 }
 
@@ -1160,9 +1385,7 @@ void CPlayerObject::EndFrame(btDiscreteDynamicsWorld* world)
 
 			btVector3 vecNewOrigin = GetRigidBody()->getWorldTransform().getOrigin();
 
-			new_origin.x = vecNewOrigin.getX();
-			new_origin.y = vecNewOrigin.getY();
-			new_origin.z = vecNewOrigin.getZ();
+			new_origin = GetVectorFromBtVector3(vecNewOrigin);
 
 			new_origin.z += 1.5f;
 
@@ -1209,9 +1432,7 @@ void CPlayerObject::EndFrame(btDiscreteDynamicsWorld* world)
 
 					btVector3 vecLinearVelocity = GetRigidBody()->getLinearVelocity();
 
-					new_velocity.x = vecLinearVelocity.getX();
-					new_velocity.y = vecLinearVelocity.getY();
-					new_velocity.z = vecLinearVelocity.getZ();
+					new_velocity = GetVectorFromBtVector3(vecLinearVelocity);
 
 					m_PendingVelocity = new_velocity;
 				}
@@ -1224,13 +1445,9 @@ void CPlayerObject::EndFrame(btDiscreteDynamicsWorld* world)
 			}
 			else
 			{
-				vec3_t new_velocity;
-
 				btVector3 vecLinearVelocity = GetRigidBody()->getLinearVelocity();
 
-				new_velocity.x = vecLinearVelocity.getX();
-				new_velocity.y = vecLinearVelocity.getY();
-				new_velocity.z = vecLinearVelocity.getZ();
+				auto new_velocity = GetVectorFromBtVector3(vecLinearVelocity);
 
 				ent->v.velocity = new_velocity;
 			}
@@ -1265,12 +1482,8 @@ bool CDynamicObject::SetAbsBox(edict_t *ent)
 
 	GetRigidBody()->getAabb(aabbMins, aabbMaxs);
 
-	ent->v.absmin.x = aabbMins.getX();
-	ent->v.absmin.y = aabbMins.getY();
-	ent->v.absmin.z = aabbMins.getZ();
-	ent->v.absmax.x = aabbMaxs.getX();
-	ent->v.absmax.y = aabbMaxs.getY();
-	ent->v.absmax.z = aabbMaxs.getZ();
+	ent->v.absmin = GetVectorFromBtVector3(aabbMins);
+	ent->v.absmax = GetVectorFromBtVector3(aabbMaxs);
 
 	//additional 16 unit ?
 	ent->v.absmin.x -= 16;
@@ -1287,12 +1500,9 @@ void CDynamicObject::DispatchImpact(float impulse, const btVector3 &worldpos_on_
 {
 	if ((m_PhysicObjectFlags & PhysicObject_HasImpactImpulse) && impulse > m_flImpactImpulseThreshold && impulse > m_flImpactImpulse)
 	{
-		vec3_t ImpactPoint(worldpos_on_source.getX(), worldpos_on_source.getY(), worldpos_on_source.getZ());
-		vec3_t ImpactDirection(normal.getX(), normal.getY(), normal.getZ());
-
 		m_flImpactImpulse = impulse;
-		m_ImpactPoint = ImpactPoint;
-		m_ImpactDirection = ImpactDirection;
+		m_ImpactPoint = GetVectorFromBtVector3(worldpos_on_source);
+		m_ImpactDirection = GetVectorFromBtVector3(normal);
 		m_ImpactEntity = hitent;
 	}
 }
@@ -1301,12 +1511,9 @@ void CPlayerObject::DispatchImpact(float impulse, const btVector3 &worldpos_on_s
 {
 	if (impulse > m_flImpactImpulse)
 	{
-		vec3_t ImpactPoint(worldpos_on_source.getX(), worldpos_on_source.getY(), worldpos_on_source.getZ());
-		vec3_t ImpactDirection(normal.getX(), normal.getY(), normal.getZ());
-
 		m_flImpactImpulse = impulse;
-		m_ImpactPoint = ImpactPoint;
-		m_ImpactDirection = ImpactDirection;
+		m_ImpactPoint = GetVectorFromBtVector3(worldpos_on_source);
+		m_ImpactDirection = GetVectorFromBtVector3(normal);
 		m_ImpactEntity = hitent;
 	}
 }
@@ -1329,6 +1536,149 @@ void CPlayerObject::StartFrame(btDiscreteDynamicsWorld* world)
 void CPlayerObject::StartFrame_Post(btDiscreteDynamicsWorld* world)
 {
 	
+}
+
+bool CPhysicsManager::IsPointInsideBrushEntity(edict_t *ent, const vec3_t &p)
+{
+	vertexarray_t *worldvertexarray = NULL;
+	indexarray_t *brushindexarray = NULL;
+	vertexarray_t *brushvertexarray = NULL;
+
+	if (GetVertexIndexArrayFromBrushEntity(ent, &worldvertexarray, &brushindexarray, &brushvertexarray))
+	{
+
+	}
+
+	return true;
+}
+
+void CGhostPhysicObject::StartFrame_Post(btDiscreteDynamicsWorld* world)
+{
+	auto ent = GetGameObject()->GetEdict();
+
+	btAlignedObjectArray<btRigidBody *> ObjectArray;
+	btManifoldArray ManifoldArray;
+	btBroadphasePairArray& PairArray = GetGhostObject()->getOverlappingPairCache()->getOverlappingPairArray();
+
+	for (int i = 0; i < PairArray.size(); i++)
+	{
+		ManifoldArray.clear();
+
+		btBroadphasePair* CollisionPair = world->getPairCache()->findPair(PairArray[i].m_pProxy0, PairArray[i].m_pProxy1);
+
+		if (!CollisionPair)
+		{
+			continue;
+		}
+
+		if (CollisionPair->m_algorithm)
+		{
+			CollisionPair->m_algorithm->getAllContactManifolds(ManifoldArray);
+		}
+
+		for (int j = 0; j < ManifoldArray.size(); j++)
+		{
+			for (int p = 0; p < ManifoldArray[j]->getNumContacts(); p++)
+			{
+				const btManifoldPoint& Point = ManifoldArray[j]->getContactPoint(p);
+
+				//if (Point.getDistance() < 0.0f)
+				{
+					auto rigidbody = (btRigidBody *)btRigidBody::upcast(ManifoldArray[j]->getBody0());
+
+					if (!rigidbody)
+					{
+						rigidbody = (btRigidBody *)btRigidBody::upcast(ManifoldArray[j]->getBody1());
+					}
+
+					if (rigidbody)
+					{
+						int index = ObjectArray.findLinearSearch(rigidbody);
+						if (index == ObjectArray.size())
+						{
+							//not found
+							ObjectArray.push_back(rigidbody);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	auto localInvTrans = GetGhostObject()->getWorldTransform().inverse();
+
+	if (GetGhostObject()->getCollisionShape()->getShapeType() == TRIANGLE_MESH_SHAPE_PROXYTYPE)
+	{
+		vertexarray_t *worldvertexarray = NULL;
+		indexarray_t *brushindexarray = NULL;
+		vertexarray_t *brushvertexarray = NULL;
+
+		if (gPhysicsManager.GetVertexIndexArrayFromBrushEntity(ent, &worldvertexarray, &brushindexarray, &brushvertexarray))
+		{
+			for (int i = 0; i < GetGhostObject()->getNumOverlappingObjects(); i++)
+			{
+				auto rigidbody = (btRigidBody *)btRigidBody::upcast(GetGhostObject()->getOverlappingObject(i));
+
+				if (rigidbody)
+				{
+					int index = ObjectArray.findLinearSearch(rigidbody);
+					if (index == ObjectArray.size())
+					{
+						auto vPoint = (rigidbody->getWorldTransform() * localInvTrans).getOrigin();
+
+						vec3_t vecPoint = GetVectorFromBtVector3(vPoint);
+
+						bool bIsInside = true;
+
+						for (const auto &vFace : brushvertexarray->vFaceBuffer)
+						{
+							float dist_to_plane = GetSignedDistanceToSurface_GoldSrc(vecPoint, vFace.plane_normal, vFace.plane_dist);
+
+							if (dist_to_plane > 0)
+							{
+								bIsInside = false;
+								break;
+							}
+						}
+
+						if(bIsInside)
+						{
+							ObjectArray.push_back(rigidbody);
+						}
+					}
+				}
+			}
+		}
+	}
+	else if (GetGhostObject()->getCollisionShape()->getShapeType() == BOX_SHAPE_PROXYTYPE)
+	{
+		auto boxShape = (btBoxShape *)GetGhostObject()->getCollisionShape();
+
+		for (int i = 0; i < GetGhostObject()->getNumOverlappingObjects(); i++)
+		{
+			auto rigidbody = (btRigidBody *)btRigidBody::upcast(GetGhostObject()->getOverlappingObject(i));
+
+			if (rigidbody)
+			{
+				int index = ObjectArray.findLinearSearch(rigidbody);
+
+				if (index == ObjectArray.size())
+				{
+					auto vPoint = (rigidbody->getWorldTransform() * localInvTrans).getOrigin();
+
+					if (boxShape->isInside(vPoint, 0))
+					{
+						ObjectArray.push_back(rigidbody);
+					}
+				}
+			}
+		}
+	}
+
+	for (int i = 0; i < ObjectArray.size(); i++)
+	{
+		OnTouchRigidBody(world, ObjectArray.at(i));
+	}
 }
 
 void CSolidOptimizerGhostPhysicObject::StartFrame(btDiscreteDynamicsWorld* world)
@@ -1365,56 +1715,15 @@ void CSolidOptimizerGhostPhysicObject::StartFrame(btDiscreteDynamicsWorld* world
 	}
 }
 
-void CSolidOptimizerGhostPhysicObject::StartFrame_Post(btDiscreteDynamicsWorld* world)
+void CSolidOptimizerGhostPhysicObject::OnTouchRigidBody(btDiscreteDynamicsWorld* world, btRigidBody *rigidbody)
 {
-	btManifoldArray ManifoldArray;
-	btBroadphasePairArray& PairArray = GetGhostObject()->getOverlappingPairCache()->getOverlappingPairArray();
+	auto physobj = (CPhysicObject *)rigidbody->getUserPointer();
 
-	for (int i = 0; i < PairArray.size(); i++)
+	if (physobj->IsPlayerObject())
 	{
-		ManifoldArray.clear();
+		int playerIndex = physobj->GetGameObject()->GetEntIndex();
 
-		btBroadphasePair* CollisionPair = world->getPairCache()->findPair(PairArray[i].m_pProxy0, PairArray[i].m_pProxy1);
-
-		if (!CollisionPair)
-		{
-			continue;
-		}
-
-		if (CollisionPair->m_algorithm)
-		{
-			CollisionPair->m_algorithm->getAllContactManifolds(ManifoldArray);
-		}
-
-		for (int j = 0; j < ManifoldArray.size(); j++)
-		{
-			for (int p = 0; p < ManifoldArray[j]->getNumContacts(); p++)
-			{
-				const btManifoldPoint& Point = ManifoldArray[j]->getContactPoint(p);
-
-				//if (Point.getDistance() < 0.0f)
-				{
-					auto rigidbody = btRigidBody::upcast(ManifoldArray[j]->getBody0());
-
-					if (!rigidbody)
-					{
-						rigidbody = btRigidBody::upcast(ManifoldArray[j]->getBody1());
-					}
-
-					if (rigidbody)
-					{
-						auto physobj = (CPhysicObject *)rigidbody->getUserPointer();
-
-						if (physobj->IsPlayerObject())
-						{
-							int playerIndex = physobj->GetGameObject()->GetEntIndex();
-
-							GetGameObject()->RemoveSemiClipMask((1 << (playerIndex - 1)));
-						}
-					}
-				}
-			}
-		}
+		GetGameObject()->RemoveSemiClipMask((1 << (playerIndex - 1)));
 	}
 }
 
@@ -1444,80 +1753,259 @@ void CCachedBoneSolidOptimizer::StartFrame(CGameObject *obj)
 	}
 }
 
-void CPhysicTriggerGhostPhysicObject::StartFrame(btDiscreteDynamicsWorld* world)
+/// This class calculates the intersection between a fluid surface and a polyhedron and returns the submerged volume and its center of buoyancy
+/// Construct this class and then one by one add all faces of the polyhedron using the AddFace function. After all faces have been added the result
+/// can be gotten through GetResult.
+class PolyhedronSubmergedVolumeCalculator
 {
-	auto ent = GetGameObject()->GetEdict();
-
-	btVector3 vecOrigin(ent->v.origin.x, ent->v.origin.y, ent->v.origin.z);
-
-	btTransform worldTrans = btTransform(btQuaternion(0, 0, 0, 1), vecOrigin);
-
-	btVector3 vecAngles(ent->v.angles.x, ent->v.angles.y, ent->v.angles.z);
-
-	if (ent->v.solid == SOLID_BSP)
+private:
+	// Calculate submerged volume * 6 and center of mass * 4 for a tetrahedron with 4 vertices submerged
+	// inV1 .. inV4 are submerged
+	inline static void	sTetrahedronVolume4(const btVector3 & inV1, const btVector3 & inV2, const btVector3 & inV3, const btVector3 & inV4, btScalar &outVolumeTimes6, btVector3 &outCenterTimes4)
 	{
-		vecAngles.setX(-vecAngles.x());
+		// Calculate center of mass and mass of this tetrahedron,
+		// see: https://en.wikipedia.org/wiki/Tetrahedron#Volume
+		outVolumeTimes6 = max((inV1 - inV4).dot((inV2 - inV4).cross(inV3 - inV4)), 0.0f); // All contributions should be positive because we use a reference point that is on the surface of the hull
+		outCenterTimes4 = inV1 + inV2 + inV3 + inV4;
 	}
 
-	EulerMatrix(vecAngles, worldTrans.getBasis());
-
-	GetGhostObject()->setWorldTransform(worldTrans);
-}
-
-void CPhysicTriggerGhostPhysicObject::StartFrame_Post(btDiscreteDynamicsWorld* world)
-{
-	auto ent = GetGameObject()->GetEdict();
-
-	btManifoldArray ManifoldArray;
-	btBroadphasePairArray& PairArray = GetGhostObject()->getOverlappingPairCache()->getOverlappingPairArray();
-
-	for (int i = 0; i < PairArray.size(); i++)
+	// Get the intersection point with a plane.
+	// inV1 is inD1 distance away from the plane, inV2 is inD2 distance away from the plane
+	inline static btVector3	sGetPlaneIntersection(const btVector3 &inV1, btScalar inD1, const btVector3 &inV2, float inD2)
 	{
-		ManifoldArray.clear();
+		btScalar delta = inD1 - inD2;
+		if (abs(delta) < 1.0e-6f)
+			return inV1; // Parallel to plane, just pick a point
+		else
+			return inV1 + inD1 * (inV2 - inV1) / delta;
+	}
 
-		btBroadphasePair* CollisionPair = world->getPairCache()->findPair(PairArray[i].m_pProxy0, PairArray[i].m_pProxy1);
+	// Calculate submerged volume * 6 and center of mass * 4 for a tetrahedron with 1 vertex submerged
+	// inV1 is submerged, inV2 .. inV4 are not
+	// inD1 .. inD4 are the distances from the points to the plane
+	inline static void sTetrahedronVolume1(const btVector3 & inV1, btScalar inD1, const btVector3 & inV2, float inD2, const btVector3 & inV3, btScalar inD3, const btVector3 & inV4, btScalar inD4, btScalar &outVolumeTimes6, btVector3 &outCenterTimes4)
+	{
+		// A tetrahedron with 1 point submerged is cut along 3 edges forming a new tetrahedron
+		btVector3 v2 = sGetPlaneIntersection(inV1, inD1, inV2, inD2);
+		btVector3 v3 = sGetPlaneIntersection(inV1, inD1, inV3, inD3);
+		btVector3 v4 = sGetPlaneIntersection(inV1, inD1, inV4, inD4);
 
-		if (!CollisionPair)
+		sTetrahedronVolume4(inV1, v2, v3, v4, outVolumeTimes6, outCenterTimes4);
+	}
+
+	// Calculate submerged volume * 6 and center of mass * 4 for a tetrahedron with 2 vertices submerged
+	// inV1, inV2 are submerged, inV3, inV4 are not
+	// inD1 .. inD4 are the distances from the points to the plane
+	inline static void sTetrahedronVolume2(const btVector3 &  inV1, btScalar inD1, const btVector3 &  inV2, float inD2, const btVector3 &  inV3, btScalar inD3, const btVector3 &  inV4, btScalar inD4, btScalar &outVolumeTimes6, btVector3 &outCenterTimes4)
+	{
+		// A tetrahedron with 2 points submerged is cut along 4 edges forming a quad
+		btVector3 c = sGetPlaneIntersection(inV1, inD1, inV3, inD3);
+		btVector3 d = sGetPlaneIntersection(inV1, inD1, inV4, inD4);
+		btVector3 e = sGetPlaneIntersection(inV2, inD2, inV4, inD4);
+		btVector3 f = sGetPlaneIntersection(inV2, inD2, inV3, inD3);
+
+		// We pick point c as reference (which is on the cut off surface)
+		// This leaves us with three tetrahedrons to sum up (any faces that are in the same plane as c will have zero volume)
+		btVector3 center1, center2, center3;
+		btScalar volume1, volume2, volume3;
+		sTetrahedronVolume4(e, f, inV2, c, volume1, center1);
+		sTetrahedronVolume4(e, inV1, d, c, volume2, center2);
+		sTetrahedronVolume4(e, inV2, inV1, c, volume3, center3);
+
+		// Tally up the totals
+		outVolumeTimes6 = volume1 + volume2 + volume3;
+		outCenterTimes4 = outVolumeTimes6 > 0.0f ? (volume1 * center1 + volume2 * center2 + volume3 * center3) / outVolumeTimes6 : btVector3(0, 0, 0);
+	}
+
+	// Calculate submerged volume * 6 and center of mass * 4 for a tetrahedron with 3 vertices submerged
+	// inV1, inV2, inV3 are submerged, inV4 is not
+	// inD1 .. inD4 are the distances from the points to the plane
+	inline static void sTetrahedronVolume3(const btVector3 &inV1, float inD1, const btVector3 & inV2, float inD2, const btVector3 & inV3, float inD3, const btVector3 & inV4, float inD4, float &outVolumeTimes6, btVector3 &outCenterTimes4)
+	{
+		// A tetrahedron with 1 point above the surface is cut along 3 edges forming a new tetrahedron
+		btVector3 v1 = sGetPlaneIntersection(inV1, inD1, inV4, inD4);
+		btVector3 v2 = sGetPlaneIntersection(inV2, inD2, inV4, inD4);
+		btVector3 v3 = sGetPlaneIntersection(inV3, inD3, inV4, inD4);
+
+		btVector3 dry_center, total_center;
+		btScalar dry_volume, total_volume;
+
+		// We first calculate the part that is above the surface
+		sTetrahedronVolume4(v1, v2, v3, inV4, dry_volume, dry_center);
+
+		// Calculate the total volume
+		sTetrahedronVolume4(inV1, inV2, inV3, inV4, total_volume, total_center);
+
+		// From this we can calculate the center and volume of the submerged part
+		outVolumeTimes6 = max(total_volume - dry_volume, 0.0f);
+		outCenterTimes4 = outVolumeTimes6 > 0.0f ? (total_center * total_volume - dry_center * dry_volume) / outVolumeTimes6 : btVector3(0, 0, 0);
+	}
+
+public:
+	/// A helper class that contains cached information about a polyhedron vertex
+	class Point
+	{
+	public:
+		btVector3			mPosition;						///< World space position of vertex
+		btScalar			mDistanceToSurface;				///< Signed distance to the surface (> 0 is above, < 0 is below)
+		bool				mAboveSurface;					///< If the point is above the surface (mDistanceToSurface > 0)
+	};
+
+	/// Constructor
+	/// @param inTransform Transform to transform all incoming points with
+	/// @param inPoints Array of points that are part of the polyhedron
+	/// @param inPointStride Amount of bytes between each point (should usually be sizeof(Vec3))
+	/// @param inNumPoints The amount of points
+	/// @param inSurface The plane that forms the fluid surface (normal should point up)
+	/// @param ioBuffer A temporary buffer of Point's that should have inNumPoints entries and should stay alive while this class is alive
+
+	PolyhedronSubmergedVolumeCalculator(const btTransform &inTransform, const btVector3 *inPoints, int inPointStride, int inNumPoints, const btVector3 &inSurfaceNormal, const btScalar inSurfacePlane, Point *ioBuffer) : mPoints(ioBuffer)
+	{
+		mAllAbove = true;
+		mAllBelow = true;
+		mReferencePointIdx = 0;
+		mSubmergedVolume = 0;
+		mCenterOfBuoyancy = btVector3(0, 0, 0);
+
+		// Convert the points to world space and determine the distance to the surface
+		float reference_dist = FLT_MAX;
+		for (int p = 0; p < inNumPoints; ++p)
 		{
-			continue;
-		}
+			// Calculate values
+			btVector3 local_point = *reinterpret_cast<const btVector3 *>(reinterpret_cast<const unsigned char *>(inPoints) + p * inPointStride);
+			btVector3 transformed_point = inTransform * local_point;
 
-		if (CollisionPair->m_algorithm)
-		{
-			CollisionPair->m_algorithm->getAllContactManifolds(ManifoldArray);
-		}
+			auto dist = GetSignedDistanceToSurface(transformed_point, inSurfaceNormal, inSurfacePlane);
 
-		for (int j = 0; j < ManifoldArray.size(); j++)
-		{
-			for (int p = 0; p < ManifoldArray[j]->getNumContacts(); p++)
+			bool above = dist >= 0.0f;
+
+			// Keep track if all are above or below
+			mAllAbove &= above;
+			mAllBelow &= !above;
+
+			// Calculate lowest point, we use this to create tetrahedrons out of all faces
+			if (reference_dist > dist)
 			{
-				const btManifoldPoint& Point = ManifoldArray[j]->getContactPoint(p);
-
-				//if (Point.getDistance() < 0.0f)
-				{
-					auto rigidbody = btRigidBody::upcast(ManifoldArray[j]->getBody0());
-
-					if (!rigidbody)
-					{
-						rigidbody = btRigidBody::upcast(ManifoldArray[j]->getBody1());
-					}
-
-					if (rigidbody)
-					{
-						auto physobj = (CPhysicObject *)rigidbody->getUserPointer();
-
-						if (physobj->IsDynamicObject())
-						{
-							auto physent = physobj->GetGameObject()->GetEdict();
-
-							gpGamedllFuncs->dllapi_table->pfnTouch(ent, physent);
-						}
-					}
-				}
+				mReferencePointIdx = p;
+				reference_dist = dist;
 			}
+
+			// Store values
+			ioBuffer->mPosition = transformed_point;
+			ioBuffer->mDistanceToSurface = dist;
+			ioBuffer->mAboveSurface = above;
+			++ioBuffer;
 		}
 	}
-}
+
+	/// Check if all points are above the surface. Should be used as early out.
+	inline bool AreAllAbove() const
+	{
+		return mAllAbove;
+	}
+
+	/// Check if all points are below the surface. Should be used as early out.
+	inline bool AreAllBelow() const
+	{
+		return mAllBelow;
+	}
+
+	/// Get the lowest point of the polyhedron. Used to form the 4th vertex to make a tetrahedron out of a polyhedron face.
+	inline int GetReferencePointIdx() const
+	{
+		return mReferencePointIdx;
+	}
+
+	/// Add a polyhedron face. Supply the indices of the points that form the face (in counter clockwise order).
+	void AddFace(int inIdx1, int inIdx2, int inIdx3)
+	{
+		// Find the points
+		const Point &ref = mPoints[mReferencePointIdx];
+		const Point &p1 = mPoints[inIdx1];
+		const Point &p2 = mPoints[inIdx2];
+		const Point &p3 = mPoints[inIdx3];
+
+		// Determine which vertices are submerged
+		unsigned int code = (p1.mAboveSurface ? 0 : 0b001) | (p2.mAboveSurface ? 0 : 0b010) | (p3.mAboveSurface ? 0 : 0b100);
+
+		float volume;
+		btVector3 center;
+		switch (code)
+		{
+		case 0b000:
+			// One point submerged
+			sTetrahedronVolume1(ref.mPosition, ref.mDistanceToSurface, p3.mPosition, p3.mDistanceToSurface, p2.mPosition, p2.mDistanceToSurface, p1.mPosition, p1.mDistanceToSurface, volume, center);
+			break;
+
+		case 0b001:
+			// Two points submerged
+			sTetrahedronVolume2(ref.mPosition, ref.mDistanceToSurface, p1.mPosition, p1.mDistanceToSurface, p3.mPosition, p3.mDistanceToSurface, p2.mPosition, p2.mDistanceToSurface, volume, center);
+			break;
+
+		case 0b010:
+			// Two points submerged
+			sTetrahedronVolume2(ref.mPosition, ref.mDistanceToSurface, p2.mPosition, p2.mDistanceToSurface, p1.mPosition, p1.mDistanceToSurface, p3.mPosition, p3.mDistanceToSurface, volume, center);
+			break;
+
+		case 0b100:
+			// Two points submerged
+			sTetrahedronVolume2(ref.mPosition, ref.mDistanceToSurface, p3.mPosition, p3.mDistanceToSurface, p2.mPosition, p2.mDistanceToSurface, p1.mPosition, p1.mDistanceToSurface, volume, center);
+			break;
+
+		case 0b011:
+			// Three points submerged
+			sTetrahedronVolume3(ref.mPosition, ref.mDistanceToSurface, p2.mPosition, p2.mDistanceToSurface, p1.mPosition, p1.mDistanceToSurface, p3.mPosition, p3.mDistanceToSurface, volume, center);
+			break;
+
+		case 0b101:
+			// Three points submerged
+			sTetrahedronVolume3(ref.mPosition, ref.mDistanceToSurface, p1.mPosition, p1.mDistanceToSurface, p3.mPosition, p3.mDistanceToSurface, p2.mPosition, p2.mDistanceToSurface, volume, center);
+			break;
+
+		case 0b110:
+			// Three points submerged
+			sTetrahedronVolume3(ref.mPosition, ref.mDistanceToSurface, p3.mPosition, p3.mDistanceToSurface, p2.mPosition, p2.mDistanceToSurface, p1.mPosition, p1.mDistanceToSurface, volume, center);
+			break;
+
+		case 0b111:
+			// Four points submerged
+			sTetrahedronVolume4(ref.mPosition, p3.mPosition, p2.mPosition, p1.mPosition, volume, center);
+			break;
+
+		default:
+			// Should not be possible
+			volume = 0.0f;
+			center = btVector3(0, 0, 0);
+			break;
+		}
+
+		mSubmergedVolume += volume;
+		mCenterOfBuoyancy += volume * center;
+	}
+
+	/// Call after all faces have been added. Returns the submerged volume and the center of buoyancy for the submerged volume.
+	void GetResult(btScalar &outSubmergedVolume, btVector3 &outCenterOfBuoyancy) const
+	{
+		outCenterOfBuoyancy = mSubmergedVolume > 0.0f ? mCenterOfBuoyancy / (4.0f * mSubmergedVolume) : btVector3(0, 0, 0); // Do this before dividing submerged volume by 6 to get correct weight factor
+		outSubmergedVolume = mSubmergedVolume / 6.0f;
+	}
+
+private:
+	// The precalculated points for this polyhedron
+	const Point *		mPoints;
+
+	// If all points are above/below the surface
+	bool				mAllBelow;
+	bool				mAllAbove;
+
+	// The lowest point
+	int						mReferencePointIdx;
+
+	// Aggregator for submerged volume and center of buoyancy
+	btScalar				mSubmergedVolume;
+	btVector3				mCenterOfBuoyancy;
+
+};
 
 
 void CPhysicsManager::FreeEntityPrivateData(edict_t* ent)
@@ -1808,10 +2296,12 @@ bool CPhysicsManager::CreateBrushModel(edict_t* ent)
 	if (obj->GetNumPhysicObject() > 0)
 		return false;
 
-	auto shape = CreateTriMeshShapeFromBrushModel(ent);
+	auto shape = CreateTriMeshShapeFromBrushEntity(ent);
 
 	if (!shape)
+	{
 		return false;
+	}
 
 	bool bKinematic = ((ent != r_worldentity) && (ent->v.movetype == MOVETYPE_PUSH && ent->v.solid == SOLID_BSP)) ? true : false;
 
@@ -1827,7 +2317,7 @@ bool CPhysicsManager::CreateBrushModel(edict_t* ent)
 	return true;
 }
 
-bool CPhysicsManager::CreatePlayerBox(edict_t* ent)
+bool CPhysicsManager::CreateSolidPlayer(edict_t* ent)
 {
 	auto obj = GetGameObject(ent);
 
@@ -1939,7 +2429,508 @@ bool CPhysicsManager::ApplyPhysicForce(edict_t* ent, const Vector& force, const 
 	return false;
 }
 
-bool CPhysicsManager::SetVehicleEngine(edict_t* ent, int wheelIndex, bool enableMotor, float angularVelcoity, float maxMotorForce)
+btHinge2Constraint * CPhysicVehicleBehaviour::GetWheelConstraint(int index)
+{
+	if (index < 0 || index >= (int)m_wheelConstraints.size())
+		return NULL;
+
+	return m_wheelConstraints[index];
+}
+
+void CPhysicVehicleBehaviour::SetWheelConstraint(int index, btHinge2Constraint *pConstraint)
+{
+	if (index >= (int)m_wheelConstraints.size())
+	{
+		m_wheelConstraints.resize(index + 1);
+	}
+	m_wheelConstraints[index] = pConstraint;
+}
+
+bool CPhysicVehicleBehaviour::GetVehicleWheelRuntimeInfo(int wheelIndex, PhysicWheelRuntimeInfo *RuntimeInfo)
+{
+	auto constraint = GetWheelConstraint(wheelIndex);
+
+	if (constraint && constraint->getUserConstraintType() == ConstraintType_Wheel)
+	{
+		auto wheelInfo = (CPhysicVehicleWheelInfo *)constraint->getUserConstraintPtr();
+
+		auto wheelPhysObject = (CCollisionPhysicObject *)constraint->getRigidBodyB().getUserPointer();
+
+		RuntimeInfo->hitGround = wheelInfo->m_hitGround;
+		RuntimeInfo->hitNormalInWorld = GetVectorFromBtVector3(wheelInfo->m_hitNormalInWorld);
+		RuntimeInfo->hitPointInWorld = GetVectorFromBtVector3(wheelInfo->m_hitPointInWorld);
+		RuntimeInfo->rpm = constraint->getRigidBodyB().getAngularVelocity().length() * SIMD_DEGS_PER_RAD * 60.0f / 360.0f;
+
+		RuntimeInfo->waterVolume = wheelPhysObject->GetWaterVolume();
+		RuntimeInfo->totalVolume = wheelPhysObject->GetTotalVolume();
+
+		return true;
+	}
+
+	return false;
+}
+
+void CPhysicVehicleBehaviour::DoRaycasts(btDiscreteDynamicsWorld* world)
+{
+	for (size_t i = 0; i < m_wheelConstraints.size(); i++)
+	{
+		auto constraint = GetWheelConstraint(i);
+
+		if (constraint)
+		{
+			if (constraint && constraint->getUserConstraintType() == ConstraintType_Wheel)
+			{
+				auto wheelInfo = (CPhysicVehicleWheelInfo *)constraint->getUserConstraintPtr();
+
+				wheelInfo->m_hitGround = false;
+
+				auto &wheel = constraint->getRigidBodyB();
+
+				btVector3 from = wheel.getWorldTransform().getOrigin();
+				btVector3 to = from + btVector3(0, 0, -wheelInfo->m_rayCastHeight);
+
+				btCollisionWorld::ClosestRayResultCallback rayCallback(from, to);
+
+				world->rayTest(from, to, rayCallback);
+
+				if (rayCallback.hasHit())
+				{
+					const btRigidBody* body = btRigidBody::upcast(rayCallback.m_collisionObject);
+
+					if (body && body->hasContactResponse())
+					{
+						wheelInfo->m_hitPointInWorld = rayCallback.m_hitPointWorld;
+						wheelInfo->m_hitNormalInWorld = rayCallback.m_hitNormalWorld;
+						wheelInfo->m_hitNormalInWorld.normalize();
+						wheelInfo->m_hitGround = true;
+					}
+				}
+			}
+		}
+	}
+}
+
+int CPhysicVehicleBehaviour::CountSurfaceContactPoints()
+{
+	int nCount = 0;
+
+	for (size_t i = 0; i < m_wheelConstraints.size(); i++)
+	{
+		auto constraint = GetWheelConstraint(i);
+
+		if (constraint)
+		{
+			if (constraint && constraint->getUserConstraintType() == ConstraintType_Wheel)
+			{
+				auto wheelInfo = (CPhysicVehicleWheelInfo *)constraint->getUserConstraintPtr();
+
+				if (wheelInfo->m_hitGround)
+				{
+					nCount++;
+				}
+			}
+		}
+	}
+
+	return nCount;
+}
+
+ATTRIBUTE_ALIGNED16(class)
+CPhysicFourWheelsVehicleBehaviour : public CPhysicVehicleBehaviour
+{
+public:
+	BT_DECLARE_ALIGNED_ALLOCATOR();
+
+	CPhysicFourWheelsVehicleBehaviour(CDynamicObject *vehiclePhysObject) : CPhysicVehicleBehaviour(vehiclePhysObject)
+	{
+
+	}
+
+	bool SetVehicleSteering(int wheelIndex, float angularTarget, float targetVelcoity, float maxMotorForce) override
+	{
+		auto constraint = GetWheelConstraint(wheelIndex);
+
+		if (constraint && constraint->getUserConstraintType() == ConstraintType_Wheel)
+		{
+			auto wheelInfo = (CPhysicVehicleWheelInfo *)constraint->getUserConstraintPtr();
+
+			constraint->setServoTarget(wheelInfo->m_steerIndex, angularTarget);
+			constraint->setTargetVelocity(wheelInfo->m_steerIndex, targetVelcoity);
+			constraint->setMaxMotorForce(wheelInfo->m_steerIndex, maxMotorForce);
+
+			return true;
+		}
+
+		return false;
+	}
+
+	bool SetVehicleEngine(int wheelIndex, bool enableMotor, float targetVelcoity, float maxMotorForce) override
+	{
+		auto constraint = GetWheelConstraint(wheelIndex);
+
+		if (constraint && constraint->getUserConstraintType() == ConstraintType_Wheel)
+		{
+			auto wheelInfo = (CPhysicVehicleWheelInfo *)constraint->getUserConstraintPtr();
+
+			constraint->enableMotor(wheelInfo->m_engineIndex, enableMotor);
+			constraint->setTargetVelocity(wheelInfo->m_engineIndex, targetVelcoity);
+			constraint->setMaxMotorForce(wheelInfo->m_engineIndex, maxMotorForce);
+
+			return true;
+		}
+
+		return false;
+	}
+
+	void StartFrame(btDiscreteDynamicsWorld* world) override
+	{
+		auto rigidbody = GetDynamicObject()->GetRigidBody();
+
+		DoRaycasts(world);
+	}
+
+};
+
+FORCEINLINE float fsel(float fComparand, float fValGE, float fLT)
+{
+	return fComparand >= 0 ? fValGE : fLT;
+}
+
+inline float RemapValClamped(float val, float A, float B, float C, float D)
+{
+	if (A == B)
+		return fsel(val - B, D, C);
+
+	float cVal = (val - A) / (B - A);
+	
+	if (cVal < 0)
+		cVal = 0;
+
+	if (cVal > 1)
+		cVal = 1;
+
+	return C + (D - C) * cVal;
+}
+
+//from Source SDK
+
+#define AIRBOAT_STEERING_RATE_MIN			0.2f
+#define AIRBOAT_STEERING_RATE_MAX			1.0f
+#define AIRBOAT_STEERING_INTERVAL			0.5f
+
+#define AIRBOAT_ROT_DRAG					0.00004f
+#define AIRBOAT_ROT_DAMPING					0.001f
+
+ATTRIBUTE_ALIGNED16(class)
+CPhysicAirboatBehaviour : public CPhysicVehicleBehaviour
+{
+public:
+	BT_DECLARE_ALIGNED_ALLOCATOR();
+
+	CPhysicAirboatBehaviour(CDynamicObject *vehiclePhysObject) : CPhysicVehicleBehaviour(vehiclePhysObject)
+	{
+		m_bEngineEnabled = false;
+		m_flEngineMaxVelocity = 0;
+		m_flEngineMaxForce = 0;
+
+		//Steering
+		m_flPrevSteeringAngle = 0;
+		m_flSteeringMaxVelocity = 0;
+		m_flSteeringMaxForce = 0;
+		m_flSteeringAngle = 0;
+		m_flSteeringTime = 0;
+
+		m_bAirborne = false;
+		m_bWeakJump = false;
+		m_flPitchErrorPrev = 0;
+		m_flRollErrorPrev = 0;
+		m_flAirTime = 0;
+	}
+
+	bool SetVehicleSteering(int wheelIndex, float angularTarget, float targetVelcoity, float maxMotorForce) override
+	{
+		m_flSteeringAngle = angularTarget;
+		m_flSteeringMaxVelocity = targetVelcoity;
+		m_flSteeringMaxForce = maxMotorForce;
+
+		return true;
+	}
+
+	bool SetVehicleEngine(int wheelIndex, bool enableMotor, float targetVelcoity, float maxMotorForce) override
+	{
+		m_bEngineEnabled = enableMotor;
+		m_flEngineMaxVelocity = targetVelcoity;
+		m_flEngineMaxForce = maxMotorForce;
+
+		return true;
+	}
+
+	void UpdateAirborneState(btDiscreteDynamicsWorld* world, btRigidBody *rigidbody)
+	{
+		int nCount = CountSurfaceContactPoints();
+		if (!nCount)
+		{
+			if (!m_bAirborne)
+			{
+				m_bAirborne = true;
+				m_flAirTime = 0;
+
+				float flSpeed = rigidbody->getLinearVelocity().length();
+				if (flSpeed < 330)
+				{
+					m_bWeakJump = true;
+				}
+			}
+			else
+			{
+				m_flAirTime += (float)(*host_frametime);
+			}
+		}
+		else
+		{
+			m_bAirborne = false;
+			m_bWeakJump = false;
+		}
+	}
+
+	void DoSimulationTurbine(btDiscreteDynamicsWorld* world, btRigidBody *rigidbody)
+	{
+		float flThrustForce = m_flEngineMaxForce;
+
+		if (m_bWeakJump)
+		{
+			flThrustForce *= 0.5;
+		}
+
+		auto vecLinearVelocity = rigidbody->getLinearVelocity();
+
+		if (m_bEngineEnabled && flThrustForce != 0 && vecLinearVelocity.length() < m_flEngineMaxVelocity)
+		{
+			btVector3 vecForceInLocaSpace(1, 0, 0);
+
+			auto vecDirectionInWorldSpace = (rigidbody->getWorldTransform().getBasis() * vecForceInLocaSpace).normalized();
+
+			if ((vecDirectionInWorldSpace.getZ() < -0.5) && (flThrustForce > 0))
+			{
+				// Driving up a slope. Reduce upward thrust to prevent ludicrous climbing of steep surfaces.
+				float flFactor = 1 + vecDirectionInWorldSpace.getZ();
+				flThrustForce *= flFactor;
+			}
+			else if ((vecDirectionInWorldSpace.getZ() > 0.5) && (flThrustForce < 0))
+			{
+				// Reversing up a slope. Reduce upward thrust to prevent ludicrous climbing of steep surfaces.
+				float flFactor = 1 - vecDirectionInWorldSpace.getZ();
+				flThrustForce *= flFactor;
+			}
+
+			auto vecForceInWorldSpace = vecDirectionInWorldSpace * flThrustForce;
+
+			rigidbody->applyCentralForce(vecForceInWorldSpace);
+		}
+	}
+
+	void DoSimulationSteering(btDiscreteDynamicsWorld* world, btRigidBody *rigidbody)
+	{
+		auto vecAngularVelocity = rigidbody->getAngularVelocity();
+
+		float flForceSteering = 0.0f;
+		float flSteerScale = 0.0f;
+
+		if (fabs(m_flSteeringAngle) > 0.01f)
+		{
+			// Get the sign of the steering force.
+			float flSteeringSign = m_flSteeringAngle < 0.0f ? -1.0f : 1.0f;
+
+			// If we changed steering sign or went from not steering to steering, reset the steer time
+			// to blend the new steering force in over time.
+			float flPrevSteeringSign = m_flPrevSteeringAngle < 0.0f ? -1.0f : 1.0f;
+
+			if ((fabs(m_flPrevSteeringAngle) < 0.01f) || (flSteeringSign != flPrevSteeringSign))
+			{
+				m_flSteeringTime = 0;
+			}
+
+			if (1)
+			{
+				// Ramp the steering force up over two seconds.
+				flSteerScale = RemapValClamped(m_flSteeringTime, 0, AIRBOAT_STEERING_INTERVAL, AIRBOAT_STEERING_RATE_MIN, AIRBOAT_STEERING_RATE_MAX);
+			}
+			else	// consoles
+			{
+				// Analog steering
+				flSteerScale = RemapValClamped(fabs(m_flSteeringTime), 0, AIRBOAT_STEERING_INTERVAL, AIRBOAT_STEERING_RATE_MIN, AIRBOAT_STEERING_RATE_MAX);
+			}
+			flForceSteering = flSteerScale * m_flSteeringMaxForce;
+			flForceSteering *= -flSteeringSign;
+
+			m_flSteeringTime += 0.01f;
+		}
+
+		m_flPrevSteeringAngle = m_flSteeringAngle;
+
+		// Get the sign of the drag forces.
+		float flRotSpeedSign = vecAngularVelocity.getY() < 0.0f ? -1.0f : 1.0f;
+
+		// Apply drag proportional to the square of the angular velocity.
+		float flRotationalDrag = AIRBOAT_ROT_DRAG * vecAngularVelocity.getZ() * vecAngularVelocity.getZ() * m_flSteeringMaxForce;
+		flRotationalDrag *= flRotSpeedSign;
+
+		// Apply dampening proportional to angular velocity.
+		float flRotationalDamping = AIRBOAT_ROT_DAMPING * fabs(vecAngularVelocity.getZ()) * m_flSteeringMaxForce;
+		flRotationalDamping *= flRotSpeedSign;
+
+		// Calculate the net rotational force.
+		float flForceRotational = flForceSteering + flRotationalDrag + flRotationalDamping;
+
+		// Apply it.
+		btVector3 vecRotForce(0, 0, 1);
+
+		vecRotForce = vecRotForce * flForceRotational;
+
+		rigidbody->applyTorque(vecRotForce);
+
+	}
+
+	void DoSimulationKeepUprightPitch(btDiscreteDynamicsWorld* world, btRigidBody *rigidbody)
+	{
+		// Disable pitch control during weak jumps. This reduces the unreal 'floaty' sensation.
+		if (m_bWeakJump)
+			return;
+
+		// Calculate the goal vector in world space.
+		btVector3 vecUpAxisWS(0, 0, 1);
+
+		btVector3 vecForwardAxisCS(1, 0, 0);
+
+		btVector3 vecCurAxisWS = rigidbody->getWorldTransform().getBasis() * vecForwardAxisCS;
+
+		btVector3 vecGoalAxisWS = vecCurAxisWS;
+
+		vecGoalAxisWS.setZ(0);
+
+		vecGoalAxisWS = vecGoalAxisWS.normalized();
+
+		// Get an axis to rotate around.
+		btVector3 vecRotAxisWS = vecUpAxisWS.cross(vecCurAxisWS);
+
+		// Get the amount that we need to rotate.
+		// atan2() is well defined, so do a Dot & Cross instead of asin(Cross)
+		float cosine = vecCurAxisWS.dot(vecUpAxisWS);
+		float sine = vecCurAxisWS.dot(vecGoalAxisWS);
+		float error = atan2(cosine, sine);
+
+		float drivative = (error - m_flPitchErrorPrev) / (float)(*host_frametime);
+
+		//PID control
+		float kp = 0.1f;
+		float kd = 0.04f;
+
+		// Generate an angular impulse describing the rotation.
+		btVector3 vecAngularImpulse = vecRotAxisWS * (rigidbody->getMass() * 6000 * (kp * error + kd * drivative));
+		
+		// Save the last error value for calculating the derivative.
+		m_flPitchErrorPrev = error;
+
+		// Clamp the impulse at a maximum length.
+		float flMaxRotateForce = 1.5f * SIMD_RADS_PER_DEG * rigidbody->getMass() * 6000;
+		if (vecAngularImpulse.length() > flMaxRotateForce)
+		{
+			vecAngularImpulse = vecAngularImpulse.normalized() * flMaxRotateForce;
+		}
+
+		rigidbody->applyTorqueImpulse(vecAngularImpulse);
+	}
+
+	void DoSimulationKeepUprightRoll(btDiscreteDynamicsWorld* world, btRigidBody *rigidbody)
+	{
+		// Calculate the goal vector in world space.
+		btVector3 vecUpAxisWS(0, 0, 1);
+
+		btVector3 vecRightAxisCS(0, 1, 0);
+
+		btVector3 vecCurAxisWS = rigidbody->getWorldTransform().getBasis() * vecRightAxisCS;
+
+		btVector3 vecGoalAxisWS = vecCurAxisWS;
+
+		vecGoalAxisWS.setZ(0);
+
+		vecGoalAxisWS = vecGoalAxisWS.normalized();
+
+		// Get an axis to rotate around.
+		btVector3 vecRotAxisWS = vecUpAxisWS.cross(vecCurAxisWS);
+
+		// Get the amount that we need to rotate.
+		// atan2() is well defined, so do a Dot & Cross instead of asin(Cross)
+		float cosine = vecCurAxisWS.dot(vecUpAxisWS);
+		float sine = vecCurAxisWS.dot(vecGoalAxisWS);
+		float error = atan2(cosine, sine);
+
+		// Don't do any correction if we're within 10 degrees of the goal orientation.
+		if (fabs(error) < SIMD_RADS_PER_DEG * 10)
+		{
+			m_flRollErrorPrev = error;
+			return;
+		}
+
+		float drivative = (error - m_flRollErrorPrev) / (float)(*host_frametime);
+
+		//PID control
+		float kp = 0.2f;
+		float kd = 0.3f;
+
+		// Generate an angular impulse describing the rotation.
+		btVector3 vecAngularImpulse = vecRotAxisWS * (rigidbody->getMass() * 6000 * (kp * error + kd * drivative));
+
+		// Save the last error value for calculating the derivative.
+		m_flRollErrorPrev = error;
+
+		// Clamp the impulse at a maximum length.
+		float flMaxRotateForce = 2.0f * SIMD_RADS_PER_DEG * rigidbody->getMass() * 6000;
+		if (vecAngularImpulse.length() > flMaxRotateForce)
+		{
+			vecAngularImpulse = vecAngularImpulse.normalized() * flMaxRotateForce;
+		}
+
+		rigidbody->applyTorqueImpulse(vecAngularImpulse);
+	}
+
+	void StartFrame(btDiscreteDynamicsWorld* world) override
+	{
+		auto rigidbody = GetDynamicObject()->GetRigidBody();
+
+		DoRaycasts(world);
+
+		DoSimulationTurbine(world, rigidbody);
+
+		DoSimulationSteering(world, rigidbody);
+
+		DoSimulationKeepUprightPitch(world, rigidbody);
+
+		DoSimulationKeepUprightRoll(world, rigidbody);
+	}
+
+private:
+	//Engine
+	bool m_bEngineEnabled;
+	float m_flEngineMaxVelocity;
+	float m_flEngineMaxForce;
+
+	//Steering
+	float m_flPrevSteeringAngle;
+	float m_flSteeringMaxVelocity;
+	float m_flSteeringMaxForce;
+	float m_flSteeringAngle;
+	float m_flSteeringTime;
+
+	//WTF?
+	bool m_bAirborne;
+	bool m_bWeakJump;
+	float m_flPitchErrorPrev;
+	float m_flRollErrorPrev;
+	float m_flAirTime;
+};
+
+bool CPhysicsManager::SetVehicleEngine(edict_t* ent, int wheelIndex, bool enableMotor, float targetVelcoity, float maxMotorForce)
 {
 	auto obj = GetGameObject(ent);
 
@@ -1960,26 +2951,13 @@ bool CPhysicsManager::SetVehicleEngine(edict_t* ent, int wheelIndex, bool enable
 
 	auto dynObject = (CDynamicObject *)physObject;
 
-	if (!dynObject->GetVehicleManager())
+	if (!dynObject->GetVehicleBehaviour())
 		return false;
 
-	auto constraint = dynObject->GetVehicleManager()->GetConstraint(wheelIndex);
-
-	if (constraint && constraint->getUserConstraintType() == ConstraintType_Wheel)
-	{
-		auto wheelInfo = (CPhysicVehicleWheelInfo *)constraint->getUserConstraintPtr();
-
-		constraint->enableMotor(wheelInfo->m_engineIndex, enableMotor);
-		constraint->setTargetVelocity(wheelInfo->m_engineIndex, angularVelcoity);
-		constraint->setMaxMotorForce(wheelInfo->m_engineIndex, maxMotorForce);
-
-		return true;
-	}
-
-	return false;
+	return dynObject->GetVehicleBehaviour()->SetVehicleEngine(wheelIndex, enableMotor, targetVelcoity, maxMotorForce);
 }
 
-bool CPhysicsManager::SetVehicleSteering(edict_t* ent, int wheelIndex, float angularTarget, float angularVelocity, float maxMotorForce)
+bool CPhysicsManager::SetVehicleSteering(edict_t* ent, int wheelIndex, float angularTarget, float targetVelcoity, float maxMotorForce)
 {
 	auto obj = GetGameObject(ent);
 
@@ -2000,23 +2978,37 @@ bool CPhysicsManager::SetVehicleSteering(edict_t* ent, int wheelIndex, float ang
 
 	auto dynObject = (CDynamicObject *)physObject;
 
-	if (!dynObject->GetVehicleManager())
+	if (!dynObject->GetVehicleBehaviour())
 		return false;
 
-	auto constraint = dynObject->GetVehicleManager()->GetConstraint(wheelIndex);
+	return dynObject->GetVehicleBehaviour()->SetVehicleSteering(wheelIndex, angularTarget, targetVelcoity, maxMotorForce);
+}
 
-	if (constraint && constraint->getUserConstraintType() == ConstraintType_Wheel)
+bool CPhysicsManager::GetVehicleWheelRuntimeInfo(edict_t* ent, int wheelIndex, PhysicWheelRuntimeInfo *RuntimeInfo)
+{
+	auto obj = GetGameObject(ent);
+
+	if (!obj)
 	{
-		auto wheelInfo = (CPhysicVehicleWheelInfo *)constraint->getUserConstraintPtr();
+		obj = new CGameObject(ent, g_engfuncs.pfnIndexOfEdict(ent));
 
-		constraint->setServoTarget(wheelInfo->m_steerIndex, angularTarget);
-		constraint->setTargetVelocity(wheelInfo->m_steerIndex, angularVelocity);
-		constraint->setMaxMotorForce(wheelInfo->m_steerIndex, maxMotorForce);
-
-		return true;
+		AddGameObject(obj);
 	}
 
-	return false;
+	if (!obj->GetNumPhysicObject())
+		return false;
+
+	auto physObject = obj->GetPhysicObjectByIndex(0);
+
+	if (!physObject->IsDynamicObject())
+		return false;
+
+	auto dynObject = (CDynamicObject *)physObject;
+
+	if (!dynObject->GetVehicleBehaviour())
+		return false;
+
+	return dynObject->GetVehicleBehaviour()->GetVehicleWheelRuntimeInfo(wheelIndex, RuntimeInfo);
 }
 
 bool CPhysicsManager::SetEntityLevelOfDetail(edict_t* ent, int flags, int body_0, float scale_0, int body_1, float scale_1, float distance_1, int body_2, float scale_2, float distance_2, int body_3, float scale_3, float distance_3)
@@ -2104,6 +3096,30 @@ bool CPhysicsManager::SetPhysicObjectFreeze(edict_t* ent, bool freeze)
 		auto physobj = obj->GetPhysicObjectByIndex(i);
 
 		physobj->SetPhysicFreeze(freeze);
+	}
+
+	return true;
+}
+
+bool CPhysicsManager::SetPhysicObjectNoCollision(edict_t* ent, bool no_collision)
+{
+	if (ent->free)
+		return false;
+
+	auto obj = GetGameObject(ent);
+
+	if (!obj)
+	{
+		obj = new CGameObject(ent, g_engfuncs.pfnIndexOfEdict(ent));
+
+		AddGameObject(obj);
+	}
+
+	for (size_t i = 0; i < obj->GetNumPhysicObject(); ++i)
+	{
+		auto physobj = obj->GetPhysicObjectByIndex(i);
+
+		physobj->SetPhysicNoCollision(no_collision);
 	}
 
 	return true;
@@ -2205,23 +3221,23 @@ bool CPhysicsManager::SetEntityCustomMoveSize(edict_t* ent, const Vector &mins, 
 	return true;
 }
 
-bool CPhysicsManager::CreatePhysicVehicle(edict_t* ent, PhysicWheelParams **wheelParamArray, size_t numWheelParam, PhysicVehicleParams *vehicleParams)
+bool CPhysicsManager::CreatePhysicVehicle(edict_t* ent, PhysicVehicleParams *vehicleParams, PhysicWheelParams **wheelParamArray, size_t numWheelParam)
 {
-	auto obj = GetGameObject(ent);
+	auto gameObject = GetGameObject(ent);
 
-	if (!obj)
+	if (!gameObject)
 	{
-		obj = new CGameObject(ent, g_engfuncs.pfnIndexOfEdict(ent));
+		gameObject = new CGameObject(ent, g_engfuncs.pfnIndexOfEdict(ent));
 
-		AddGameObject(obj);
+		AddGameObject(gameObject);
 	}
 
-	if (!obj->GetNumPhysicObject())
+	if (!gameObject->GetNumPhysicObject())
 	{
 		return false;
 	}
 	
-	auto physObject = obj->GetPhysicObjectByIndex(0);
+	auto physObject = gameObject->GetPhysicObjectByIndex(0);
 
 	if(!physObject->IsDynamicObject())
 	{
@@ -2230,11 +3246,34 @@ bool CPhysicsManager::CreatePhysicVehicle(edict_t* ent, PhysicWheelParams **whee
 
 	auto dynObject = (CDynamicObject *)physObject;
 
-	dynObject->SetVehicleManager(new CPhysicVehicleManager());
+	if (dynObject->GetVehicleBehaviour())
+	{
+		//Already created?
+		return false;
+	}
+
+	CPhysicVehicleBehaviour *VehicleBehaviour = NULL;
+
+	if (vehicleParams->type == PhysicVehicleType_FourWheels)
+	{
+		VehicleBehaviour = new CPhysicFourWheelsVehicleBehaviour(dynObject);
+	}
+	else if (vehicleParams->type == PhysicVehicleType_Airboat)
+	{
+		VehicleBehaviour = new CPhysicAirboatBehaviour(dynObject);
+	}
+
+	if (!VehicleBehaviour)
+		return false;
 
 	for (size_t i = 0; i < numWheelParam; ++i)
 	{
-		auto wheelEnt = wheelParamArray[i]->ent;
+		auto wheelParam = wheelParamArray[i];
+
+		auto wheelEnt = wheelParam->ent;
+
+		if (!wheelEnt || wheelEnt->free)
+			continue;
 
 		auto wheelObject = GetGameObject(wheelEnt);
 
@@ -2246,16 +3285,18 @@ bool CPhysicsManager::CreatePhysicVehicle(edict_t* ent, PhysicWheelParams **whee
 			{
 				auto wheelDynObject = (CDynamicObject *)wheelPhysObject;
 
-				btVector3 anchor(wheelParamArray[i]->connectionPoint.x, wheelParamArray[i]->connectionPoint.y, wheelParamArray[i]->connectionPoint.z);
-				btVector3 parentAxis(wheelParamArray[i]->wheelDirection.x, wheelParamArray[i]->wheelDirection.y, wheelParamArray[i]->wheelDirection.z);
-				btVector3 childAxis(wheelParamArray[i]->wheelAxle.x, wheelParamArray[i]->wheelAxle.y, wheelParamArray[i]->wheelAxle.z);
-				btScalar suspensionStiffness(wheelParamArray[i]->suspensionStiffness);
-				btScalar suspensionDamping(wheelParamArray[i]->suspensionDamping);
+				btVector3 anchor(wheelParam->connectionPoint.x, wheelParam->connectionPoint.y, wheelParam->connectionPoint.z);
+				btVector3 parentAxis(wheelParam->wheelDirection.x, wheelParam->wheelDirection.y, wheelParam->wheelDirection.z);
+				btVector3 childAxis(wheelParam->wheelAxle.x, wheelParam->wheelAxle.y, wheelParam->wheelAxle.z);
+				btScalar suspensionStiffness(wheelParam->suspensionStiffness);
+				btScalar suspensionDamping(wheelParam->suspensionDamping);
+				btScalar suspensionLowerLimit(wheelParam->suspensionLowerLimit);
+				btScalar suspensionUpperLimit(wheelParam->suspensionUpperLimit);
 
 				auto pConstraint = new btHinge2Constraint(*dynObject->GetRigidBody(), *wheelDynObject->GetRigidBody(), anchor, parentAxis, childAxis);
-				
-				auto wheelInfo = new CPhysicVehicleWheelInfo(wheelParamArray[i]);
-				
+
+				auto wheelInfo = new CPhysicVehicleWheelInfo(wheelParam);
+
 				pConstraint->setUserConstraintType(ConstraintType_Wheel);
 				pConstraint->setUserConstraintPtr(wheelInfo);
 
@@ -2265,15 +3306,16 @@ bool CPhysicsManager::CreatePhysicVehicle(edict_t* ent, PhysicWheelParams **whee
 				pConstraint->enableSpring(wheelInfo->m_springIndex, true);
 				pConstraint->setStiffness(wheelInfo->m_springIndex, suspensionStiffness);
 				pConstraint->setDamping(wheelInfo->m_springIndex, suspensionDamping);
+				pConstraint->setLimit(wheelInfo->m_springIndex, -suspensionLowerLimit, suspensionUpperLimit);
 
-				if (wheelParamArray[i]->flags & PhysicWheel_Engine)
+				if (wheelParam->flags & PhysicWheel_Engine)
 				{
 					pConstraint->enableMotor(wheelInfo->m_engineIndex, true);
 					pConstraint->setMaxMotorForce(wheelInfo->m_engineIndex, vehicleParams->idleEngineForce);
 					pConstraint->setTargetVelocity(wheelInfo->m_engineIndex, 0);
 				}
 
-				if (wheelParamArray[i]->flags & PhysicWheel_Steering)
+				if (wheelParam->flags & PhysicWheel_Steering)
 				{
 					pConstraint->enableMotor(wheelInfo->m_steerIndex, true);
 					pConstraint->setMaxMotorForce(wheelInfo->m_steerIndex, vehicleParams->idleSteeringForce);
@@ -2281,19 +3323,28 @@ bool CPhysicsManager::CreatePhysicVehicle(edict_t* ent, PhysicWheelParams **whee
 					pConstraint->setServo(wheelInfo->m_steerIndex, true);
 					pConstraint->setServoTarget(wheelInfo->m_steerIndex, 0);
 				}
-				else if (wheelParamArray[i]->flags & PhysicWheel_NoSteering)
+				else if (wheelParam->flags & PhysicWheel_NoSteering)
 				{
 					pConstraint->setLimit(wheelInfo->m_steerIndex, 0, 0);
 				}
 
+				if (wheelParam->flags & PhysicWheel_Pontoon)
+				{
+					pConstraint->setLimit(3, 0, 0);
+					pConstraint->setLimit(4, 0, 0);
+					pConstraint->setLimit(5, 0, 0);
+				}
+
 				pConstraint->setEquilibriumPoint();
 
-				obj->AddConstraint(pConstraint, m_dynamicsWorld, true);
+				gameObject->AddConstraint(pConstraint, m_dynamicsWorld, true);
 
-				dynObject->GetVehicleManager()->SetConstraint(wheelParamArray[i]->index, pConstraint);
+				VehicleBehaviour->SetWheelConstraint(wheelParam->index, pConstraint);
 			}
-		}	
+		}
 	}
+
+	dynObject->SetVehicleBehaviour(VehicleBehaviour);
 
 	return true;
 }
@@ -2360,8 +3411,10 @@ bool CPhysicsManager::CreateSolidOptimizer(edict_t* ent, int boneindex, const Ve
 	{
 		auto ghost = new CSolidOptimizerGhostPhysicObject(obj, boneindex, 0);
 
+		auto shape = new btBoxShape(boxSize);
+
 		ghost->SetGhostObject(new btPairCachingGhostObject());
-		ghost->GetGhostObject()->setCollisionShape(new btBoxShape(boxSize));
+		ghost->GetGhostObject()->setCollisionShape(shape);
 		ghost->GetGhostObject()->setCollisionFlags(ghost->GetGhostObject()->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
 
 		obj->AddPhysicObject(ghost, m_dynamicsWorld, &m_numDynamicObjects);
@@ -2371,8 +3424,10 @@ bool CPhysicsManager::CreateSolidOptimizer(edict_t* ent, int boneindex, const Ve
 	{
 		auto ghost = new CSolidOptimizerGhostPhysicObject(obj, boneindex, 1);
 
+		auto shape = new btBoxShape(boxSize2);
+
 		ghost->SetGhostObject(new btPairCachingGhostObject());
-		ghost->GetGhostObject()->setCollisionShape(new btBoxShape(boxSize2));
+		ghost->GetGhostObject()->setCollisionShape(shape);
 		ghost->GetGhostObject()->setCollisionFlags(ghost->GetGhostObject()->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
 
 		obj->AddPhysicObject(ghost, m_dynamicsWorld, &m_numDynamicObjects);
@@ -2383,7 +3438,7 @@ bool CPhysicsManager::CreateSolidOptimizer(edict_t* ent, int boneindex, const Ve
 	return true;
 }
 
-btBvhTriangleMeshShape *CPhysicsManager::CreateTriMeshShapeFromBrushModel(edict_t *ent)
+model_t *CPhysicsManager::GetBrushModelFromEntity(edict_t *ent)
 {
 	int modelindex = ent->v.modelindex;
 	if (modelindex == -1)
@@ -2405,35 +3460,130 @@ btBvhTriangleMeshShape *CPhysicsManager::CreateTriMeshShapeFromBrushModel(edict_
 		return NULL;
 	}
 
+	return mod;
+}
+
+bool CPhysicsManager::GetVertexIndexArrayFromBrushEntity(edict_t *ent, vertexarray_t **worldvertexarray, indexarray_t **brushindexarray, vertexarray_t **brushvertexarray)
+{
+	auto mod = GetBrushModelFromEntity(ent);
+
+	if(!mod)
+	{
+		return false;
+	}
+
+	auto modelindex = ent->v.modelindex;
+
 	if (!m_brushIndexArray[modelindex])
 	{
-		return NULL;
+		return false;
 	}
 
-	auto vertexarray = m_worldVertexArray;
-	auto indexarray = m_brushIndexArray[modelindex];
-
-	if (!indexarray->vIndiceBuffer.size())
+	if (!m_brushIndexArray[modelindex]->vIndiceBuffer.size())
 	{
-		return NULL;
+		return false;
 	}
+
+	*worldvertexarray = m_worldVertexArray;
+	*brushindexarray = m_brushIndexArray[modelindex];
+	*brushvertexarray = m_brushVertexArray[modelindex];
+
+	return true;
+}
+
+btBvhTriangleMeshShape *CPhysicsManager::CreateTriMeshShapeFromBrushEntity(edict_t *ent)
+{
+	vertexarray_t *worldvertexarray = NULL;
+	indexarray_t *brushindexarray = NULL;
+	vertexarray_t *brushvertexarray = NULL;
+
+	if (!GetVertexIndexArrayFromBrushEntity(ent, &worldvertexarray, &brushindexarray, &brushvertexarray))
+		return NULL;
 
 	auto bulletVertexArray = new btTriangleIndexVertexArray(
-		indexarray->vIndiceBuffer.size() / 3, indexarray->vIndiceBuffer.data(), 3 * sizeof(int),
-		vertexarray->vVertexBuffer.size(), (float*)vertexarray->vVertexBuffer.data(), sizeof(brushvertex_t));
+		brushindexarray->vIndiceBuffer.size() / 3, brushindexarray->vIndiceBuffer.data(), 3 * sizeof(int),
+		worldvertexarray->vVertexBuffer.size(), (float*)worldvertexarray->vVertexBuffer.data(), sizeof(brushvertex_t));
 
-	auto meshShape = new btBvhTriangleMeshShape(bulletVertexArray, true, true);
+	auto shape = new btBvhTriangleMeshShape(bulletVertexArray, true, true);
 
-	meshShape->setUserPointer(bulletVertexArray);
+	shape->setUserPointer(bulletVertexArray);
 
-	return meshShape;
+	return shape;
 }
 
 /*
 
-Create a ghost object that fire pfnTouch event when colliding with physic objects
+Ghost object that fire pfnTouch event when colliding with physic objects
 
 */
+
+ATTRIBUTE_ALIGNED16(class)
+CPhysicTriggerGhostPhysicObject : public CGhostPhysicObject
+{
+public:
+	BT_DECLARE_ALIGNED_ALLOCATOR();
+	CPhysicTriggerGhostPhysicObject(CGameObject *obj) : CGhostPhysicObject(obj)
+	{
+
+	}
+	~CPhysicTriggerGhostPhysicObject()
+	{
+
+	}
+
+	bool IsPhysicTriggerGhost() const override
+	{
+		return true;
+	}
+
+	bool IsPhysicWaterGhost() const override
+	{
+		return false;
+	}
+
+	void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects) override
+	{
+		CPhysicObject::AddToPhysicWorld(world, numDynamicObjects);
+
+		if (GetGhostObject())
+		{
+			world->addCollisionObject(GetGhostObject(), btBroadphaseProxy::SensorTrigger, FallGuysCollisionFilterGroups::DynamicObjectFilter | FallGuysCollisionFilterGroups::ClippingHullFilter);
+
+			(*numDynamicObjects)++;
+		}
+	}
+
+	void StartFrame(btDiscreteDynamicsWorld* world) override
+	{
+		auto ent = GetGameObject()->GetEdict();
+
+		btVector3 vecOrigin(ent->v.origin.x, ent->v.origin.y, ent->v.origin.z);
+
+		btTransform worldTrans = btTransform(btQuaternion(0, 0, 0, 1), vecOrigin);
+
+		btVector3 vecAngles(ent->v.angles.x, ent->v.angles.y, ent->v.angles.z);
+
+		if (ent->v.solid == SOLID_BSP)
+		{
+			vecAngles.setX(-vecAngles.x());
+		}
+
+		EulerMatrix(vecAngles, worldTrans.getBasis());
+
+		GetGhostObject()->setWorldTransform(worldTrans);
+	}
+
+	void OnTouchRigidBody(btDiscreteDynamicsWorld* world, btRigidBody *rigidbody) override
+	{
+		auto physobj = (CCollisionPhysicObject *)rigidbody->getUserPointer();
+
+		auto ent = GetGameObject()->GetEdict();
+
+		auto touchent = physobj->GetGameObject()->GetEdict();
+
+		gpGamedllFuncs->dllapi_table->pfnTouch(ent, touchent);
+	}
+};
 
 bool CPhysicsManager::CreatePhysicTrigger(edict_t* ent)
 {
@@ -2446,7 +3596,7 @@ bool CPhysicsManager::CreatePhysicTrigger(edict_t* ent)
 		AddGameObject(obj);
 	}
 
-	btCollisionShape *shape = CreateTriMeshShapeFromBrushModel(ent);
+	btCollisionShape *shape = CreateTriMeshShapeFromBrushEntity(ent);
 
 	if (!shape)
 	{
@@ -2454,6 +3604,534 @@ bool CPhysicsManager::CreatePhysicTrigger(edict_t* ent)
 	}
 
 	auto ghostobj = new CPhysicTriggerGhostPhysicObject(obj);
+	
+	ghostobj->SetGhostObject(new btPairCachingGhostObject());
+	ghostobj->GetGhostObject()->setCollisionShape(shape);
+	ghostobj->GetGhostObject()->setCollisionFlags(ghostobj->GetGhostObject()->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
+
+	obj->AddPhysicObject(ghostobj, m_dynamicsWorld, &m_numDynamicObjects);
+
+	return true;
+}
+
+/*
+
+Water that only interactive with physic objects
+
+*/
+
+ATTRIBUTE_ALIGNED16(class)
+CPhysicWaterGhostPhysicObject : public CPhysicTriggerGhostPhysicObject
+{
+public:
+	BT_DECLARE_ALIGNED_ALLOCATOR();
+	CPhysicWaterGhostPhysicObject(CGameObject *obj, const btVector3 &inSurfaceNormal, const btScalar inSurfacePlane, btScalar inWaterDensity, btScalar inWaterLinearDrag, btScalar inWaterAngularDrag) : CPhysicTriggerGhostPhysicObject(obj)
+	{
+		m_WaterSurfaceNormal = inSurfaceNormal;
+		m_WaterSurfacePlane = inSurfacePlane;
+		m_WaterDensity = inWaterDensity;
+		m_WaterLinearDrag = inWaterLinearDrag;
+		m_WaterAngularDrag = inWaterAngularDrag;
+		m_WaterFluidVelocity = btVector3(0, 0, 0);
+	}
+	~CPhysicWaterGhostPhysicObject()
+	{
+
+	}
+
+	bool IsPhysicWaterGhost() const override
+	{
+		return true;
+	}
+
+	btVector3 GetSurfaceNormal() const
+	{
+		return m_WaterSurfaceNormal;
+	}
+
+	float GetSurfacePlane() const
+	{
+		return m_WaterSurfacePlane;
+	}
+
+	float GetWaterDensity() const
+	{
+		return m_WaterDensity;
+	}
+
+	float GetWaterLinearDrag() const
+	{
+		return m_WaterLinearDrag;
+	}
+
+	float GetWaterAngularDrag() const
+	{
+		return m_WaterAngularDrag;
+	}
+
+	btVector3 GetWaterFluidVelocity() const
+	{
+		return m_WaterFluidVelocity;
+	}
+
+	btVector3 GetWaterLinearVelocity() const
+	{
+		auto ent = GetGameObject()->GetEdict();
+
+		btVector3 vecLinearVelocity(ent->v.velocity.x, ent->v.velocity.y, ent->v.velocity.z);
+
+		return vecLinearVelocity;
+	}
+
+	btVector3 GetWaterAngularVelocity() const
+	{
+		auto ent = GetGameObject()->GetEdict();
+
+		btVector3 vecAngularVelocity(ent->v.avelocity.x * SIMD_RADS_PER_DEG, ent->v.avelocity.y* SIMD_RADS_PER_DEG, ent->v.avelocity.z * SIMD_RADS_PER_DEG);
+
+		return vecAngularVelocity;
+	}
+
+	void OnTouchRigidBody(btDiscreteDynamicsWorld* world, btRigidBody *rigidbody)
+	{
+		auto physobj = (CCollisionPhysicObject *)rigidbody->getUserPointer();
+
+		if (physobj->IsDynamicObject() && !physobj->IsKinematic())
+		{
+			ApplyBuoyancyImpulse(world, rigidbody);
+		}
+	}
+
+	void GetSubmergedVolumeForBoxShape(btDiscreteDynamicsWorld* world, btBoxShape *shape, const btTransform &worldTransform, float &outSubmergedVolume, btVector3 &outCenterOfBuoyancy)
+	{
+		auto shapeInfo = (CPhysicShapeInfo *)shape->getUserPointer();
+
+		// Points of the bounding box
+		btVector3 points[] =
+		{
+			btVector3(-1, -1, -1),
+			btVector3(1, -1, -1),
+			btVector3(-1,  1, -1),
+			btVector3(1,  1, -1),
+			btVector3(-1, -1,  1),
+			btVector3(1, -1,  1),
+			btVector3(-1,  1,  1),
+			btVector3(1,  1,  1),
+		};
+
+		// Faces of the bounding box
+		using Face = int[5];
+#define MAKE_FACE(a, b, c, d) { a, b, c, d, ((1 << a) | (1 << b) | (1 << c) | (1 << d)) } // Last int is a bit mask that indicates which indices are used
+		Face faces[] =
+		{
+			MAKE_FACE(0, 2, 3, 1),
+			MAKE_FACE(4, 6, 2, 0),
+			MAKE_FACE(4, 5, 7, 6),
+			MAKE_FACE(1, 3, 7, 5),
+			MAKE_FACE(2, 6, 7, 3),
+			MAKE_FACE(0, 1, 5, 4),
+		};
+
+		btVector3 halfExtents = shape->getHalfExtentsWithoutMargin();
+
+		btTransform transScaled(btMatrix3x3::getIdentity().scaled(halfExtents));
+
+		PolyhedronSubmergedVolumeCalculator::Point *buffer = (PolyhedronSubmergedVolumeCalculator::Point *)_alloca(8 * sizeof(PolyhedronSubmergedVolumeCalculator::Point));
+		PolyhedronSubmergedVolumeCalculator submerged_vol_calc(worldTransform * transScaled, points, sizeof(btVector3), 8, GetSurfaceNormal(), GetSurfacePlane(), buffer);
+
+		if (submerged_vol_calc.AreAllAbove())
+		{
+			// We're above the water
+			outSubmergedVolume = 0.0f;
+			outCenterOfBuoyancy = btVector3(0, 0, 0);
+		}
+		else if (submerged_vol_calc.AreAllBelow())
+		{
+			// We're fully submerged
+			outSubmergedVolume = shapeInfo->m_volume;
+			outCenterOfBuoyancy = worldTransform.getOrigin();
+		}
+		else
+		{
+			// Calculate submerged volume
+			int reference_point_bit = 1 << submerged_vol_calc.GetReferencePointIdx();
+			for (const Face &f : faces)
+			{
+				// Test if this face includes the reference point
+				if ((f[4] & reference_point_bit) == 0)
+				{
+					// Triangulate the face (a quad)
+					submerged_vol_calc.AddFace(f[0], f[1], f[2]);
+					submerged_vol_calc.AddFace(f[0], f[2], f[3]);
+				}
+			}
+
+			submerged_vol_calc.GetResult(outSubmergedVolume, outCenterOfBuoyancy);
+
+			outSubmergedVolume /= 8;
+
+			if (outSubmergedVolume > shapeInfo->m_volume)
+				outSubmergedVolume = shapeInfo->m_volume;
+		}
+	}
+
+	void GetSubmergedVolumeForSphereShape(btDiscreteDynamicsWorld* world, btSphereShape *shape, const btTransform &worldTransform, float &outSubmergedVolume, btVector3 &outCenterOfBuoyancy)
+	{
+		auto shapeInfo = (CPhysicShapeInfo *)shape->getUserPointer();
+
+		auto scaled_radius = shape->getRadius();
+
+		auto distance_to_surface = GetSignedDistanceToSurface(worldTransform.getOrigin(), GetSurfaceNormal(), GetSurfacePlane());
+
+		if (distance_to_surface >= scaled_radius)
+		{
+			// Above surface
+			outCenterOfBuoyancy = btVector3(0, 0, 0);
+			outSubmergedVolume = 0;
+		}
+		else if (distance_to_surface <= -scaled_radius)
+		{
+			// Under surface
+			outCenterOfBuoyancy = worldTransform.getOrigin();
+			outSubmergedVolume = shapeInfo->m_volume;
+		}
+		else
+		{
+			// Intersecting surface
+
+			// Calculate submerged volume, see: https://en.wikipedia.org/wiki/Spherical_cap
+			float h = scaled_radius - distance_to_surface;
+			outSubmergedVolume = ((float)(M_PI) / 3.0f) * (h * h) * (3.0f * scaled_radius - h);
+
+			// Calculate center of buoyancy, see: http://mathworld.wolfram.com/SphericalCap.html (eq 10)
+			float z = (3.0f / 4.0f) * ((2.0f * scaled_radius - h) * (2.0f * scaled_radius - h)) / (3.0f * scaled_radius - h);
+			outCenterOfBuoyancy = worldTransform.getOrigin() - z * GetSurfaceNormal(); // Negative normal since we want the portion under the water
+		}
+	}
+
+	void GetSubmergedVolumeForCylinderShape(btDiscreteDynamicsWorld* world, btCylinderShape *shape, const btTransform &worldTransform, float &outSubmergedVolume, btVector3 &outCenterOfBuoyancy)
+	{
+		auto shapeInfo = (CPhysicShapeInfo *)shape->getUserPointer();
+
+		// Points of the bounding box
+		btVector3 points[] =
+		{
+			btVector3(-1, -1, -1),
+			btVector3(1, -1, -1),
+			btVector3(-1,  1, -1),
+			btVector3(1,  1, -1),
+			btVector3(-1, -1,  1),
+			btVector3(1, -1,  1),
+			btVector3(-1,  1,  1),
+			btVector3(1,  1,  1),
+		};
+
+		// Faces of the bounding box
+		using Face = int[5];
+#define MAKE_FACE(a, b, c, d) { a, b, c, d, ((1 << a) | (1 << b) | (1 << c) | (1 << d)) } // Last int is a bit mask that indicates which indices are used
+		Face faces[] =
+		{
+			MAKE_FACE(0, 2, 3, 1),
+			MAKE_FACE(4, 6, 2, 0),
+			MAKE_FACE(4, 5, 7, 6),
+			MAKE_FACE(1, 3, 7, 5),
+			MAKE_FACE(2, 6, 7, 3),
+			MAKE_FACE(0, 1, 5, 4),
+		};
+
+		btVector3 halfExtents = shape->getHalfExtentsWithoutMargin();
+
+		btTransform transScaled(btMatrix3x3::getIdentity().scaled(halfExtents));
+
+		PolyhedronSubmergedVolumeCalculator::Point *buffer = (PolyhedronSubmergedVolumeCalculator::Point *)_alloca(8 * sizeof(PolyhedronSubmergedVolumeCalculator::Point));
+		PolyhedronSubmergedVolumeCalculator submerged_vol_calc(worldTransform * transScaled, points, sizeof(btVector3), 8, GetSurfaceNormal(), GetSurfacePlane(), buffer);
+
+		if (submerged_vol_calc.AreAllAbove())
+		{
+			// We're above the water
+			outSubmergedVolume = 0.0f;
+			outCenterOfBuoyancy = btVector3(0, 0, 0);
+		}
+		else if (submerged_vol_calc.AreAllBelow())
+		{
+			// We're fully submerged
+			outSubmergedVolume = shapeInfo->m_volume;
+			outCenterOfBuoyancy = worldTransform.getOrigin();
+		}
+		else
+		{
+			// Calculate submerged volume
+			int reference_point_bit = 1 << submerged_vol_calc.GetReferencePointIdx();
+			for (const Face &f : faces)
+			{
+				// Test if this face includes the reference point
+				if ((f[4] & reference_point_bit) == 0)
+				{
+					// Triangulate the face (a quad)
+					submerged_vol_calc.AddFace(f[0], f[1], f[2]);
+					submerged_vol_calc.AddFace(f[0], f[2], f[3]);
+				}
+			}
+
+			submerged_vol_calc.GetResult(outSubmergedVolume, outCenterOfBuoyancy);
+
+			// Rough estimate
+			outSubmergedVolume *= ((float)(M_PI) / 4.0f);
+
+			outSubmergedVolume /= 8;
+
+			if (outSubmergedVolume > shapeInfo->m_volume)
+				outSubmergedVolume = shapeInfo->m_volume;
+		}
+	}
+
+	void GetSubmergedVolumeForCapsuleShape(btDiscreteDynamicsWorld* world, btCapsuleShape *shape, const btTransform &worldTransform, float &outSubmergedVolume, btVector3 &outCenterOfBuoyancy)
+	{
+		auto shapeInfo = (CPhysicShapeInfo *)shape->getUserPointer();
+
+		// Points of the bounding box
+		btVector3 points[] =
+		{
+			btVector3(-1, -1, -1),
+			btVector3(1, -1, -1),
+			btVector3(-1,  1, -1),
+			btVector3(1,  1, -1),
+			btVector3(-1, -1,  1),
+			btVector3(1, -1,  1),
+			btVector3(-1,  1,  1),
+			btVector3(1,  1,  1),
+		};
+
+		// Faces of the bounding box
+		using Face = int[5];
+#define MAKE_FACE(a, b, c, d) { a, b, c, d, ((1 << a) | (1 << b) | (1 << c) | (1 << d)) } // Last int is a bit mask that indicates which indices are used
+		Face faces[] =
+		{
+			MAKE_FACE(0, 2, 3, 1),
+			MAKE_FACE(4, 6, 2, 0),
+			MAKE_FACE(4, 5, 7, 6),
+			MAKE_FACE(1, 3, 7, 5),
+			MAKE_FACE(2, 6, 7, 3),
+			MAKE_FACE(0, 1, 5, 4),
+		};
+
+		btVector3 halfExtents = btVector3(shape->getRadius(), shape->getRadius(), shape->getHalfHeight());
+
+		btTransform transScaled(btMatrix3x3::getIdentity().scaled(halfExtents));
+
+		PolyhedronSubmergedVolumeCalculator::Point *buffer = (PolyhedronSubmergedVolumeCalculator::Point *)_alloca(8 * sizeof(PolyhedronSubmergedVolumeCalculator::Point));
+		PolyhedronSubmergedVolumeCalculator submerged_vol_calc(worldTransform * transScaled, points, sizeof(btVector3), 8, GetSurfaceNormal(), GetSurfacePlane(), buffer);
+
+		if (submerged_vol_calc.AreAllAbove())
+		{
+			// We're above the water
+			outSubmergedVolume = 0.0f;
+			outCenterOfBuoyancy = btVector3(0, 0, 0);
+		}
+		else if (submerged_vol_calc.AreAllBelow())
+		{
+			// We're fully submerged
+			outSubmergedVolume = shapeInfo->m_volume;
+			outCenterOfBuoyancy = worldTransform.getOrigin();
+		}
+		else
+		{
+			// Calculate submerged volume
+			int reference_point_bit = 1 << submerged_vol_calc.GetReferencePointIdx();
+			for (const Face &f : faces)
+			{
+				// Test if this face includes the reference point
+				if ((f[4] & reference_point_bit) == 0)
+				{
+					// Triangulate the face (a quad)
+					submerged_vol_calc.AddFace(f[0], f[1], f[2]);
+					submerged_vol_calc.AddFace(f[0], f[2], f[3]);
+				}
+			}
+
+			submerged_vol_calc.GetResult(outSubmergedVolume, outCenterOfBuoyancy);
+
+			// Rough estimate
+			outSubmergedVolume *= ((float)(M_PI) / 4.0f);
+
+			outSubmergedVolume /= 8;
+
+			if (outSubmergedVolume > shapeInfo->m_volume)
+				outSubmergedVolume = shapeInfo->m_volume;
+		}
+	}
+	/*
+	The outTotalVolume is the total volume
+	The outSubmergedVolume is the volume of submerged part.
+	The outCenterOfBuoyancy is in world space
+	*/
+	void GetSubmergedVolume(btDiscreteDynamicsWorld* world, btCollisionShape *shape, const btTransform &worldTransform, float &outSubmergedVolume, btVector3 &outCenterOfBuoyancy)
+	{
+		if (shape->getShapeType() == SPHERE_SHAPE_PROXYTYPE)
+		{
+			auto sphereShape = (btSphereShape *)shape;
+
+			GetSubmergedVolumeForSphereShape(world, sphereShape, worldTransform, outSubmergedVolume, outCenterOfBuoyancy);
+		}
+		else if (shape->getShapeType() == BOX_SHAPE_PROXYTYPE)
+		{
+			auto boxShape = (btBoxShape *)shape;
+
+			GetSubmergedVolumeForBoxShape(world, boxShape, worldTransform, outSubmergedVolume, outCenterOfBuoyancy);
+		}
+		else if (shape->getShapeType() == CYLINDER_SHAPE_PROXYTYPE)
+		{
+			auto cylinderShape = (btCylinderShape *)shape;
+
+			GetSubmergedVolumeForCylinderShape(world, cylinderShape, worldTransform, outSubmergedVolume, outCenterOfBuoyancy);
+		}
+		else if (shape->getShapeType() == CAPSULE_SHAPE_PROXYTYPE)
+		{
+			auto capsuleShape = (btCapsuleShape *)shape;
+
+			GetSubmergedVolumeForCapsuleShape(world, capsuleShape, worldTransform, outSubmergedVolume, outCenterOfBuoyancy);
+		}
+		else if (shape->getShapeType() == COMPOUND_SHAPE_PROXYTYPE)
+		{
+			outSubmergedVolume = 0.0f;
+			outCenterOfBuoyancy = btVector3(0, 0, 0);
+
+			auto compoundShape = (btCompoundShape *)shape;
+
+			for (int i = 0; i < compoundShape->getNumChildShapes(); i++) {
+
+				auto childShape = compoundShape->getChildShape(i);
+				auto childTransform = compoundShape->getChildTransform(i);
+
+				// Get center of mass transform of child
+				auto childWorldTransform = worldTransform * childTransform;
+
+				// Recurse to child
+				float submerged_volume = 0;
+				btVector3 center_of_buoyancy(0, 0, 0);
+
+				GetSubmergedVolume(world, childShape, childWorldTransform, submerged_volume, center_of_buoyancy);
+
+				// Accumulate volumes
+				outSubmergedVolume += submerged_volume;
+
+				// The center of buoyancy is the weighted average of the center of buoyancy of our child shapes
+				outCenterOfBuoyancy += submerged_volume * center_of_buoyancy;
+			}
+
+			if (outSubmergedVolume > 0.0f)
+				outCenterOfBuoyancy /= outSubmergedVolume;
+		}
+	}
+
+	void ApplyBuoyancyImpulse(btDiscreteDynamicsWorld* world, btRigidBody *rigidbody)
+	{
+		auto physobj = (CCollisionPhysicObject *)rigidbody->getUserPointer();
+
+		physobj->SetWaterVolume(0);
+
+		// For GetSubmergedVolume we transform the surface relative to the body position for increased precision
+
+		float total_volume = 0, submerged_volume = 0;
+
+		btVector3 center_of_buoyancy;
+
+		total_volume = physobj->GetTotalVolume();
+
+		GetSubmergedVolume(world, rigidbody->getCollisionShape(), rigidbody->getWorldTransform(), submerged_volume, center_of_buoyancy);
+
+		//TODO:Use add center of mass offset?
+		btVector3 relative_center_of_buoyancy = center_of_buoyancy - rigidbody->getCenterOfMassPosition();
+
+		// If we're not submerged, there's no point in doing the rest of the calculations
+		if (submerged_volume > 0.0f)
+		{
+			physobj->SetWaterVolume(submerged_volume);
+
+			auto density_ratio = GetWaterDensity() / physobj->GetDensity();
+
+			auto volume_ratio = submerged_volume / total_volume;
+
+			// Buoyancy force = Density of Fluid * Submerged volume * Magnitude of gravity * Up direction (eq 2.5.1)
+
+			// We should apply this at the center of buoyancy (= center of mass of submerged volume)
+			btVector3 buoyancy_force = volume_ratio * (-1.0f) * density_ratio * rigidbody->getGravity() * rigidbody->getMass();
+
+			rigidbody->applyForce(buoyancy_force, relative_center_of_buoyancy);
+
+			// Calculate the velocity of the center of buoyancy relative to the fluid
+			btVector3 linear_velocity = rigidbody->getLinearVelocity();
+			btVector3 angular_velocity = rigidbody->getAngularVelocity();
+			btVector3 center_of_buoyancy_velocity = linear_velocity + angular_velocity.cross(relative_center_of_buoyancy);
+			btVector3 relative_center_of_buoyancy_velocity = GetWaterFluidVelocity() - center_of_buoyancy_velocity;
+
+			btVector3 shape_center;
+			float shape_radius = 0;
+			rigidbody->getCollisionShape()->getBoundingSphere(shape_center, shape_radius);
+
+			// Determine area of the local space bounding sphere in the direction of the relative velocity between the fluid and the center of buoyancy
+			float area = 0.0f;
+			float relative_center_of_buoyancy_velocity_len_sq = relative_center_of_buoyancy_velocity.length();
+			if (relative_center_of_buoyancy_velocity_len_sq > 1.0e-12f)
+			{
+				area = (float)(M_PI)* shape_radius * shape_radius;
+			}
+
+			//F=0.5Cpv^2s
+			// Calculate the drag force
+			btVector3 drag_force = (0.5f * density_ratio * GetWaterLinearDrag() * area * volume_ratio) * relative_center_of_buoyancy_velocity * relative_center_of_buoyancy_velocity.length();
+			btVector3 angular_drag = (-1.0f) * GetWaterAngularDrag() * rigidbody->getMass() * volume_ratio * area * angular_velocity;//* rigidbody->getGravity()
+
+			rigidbody->applyCentralForce(drag_force);
+			rigidbody->applyTorque(angular_drag);
+		}
+	}
+
+private:
+	btVector3 m_WaterSurfaceNormal;
+	btScalar m_WaterSurfacePlane;
+	btScalar m_WaterDensity;
+	btScalar m_WaterLinearDrag;
+	btScalar m_WaterAngularDrag;
+	btVector3 m_WaterFluidVelocity;
+};
+
+bool CPhysicsManager::CreatePhysicWater(edict_t* ent, float density, float linear_drag, float angular_drag)
+{
+	auto obj = GetGameObject(ent);
+
+	if (!obj)
+	{
+		obj = new CGameObject(ent, g_engfuncs.pfnIndexOfEdict(ent));
+
+		AddGameObject(obj);
+	}
+
+	btCollisionShape *shape = CreateTriMeshShapeFromBrushEntity(ent);
+
+	if (!shape)
+	{
+		//No you can't!
+		//shape = new btBoxShape(btVector3((ent->v.maxs.x - ent->v.mins.x) * 0.5f, (ent->v.maxs.y - ent->v.mins.y) * 0.5f, (ent->v.maxs.z - ent->v.mins.z) * 0.5f));
+
+		return false;
+	}
+
+	btVector3 inSurfaceNormal = btVector3(0, 0, 0);
+	btScalar inSurfacePlane = -99999;
+
+	auto brushvertexarray = m_brushVertexArray[ent->v.modelindex];
+
+	for (const auto &face : brushvertexarray->vFaceBuffer)
+	{
+		if (face.plane_normal.z * face.plane_dist > inSurfaceNormal.getZ() * inSurfacePlane)
+		{
+			inSurfaceNormal = btVector3(face.plane_normal.x, face.plane_normal.y, face.plane_normal.z);
+			inSurfacePlane = face.plane_dist;
+		}
+	}
+
+	auto ghostobj = new CPhysicWaterGhostPhysicObject(obj, inSurfaceNormal, inSurfacePlane, density, linear_drag, angular_drag);
 
 	ghostobj->SetGhostObject(new btPairCachingGhostObject());
 	ghostobj->GetGhostObject()->setCollisionShape(shape);
@@ -2472,33 +4150,86 @@ btCollisionShape *CPhysicsManager::CreateCollisionShapeFromParams(CGameObject *o
 	{
 	case PhysicShape_Box:
 	{
-		shape = new btBoxShape(btVector3(shapeParams->size.x, shapeParams->size.y, shapeParams->size.z));
+		btVector3 size(shapeParams->size.x, shapeParams->size.y, shapeParams->size.z);
+
+		shape = new btBoxShape(size);
+
+		auto shapeInfo = new CPhysicShapeInfo();
+
+		shapeInfo->m_volume = CalcVolumeForBoxShape(size);
+
+		shape->setUserPointer(shapeInfo);
+
 		break;
 	}
 	case PhysicShape_Sphere:
 	{
-		shape = new btSphereShape(btScalar(shapeParams->size.x));
+		auto size = btScalar(shapeParams->size.x);
+
+		shape = new btSphereShape(size);
+
+		auto shapeInfo = new CPhysicShapeInfo();
+
+		shapeInfo->m_volume = CalcVolumeForSphereShape(size);
+
+		shape->setUserPointer(shapeInfo);
+
 		break;
 	}
 	case PhysicShape_Capsule:
 	{
 		if (shapeParams->direction == PhysicShapeDirection_X)
+		{
 			shape = new btCapsuleShapeX(btScalar(shapeParams->size.x), btScalar(shapeParams->size.y));
+		}
 		else if (shapeParams->direction == PhysicShapeDirection_Y)
+		{
 			shape = new btCapsuleShape(btScalar(shapeParams->size.x), btScalar(shapeParams->size.y));
+		}
 		else if (shapeParams->direction == PhysicShapeDirection_Z)
+		{
 			shape = new btCapsuleShapeZ(btScalar(shapeParams->size.x), btScalar(shapeParams->size.y));
+		}
+
+		auto shapeInfo = new CPhysicShapeInfo();
+
+		shapeInfo->m_volume = CalcVolumeForCapsuleShape(btScalar(shapeParams->size.x), btScalar(shapeParams->size.y));
+
+		shape->setUserPointer(shapeInfo);
 
 		break;
 	}
 	case PhysicShape_Cylinder:
 	{
 		if (shapeParams->direction == PhysicShapeDirection_X)
+		{
 			shape = new btCylinderShapeX(btVector3(shapeParams->size.x, shapeParams->size.y, shapeParams->size.z));
+		}
 		else if (shapeParams->direction == PhysicShapeDirection_Y)
+		{
 			shape = new btCylinderShape(btVector3(shapeParams->size.x, shapeParams->size.y, shapeParams->size.z));
+		}
 		else if (shapeParams->direction == PhysicShapeDirection_Z)
+		{
 			shape = new btCylinderShapeZ(btVector3(shapeParams->size.x, shapeParams->size.y, shapeParams->size.z));
+		}
+
+		auto shapeInfo = new CPhysicShapeInfo();
+
+		if (shapeParams->direction == PhysicShapeDirection_X)
+		{
+			shapeInfo->m_volume = CalcVolumeForCylinderShapeX(btVector3(shapeParams->size.x, shapeParams->size.y, shapeParams->size.z));
+		}
+		else if (shapeParams->direction == PhysicShapeDirection_Y)
+		{
+			shapeInfo->m_volume = CalcVolumeForCylinderShapeY(btVector3(shapeParams->size.x, shapeParams->size.y, shapeParams->size.z));
+		}
+		else if (shapeParams->direction == PhysicShapeDirection_Z)
+		{
+			shapeInfo->m_volume = CalcVolumeForCylinderShapeZ(btVector3(shapeParams->size.x, shapeParams->size.y, shapeParams->size.z));
+		}
+
+		shape->setUserPointer(shapeInfo);
 
 		break;
 	}
@@ -2566,10 +4297,12 @@ bool CPhysicsManager::CreatePhysicObjectPost(edict_t *ent, CGameObject *obj, btC
 		shapeInertia = shiftedInertia;
 	}
 
-	auto dynamicobj = CreateDynamicObject(obj, 
+	auto dynamicobj = CreateDynamicObject(
+		obj, 
 		shape, 
 		shapeInertia,
-		objectParams->mass, 
+		objectParams->mass,
+		objectParams->density,
 		objectParams->linearfriction,
 		objectParams->rollingfriction,
 		objectParams->restitution,
@@ -2685,7 +4418,11 @@ bool CPhysicsManager::CreateCompoundPhysicObject(edict_t* ent, PhysicShapeParams
 	if (objectParams->mass <= 0)
 		return false;
 
-	btCompoundShape *compound = new btCompoundShape();
+	auto compound = new btCompoundShape();
+
+	auto shapeInfo = new CPhysicShapeInfo();
+
+	compound->setUserPointer(shapeInfo);
 
 	for (size_t i = 0; i < numShapeParams; ++i)
 	{
@@ -2703,13 +4440,22 @@ bool CPhysicsManager::CreateCompoundPhysicObject(edict_t* ent, PhysicShapeParams
 			trans.setOrigin(btVector3(shapeParams->origin.x, shapeParams->origin.y, shapeParams->origin.z));
 
 			compound->addChildShape(trans, shape);
+
+			auto childShapeInfo = (CPhysicShapeInfo *)shape->getUserPointer();
+
+			if (childShapeInfo)
+			{
+				shapeInfo->m_volume += childShapeInfo->m_volume;
+			}
 		}
 	}
 
 	//Invalid shape
 	if (!compound->getNumChildShapes())
 	{
+		OnBeforeDeleteCollisionShape(compound);
 		delete compound;
+
 		return false;
 	}
 
@@ -2784,7 +4530,7 @@ void CPhysicsManager::PostSpawn(edict_t *ent)
 struct GameFilterCallback : public btOverlapFilterCallback
 {
 	// return true when pairs need collision
-	virtual bool needBroadphaseCollision(btBroadphaseProxy* proxy0,btBroadphaseProxy* proxy1) const
+	bool needBroadphaseCollision(btBroadphaseProxy* proxy0,btBroadphaseProxy* proxy1) const override
 	{
 		bool collides = (proxy0->m_collisionFilterGroup & proxy1->m_collisionFilterMask) != 0;
 		collides = collides && (proxy1->m_collisionFilterGroup & proxy0->m_collisionFilterMask);
@@ -2816,19 +4562,34 @@ struct GameFilterCallback : public btOverlapFilterCallback
 			if (physobj0->IsPlayerObject())
 			{
 				auto ent0 = physobj0->GetGameObject()->GetEdict();
+				auto ent1 = physobj1->GetGameObject()->GetEdict();
+
 				auto playerobj0 = (CPlayerObject *)physobj0;
+
 				if(playerobj0->IsDuck() && !ent0->v.bInDuck)
 					return false;
 				else if (!playerobj0->IsDuck() && ent0->v.bInDuck)
 					return false;
+
+				//No duck/stand self collision
+				if (ent0 == ent1)
+					return false;
 			}
-			else if (physobj1->IsPlayerObject())
+
+			if (physobj1->IsPlayerObject())
 			{
+				auto ent0 = physobj0->GetGameObject()->GetEdict();
 				auto ent1 = physobj1->GetGameObject()->GetEdict();
+
 				auto playerobj1 = (CPlayerObject *)physobj1;
+
 				if (playerobj1->IsDuck() && !ent1->v.bInDuck)
 					return false;
 				else if (!playerobj1->IsDuck() && ent1->v.bInDuck)
+					return false;
+
+				//No duck/stand self collision
+				if (ent0 == ent1)
 					return false;
 			}
 
@@ -2974,6 +4735,7 @@ void CPhysicsManager::Init(void)
 	m_dynamicsWorld->setGravity(btVector3(0, 0, 0));
 
 	m_dynamicsWorld->getSolverInfo().m_solverMode |= SOLVER_ENABLE_FRICTION_DIRECTION_CACHING;
+	//m_dynamicsWorld->getSolverInfo().m_numIterations = 100;
 
 	gContactAddedCallback = CustomMaterialCombinerCallback;
 	m_dynamicsWorld->setInternalTickCallback(InternalTickCallback);
@@ -2994,15 +4756,20 @@ void CPhysicsManager::Shutdown(void)
 
 	m_brushIndexArray.clear();
 
+	for (size_t i = 0; i < m_brushVertexArray.size(); ++i)
+	{
+		if (m_brushVertexArray[i])
+		{
+			delete m_brushVertexArray[i];
+			m_brushVertexArray[i] = NULL;
+		}
+	}
+
+	m_brushVertexArray.clear();
+
 	if (m_worldVertexArray) {
 		delete m_worldVertexArray;
 		m_worldVertexArray = NULL;
-	}
-
-	if (m_dynamicsWorld)
-	{
-		delete m_dynamicsWorld;
-		m_dynamicsWorld = NULL;
 	}
 
 	if (m_overlapFilterCallback)
@@ -3036,6 +4803,11 @@ void CPhysicsManager::Shutdown(void)
 		delete m_solver;
 		m_solver = NULL;
 	}
+	if (m_dynamicsWorld)
+	{
+		delete m_dynamicsWorld;
+		m_dynamicsWorld = NULL;
+	}
 }
 
 void CPhysicsManager::StepSimulation(double frametime)
@@ -3054,11 +4826,16 @@ void CPhysicsManager::SetSimRate(float rate)
 	m_simrate = rate;
 }
 
-void CPhysicsManager::SetGravity(float velocity)
+float CPhysicsManager::GetGravityAcceleration() const
 {
-	m_gravity = -velocity;
+	return m_gravityAcceleration;
+}
 
-	m_dynamicsWorld->setGravity(btVector3(0, 0, m_gravity));
+void CPhysicsManager::SetGravityAcceleration(float value)
+{
+	m_gravityAcceleration = value;
+
+	m_dynamicsWorld->setGravity(btVector3(0, 0, -m_gravityAcceleration));
 }
 
 int CPhysicsManager::GetSolidPlayerMask()
@@ -3580,4 +5357,108 @@ void CPhysicsManager::SetCurrentImpactEntity(edict_t* pImpactEntity, const Vecto
 	m_CurrentImpactPoint = vecImpactPoint;
 	m_CurrentImpactDirection = vecImpactDirection;
 	m_CurrentImpactImpulse = flImpactImpulse;
+}
+
+void OnBeforeDeleteRigidBody(btRigidBody *rigidbody)
+{
+	if (rigidbody)
+	{
+		auto shape = rigidbody->getCollisionShape();
+
+		if (shape)
+		{
+			OnBeforeDeleteCollisionShape(shape);
+			delete shape;
+		}
+
+		auto motionState = rigidbody->getMotionState();
+
+		if (motionState)
+		{
+			delete motionState;
+		}
+	}
+}
+
+void OnBeforeDeletePairCachingGhostObject(btPairCachingGhostObject *ghostobj)
+{
+	//Should be removed from world before free
+	if (ghostobj)
+	{
+		auto shape = ghostobj->getCollisionShape();
+		if (shape)
+		{
+			if (shape->getShapeType() == TRIANGLE_MESH_SHAPE_PROXYTYPE && shape->getUserPointer())
+			{
+				delete (btTriangleIndexVertexArray *)shape->getUserPointer();
+			}
+
+			delete shape;
+		}
+	}
+}
+
+void OnBeforeDeleteConstraint(btTypedConstraint *constraint)
+{
+	if (constraint->getUserConstraintType() == ConstraintType_Wheel)
+	{
+		auto ptr = (CPhysicVehicleWheelInfo *)constraint->getUserConstraintPtr();
+
+		if (ptr)
+		{
+			delete ptr;
+		}
+
+		constraint->setUserConstraintPtr(NULL);
+	}
+}
+
+void OnBeforeDeleteActionInterface(btActionInterface *action)
+{
+
+}
+
+void OnBeforeDeleteCollisionShape(btCollisionShape *shape)
+{
+	if (shape->getShapeType() == TRIANGLE_MESH_SHAPE_PROXYTYPE && shape->getUserPointer())
+	{
+		auto vertexArray = (btTriangleIndexVertexArray *)shape->getUserPointer();
+		delete vertexArray;
+		shape->setUserPointer(NULL);
+	}
+
+	if (shape->getShapeType() == BOX_SHAPE_PROXYTYPE && shape->getUserPointer())
+	{
+		auto shapeInfo = (CPhysicShapeInfo *)shape->getUserPointer();
+		delete shapeInfo;
+		shape->setUserPointer(NULL);
+	}
+
+	if (shape->getShapeType() == SPHERE_SHAPE_PROXYTYPE && shape->getUserPointer())
+	{
+		auto shapeInfo = (CPhysicShapeInfo *)shape->getUserPointer();
+		delete shapeInfo;
+		shape->setUserPointer(NULL);
+	}
+
+	if (shape->getShapeType() == CAPSULE_SHAPE_PROXYTYPE && shape->getUserPointer())
+	{
+		auto shapeInfo = (CPhysicShapeInfo *)shape->getUserPointer();
+		delete shapeInfo;
+		shape->setUserPointer(NULL);
+	}
+
+	if (shape->getShapeType() == CYLINDER_SHAPE_PROXYTYPE && shape->getUserPointer())
+	{
+		auto shapeInfo = (CPhysicShapeInfo *)shape->getUserPointer();
+		delete shapeInfo;
+		shape->setUserPointer(NULL);
+	}
+
+	if (shape->getShapeType() == COMPOUND_SHAPE_PROXYTYPE && shape->getUserPointer())
+	{
+		auto shapeInfo = (CPhysicShapeInfo *)shape->getUserPointer();
+		delete shapeInfo;
+		shape->setUserPointer(NULL);
+	}
 }

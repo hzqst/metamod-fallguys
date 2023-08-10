@@ -99,6 +99,8 @@ typedef void(*fnSV_SingleClipMoveToEntity)(edict_t *ent, const vec3_t& start, co
 void SV_SingleClipMoveToEntity(edict_t *ent, const vec3_t& start, const vec3_t& mins, const vec3_t& maxs, const vec3_t& end, trace_t *trace);
 PRIVATE_FUNCTION_EXTERN(SV_SingleClipMoveToEntity);
 
+hull_t *SV_HullForBspNew(edict_t *ent, const vec3_t mins, const vec3_t maxs, vec3_t& offset);
+
 extern model_t* (*sv_models)[8192];
 extern double* host_frametime;
 extern cvar_t* sv_gravity;

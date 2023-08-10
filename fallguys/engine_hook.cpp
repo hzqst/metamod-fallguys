@@ -50,6 +50,50 @@ model_t* EngineGetPrecachedModelByIndex(int i)
 	return (*sv_models)[i];
 }
 
+hull_t *SV_HullForBspNew(edict_t *ent, const vec3_t mins, const vec3_t maxs, vec3_t& offset)
+{
+	model_t		*model;
+	hull_t		*hull;
+	vec3_t		size;
+
+	model = (*sv_models)[(int)ent->v.modelindex];
+
+	if (!model || model->type != mod_brush)
+		return NULL;
+
+	size = (maxs - mins);
+	if (size[0] <= 8)
+	{
+		hull = &model->hulls[0];
+		offset = hull->clip_mins;
+	}
+	else
+	{
+		if (size[0] <= 36)
+		{
+			if (size[2] <= 36)
+			{
+				hull = &model->hulls[3];
+				offset = hull->clip_mins - mins;
+			}
+			else
+			{
+				hull = &model->hulls[1];
+				offset = hull->clip_mins - mins;
+			}
+		}
+		else
+		{
+			hull = &model->hulls[2];
+			offset = hull->clip_mins - mins;
+		}
+	}
+
+	// calculate an offset value to center the origin
+	offset = offset + ent->v.origin;
+	return hull;
+}
+
 void SV_MoveBounds(const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, vec3_t &boxmins, vec3_t &boxmaxs)
 {
 	int		i;

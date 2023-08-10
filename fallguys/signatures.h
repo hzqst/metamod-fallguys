@@ -23,6 +23,14 @@
 #define pg_groupop_Signature "\x89\x44\x24\x18\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x15"
 #define pg_groupmask_Signature pg_groupop_Signature
 
+#define CLIENT_DLL_NAME "client.dll"
+
+#define CLIENT_DLL_PATH "cl_dlls\\client.dll"
+
+#define FMOD_DLL_NAME "fmodex.dll"
+
+#define FMOD_DLL_PATH "%s\\fmodex.dll"
+
 #else
 
 #define SV_Physics_Signature "_Z10SV_Physicsv"
@@ -44,5 +52,13 @@
 #define sv_areanodes_Signature "sv_areanodes"
 #define pg_groupop_Signature "g_groupop"
 #define pg_groupmask_Signature "g_groupmask"
+
+#define CLIENT_DLL_NAME "client.so"
+
+#define CLIENT_DLL_PATH "cl_dlls\\client.so"
+
+#define FMOD_DLL_NAME "fmodex.so"
+
+#define FMOD_DLL_PATH "%s\\fmodex.so"
 
 #endif

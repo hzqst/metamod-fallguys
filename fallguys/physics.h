@@ -11,6 +11,12 @@
 #include <pmtrace.h>
 #include <pm_defs.h>
 
+void OnBeforeDeleteRigidBody(btRigidBody *rigidbody);
+void OnBeforeDeletePairCachingGhostObject(btPairCachingGhostObject *ghostobj);
+void OnBeforeDeleteConstraint(btTypedConstraint *constraint);
+void OnBeforeDeleteActionInterface(btActionInterface *action);
+void OnBeforeDeleteCollisionShape(btCollisionShape *shape);
+
 const int PhysicShapeDirection_X = 0;
 const int PhysicShapeDirection_Y = 1;
 const int PhysicShapeDirection_Z = 2;
@@ -20,6 +26,7 @@ const int PhysicShape_Sphere = 2;
 const int PhysicShape_Capsule = 3;
 const int PhysicShape_Cylinder = 4;
 const int PhysicShape_MultiSphere = 5;
+const int PhysicShape_Compound = 100;
 
 const int PhysicObject_HasClippingHull = 1;
 const int PhysicObject_HasImpactImpulse = 2;
@@ -30,6 +37,10 @@ const int PhysicWheel_Engine = 2;
 const int PhysicWheel_Brake = 4;
 const int PhysicWheel_Steering = 8;
 const int PhysicWheel_NoSteering = 0x10;
+const int PhysicWheel_Pontoon = 0x20;
+
+const int PhysicVehicleType_FourWheels = 1;
+const int PhysicVehicleType_Airboat = 2;
 
 const int FollowEnt_CopyOriginX = 1;
 const int FollowEnt_CopyOriginY = 2;
@@ -80,6 +91,7 @@ public:
 	PhysicPlayerConfigs();
 
 	float mass;
+	float density;
 	float maxPendingVelocity;
 };
 
@@ -102,6 +114,7 @@ public:
 	PhysicObjectParams();
 
 	float mass;
+	float density;
 	float linearfriction;
 	float rollingfriction;
 	float restitution;
@@ -126,6 +139,9 @@ public:
 	Vector wheelAxle;
 	float suspensionStiffness;
 	float suspensionDamping;
+	float suspensionLowerLimit;
+	float suspensionUpperLimit;
+	float rayCastHeight;
 	int flags;
 	int index;
 	int springIndex;
@@ -138,16 +154,24 @@ class PhysicVehicleParams
 public:
 	PhysicVehicleParams();
 
-	float suspensionStiffness;
-	float suspensionCompression;
-	float suspensionDamping;
-	float maxSuspensionTravelCm;
-	float frictionSlip;
-	float maxSuspensionForce;
+	int type;
+	int flags;
 	float idleEngineForce;
 	float idleSteeringForce;
 	float idleSteeringSpeed;
-	int flags;
+};
+
+class PhysicWheelRuntimeInfo
+{
+public:
+	PhysicWheelRuntimeInfo();
+
+	bool hitGround;
+	Vector hitPointInWorld;
+	Vector hitNormalInWorld;
+	float rpm;
+	float waterVolume;
+	float totalVolume;
 };
 
 EXTERN_PLAIN_VALUE_OBJECT(EnvStudioKeyframe);
@@ -162,54 +186,7 @@ EXTERN_PLAIN_VALUE_OBJECT(PhysicWheelParams);
 
 EXTERN_PLAIN_VALUE_OBJECT(PhysicVehicleParams);
 
-class PhysicWheelClientInfo
-{
-public:
-	PhysicWheelClientInfo(edict_t *ent, int flags) : m_ent(ent), m_flags(flags)
-	{
-
-	}
-
-	virtual ~PhysicWheelClientInfo()
-	{
-
-	}
-
-	edict_t *GetEdict() const
-	{
-		return m_ent;
-	}
-
-	int GetFlags() const
-	{
-		return m_flags;
-	}
-
-	bool IsFrontWheel() const
-	{
-		return GetFlags() & PhysicWheel_Front;
-	}
-
-	bool IsEngineWheel() const
-	{
-		return GetFlags() & PhysicWheel_Engine;
-	}
-
-	bool IsBrakeWheel() const
-	{
-		return GetFlags() & PhysicWheel_Brake;
-	}
-
-	bool IsSteeringWheel() const
-	{
-		return GetFlags() & PhysicWheel_Steering;
-	}
-
-private:
-
-	edict_t *m_ent;
-	int m_flags;
-};
+EXTERN_PLAIN_VALUE_OBJECT(PhysicWheelRuntimeInfo);
 
 enum FallGuysCollisionFilterGroups
 {
@@ -227,6 +204,9 @@ typedef struct brushface_s
 {
 	int start_vertex;
 	int num_vertexes;
+	vec3_t plane_normal;
+	float plane_dist;
+	int plane_flags;
 }brushface_t;
 
 typedef struct vertexarray_s
@@ -249,6 +229,72 @@ typedef struct indexarray_s
 class CGameObject;
 
 ATTRIBUTE_ALIGNED16(class)
+CPhysicShapeInfo
+{
+public:
+
+	BT_DECLARE_ALIGNED_ALLOCATOR();
+
+	CPhysicShapeInfo()
+	{
+		m_volume = 0;
+	}
+
+	virtual ~CPhysicShapeInfo()
+	{
+
+	}
+
+	btScalar m_volume;
+};
+
+ATTRIBUTE_ALIGNED16(class)
+CPhysicVehicleWheelInfo
+{
+public:
+	BT_DECLARE_ALIGNED_ALLOCATOR();
+
+	CPhysicVehicleWheelInfo()
+	{
+		m_springIndex = 2;
+		m_engineIndex = 3;
+		m_steerIndex = 5;
+		m_rayCastHeight = 16;
+
+		m_hitGround = false;
+		m_hitPointInWorld = btVector3(0, 0, 0);
+		m_hitNormalInWorld = btVector3(0, 0, 0);
+	}
+
+	CPhysicVehicleWheelInfo(PhysicWheelParams *params)
+	{
+		m_springIndex = params->springIndex;
+		m_engineIndex = params->engineIndex;
+		m_steerIndex = params->steerIndex;
+		m_flags = params->flags;
+		m_rayCastHeight = params->rayCastHeight;
+	}
+
+	virtual ~CPhysicVehicleWheelInfo()
+	{
+
+	}
+
+	//init
+	int m_springIndex;
+	int m_engineIndex;
+	int m_steerIndex;
+	int m_flags;
+	float m_rayCastHeight;
+
+	//runtime
+	bool m_hitGround;
+	btVector3 m_hitPointInWorld;
+	btVector3 m_hitNormalInWorld;
+};
+
+
+ATTRIBUTE_ALIGNED16(class)
 CPhysicObject
 {
 public:
@@ -264,8 +310,11 @@ public:
 
 		for (auto action : m_actions)
 		{
+			OnBeforeDeleteActionInterface(action);
+
 			delete action;
 		}
+
 		m_actions.clear();
 	}
 
@@ -319,6 +368,11 @@ public:
 
 	}
 
+	virtual void SetPhysicNoCollision(bool no_collision)
+	{
+
+	}
+
 	virtual void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
 	{
 
@@ -357,7 +411,7 @@ public:
 
 	}
 
-	virtual btCollisionObject *GetCollisionObject() const
+	virtual btCollisionObject *GetCollisionObject()
 	{
 		return NULL;
 	}
@@ -392,33 +446,36 @@ public:
 	{
 		m_ghostobj = NULL;
 	}
+
 	~CGhostPhysicObject()
 	{
-		//Should be removed from world before free
-		if (m_ghostobj)
-		{
-			if (m_ghostobj->getCollisionShape())
-			{
-				if (m_ghostobj->getCollisionShape()->getShapeType() == TRIANGLE_MESH_SHAPE_PROXYTYPE &&
-					m_ghostobj->getCollisionShape()->getUserPointer())
-				{
-					delete (btTriangleIndexVertexArray *)m_ghostobj->getCollisionShape()->getUserPointer();
-				}
+		OnBeforeDeletePairCachingGhostObject(m_ghostobj);
 
-				delete m_ghostobj->getCollisionShape();
-			}
-
-			delete m_ghostobj;
-			m_ghostobj = NULL;
-		}
+		delete m_ghostobj;
+		m_ghostobj = NULL;
 	}
 
-	virtual bool IsGhost() const
+	bool IsGhost() const override
 	{
 		return true;
 	}
 
-	virtual void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
+	virtual bool IsPhysicTriggerGhost() const
+	{
+		return false;
+	}
+
+	virtual bool IsPhysicWaterGhost() const
+	{
+		return false;
+	}
+
+	virtual bool IsSolidOptimizerGhost() const
+	{
+		return false;
+	}
+
+	void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects) override
 	{
 		CPhysicObject::AddToPhysicWorld(world, numDynamicObjects);
 		if (m_ghostobj)
@@ -429,7 +486,7 @@ public:
 		}
 	}
 
-	virtual void RemoveFromPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
+	void RemoveFromPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects) override
 	{
 		CPhysicObject::RemoveFromPhysicWorld(world, numDynamicObjects);
 
@@ -441,9 +498,16 @@ public:
 		}
 	}
 
-	virtual btCollisionObject *GetCollisionObject() const
+	btCollisionObject *GetCollisionObject() override
 	{
 		return m_ghostobj;
+	}
+
+	void StartFrame_Post(btDiscreteDynamicsWorld* world) override;
+
+	virtual void OnTouchRigidBody(btDiscreteDynamicsWorld* world, btRigidBody *rigidbody)
+	{
+
 	}
 
 	void SetGhostObject(btPairCachingGhostObject* ghostobj)
@@ -481,12 +545,12 @@ public:
 		return m_type;
 	}
 
-	virtual bool IsSolidOptimizerGhost() const
+	bool IsSolidOptimizerGhost() const override
 	{
 		return true;
 	}
 
-	virtual void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
+	void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects) override
 	{
 		CPhysicObject::AddToPhysicWorld(world, numDynamicObjects);
 
@@ -498,10 +562,9 @@ public:
 		}
 	}
 
-	virtual void StartFrame(btDiscreteDynamicsWorld* world);
+	void StartFrame(btDiscreteDynamicsWorld* world) override;
 
-	virtual void StartFrame_Post(btDiscreteDynamicsWorld* world);
-
+	void OnTouchRigidBody(btDiscreteDynamicsWorld* world, btRigidBody *rigidbody) override;
 private:
 	int m_type;
 	int m_boneindex;
@@ -510,44 +573,6 @@ private:
 	vec3_t m_cached_origin;
 	int m_cached_sequence;
 	float m_cached_frame;
-};
-
-ATTRIBUTE_ALIGNED16(class)
-CPhysicTriggerGhostPhysicObject : public CGhostPhysicObject
-{
-public:
-	BT_DECLARE_ALIGNED_ALLOCATOR();
-	CPhysicTriggerGhostPhysicObject(CGameObject *obj) : CGhostPhysicObject(obj)
-	{
-
-	}
-	~CPhysicTriggerGhostPhysicObject()
-	{
-
-	}
-
-	virtual bool IsPhysicTriggerGhost() const
-	{
-		return true;
-	}
-
-	virtual void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
-	{
-		CPhysicObject::AddToPhysicWorld(world, numDynamicObjects);
-
-		if (GetGhostObject())
-		{
-			world->addCollisionObject(GetGhostObject(), btBroadphaseProxy::SensorTrigger, FallGuysCollisionFilterGroups::DynamicObjectFilter | FallGuysCollisionFilterGroups::ClippingHullFilter);
-
-			(*numDynamicObjects)++;
-		}
-	}
-
-	virtual void StartFrame(btDiscreteDynamicsWorld* world);
-
-	virtual void StartFrame_Post(btDiscreteDynamicsWorld* world);
-
-private:
 };
 
 ATTRIBUTE_ALIGNED16(class)
@@ -560,6 +585,8 @@ public:
 		m_rigbody = NULL;
 		m_group = group;
 		m_mask = mask;
+		m_density = 1;
+		m_waterVolume = 0;
 	}
 
 	~CCollisionPhysicObject()
@@ -567,26 +594,14 @@ public:
 		//Should be removed from world before free
 		if (m_rigbody)
 		{
-			if (m_rigbody->getCollisionShape())
-			{
-				if (m_rigbody->getCollisionShape()->getShapeType() == TRIANGLE_MESH_SHAPE_PROXYTYPE &&
-					m_rigbody->getCollisionShape()->getUserPointer())
-				{
-					delete (btTriangleIndexVertexArray *)m_rigbody->getCollisionShape()->getUserPointer();
-				}
+			OnBeforeDeleteRigidBody(m_rigbody);
 
-				delete m_rigbody->getCollisionShape();
-			}
-			if (m_rigbody->getMotionState())
-			{
-				delete m_rigbody->getMotionState();
-			}
 			delete m_rigbody;
 			m_rigbody = NULL;
 		}
 	}
 
-	virtual void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
+	void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects) override
 	{
 		CPhysicObject::AddToPhysicWorld(world, numDynamicObjects);
 
@@ -596,7 +611,7 @@ public:
 		}
 	}
 
-	virtual void RemoveFromPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
+	void RemoveFromPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects) override
 	{
 		CPhysicObject::RemoveFromPhysicWorld(world, numDynamicObjects);
 
@@ -606,12 +621,12 @@ public:
 		}
 	}
 
-	virtual btCollisionObject *GetCollisionObject() const
+	btCollisionObject *GetCollisionObject() override
 	{
 		return m_rigbody;
 	}
 
-	virtual bool IsKinematic() const
+	bool IsKinematic() const override
 	{
 		if (!GetRigidBody())
 			return false;
@@ -630,9 +645,45 @@ public:
 		return m_rigbody;
 	}
 
+	void SetDensity(float density)
+	{
+		m_density = density;
+	}
+
+	float GetDensity() const
+	{
+		return m_density;
+	}
+
+	void SetWaterVolume(float value)
+	{
+		m_waterVolume = value;
+	}
+
+	float GetWaterVolume() const
+	{
+		return m_waterVolume;
+	}
+
+	float GetTotalVolume() const
+	{
+		auto shape = m_rigbody->getCollisionShape();
+
+		auto shapeInfo = (CPhysicShapeInfo *)shape->getUserPointer();
+
+		if (shapeInfo)
+		{
+			return shapeInfo->m_volume;
+		}
+
+		return 0;
+	}
+
 private:
 	btRigidBody* m_rigbody;
 	int m_group, m_mask;
+	float m_density;
+	float m_waterVolume;
 };
 
 ATTRIBUTE_ALIGNED16(class)
@@ -649,12 +700,12 @@ public:
 		
 	}
 
-	virtual bool IsStaticObject() const
+	bool IsStaticObject() const override
 	{
 		return true;
 	}
 
-	virtual bool UseEdictSolid() const
+	bool UseEdictSolid() const override
 	{
 		return true;
 	}
@@ -662,67 +713,91 @@ public:
 protected:
 };
 
-//ATTRIBUTE_ALIGNED16(class)
-class CPhysicVehicleWheelInfo
-{
-public:
-	CPhysicVehicleWheelInfo()
-	{
-		m_springIndex = 2;
-		m_engineIndex = 3;
-		m_steerIndex = 5;
-	}
-
-	CPhysicVehicleWheelInfo(PhysicWheelParams *params)
-	{
-		m_springIndex = params->springIndex;
-		m_engineIndex = params->engineIndex;
-		m_steerIndex = params->steerIndex;
-	}
-
-	virtual ~CPhysicVehicleWheelInfo()
-	{
-
-	}
-
-	int m_springIndex;
-	int m_engineIndex;
-	int m_steerIndex;
-};
+class CPhysicObject;
+class CDynamicObject;
 
 ATTRIBUTE_ALIGNED16(class)
-CPhysicVehicleManager
+CBasePhysicBehaviour
 {
 public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
-	CPhysicVehicleManager()
+
+	CBasePhysicBehaviour(CPhysicObject *physObject) : m_physObject(physObject)
 	{
 
 	}
 
-	virtual ~CPhysicVehicleManager()
+	virtual ~CBasePhysicBehaviour()
+	{
+		
+	}
+
+	CPhysicObject *GetPhysObject()
+	{
+		return m_physObject;
+	}
+
+	CDynamicObject *GetDynamicObject()
+	{
+		if (m_physObject->IsDynamicObject())
+			return (CDynamicObject *)m_physObject;
+
+		return NULL;
+	}
+
+	virtual void StartFrame(btDiscreteDynamicsWorld* world)
 	{
 
 	}
 
-	btHinge2Constraint * GetConstraint(int index)
+	virtual void StartFrame_Post(btDiscreteDynamicsWorld* world)
 	{
-		if (index < 0 || index >= (int)m_constraints.size())
-			return NULL;
 
-		return m_constraints[index];
 	}
 
-	void SetConstraint(int index, btHinge2Constraint *pConstraint)
+	virtual void EndFrame(btDiscreteDynamicsWorld* world)
 	{
-		if (index >= (int)m_constraints.size())
-		{
-			m_constraints.resize(index + 1);
-		}
-		m_constraints[index] = pConstraint;
+
 	}
 
-	std::vector<btHinge2Constraint *> m_constraints;
+protected:
+	CPhysicObject *m_physObject;
+};
+
+ATTRIBUTE_ALIGNED16(class)
+CPhysicVehicleBehaviour : public CBasePhysicBehaviour
+{
+public:
+	BT_DECLARE_ALIGNED_ALLOCATOR();
+
+	CPhysicVehicleBehaviour(CPhysicObject *physObject) : CBasePhysicBehaviour(physObject)
+	{
+
+	}
+
+	virtual bool SetVehicleSteering(int wheelIndex, float angularTarget, float targetVelcoity, float maxMotorForce)
+	{
+		return false;
+	}
+
+	virtual bool SetVehicleEngine(int wheelIndex, bool enableMotor, float targetVelcoity, float maxMotorForce)
+	{
+		return false;
+	}
+
+	virtual bool GetVehicleWheelRuntimeInfo(int wheelIndex, PhysicWheelRuntimeInfo *RuntimeInfo);
+
+	virtual btHinge2Constraint * GetWheelConstraint(int index);
+
+	virtual void SetWheelConstraint(int index, btHinge2Constraint *pConstraint);
+
+	void DoRaycasts(btDiscreteDynamicsWorld* world);
+
+	int CountSurfaceContactPoints();
+
+protected:
+	//Wheels
+	std::vector<btHinge2Constraint *> m_wheelConstraints;
 };
 
 ATTRIBUTE_ALIGNED16(class)
@@ -740,53 +815,55 @@ public:
 		m_ImpactDirection = g_vecZero;
 		m_ImpactEntity = NULL;
 
-		m_VehicleManager = NULL;
+		m_VehicleBehaviour = NULL;
 	}
 
 	~CDynamicObject()
 	{
-		if (m_VehicleManager)
+		if (m_VehicleBehaviour)
 		{
-			delete m_VehicleManager;
-			m_VehicleManager = NULL;
+			delete m_VehicleBehaviour;
+			m_VehicleBehaviour = NULL;
 		}
 	}
 
-	virtual bool IsDynamicObject() const
+	bool IsDynamicObject() const override
 	{
 		return true;
 	}
 
-	virtual bool UseEdictSolid() const
+	bool UseEdictSolid() const override
 	{
 		return true;
 	}
 
-	virtual void SetPhysicTransform(const Vector &origin, const Vector &angles);
+	void SetPhysicTransform(const Vector &origin, const Vector &angles) override;
 
-	virtual void SetPhysicFreeze(bool freeze);
+	void SetPhysicFreeze(bool freeze) override;
 
-	virtual void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
+	void SetPhysicNoCollision(bool no_collision) override;
+
+	void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects) override
 	{
 		CCollisionPhysicObject::AddToPhysicWorld(world, numDynamicObjects);
 
 		(*numDynamicObjects) ++ ;
 	}
 
-	virtual void RemoveFromPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
+	void RemoveFromPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects) override
 	{
 		CCollisionPhysicObject::RemoveFromPhysicWorld(world, numDynamicObjects);
 
 		(*numDynamicObjects) --;
 	}
 
-	virtual void StartFrame(btDiscreteDynamicsWorld* world);
+	void StartFrame(btDiscreteDynamicsWorld* world) override;
 
-	virtual void StartFrame_Post(btDiscreteDynamicsWorld* world);
+	void StartFrame_Post(btDiscreteDynamicsWorld* world) override;
 
-	virtual void EndFrame(btDiscreteDynamicsWorld* world);
+	void EndFrame(btDiscreteDynamicsWorld* world) override;
 
-	virtual bool SetAbsBox(edict_t *ent);
+	bool SetAbsBox(edict_t *ent) override;
 
 	virtual void DispatchImpact(float impulse, const btVector3 &worldpos_on_source, const btVector3 &worldpos_on_hit, const btVector3 &normal, edict_t *hitent);
 
@@ -795,14 +872,14 @@ public:
 		m_flImpactImpulseThreshold = flThreshold;
 	}
 
-	void SetVehicleManager(CPhysicVehicleManager *manager)
+	void SetVehicleBehaviour(CPhysicVehicleBehaviour *action)
 	{
-		m_VehicleManager = manager;
+		m_VehicleBehaviour = action;
 	}
 
-	CPhysicVehicleManager *GetVehicleManager() const
+	CPhysicVehicleBehaviour *GetVehicleBehaviour()
 	{
-		return m_VehicleManager;
+		return m_VehicleBehaviour;
 	}
 
 protected:
@@ -813,7 +890,7 @@ protected:
 	vec3_t m_ImpactPoint;
 	vec3_t m_ImpactDirection;
 	edict_t *m_ImpactEntity;
-	CPhysicVehicleManager *m_VehicleManager;
+	CPhysicVehicleBehaviour *m_VehicleBehaviour;
 };
 
 ATTRIBUTE_ALIGNED16(class)
@@ -838,23 +915,25 @@ public:
 		m_ImpactEntity = NULL;
 	}
 
-	virtual bool IsPlayerObject() const
+	bool IsPlayerObject() const override
 	{
 		return true;
 	}
 
-	virtual bool UseEdictSolid() const
+	bool UseEdictSolid() const override
 	{
 		return true;
 	}
 
-	virtual void StartFrame(btDiscreteDynamicsWorld* world);
+	void SetPhysicNoCollision(bool no_collision) override;
 
-	virtual void StartFrame_Post(btDiscreteDynamicsWorld* world);
+	void StartFrame(btDiscreteDynamicsWorld* world) override;
 
-	virtual void EndFrame(btDiscreteDynamicsWorld* world);
+	void StartFrame_Post(btDiscreteDynamicsWorld* world) override;
 
-	virtual void DispatchImpact(float impulse, const btVector3 &worldpos_on_source, const btVector3 &worldpos_on_hit, const btVector3 &normal, edict_t *hitent);
+	void EndFrame(btDiscreteDynamicsWorld* world) override;
+
+	void DispatchImpact(float impulse, const btVector3 &worldpos_on_source, const btVector3 &worldpos_on_hit, const btVector3 &normal, edict_t *hitent) override;
 
 	bool IsDuck() const
 	{
@@ -885,16 +964,18 @@ public:
 		m_mass = mass;
 	}
 
-	virtual void SetPhysicTransform(const Vector &origin, const Vector &angles);
+	void SetPhysicTransform(const Vector &origin, const Vector &angles) override;
 
-	virtual void SetPhysicFreeze(bool freeze);
+	void SetPhysicFreeze(bool freeze) override;
 
-	virtual bool IsClippingHullObject() const
+	void SetPhysicNoCollision(bool no_collision) override;
+
+	bool IsClippingHullObject() const override
 	{
 		return true;
 	}
 
-	virtual bool UseEdictSolid() const
+	bool UseEdictSolid() const override
 	{
 		return true;
 	}
@@ -1051,15 +1132,7 @@ public:
 
 			world->removeConstraint(constraint);
 			
-			if (constraint->getUserConstraintType() == ConstraintType_Wheel)
-			{
-				auto ptr = (CPhysicVehicleWheelInfo *)constraint->getUserConstraintPtr();
-
-				if (ptr)
-				{
-					delete ptr;
-				}
-			}
+			OnBeforeDeleteConstraint(constraint);
 
 			delete constraint;
 		}
@@ -1073,6 +1146,7 @@ public:
 			if (physobj)
 			{
 				physobj->RemoveFromPhysicWorld(world, numDynamicObjects);
+
 				delete physobj;
 			}
 		}
@@ -1197,6 +1271,16 @@ public:
 		return m_original_solid;
 	}
 
+	int GetFollowFlags() const
+	{
+		return m_follow_flags;
+	}
+
+	edict_t *GetFollowEnt() const
+	{
+		return m_follow_ent;
+	}
+
 	CPhysicObject *GetPhysicObjectByIndex(int index) const
 	{
 		return m_physics.at(index);
@@ -1292,13 +1376,14 @@ public:
 	void BuildSurfaceDisplayList(model_t* mod, msurface_t* fa, std::vector<glpoly_t*> &glpolys);
 	void GenerateBrushIndiceArray(std::vector<glpoly_t*> &glpolys);
 	void GenerateWorldVerticeArray(std::vector<glpoly_t*> &glpolys);
-	void GenerateIndexedArrayRecursiveWorldNode(mnode_t* node, vertexarray_t* vertexarray, indexarray_t* indexarray);
-	void GenerateIndexedArrayForBrushface(brushface_t* brushface, indexarray_t* indexarray);
-	void GenerateIndexedArrayForSurface(msurface_t* psurf, vertexarray_t* vertexarray, indexarray_t* indexarray);
-	void GenerateIndexedArrayForBrush(model_t* mod, vertexarray_t* vertexarray, indexarray_t* indexarray);
+	void GenerateArrayForBrushface(brushface_t* brushface, indexarray_t* brushindexarray, vertexarray_t* brushvertexarray);
+	void GenerateArrayRecursiveWorldNode(mnode_t* node, vertexarray_t* vertexarray, indexarray_t* brushindexarray, vertexarray_t* brushvertexarray);
+	void GenerateArrayForSurface(msurface_t* psurf, vertexarray_t* worldvertexarray, indexarray_t* brushindexarray, vertexarray_t* brushvertexarray);
+	void GenerateArrayForBrushModel(model_t* mod, vertexarray_t* worldvertexarray, indexarray_t* brushindexarray, vertexarray_t* brushvertexarray);
 	
 	void SetSimRate(float rate);
-	void SetGravity(float velocity);
+	void SetGravityAcceleration(float value);
+	float GetGravityAcceleration() const;
 	void StepSimulation(double framerate);
 
 	int GetSolidPlayerMask();
@@ -1308,8 +1393,10 @@ public:
 	void RemoveGameObject(int entindex);
 	void RemoveAllGameBodies();
 
-	btBvhTriangleMeshShape *CreateTriMeshShapeFromBrushModel(edict_t *ent);
-	CDynamicObject* CreateDynamicObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, int flags);
+	model_t *GetBrushModelFromEntity(edict_t *ent);
+	bool GetVertexIndexArrayFromBrushEntity(edict_t *ent, vertexarray_t **worldvertexarray, indexarray_t **brushindexarray, vertexarray_t **brushvertexarray);
+	btBvhTriangleMeshShape *CreateTriMeshShapeFromBrushEntity(edict_t *ent);
+	CDynamicObject* CreateDynamicObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass, float density, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, int flags);
 	CStaticObject* CreateStaticObject(CGameObject *obj, btCollisionShape *collisionShape, bool kinematic);
 	CPlayerObject* CreatePlayerObject(CGameObject *obj, btCollisionShape* collisionShape, float ccdRadius, float ccdThreshold, bool duck);
 	CClippingHullObject* CreateClippingHullObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, const btTransform& initTransform, float mass);
@@ -1321,13 +1408,15 @@ public:
 	bool CreateCompoundPhysicObject(edict_t* ent, PhysicShapeParams **shapeParamArray, size_t numShapeParam, PhysicObjectParams *objectParams);
 	btCollisionShape *CreateCollisionShapeFromParams(CGameObject *obj, PhysicShapeParams *shapeParams);
 	bool CreatePhysicObjectPost(edict_t *ent, CGameObject *obj, btCollisionShape *shape, PhysicObjectParams *objectParams);
-	bool CreatePlayerBox(edict_t* ent);
+	bool CreateSolidPlayer(edict_t* ent);
 	bool CreateSolidOptimizer(edict_t* ent, int boneindex, const Vector &mins, const Vector &maxs);
 	bool CreatePhysicTrigger(edict_t* ent);
-	
-	bool CreatePhysicVehicle(edict_t* ent, PhysicWheelParams **wheelParamArray, size_t numWheelParam, PhysicVehicleParams *vehicleParams);
+	bool CreatePhysicWater(edict_t* ent, float density, float linear_drag, float angular_drag);
+
+	bool CreatePhysicVehicle(edict_t* ent, PhysicVehicleParams *vehicleParams, PhysicWheelParams **wheelParamArray, size_t numWheelParam);
 	bool SetVehicleEngine(edict_t* ent, int wheelIndex, bool enableMotor, float angularVelcoity, float maxMotorForce);
 	bool SetVehicleSteering(edict_t* ent, int wheelIndex, float angularTarget, float angularVelocity, float maxMotorForce);
+	bool GetVehicleWheelRuntimeInfo(edict_t* ent, int wheelIndex, PhysicWheelRuntimeInfo *RuntimeInfo);
 	bool ApplyPhysicImpulse(edict_t* ent, const Vector& impulse, const Vector& origin);
 	bool ApplyPhysicForce(edict_t* ent, const Vector& force, const Vector& origin);
 	
@@ -1340,11 +1429,13 @@ public:
 
 	bool SetPhysicObjectTransform(edict_t* ent, const Vector &origin, const Vector &angles);
 	bool SetPhysicObjectFreeze(edict_t* ent, bool freeze);
+	bool SetPhysicObjectNoCollision(edict_t* ent, bool no_collision);
 
 	void SetPhysicPlayerConfig(PhysicPlayerConfigs *configs);
 	void EnablePhysicWorld(bool bEnabled);
 
 	bool IsEntitySuperPusher(edict_t* ent);
+	bool IsPointInsideBrushEntity(edict_t *ent, const vec3_t &p);
 
 	void EntityStartFrame(void);
 	void EntityStartFrame_Post(void);
@@ -1376,8 +1467,9 @@ private:
 	int m_maxIndexGameObject;
 	int m_numDynamicObjects;
 	std::vector<indexarray_t*> m_brushIndexArray;
+	std::vector<vertexarray_t*> m_brushVertexArray;
 	vertexarray_t* m_worldVertexArray;
-	float m_gravity;
+	float m_gravityAcceleration;
 	float m_simrate;
 	float m_playerMass;
 	float m_playerMaxPendingVelocity;
