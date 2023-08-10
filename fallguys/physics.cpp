@@ -1765,7 +1765,9 @@ private:
 	{
 		// Calculate center of mass and mass of this tetrahedron,
 		// see: https://en.wikipedia.org/wiki/Tetrahedron#Volume
-		outVolumeTimes6 = max((inV1 - inV4).dot((inV2 - inV4).cross(inV3 - inV4)), 0.0f); // All contributions should be positive because we use a reference point that is on the surface of the hull
+		outVolumeTimes6 = (inV1 - inV4).dot((inV2 - inV4).cross(inV3 - inV4)); // All contributions should be positive because we use a reference point that is on the surface of the hull
+		if (outVolumeTimes6 < 0)
+			outVolumeTimes6 = 0;
 		outCenterTimes4 = inV1 + inV2 + inV3 + inV4;
 	}
 
@@ -1837,7 +1839,9 @@ private:
 		sTetrahedronVolume4(inV1, inV2, inV3, inV4, total_volume, total_center);
 
 		// From this we can calculate the center and volume of the submerged part
-		outVolumeTimes6 = max(total_volume - dry_volume, 0.0f);
+		outVolumeTimes6 = total_volume - dry_volume;
+		if (outVolumeTimes6 < 0)
+			outVolumeTimes6 = 0;
 		outCenterTimes4 = outVolumeTimes6 > 0.0f ? (total_center * total_volume - dry_center * dry_volume) / outVolumeTimes6 : btVector3(0, 0, 0);
 	}
 
