@@ -2591,7 +2591,7 @@ public:
 
 };
 
-FORCEINLINE float fsel(float fComparand, float fValGE, float fLT)
+inline float fsel(float fComparand, float fValGE, float fLT)
 {
 	return fComparand >= 0 ? fValGE : fLT;
 }
@@ -3736,7 +3736,7 @@ public:
 
 		btTransform transScaled(btMatrix3x3::getIdentity().scaled(halfExtents));
 
-		PolyhedronSubmergedVolumeCalculator::Point *buffer = (PolyhedronSubmergedVolumeCalculator::Point *)_alloca(8 * sizeof(PolyhedronSubmergedVolumeCalculator::Point));
+		PolyhedronSubmergedVolumeCalculator::Point *buffer = (PolyhedronSubmergedVolumeCalculator::Point *)alloca(8 * sizeof(PolyhedronSubmergedVolumeCalculator::Point));
 		PolyhedronSubmergedVolumeCalculator submerged_vol_calc(worldTransform * transScaled, points, sizeof(btVector3), 8, GetSurfaceNormal(), GetSurfacePlane(), buffer);
 
 		if (submerged_vol_calc.AreAllAbove())
@@ -3843,7 +3843,7 @@ public:
 
 		btTransform transScaled(btMatrix3x3::getIdentity().scaled(halfExtents));
 
-		PolyhedronSubmergedVolumeCalculator::Point *buffer = (PolyhedronSubmergedVolumeCalculator::Point *)_alloca(8 * sizeof(PolyhedronSubmergedVolumeCalculator::Point));
+		PolyhedronSubmergedVolumeCalculator::Point *buffer = (PolyhedronSubmergedVolumeCalculator::Point *)alloca(8 * sizeof(PolyhedronSubmergedVolumeCalculator::Point));
 		PolyhedronSubmergedVolumeCalculator submerged_vol_calc(worldTransform * transScaled, points, sizeof(btVector3), 8, GetSurfaceNormal(), GetSurfacePlane(), buffer);
 
 		if (submerged_vol_calc.AreAllAbove())
@@ -3919,7 +3919,7 @@ public:
 
 		btTransform transScaled(btMatrix3x3::getIdentity().scaled(halfExtents));
 
-		PolyhedronSubmergedVolumeCalculator::Point *buffer = (PolyhedronSubmergedVolumeCalculator::Point *)_alloca(8 * sizeof(PolyhedronSubmergedVolumeCalculator::Point));
+		PolyhedronSubmergedVolumeCalculator::Point *buffer = (PolyhedronSubmergedVolumeCalculator::Point *)alloca(8 * sizeof(PolyhedronSubmergedVolumeCalculator::Point));
 		PolyhedronSubmergedVolumeCalculator submerged_vol_calc(worldTransform * transScaled, points, sizeof(btVector3), 8, GetSurfaceNormal(), GetSurfacePlane(), buffer);
 
 		if (submerged_vol_calc.AreAllAbove())
