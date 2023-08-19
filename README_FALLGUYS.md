@@ -158,7 +158,8 @@ g_EntityFuncs.SetEntitySemiVisible(pEntity.edict(), 0 );
 
 ### SemiClip
 
-//Entity set as SemiClip will be SemiClip to specified player(s)
+//Entity set as SemiClip will be noclip to specified player(s)
+
 //The collision between player and this entity is completely disabled.
 
 ```
