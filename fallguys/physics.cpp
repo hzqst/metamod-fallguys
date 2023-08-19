@@ -3111,6 +3111,25 @@ bool CPhysicsManager::SetEntitySemiClipToPlayer(edict_t* ent, int playerIndex)
 	return true;
 }
 
+bool CPhysicsManager::UnsetEntitySemiClipToPlayer(edict_t* ent, int playerIndex)
+{
+	if (ent->free)
+		return false;
+
+	auto obj = GetGameObject(ent);
+
+	if (!obj)
+	{
+		obj = new CGameObject(ent, g_engfuncs.pfnIndexOfEdict(ent));
+
+		AddGameObject(obj);
+	}
+
+	obj->UnsetSemiClipToPlayer(playerIndex);
+
+	return true;
+}
+
 bool CPhysicsManager::SetPhysicObjectTransform(edict_t* ent, const Vector &origin, const Vector &angles)
 {
 	if (ent->free)

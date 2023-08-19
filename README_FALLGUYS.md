@@ -156,6 +156,45 @@ g_EntityFuncs.SetEntitySemiVisible(pEntity.edict(), 0 );
 
 ```
 
+### SemiClip
+
+//Entity set as SemiClip will be SemiClip to specified player(s)
+//The collision between player and this entity is completely disabled.
+
+```
+
+//pEntity is noclip to "pPlayer" and stays clipping to any other players.
+
+g_EntityFuncs.SetEntitySemiClip(pEntity.edict(), (1 << (pPlayer.entindex() - 1)) );
+
+```
+
+```
+
+//pEntity is noclip to "pPlayer" and "pPlayer2" and stays clipping to any other players.
+
+g_EntityFuncs.SetEntitySemiClip(pEntity.edict(), (1 << (pPlayer.entindex() - 1)) |  (1 << (pPlayer2.entindex() - 1)) );
+
+```
+
+```
+
+//Set second arg to 0 to turn SemiClip off
+
+g_EntityFuncs.SetEntitySemiClip(pEntity.edict(), 0 );
+
+```
+
+```
+
+//Easier-to-use API
+
+g_EntityFuncs.SetEntitySemiClipToPlayer(pEntity.edict(), pPlayer.entindex() );
+
+g_EntityFuncs.UnsetEntitySemiClipToPlayer(pEntity.edict(), pPlayer.entindex() );
+
+```
+
 ### Create a physic object
 
 Physic objects run physic simulation (gravity, movement, collision) in Bullet Engine instead of GoldSrc hull clipping.
@@ -382,4 +421,118 @@ HookReturnCode PlayerTouchImpact( CBasePlayer@ pPlayer, CBaseEntity@ pOther )
 //edict_t@ GetViewEntity(edict_t@ pClient)
 
 edict_t@viewent = g_EngineFuncs.GetViewEntity(pPlayer.edict());
+```
+
+### Get some important information from sound file
+
+```
+//From FMOD.h header file.
+
+/*
+[ENUM]
+[
+    [DESCRIPTION]   
+    These definitions describe the type of song being played.
+
+    [REMARKS]
+
+    [PLATFORMS]
+    Win32, Win64, Linux, Linux64, Macintosh, Xbox360, PlayStation Portable, PlayStation 3, Wii, iPhone, 3GS, NGP, Android
+
+    [SEE_ALSO]      
+    Sound::getFormat
+]
+*/
+typedef enum
+{
+    FMOD_SOUND_TYPE_UNKNOWN,         /* 3rd party / unknown plugin format. */
+    FMOD_SOUND_TYPE_AIFF,            /* AIFF. */
+    FMOD_SOUND_TYPE_ASF,             /* Microsoft Advanced Systems Format (ie WMA/ASF/WMV). */
+    FMOD_SOUND_TYPE_AT3,             /* Sony ATRAC 3 format */
+    FMOD_SOUND_TYPE_CDDA,            /* Digital CD audio. */
+    FMOD_SOUND_TYPE_DLS,             /* Sound font / downloadable sound bank. */
+    FMOD_SOUND_TYPE_FLAC,            /* FLAC lossless codec. */
+    FMOD_SOUND_TYPE_FSB,             /* FMOD Sample Bank. */
+    FMOD_SOUND_TYPE_GCADPCM,         /* Nintendo GameCube/Wii ADPCM */
+    FMOD_SOUND_TYPE_IT,              /* Impulse Tracker. */
+    FMOD_SOUND_TYPE_MIDI,            /* MIDI. extracodecdata is a pointer to an FMOD_MIDI_EXTRACODECDATA structure. */
+    FMOD_SOUND_TYPE_MOD,             /* Protracker / Fasttracker MOD. */
+    FMOD_SOUND_TYPE_MPEG,            /* MP2/MP3 MPEG. */
+    FMOD_SOUND_TYPE_OGGVORBIS,       /* Ogg vorbis. */
+    FMOD_SOUND_TYPE_PLAYLIST,        /* Information only from ASX/PLS/M3U/WAX playlists */
+    FMOD_SOUND_TYPE_RAW,             /* Raw PCM data. */
+    FMOD_SOUND_TYPE_S3M,             /* ScreamTracker 3. */
+    FMOD_SOUND_TYPE_SF2,             /* Sound font 2 format. */
+    FMOD_SOUND_TYPE_USER,            /* User created sound. */
+    FMOD_SOUND_TYPE_WAV,             /* Microsoft WAV. */
+    FMOD_SOUND_TYPE_XM,              /* FastTracker 2 XM. */
+    FMOD_SOUND_TYPE_XMA,             /* Xbox360 XMA */
+    FMOD_SOUND_TYPE_VAG,             /* PlayStation Portable ADPCM VAG format. */
+    FMOD_SOUND_TYPE_AUDIOQUEUE,      /* iPhone hardware decoder, supports AAC, ALAC and MP3. extracodecdata is a pointer to an FMOD_AUDIOQUEUE_EXTRACODECDATA structure. */
+    FMOD_SOUND_TYPE_XWMA,            /* Xbox360 XWMA */
+    FMOD_SOUND_TYPE_BCWAV,           /* 3DS BCWAV container format for DSP ADPCM and PCM */
+    FMOD_SOUND_TYPE_AT9,             /* NGP ATRAC 9 format */
+    FMOD_SOUND_TYPE_VORBIS,          /* Raw vorbis */
+    FMOD_SOUND_TYPE_MEDIA_FOUNDATION,/* Microsoft Media Foundation wrappers, supports ASF/WMA */
+
+    FMOD_SOUND_TYPE_MAX,             /* Maximum number of sound types supported. */
+    FMOD_SOUND_TYPE_FORCEINT = 65536 /* Makes sure this enum is signed 32bit. */
+} FMOD_SOUND_TYPE;
+
+
+/*
+[ENUM]
+[
+    [DESCRIPTION]   
+    These definitions describe the native format of the hardware or software buffer that will be used.
+
+    [REMARKS]
+    This is the format the native hardware or software buffer will be or is created in.
+
+    [PLATFORMS]
+    Win32, Win64, Linux, Linux64, Macintosh, Xbox360, PlayStation Portable, PlayStation 3, Wii, iPhone, 3GS, NGP, Android
+
+    [SEE_ALSO]
+    System::createSound
+    Sound::getFormat
+]
+*/
+typedef enum
+{
+    FMOD_SOUND_FORMAT_NONE,             /* Unitialized / unknown. */
+    FMOD_SOUND_FORMAT_PCM8,             /* 8bit integer PCM data. */
+    FMOD_SOUND_FORMAT_PCM16,            /* 16bit integer PCM data. */
+    FMOD_SOUND_FORMAT_PCM24,            /* 24bit integer PCM data. */
+    FMOD_SOUND_FORMAT_PCM32,            /* 32bit integer PCM data. */
+    FMOD_SOUND_FORMAT_PCMFLOAT,         /* 32bit floating point PCM data. */
+    FMOD_SOUND_FORMAT_GCADPCM,          /* Compressed Nintendo 3DS/Wii DSP data. */
+    FMOD_SOUND_FORMAT_IMAADPCM,         /* Compressed IMA ADPCM data. */
+    FMOD_SOUND_FORMAT_VAG,              /* Compressed PlayStation Portable ADPCM data. */
+    FMOD_SOUND_FORMAT_HEVAG,            /* Compressed PSVita ADPCM data. */
+    FMOD_SOUND_FORMAT_XMA,              /* Compressed Xbox360 XMA data. */
+    FMOD_SOUND_FORMAT_MPEG,             /* Compressed MPEG layer 2 or 3 data. */
+    FMOD_SOUND_FORMAT_CELT,             /* Compressed CELT data. */
+    FMOD_SOUND_FORMAT_AT9,              /* Compressed PSVita ATRAC9 data. */
+    FMOD_SOUND_FORMAT_XWMA,             /* Compressed Xbox360 xWMA data. */
+    FMOD_SOUND_FORMAT_VORBIS,           /* Compressed Vorbis data. */
+
+    FMOD_SOUND_FORMAT_MAX,              /* Maximum number of sound formats supported. */   
+    FMOD_SOUND_FORMAT_FORCEINT = 65536  /* Makes sure this enum is signed 32bit. */
+} FMOD_SOUND_FORMAT;
+```
+
+```
+
+//bool GetSoundInfo(const string& in szSoundName, SoundEngine_SoundInfo & out SoundInfo)
+
+SoundEngine_SoundInfo info;
+
+if(g_SoundEngine.GetSoundInfo("weapons/357_shot1.wav", info))
+{
+	g_Game.AlertMessage( at_console, "Sound %1, type=%2, format=%3, channels=%4, bits=%5, length=%6\n", "weapons/357_shot1.wav", info.type, info.format, info.channels, info.bits, info.length);
+
+	//The units of info.length is Milliseconds
+
+}
+
 ```

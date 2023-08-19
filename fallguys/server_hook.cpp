@@ -178,6 +178,11 @@ bool SC_SERVER_DECL CASEntityFuncs__SetEntitySemiClipToPlayer(void* pthis, SC_SE
 	return gPhysicsManager.SetEntitySemiClipToPlayer(ent, playerIndex);
 }
 
+bool SC_SERVER_DECL CASEntityFuncs__UnsetEntitySemiClipToPlayer(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int playerIndex)
+{
+	return gPhysicsManager.UnsetEntitySemiClipToPlayer(ent, playerIndex);
+}
+
 edict_t *SC_SERVER_DECL CASEntityFuncs__GetCurrentSuperPusher(void* pthis, SC_SERVER_DUMMYARG Vector* vecPushDirection)
 {
 	return GetCurrentSuperPusher(vecPushDirection);
@@ -587,12 +592,16 @@ void RegisterAngelScriptMethods(void)
 			(void *)CASEntityFuncs__SetEntitySemiVisible, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Enable Semi-Visible for entity", "CEntityFuncs", "bool SetEntitySemiClip(edict_t@ ent, int player_mask)",
+			"Enable SemiClip for entity", "CEntityFuncs", "bool SetEntitySemiClip(edict_t@ ent, int player_mask)",
 			(void *)CASEntityFuncs__SetEntitySemiClip, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Enable Semi-Visible for entity", "CEntityFuncs", "bool SetEntitySemiClipToPlayer(edict_t@ ent, int playerIndex)",
+			"Enable SemiClip for entity", "CEntityFuncs", "bool SetEntitySemiClipToPlayer(edict_t@ ent, int playerIndex)",
 			(void *)CASEntityFuncs__SetEntitySemiClipToPlayer, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Disable SemiClip for entity", "CEntityFuncs", "bool UnsetEntitySemiClipToPlayer(edict_t@ ent, int playerIndex)",
+			(void *)CASEntityFuncs__UnsetEntitySemiClipToPlayer, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Enable follow for the entity", "CEntityFuncs", "bool SetEntityFollow(edict_t@ ent, edict_t@ follow, int flags, const Vector& in origin_offset, const Vector& in angles_offset )",

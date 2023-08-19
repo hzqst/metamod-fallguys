@@ -1450,6 +1450,7 @@ public:
 	bool SetEntitySemiVisible(edict_t* ent, int player_mask);
 	bool SetEntitySemiClip(edict_t* ent, int player_mask);
 	bool SetEntitySemiClipToPlayer(edict_t* ent, int playerIndex);
+	bool UnsetEntitySemiClipToPlayer(edict_t* ent, int playerIndex);
 	bool SetEntitySuperPusher(edict_t* ent, bool enable);
 	bool SetEntityFollow(edict_t* ent, edict_t* follow, int flags, const Vector &origin_offset, const Vector &angles_offset);
 	bool SetEntityEnvStudioAnim(edict_t* ent, int flags, float overrideCurFrame, float overrideMaxFrame, EnvStudioKeyframe **keyframes, size_t numKeyframes);
