@@ -168,6 +168,16 @@ bool SC_SERVER_DECL CASEntityFuncs__SetEntitySemiVisible(void* pthis, SC_SERVER_
 	return gPhysicsManager.SetEntitySemiVisible(ent, player_mask);
 }
 
+bool SC_SERVER_DECL CASEntityFuncs__SetEntitySemiClip(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int player_mask)
+{
+	return gPhysicsManager.SetEntitySemiClip(ent, player_mask);
+}
+
+bool SC_SERVER_DECL CASEntityFuncs__SetEntitySemiClipToPlayer(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int playerIndex)
+{
+	return gPhysicsManager.SetEntitySemiClipToPlayer(ent, playerIndex);
+}
+
 edict_t *SC_SERVER_DECL CASEntityFuncs__GetCurrentSuperPusher(void* pthis, SC_SERVER_DUMMYARG Vector* vecPushDirection)
 {
 	return GetCurrentSuperPusher(vecPushDirection);
@@ -575,6 +585,14 @@ void RegisterAngelScriptMethods(void)
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Enable Semi-Visible for entity", "CEntityFuncs", "bool SetEntitySemiVisible(edict_t@ ent, int player_mask)",
 			(void *)CASEntityFuncs__SetEntitySemiVisible, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Enable Semi-Visible for entity", "CEntityFuncs", "bool SetEntitySemiClip(edict_t@ ent, int player_mask)",
+			(void *)CASEntityFuncs__SetEntitySemiClip, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Enable Semi-Visible for entity", "CEntityFuncs", "bool SetEntitySemiClipToPlayer(edict_t@ ent, int playerIndex)",
+			(void *)CASEntityFuncs__SetEntitySemiClipToPlayer, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Enable follow for the entity", "CEntityFuncs", "bool SetEntityFollow(edict_t@ ent, edict_t@ follow, int flags, const Vector& in origin_offset, const Vector& in angles_offset )",

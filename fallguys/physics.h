@@ -1064,7 +1064,7 @@ public:
 		m_backup_mins = g_vecZero;
 		m_backup_maxs = g_vecZero;
 		m_semi_vis_mask = 0;
-		m_semi_clip_mask = 0;
+		m_player_semi_clip_mask = 0;
 		m_original_solid = 0;
 		m_anim_flags = 0;
 		m_anim_curframe = 0;
@@ -1246,19 +1246,45 @@ public:
 		return m_semi_vis_mask;
 	}
 
-	void SetSemiClipMask(int player_mask)
+	void SetPlayerSemiClipMask(int player_mask)
 	{
-		m_semi_clip_mask = player_mask;
+		m_player_semi_clip_mask = player_mask;
 	}
 
-	void RemoveSemiClipMask(int player_mask)
+	void AddPlayerSemiClipMask(int player_mask)
 	{
-		m_semi_clip_mask &= ~player_mask;
+		m_player_semi_clip_mask |= player_mask;
 	}
 
-	int GetSemiClipMask() const
+	void RemovePlayerSemiClipMask(int player_mask)
 	{
-		return m_semi_clip_mask;
+		m_player_semi_clip_mask &= ~player_mask;
+	}
+
+	void SetSemiClipToPlayer(int playerIndex)
+	{
+		int player_mask = (1 << (playerIndex - 1));
+
+		AddPlayerSemiClipMask(player_mask);
+	}
+
+	void UnsetSemiClipToPlayer(int playerIndex)
+	{
+		int player_mask = (1 << (playerIndex - 1));
+
+		RemovePlayerSemiClipMask(player_mask);
+	}
+
+	int GetPlayerSemiClipMask() const
+	{
+		return m_player_semi_clip_mask;
+	}
+
+	bool IsSemiClipToPlayer(int playerIndex) const
+	{
+		int player_mask = (1 << (playerIndex - 1));
+
+		return (GetPlayerSemiClipMask() &  player_mask) ? true : false;
 	}
 
 	void SetOriginalSolid(int original_solid)
@@ -1332,7 +1358,7 @@ private:
 
 	int m_semi_vis_mask;
 
-	int m_semi_clip_mask;
+	int m_player_semi_clip_mask;
 
 	int m_original_solid;
 
@@ -1422,6 +1448,8 @@ public:
 	
 	bool SetEntityLevelOfDetail(edict_t* ent, int flags, int body_0, float scale_0, int body_1, float scale_1, float distance_1, int body_2, float scale_2, float distance_2, int body_3, float scale_3, float distance_3);
 	bool SetEntitySemiVisible(edict_t* ent, int player_mask);
+	bool SetEntitySemiClip(edict_t* ent, int player_mask);
+	bool SetEntitySemiClipToPlayer(edict_t* ent, int playerIndex);
 	bool SetEntitySuperPusher(edict_t* ent, bool enable);
 	bool SetEntityFollow(edict_t* ent, edict_t* follow, int flags, const Vector &origin_offset, const Vector &angles_offset);
 	bool SetEntityEnvStudioAnim(edict_t* ent, int flags, float overrideCurFrame, float overrideMaxFrame, EnvStudioKeyframe **keyframes, size_t numKeyframes);
@@ -1444,6 +1472,7 @@ public:
 	bool SetAbsBox(edict_t *pent);
 	bool AddToFullPack(struct entity_state_s *state, int entindex, edict_t *ent, edict_t *host, int hostflags, int player);
 	
+	bool ShouldCollide(edict_t *pentTouched, edict_t *pentOther);
 	bool PM_ShouldCollide(int info);
 	void PM_StartMove();
 	void PM_EndMove(); 

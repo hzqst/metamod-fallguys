@@ -1723,7 +1723,7 @@ void CSolidOptimizerGhostPhysicObject::OnTouchRigidBody(btDiscreteDynamicsWorld*
 	{
 		int playerIndex = physobj->GetGameObject()->GetEntIndex();
 
-		GetGameObject()->RemoveSemiClipMask((1 << (playerIndex - 1)));
+		GetGameObject()->RemovePlayerSemiClipMask((1 << (playerIndex - 1)));
 	}
 }
 
@@ -2245,17 +2245,37 @@ qboolean CPhysicsManager::PM_AddToTouched(pmtrace_t tr, vec3_t impactvelocity)
 	return true;
 }
 
+bool CPhysicsManager::ShouldCollide(edict_t *pentTouched, edict_t *pentOther)
+{
+	if (IsEntitySolidPlayer(pentOther))
+	{
+		auto obj = GetGameObject(pentTouched);
+
+		if (obj && obj->GetSemiVisibleMask())
+		{
+			int playerIndex = ENTINDEX(pentOther);
+
+			if (obj->IsSemiClipToPlayer(playerIndex))
+			{
+				return false;
+			}
+		}
+	}
+	
+	return true;
+}
+
 bool CPhysicsManager::PM_ShouldCollide(int entindex)
 {
 	if (entindex > 0)
 	{
-		int playerIndex = pmove->player_index + 1;
-
 		auto obj = GetGameObject(entindex);
 
-		if (obj && obj->IsSolidOptimizerEnabled())
+		if (obj && obj->GetSemiVisibleMask())
 		{
-			if ((obj->GetSemiClipMask() & (playerIndex - 1)))
+			int playerIndex = pmove->player_index + 1;
+
+			if (obj->IsSemiClipToPlayer(playerIndex))
 			{
 				return false;
 			}
@@ -3049,6 +3069,44 @@ bool CPhysicsManager::SetEntitySemiVisible(edict_t* ent, int player_mask)
 	}
 
 	obj->SetSemiVisibleMask(player_mask);
+
+	return true;
+}
+
+bool CPhysicsManager::SetEntitySemiClip(edict_t* ent, int player_mask)
+{
+	if (ent->free)
+		return false;
+
+	auto obj = GetGameObject(ent);
+
+	if (!obj)
+	{
+		obj = new CGameObject(ent, g_engfuncs.pfnIndexOfEdict(ent));
+
+		AddGameObject(obj);
+	}
+
+	obj->SetPlayerSemiClipMask(player_mask);
+
+	return true;
+}
+
+bool CPhysicsManager::SetEntitySemiClipToPlayer(edict_t* ent, int playerIndex)
+{
+	if (ent->free)
+		return false;
+
+	auto obj = GetGameObject(ent);
+
+	if (!obj)
+	{
+		obj = new CGameObject(ent, g_engfuncs.pfnIndexOfEdict(ent));
+
+		AddGameObject(obj);
+	}
+
+	obj->SetSemiClipToPlayer(playerIndex);
 
 	return true;
 }
@@ -4908,9 +4966,10 @@ bool CPhysicsManager::IsEntitySuperPusher(edict_t* ent)
 
 void CGameObject::StartFrame(btDiscreteDynamicsWorld* world)
 {
+	//SemiClip to all solid players at start, and remove masks later
 	if (IsSolidOptimizerEnabled())
 	{
-		SetSemiClipMask(gPhysicsManager.GetSolidPlayerMask());
+		SetPlayerSemiClipMask(gPhysicsManager.GetSolidPlayerMask());
 	}
 
 	for (size_t i = 0; i < m_physics.size(); ++i)
@@ -5312,11 +5371,11 @@ bool CGameObject::AddToFullPack(struct entity_state_s *state, int entindex, edic
 		}
 	}
 
-	if (GetSemiClipMask() != 0)
+	if (GetPlayerSemiClipMask() != 0)
 	{
 		int hostindex = g_engfuncs.pfnIndexOfEdict(host);
 
-		if ((GetSemiClipMask() & (1 << (hostindex - 1))) != 0)
+		if (IsSemiClipToPlayer(hostindex))
 		{
 			state->solid = SOLID_NOT;
 		}

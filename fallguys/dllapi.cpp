@@ -509,13 +509,26 @@ void NewGameShutdown(void)
 	SET_META_RESULT(MRES_IGNORED);
 }
 
+int NewShouldCollide(edict_t *pentTouched, edict_t *pentOther)
+{
+	bool result = gPhysicsManager.ShouldCollide(pentTouched, pentOther);
+	if (false == result)
+	{
+		SET_META_RESULT(MRES_SUPERCEDE);
+		return 0;
+	}
+
+	SET_META_RESULT(MRES_IGNORED);
+	return 1;
+}
+
 static NEW_DLL_FUNCTIONS gNewDllFunctionTable =
 {
 	// Called right before the object's memory is freed. 
 	// Calls its destructor.
 	NewOnFreeEntPrivateData,
 	NULL,
-	NULL,
+	NewShouldCollide,
 
 	// Added 2005/08/11 (no SDK update):
 	NULL,//void(*pfnCvarValue)(const edict_t *pEnt, const char *value);
