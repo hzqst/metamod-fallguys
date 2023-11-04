@@ -322,14 +322,14 @@ static void mm_OnFreeEntPrivateData(edict_t *pEnt) {
 	RETURN_API_void();
 }
 
-void mutil_FreeAllHook(void);
+void mutil_FreeAllHooks(void);
 void metamod_unload(void);
 
 static void mm_GameShutdown(void) {
 	
 	META_NEWAPI_HANDLE_void(FN_GAMESHUTDOWN, pfnGameShutdown, void, (VOID_ARG));
 
-	mutil_FreeAllHook();
+	mutil_FreeAllHooks();
 	metamod_unload();
 
 	RETURN_API_void();

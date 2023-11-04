@@ -634,7 +634,7 @@ void mutil_CommitHooks(void)
 	}
 }
 
-void mutil_FreeAllHook(void)
+void mutil_FreeAllHooks(void)
 {
 	hook_t *next = NULL;
 
