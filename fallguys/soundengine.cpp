@@ -16,6 +16,7 @@ static FMOD_SYSTEM *g_FMOD_System = NULL;
 
 FMOD_FUNCTION_DEFINE(FMOD_System_Create);
 FMOD_FUNCTION_DEFINE(FMOD_System_SetCallback);
+FMOD_FUNCTION_DEFINE(FMOD_System_SetOutput);
 FMOD_FUNCTION_DEFINE(FMOD_System_Init);
 FMOD_FUNCTION_DEFINE(FMOD_System_Close);
 FMOD_FUNCTION_DEFINE(FMOD_System_Release);
@@ -97,6 +98,7 @@ static bool LoadFMOD_Server()
 
 	FMOD_DLSYM(FMOD_System_Create);
 	FMOD_DLSYM(FMOD_System_SetCallback);
+	FMOD_DLSYM(FMOD_System_SetOutput);
 	FMOD_DLSYM(FMOD_System_Init);
 	FMOD_DLSYM(FMOD_System_Close);
 	FMOD_DLSYM(FMOD_System_Release);
@@ -139,7 +141,27 @@ static bool LoadFMOD_Server()
 		return false;
 	}
 
-	result = g_pfn_FMOD_System_Init(g_FMOD_System, 0, FMOD_INIT_STREAM_FROM_UPDATE, NULL);
+	g_pfn_FMOD_System_SetOutput(g_FMOD_System, FMOD_OUTPUTTYPE_NOSOUND);
+
+	if (result != FMOD_OK)
+	{
+		if (g_FMOD_System)
+		{
+			g_pfn_FMOD_System_Release(g_FMOD_System);
+			g_FMOD_System = NULL;
+		}
+
+		if (g_FMOD_DllHandle)
+		{
+			gpMetaUtilFuncs->pfnFreeLibrary(g_FMOD_DllHandle);
+			g_FMOD_DllHandle = NULL;
+		}
+
+		LOG_ERROR(PLID, "failed to FMOD_System_SetOutput, result: %d", result);
+		return false;
+	}
+
+	result = g_pfn_FMOD_System_Init(g_FMOD_System, 0, FMOD_INIT_NORMAL, NULL);
 
 	if (result != FMOD_OK)
 	{
