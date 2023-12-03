@@ -61,5 +61,8 @@
     <ClInclude Include="soundengine.h">
       <Filter>Header</Filter>
     </ClInclude>
+    <ClInclude Include="ehandle.h">
+      <Filter>Header</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

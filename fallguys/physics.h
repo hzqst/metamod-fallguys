@@ -10,6 +10,7 @@
 #include <com_model.h>
 #include <pmtrace.h>
 #include <pm_defs.h>
+#include "ehandle.h"
 
 void OnBeforeDeleteRigidBody(btRigidBody *rigidbody);
 void OnBeforeDeletePairCachingGhostObject(btPairCachingGhostObject *ghostobj);
@@ -1064,7 +1065,8 @@ public:
 		m_backup_mins = g_vecZero;
 		m_backup_maxs = g_vecZero;
 		m_semi_vis_mask = 0;
-		m_player_semi_clip_mask = 0;
+		m_semiclip_to_entities.clear();
+		//m_player_semi_clip_mask = 0;
 		m_original_solid = 0;
 		m_anim_flags = 0;
 		m_anim_curframe = 0;
@@ -1248,43 +1250,128 @@ public:
 
 	void SetPlayerSemiClipMask(int player_mask)
 	{
-		m_player_semi_clip_mask = player_mask;
+		//m_player_semi_clip_mask = player_mask;
+
+		for (int entindex = 1; entindex <= gpGlobals->maxClients; ++entindex)
+		{
+			if (player_mask & (1 << (entindex - 1)))
+			{
+				SetSemiClipToEntity(entindex);
+			}
+			else
+			{
+				UnsetSemiClipToEntity(entindex);
+			}
+		}
 	}
 
 	void AddPlayerSemiClipMask(int player_mask)
 	{
-		m_player_semi_clip_mask |= player_mask;
+		//m_player_semi_clip_mask |= player_mask;
+
+		for (int entindex = 1; entindex <= gpGlobals->maxClients; ++entindex)
+		{
+			if (player_mask & (1 << (entindex - 1)))
+			{
+				SetSemiClipToEntity(entindex);
+			}
+		}
 	}
 
 	void RemovePlayerSemiClipMask(int player_mask)
 	{
-		m_player_semi_clip_mask &= ~player_mask;
+		//m_player_semi_clip_mask &= ~player_mask;
+
+		for (int entindex = 1; entindex <= gpGlobals->maxClients; ++entindex)
+		{
+			if (player_mask & (1 << (entindex - 1)))
+			{
+				UnsetSemiClipToEntity(entindex);
+			}
+		}
 	}
 
-	void SetSemiClipToPlayer(int playerIndex)
+	void SetSemiClipToEntity(int entindex)
 	{
-		int player_mask = (1 << (playerIndex - 1));
+		//int player_mask = (1 << (entindex - 1));
+		//AddPlayerSemiClipMask(player_mask);
 
-		AddPlayerSemiClipMask(player_mask);
+		auto ent = g_engfuncs.pfnPEntityOfEntIndex(entindex);
+
+		if (ent && !ent->free)
+		{
+			SetSemiClipToEntity(ent);
+		}
 	}
 
-	void UnsetSemiClipToPlayer(int playerIndex)
+	void UnsetSemiClipToEntity(int entindex)
 	{
-		int player_mask = (1 << (playerIndex - 1));
+		//int player_mask = (1 << (entindex - 1));
+		//RemovePlayerSemiClipMask(player_mask);
 
-		RemovePlayerSemiClipMask(player_mask);
+		auto ent = g_engfuncs.pfnPEntityOfEntIndex(entindex);
+
+		if (ent && !ent->free)
+		{
+			SetSemiClipToEntity(ent);
+		}
 	}
 
-	int GetPlayerSemiClipMask() const
+	void SetSemiClipToEntity(edict_t *targetEntity)
 	{
-		return m_player_semi_clip_mask;
+		auto itor = std::find_if(m_semiclip_to_entities.begin(), m_semiclip_to_entities.end(), [targetEntity](const EHANDLE& ehandle) {
+			return ehandle.Get() == targetEntity;
+		});
+
+		if (itor == m_semiclip_to_entities.end())
+		{
+			m_semiclip_to_entities.emplace_back(targetEntity);
+		}
 	}
 
-	bool IsSemiClipToPlayer(int playerIndex) const
+	void UnsetSemiClipToEntity(edict_t* targetEntity)
 	{
-		int player_mask = (1 << (playerIndex - 1));
+		auto itor = std::find_if(m_semiclip_to_entities.begin(), m_semiclip_to_entities.end(), [targetEntity](const EHANDLE& ehandle) {
+			return ehandle.Get() == targetEntity;
+		});
 
-		return (GetPlayerSemiClipMask() &  player_mask) ? true : false;
+		if (itor == m_semiclip_to_entities.end())
+		{
+			m_semiclip_to_entities.erase(itor);
+		}
+	}
+
+	void UnsetSemiClipToAll()
+	{
+		m_semiclip_to_entities.clear();
+	}
+
+	bool IsSemiClipToEntity(int entindex) const
+	{
+		//int player_mask = (1 << (entindex - 1));
+		//return (GetPlayerSemiClipMask() &  player_mask) ? true : false;
+
+		auto ent = g_engfuncs.pfnPEntityOfEntIndex(entindex);
+
+		if (ent && !ent->free)
+		{
+			return IsSemiClipToEntity(ent);
+		}
+		return false;
+	}
+
+	bool IsSemiClipToEntity(edict_t* targetEntity) const
+	{
+		auto itor = std::find_if(m_semiclip_to_entities.begin(), m_semiclip_to_entities.end(), [targetEntity](const EHANDLE& ehandle) {
+			return ehandle.Get() == targetEntity;
+		});
+
+		if (itor == m_semiclip_to_entities.end())
+		{
+			return false;
+		}
+
+		return true;
 	}
 
 	void SetOriginalSolid(int original_solid)
@@ -1358,13 +1445,14 @@ private:
 
 	int m_semi_vis_mask;
 
-	int m_player_semi_clip_mask;
+	//int m_player_semi_clip_mask;
+	std::vector<EHANDLE> m_semiclip_to_entities;
 
 	int m_original_solid;
 
 	int m_follow_flags;
 
-	edict_t* m_follow_ent;
+	EHANDLE m_follow_ent;
 
 	vec3_t m_follow_origin_offet;
 
@@ -1449,8 +1537,11 @@ public:
 	bool SetEntityLevelOfDetail(edict_t* ent, int flags, int body_0, float scale_0, int body_1, float scale_1, float distance_1, int body_2, float scale_2, float distance_2, int body_3, float scale_3, float distance_3);
 	bool SetEntitySemiVisible(edict_t* ent, int player_mask);
 	bool SetEntitySemiClip(edict_t* ent, int player_mask);
-	bool SetEntitySemiClipToPlayer(edict_t* ent, int playerIndex);
-	bool UnsetEntitySemiClipToPlayer(edict_t* ent, int playerIndex);
+	bool SetEntitySemiClipToEntityIndex(edict_t* ent, int playerIndex);
+	bool UnsetEntitySemiClipToEntityIndex(edict_t* ent, int playerIndex);
+	bool SetEntitySemiClipToEntity(edict_t* ent, edict_t* targetEntity);
+	bool UnsetEntitySemiClipToEntity(edict_t* ent, edict_t* targetEntity);
+	bool UnsetEntitySemiClipToAll(edict_t* ent);
 	bool SetEntitySuperPusher(edict_t* ent, bool enable);
 	bool SetEntityFollow(edict_t* ent, edict_t* follow, int flags, const Vector &origin_offset, const Vector &angles_offset);
 	bool SetEntityEnvStudioAnim(edict_t* ent, int flags, float overrideCurFrame, float overrideMaxFrame, EnvStudioKeyframe **keyframes, size_t numKeyframes);

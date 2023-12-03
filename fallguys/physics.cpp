@@ -9,6 +9,7 @@
 #include "fallguys.h"
 
 #include "physics.h"
+#include "ehandle.h"
 
 extern edict_t* r_worldentity;
 extern model_t* r_worldmodel;
@@ -2247,21 +2248,29 @@ qboolean CPhysicsManager::PM_AddToTouched(pmtrace_t tr, vec3_t impactvelocity)
 
 bool CPhysicsManager::ShouldCollide(edict_t *pentTouched, edict_t *pentOther)
 {
+#if 0
 	if (IsEntitySolidPlayer(pentOther))
 	{
-		auto obj = GetGameObject(pentTouched);
+		auto gameObj = GetGameObject(pentTouched);
 
-		if (obj && obj->GetSemiVisibleMask())
+		if (gameObj)
 		{
 			int playerIndex = ENTINDEX(pentOther);
-
-			if (obj->IsSemiClipToPlayer(playerIndex))
+			if (gameObj->IsSemiClipToPlayer(playerIndex))
 			{
 				return false;
 			}
 		}
 	}
-	
+#endif
+
+	auto gameObjTouched = GetGameObject(pentTouched);
+
+	if (gameObjTouched && gameObjTouched->IsSemiClipToEntity(pentOther))
+	{
+		return false;
+	}
+
 	return true;
 }
 
@@ -2269,13 +2278,26 @@ bool CPhysicsManager::PM_ShouldCollide(int entindex)
 {
 	if (entindex > 0)
 	{
-		auto obj = GetGameObject(entindex);
+#if 0
+		auto gameObj = GetGameObject(entindex);
 
-		if (obj && obj->GetSemiVisibleMask())
+		if (gameObj)
 		{
 			int playerIndex = pmove->player_index + 1;
 
-			if (obj->IsSemiClipToPlayer(playerIndex))
+			if (gameObj->IsSemiClipToPlayer(playerIndex))
+			{
+				return false;
+			}
+		}
+#endif
+		auto gameObj = GetGameObject(entindex);
+
+		if (gameObj)
+		{
+			int playerIndex = pmove->player_index + 1;
+
+			if (gameObj->IsSemiClipToEntity(playerIndex))
 			{
 				return false;
 			}
@@ -3088,11 +3110,11 @@ bool CPhysicsManager::SetEntitySemiClip(edict_t* ent, int player_mask)
 	}
 
 	obj->SetPlayerSemiClipMask(player_mask);
-
+	
 	return true;
 }
 
-bool CPhysicsManager::SetEntitySemiClipToPlayer(edict_t* ent, int playerIndex)
+bool CPhysicsManager::SetEntitySemiClipToEntityIndex(edict_t* ent, int entindex)
 {
 	if (ent->free)
 		return false;
@@ -3106,12 +3128,12 @@ bool CPhysicsManager::SetEntitySemiClipToPlayer(edict_t* ent, int playerIndex)
 		AddGameObject(obj);
 	}
 
-	obj->SetSemiClipToPlayer(playerIndex);
+	obj->SetSemiClipToEntity(entindex);
 
 	return true;
 }
 
-bool CPhysicsManager::UnsetEntitySemiClipToPlayer(edict_t* ent, int playerIndex)
+bool CPhysicsManager::UnsetEntitySemiClipToEntityIndex(edict_t* ent, int entindex)
 {
 	if (ent->free)
 		return false;
@@ -3125,7 +3147,64 @@ bool CPhysicsManager::UnsetEntitySemiClipToPlayer(edict_t* ent, int playerIndex)
 		AddGameObject(obj);
 	}
 
-	obj->UnsetSemiClipToPlayer(playerIndex);
+	obj->UnsetSemiClipToEntity(entindex);
+
+	return true;
+}
+
+bool CPhysicsManager::SetEntitySemiClipToEntity(edict_t* ent, edict_t* targetEntity)
+{
+	if (ent->free)
+		return false;
+
+	auto obj = GetGameObject(ent);
+
+	if (!obj)
+	{
+		obj = new CGameObject(ent, g_engfuncs.pfnIndexOfEdict(ent));
+
+		AddGameObject(obj);
+	}
+
+	obj->SetSemiClipToEntity(targetEntity);
+
+	return true;
+}
+
+bool CPhysicsManager::UnsetEntitySemiClipToEntity(edict_t* ent, edict_t* targetEntity)
+{
+	if (ent->free)
+		return false;
+
+	auto obj = GetGameObject(ent);
+
+	if (!obj)
+	{
+		obj = new CGameObject(ent, g_engfuncs.pfnIndexOfEdict(ent));
+
+		AddGameObject(obj);
+	}
+
+	obj->UnsetSemiClipToEntity(targetEntity);
+
+	return true;
+}
+
+bool CPhysicsManager::UnsetEntitySemiClipToAll(edict_t* ent)
+{
+	if (ent->free)
+		return false;
+
+	auto obj = GetGameObject(ent);
+
+	if (!obj)
+	{
+		obj = new CGameObject(ent, g_engfuncs.pfnIndexOfEdict(ent));
+
+		AddGameObject(obj);
+	}
+
+	obj->UnsetSemiClipToAll();
 
 	return true;
 }
@@ -5389,7 +5468,7 @@ bool CGameObject::AddToFullPack(struct entity_state_s *state, int entindex, edic
 			return false;
 		}
 	}
-
+#if 0
 	if (GetPlayerSemiClipMask() != 0)
 	{
 		int hostindex = g_engfuncs.pfnIndexOfEdict(host);
@@ -5398,6 +5477,12 @@ bool CGameObject::AddToFullPack(struct entity_state_s *state, int entindex, edic
 		{
 			state->solid = SOLID_NOT;
 		}
+	}
+#endif
+
+	if (IsSemiClipToEntity(host))
+	{
+		state->solid = SOLID_NOT;
 	}
 
 	if (GetLevelOfDetailFlags() != 0)

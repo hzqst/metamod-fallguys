@@ -173,14 +173,45 @@ bool SC_SERVER_DECL CASEntityFuncs__SetEntitySemiClip(void* pthis, SC_SERVER_DUM
 	return gPhysicsManager.SetEntitySemiClip(ent, player_mask);
 }
 
-bool SC_SERVER_DECL CASEntityFuncs__SetEntitySemiClipToPlayer(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int playerIndex)
+bool SC_SERVER_DECL CASEntityFuncs__SetEntitySemiClipToPlayer(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int entindex)
 {
-	return gPhysicsManager.SetEntitySemiClipToPlayer(ent, playerIndex);
+	if (!(entindex >= 1 && entindex <= gpGlobals->maxClients))
+		return false;
+
+	return gPhysicsManager.SetEntitySemiClipToEntityIndex(ent, entindex);
 }
 
-bool SC_SERVER_DECL CASEntityFuncs__UnsetEntitySemiClipToPlayer(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int playerIndex)
+bool SC_SERVER_DECL CASEntityFuncs__UnsetEntitySemiClipToPlayer(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int entindex)
 {
-	return gPhysicsManager.UnsetEntitySemiClipToPlayer(ent, playerIndex);
+	if (!(entindex >= 1 && entindex <= gpGlobals->maxClients))
+		return false;
+
+	return gPhysicsManager.SetEntitySemiClipToEntityIndex(ent, entindex);
+}
+
+bool SC_SERVER_DECL CASEntityFuncs__SetEntitySemiClipToEntityIndex(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int entindex)
+{
+	return gPhysicsManager.SetEntitySemiClipToEntityIndex(ent, entindex);
+}
+
+bool SC_SERVER_DECL CASEntityFuncs__UnsetEntitySemiClipToEntityIndex(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int entindex)
+{
+	return gPhysicsManager.SetEntitySemiClipToEntityIndex(ent, entindex);
+}
+
+bool SC_SERVER_DECL CASEntityFuncs__SetEntitySemiClipToEntity(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, edict_t* targetEntity)
+{
+	return gPhysicsManager.SetEntitySemiClipToEntity(ent, targetEntity);
+}
+
+bool SC_SERVER_DECL CASEntityFuncs__UnsetEntitySemiClipToEntity(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, edict_t* targetEntity)
+{
+	return gPhysicsManager.UnsetEntitySemiClipToEntity(ent, targetEntity);
+}
+
+bool SC_SERVER_DECL CASEntityFuncs__UnsetEntitySemiClipToAll(void* pthis, SC_SERVER_DUMMYARG edict_t* ent)
+{
+	return gPhysicsManager.UnsetEntitySemiClipToAll(ent);
 }
 
 edict_t *SC_SERVER_DECL CASEntityFuncs__GetCurrentSuperPusher(void* pthis, SC_SERVER_DUMMYARG Vector* vecPushDirection)
@@ -596,12 +627,32 @@ void RegisterAngelScriptMethods(void)
 			(void *)CASEntityFuncs__SetEntitySemiClip, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Enable SemiClip for entity", "CEntityFuncs", "bool SetEntitySemiClipToPlayer(edict_t@ ent, int playerIndex)",
+			"Enable SemiClip for entity", "CEntityFuncs", "bool SetEntitySemiClipToPlayer(edict_t@ ent, int entindex)",
 			(void *)CASEntityFuncs__SetEntitySemiClipToPlayer, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Disable SemiClip for entity", "CEntityFuncs", "bool UnsetEntitySemiClipToPlayer(edict_t@ ent, int playerIndex)",
+			"Disable SemiClip for entity", "CEntityFuncs", "bool UnsetEntitySemiClipToPlayer(edict_t@ ent, int entindex)",
 			(void *)CASEntityFuncs__UnsetEntitySemiClipToPlayer, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Enable SemiClip for entity", "CEntityFuncs", "bool SetEntitySemiClipToEntityIndex(edict_t@ ent, int entindex)",
+			(void*)CASEntityFuncs__SetEntitySemiClipToEntityIndex, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Disable SemiClip for entity", "CEntityFuncs", "bool UnsetEntitySemiClipToEntityIndex(edict_t@ ent, int entindex)",
+			(void*)CASEntityFuncs__UnsetEntitySemiClipToEntityIndex, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Enable SemiClip for entity", "CEntityFuncs", "bool SetEntitySemiClipToEntity(edict_t@ ent, edict_t@ targetEntity)",
+			(void *)CASEntityFuncs__SetEntitySemiClipToEntity, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Disable SemiClip for entity", "CEntityFuncs", "bool UnsetEntitySemiClipToEntity(edict_t@ ent, edict_t@ targetEntity)",
+			(void *)CASEntityFuncs__UnsetEntitySemiClipToEntity, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Disable SemiClip for entity", "CEntityFuncs", "bool UnsetEntitySemiClipToAll(edict_t@ ent)",
+			(void*)CASEntityFuncs__UnsetEntitySemiClipToAll, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Enable follow for the entity", "CEntityFuncs", "bool SetEntityFollow(edict_t@ ent, edict_t@ follow, int flags, const Vector& in origin_offset, const Vector& in angles_offset )",
