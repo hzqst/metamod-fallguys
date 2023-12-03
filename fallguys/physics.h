@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <vector>
+#include <algorithm>
 
 #include <btBulletDynamicsCommon.h>
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
