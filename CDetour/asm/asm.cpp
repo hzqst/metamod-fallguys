@@ -1,6 +1,6 @@
 #include "asm.h"
 #include <stdlib.h>
-#include <capstone/capstone.h>
+#include <capstone.h>
 
 #if defined(_WIN32)
 #include <Windows.h>

@@ -54,7 +54,7 @@
 
  //2022-07 Added by hzqst
 #include "detours.h"		// ALERT, etc
-#include <capstone/capstone.h>
+#include <capstone.h>
 
 #ifdef _WIN32
 
