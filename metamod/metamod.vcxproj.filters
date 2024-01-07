@@ -16,6 +16,9 @@
     <Filter Include="Source Files\CDetour">
       <UniqueIdentifier>{38a78e0c-6461-4aef-a076-8f9223a4b1c0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\CDetour\asm">
+      <UniqueIdentifier>{850b837b-a116-4f70-bdf7-5d50fb9eaad0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="api_hook.cpp">
@@ -114,11 +117,11 @@
     <ClCompile Include="vdate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\CDetour\detours.cpp">
+    <ClCompile Include="CDetour\detours.cpp">
       <Filter>Source Files\CDetour</Filter>
     </ClCompile>
-    <ClCompile Include="..\CDetour\asm\asm.cpp">
-      <Filter>Source Files\CDetour</Filter>
+    <ClCompile Include="CDetour\asm\asm.cpp">
+      <Filter>Source Files\CDetour\asm</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
