@@ -147,8 +147,8 @@ The edited `liblist.gam` should be something like this ![](/img/1.png)
 
 # Build Instruction (Linux)
 
-1. `git clone --recursive https://github.com/hzqst/metamod-fallguys`, then `cd metamod-fallguys`
+1. `git clone --recursive https://github.com/hzqst/metamod-fallguys`, then `cd metamod-fallguys/scripts`
 
-2. `sudo chmod +777 build-all-linux.sh` to make it executable, then `./build-all-linux.sh`
+2. `sudo chmod +777 *.sh` to make all .sh executable, then `./build-all-linux.sh`
 
 3. Be patient, `metamod.so`, `asext.so` and `fallguys.so` will be generated at `build/addons/metamod/dlls` if no error(s) occours.
