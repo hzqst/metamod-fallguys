@@ -34,44 +34,14 @@
 
 #define DETOUR_REGION_SIZE 0x1000
 
-static char *detour_alloc_round_down_to_region(char * pbTry)
-{
-	// WinXP64 returns free areas that aren't REGION aligned to 32-bit applications.
-	uintptr_t extra = ((uintptr_t)pbTry) & (DETOUR_REGION_SIZE - 1);
-	if (extra != 0) {
-		pbTry -= extra;
-	}
-	return pbTry;
-}
-
 void *AllocatePageMemory(void *base, size_t size)
 {
-#if defined(_WIN64) || defined(__x86_64__)
-
-	auto pbTry = detour_alloc_round_down_to_region((char *)base - DETOUR_REGION_SIZE);
-
-	while (pbTry < base) {
 #ifdef _WIN32
-		void * pv = VirtualAlloc((void *)pbTry, DETOUR_REGION_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	void* pv = VirtualAlloc((void*)NULL, DETOUR_REGION_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 #else
-		void * pv = mmap((void *)pbTry, DETOUR_REGION_SIZE, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	void* pv = mmap((void*)NULL, DETOUR_REGION_SIZE, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 #endif
-		if (pv)
-			return pv;
-
-		pbTry += DETOUR_REGION_SIZE;
-	}
-	return NULL;
-
-#else
-
-	#ifdef _WIN32
-			void * pv = VirtualAlloc((void *)NULL, DETOUR_REGION_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-	#else
-			void * pv = mmap((void *)NULL, DETOUR_REGION_SIZE, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-	#endif
-			return pv;
-#endif
+	return pv;
 }
 
 void SetReadWrite(void *base)
@@ -216,7 +186,7 @@ bool CDetour::CreateDetour()
 		//g_pSM->LogError(myself, "Invalid function address passed for detour");
 		return false;
 	}
-
+	
 #if defined(_WIN64) || defined(__x86_64__)
 	int shortBytes = copy_bytes((unsigned char *)detour_address, NULL, OP_JMP_SIZE);
 	detour_restore.bytes = copy_bytes((unsigned char *)detour_address, NULL, X64_ABS_SIZE);
