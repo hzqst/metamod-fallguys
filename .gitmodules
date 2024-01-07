@@ -1,9 +1,9 @@
 [submodule "glibc_version_header"]
 	path = glibc_version_header
 	url = https://github.com/hzqst/glibc_version_header
-[submodule "thirdparty/capstone"]
-	path = thirdparty/capstone
-	url = https://github.com/capstone-engine/capstone
 [submodule "thirdparty/bullet3_fork"]
 	path = thirdparty/bullet3_fork
 	url = https://github.com/hzqst/bullet3
+[submodule "thirdparty/capstone_fork"]
+	path = thirdparty/capstone_fork
+	url = https://github.com/hzqst/capstone
