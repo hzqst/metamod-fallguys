@@ -7,3 +7,6 @@
 [submodule "thirdparty/capstone_fork"]
 	path = thirdparty/capstone_fork
 	url = https://github.com/hzqst/capstone
+[submodule "thirdparty/procmap_fork"]
+	path = thirdparty/procmap_fork
+	url = https://github.com/hzqst/procmap
