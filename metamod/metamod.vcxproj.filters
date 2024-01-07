@@ -117,16 +117,7 @@
     <ClCompile Include="..\CDetour\detours.cpp">
       <Filter>Source Files\CDetour</Filter>
     </ClCompile>
-    <ClCompile Include="..\CDetour\asm\asm.c">
-      <Filter>Source Files\CDetour</Filter>
-    </ClCompile>
-    <ClCompile Include="..\CDetour\libudis86\decode.c">
-      <Filter>Source Files\CDetour</Filter>
-    </ClCompile>
-    <ClCompile Include="..\CDetour\libudis86\itab.c">
-      <Filter>Source Files\CDetour</Filter>
-    </ClCompile>
-    <ClCompile Include="..\CDetour\libudis86\udis86.c">
+    <ClCompile Include="..\CDetour\asm\asm.cpp">
       <Filter>Source Files\CDetour</Filter>
     </ClCompile>
   </ItemGroup>
