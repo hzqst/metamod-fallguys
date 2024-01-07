@@ -1,15 +1,12 @@
 MODNAME = fallguys
 SRCFILES = dllapi.cpp engine_api.cpp engine_hook.cpp fallguys.cpp h_export.cpp meta_api.cpp physics.cpp soundengine.cpp server_hook.cpp
-INCLUDEDIRS+=-I$(SDKSRC)/../bullet3/src
 INCLUDEDIRS+=-I$(SDKSRC)/../asext/include
-INCLUDEDIRS+=-I$(SDKSRC)/../fmod
+INCLUDEDIRS+=-I$(SDKSRC)/../thirdparty/fmod
+INCLUDEDIRS+=-I$(SDKSRC)/../thirdparty/install/bullet3/$(OBJDIR_LINUX)/include
 EXTRA_CFLAGS+=-DPLATFORM_POSIX
-EXTRA_LINK+=-L$(SDKSRC)/../bullet3/build/src/Bullet3Dynamics
-EXTRA_LINK+=-L$(SDKSRC)/../bullet3/build/src/Bullet3Collision
-EXTRA_LINK+=-L$(SDKSRC)/../bullet3/build/src/Bullet3Common
-EXTRA_LINK+=-L$(SDKSRC)/../bullet3/build/src/Bullet3Geometry
-EXTRA_LINK+=-L$(SDKSRC)/../bullet3/build/src/BulletSoftBody
-EXTRA_LINK+=-L$(SDKSRC)/../bullet3/build/src/BulletDynamics
-EXTRA_LINK+=-L$(SDKSRC)/../bullet3/build/src/BulletCollision
-EXTRA_LINK+=-L$(SDKSRC)/../bullet3/build/src/LinearMath
+EXTRA_LINK+=-L$(SDKSRC)/../thirdparty/install/bullet3/$(OBJDIR_LINUX)/lib
+ifeq "$(OPT)" "opt"
 EXTRA_LINK+=-Wl,--whole-archive -lBullet3Dynamics -lBullet3Collision -lBullet3Common -lBullet3Geometry -lBulletSoftBody -lBulletDynamics -lBulletCollision -lLinearMath -Wl,--no-whole-archive
+else	# debug
+EXTRA_LINK+=-Wl,--whole-archive -lBullet3Dynamics -lBullet3Collision -lBullet3Common -lBullet3Geometry -lBulletSoftBody -lBulletDynamics -lBulletCollision -lLinearMath -Wl,--no-whole-archive
+endif

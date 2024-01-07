@@ -12,7 +12,7 @@ SRCFILES = api_hook.cpp api_info.cpp commands_meta.cpp conf_meta.cpp \
 	log_meta.cpp meta_eiface.cpp metamod.cpp mlist.cpp mplayer.cpp \
 	mplugin.cpp mqueue.cpp mreg.cpp mutil.cpp osdep.cpp \
 	osdep_p.cpp reg_support.cpp sdk_util.cpp studioapi.cpp \
-	support_meta.cpp thread_logparse.cpp vdate.cpp ../CDetour/detours.cpp ../CDetour/asm/asm.cpp ../procmap/src/procmap/Logger.cpp  ../procmap/src/procmap/MemorySegment.cpp  ../procmap/src/procmap/MemoryMap.cpp 
+	support_meta.cpp thread_logparse.cpp vdate.cpp ../CDetour/detours.cpp ../CDetour/asm/asm.cpp ../thirdparty/procmap/src/procmap/Logger.cpp  ../thirdparty/procmap/src/procmap/MemorySegment.cpp  ../thirdparty/procmap/src/procmap/MemoryMap.cpp 
 
 INFOFILES = info_name.h vers_meta.h
 RESFILE = res_meta.rc
@@ -34,10 +34,9 @@ ifeq "$(OPT)" "opt-fast"
 endif
 
 INCLUDEDIRS+=-I$(SDKSRC)/../CDetour
-INCLUDEDIRS+=-I$(SDKSRC)/../procmap/include
-INCLUDEDIRS+=-I$(SDKSRC)/../capstone/include/capstone
+INCLUDEDIRS+=-I$(SDKSRC)/../thirdparty/procmap/include
+INCLUDEDIRS+=-I$(SDKSRC)/../thirdparty/install/capstone/$(OBJDIR_LINUX)/include/capstone
 INCLUDEDIRS+=-include $(GLIBCHEADER)
-EXTRA_LINK+=-L$(SDKSRC)/../capstone/build/lib
-EXTRA_LINK+=-Wl,--whole-archive -lcapstone -Wl,--no-whole-archive
 
-#STLFILES = mreg.cpp
+EXTRA_LINK+=-L$(SDKSRC)/../thirdparty/install/capstone/$(OBJDIR_LINUX)/lib
+EXTRA_LINK+=-Wl,--whole-archive -lcapstone -Wl,--no-whole-archive
