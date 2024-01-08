@@ -21,13 +21,15 @@ jobs:
         run: sudo apt-get install make build-essential gcc gcc-multilib g++-multilib
       
       - name: Build all
+        working-directory: ${{env.GITHUB_WORKSPACE}}
         run: |
-          sudo chmod +777 build-all-linux.sh
+          cd scripts
+          sudo chmod +777 *.sh
           ./build-all-linux.sh
           
       - name: Remove placeholder
         working-directory: ${{env.GITHUB_WORKSPACE}}
-        run: rm -f build/addons/metamod/dlls/.placeholder
+        run: rm "build\addons\metamod\dlls\.placeholder"
 
       - name: Archive the build directory 
         uses: thedoctor0/zip-release@main
