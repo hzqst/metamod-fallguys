@@ -29,7 +29,7 @@ jobs:
           
       - name: Remove placeholder
         working-directory: ${{env.GITHUB_WORKSPACE}}
-        run: rm "build\addons\metamod\dlls\.placeholder"
+        run: rm -f build/addons/metamod/dlls/.placeholder
 
       - name: Archive the build directory 
         uses: thedoctor0/zip-release@main
