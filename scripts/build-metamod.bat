@@ -21,8 +21,8 @@ if exist "%InstallDir%\Common7\Tools\vsdevcmd.bat" (
 
     MSBuild.exe metamod.sln "/target:metamod" /p:Configuration="Release" /p:Platform="Win32"
     MSBuild.exe metamod.sln "/target:asext" /p:Configuration="Release" /p:Platform="Win32"
-    MSBuild.exe metamod.sln "/target:asusermsg" /p:Configuration="Release_AVX2" /p:Platform="Win32"
+    MSBuild.exe metamod.sln "/target:asusermsg" /p:Configuration="Release" /p:Platform="Win32"
     MSBuild.exe metamod.sln "/target:asqcvar" /p:Configuration="Release" /p:Platform="Win32"
-    MSBuild.exe metamod.sln "/target:ascurl" /p:Configuration="Release_AVX2" /p:Platform="Win32"
+    MSBuild.exe metamod.sln "/target:ascurl" /p:Configuration="Release" /p:Platform="Win32"
     MSBuild.exe metamod.sln "/target:fallguys" /p:Configuration="Release" /p:Platform="Win32"
 )
