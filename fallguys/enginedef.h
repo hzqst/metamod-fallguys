@@ -113,3 +113,5 @@ extern int *pg_groupmask;
 
 int EngineGetMaxPrecacheModel(void);
 model_t* EngineGetPrecachedModelByIndex(int i);
+msurface_t *EngineGetSurfaceByIndex(int index);
+int EngineGetSurfaceIndex(msurface_t *psurf);

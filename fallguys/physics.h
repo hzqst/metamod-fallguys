@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <vector>
+#include <deque>
 #include <algorithm>
 
 #include <btBulletDynamicsCommon.h>
@@ -204,6 +205,13 @@ typedef struct brushvertex_s
 
 typedef struct brushface_s
 {
+	brushface_s()
+	{
+		start_vertex = 0;
+		num_vertexes = 0;
+		plane_dist = 0;
+		plane_flags = 0;
+	}
 	int start_vertex;
 	int num_vertexes;
 	vec3_t plane_normal;
@@ -1488,9 +1496,9 @@ public:
 	void Shutdown(void);
 
 	//Mesh Builder
-	void BuildSurfaceDisplayList(model_t* mod, msurface_t* fa, std::vector<glpoly_t*> &glpolys);
-	void GenerateBrushIndiceArray(std::vector<glpoly_t*> &glpolys);
-	void GenerateWorldVerticeArray(std::vector<glpoly_t*> &glpolys);
+	void BuildSurfaceDisplayList(model_t* mod, msurface_t* fa, std::deque<glpoly_t*> &glpolys);
+	void GenerateBrushIndiceArray();
+	void GenerateWorldVerticeArray();
 	void GenerateArrayForBrushface(brushface_t* brushface, indexarray_t* brushindexarray, vertexarray_t* brushvertexarray);
 	void GenerateArrayRecursiveWorldNode(mnode_t* node, vertexarray_t* vertexarray, indexarray_t* brushindexarray, vertexarray_t* brushvertexarray);
 	void GenerateArrayForSurface(msurface_t* psurf, vertexarray_t* worldvertexarray, indexarray_t* brushindexarray, vertexarray_t* brushvertexarray);

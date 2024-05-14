@@ -50,6 +50,20 @@ model_t* EngineGetPrecachedModelByIndex(int i)
 	return (*sv_models)[i];
 }
 
+msurface_t *EngineGetSurfaceByIndex(int index)
+{
+	auto base = r_worldmodel->surfaces;
+
+	return base + index;
+}
+
+int EngineGetSurfaceIndex(msurface_t *psurf)
+{
+	auto base = r_worldmodel->surfaces;
+
+	return psurf - base;
+}
+
 hull_t *SV_HullForBspNew(edict_t *ent, const vec3_t mins, const vec3_t maxs, vec3_t& offset)
 {
 	model_t		*model;

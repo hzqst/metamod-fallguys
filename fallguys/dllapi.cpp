@@ -231,7 +231,7 @@ void NewStartFrame(void)
 
 	gPhysicsManager.SetGravityAcceleration(sv_gravity->value);
 	gPhysicsManager.StepSimulation((*host_frametime));
-
+	
 	gPhysicsManager.EntityStartFrame_Post();
 
 	SET_META_RESULT(MRES_IGNORED);
@@ -356,7 +356,7 @@ static DLL_FUNCTIONS gFunctionTable =
 	NULL,					// pfnClientPutInServer
 	NULL,					// pfnClientCommand
 	NULL,					// pfnClientUserInfoChanged
-	NewServerActivate,					// pfnServerActivate
+	NewServerActivate,		// pfnServerActivate
 	NewServerDeactivate,	// pfnServerDeactivate
 
 	NewPlayerPreThink,		// pfnPlayerPreThink
