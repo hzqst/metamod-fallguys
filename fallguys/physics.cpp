@@ -440,6 +440,7 @@ void CPhysicsManager::GenerateBrushIndiceArray()
 			{
 				m_brushIndexArray[i] = new indexarray_t;
 				m_brushVertexArray[i] = new vertexarray_t;
+
 				GenerateArrayForBrushModel(mod, m_worldVertexArray, m_brushIndexArray[i], m_brushVertexArray[i]);
 			}
 		}
@@ -468,7 +469,7 @@ void CPhysicsManager::BuildSurfaceDisplayList(model_t *mod, msurface_t* fa, std:
 
 	glpolys.push_front(poly);
 
-	//poly->next = fa->polys;
+	poly->next = NULL;
 	poly->flags = fa->flags;
 	//fa->polys = poly;
 	poly->numverts = lnumverts;
@@ -546,63 +547,63 @@ void CPhysicsManager::GenerateWorldVerticeArray()
 
 		BuildSurfaceDisplayList(r_worldmodel, surf, glpolys);
 
-		if (!glpolys.empty())
+		if (glpolys.empty())
+			continue;
+
+		brushface_t* brushface = &m_worldVertexArray->vFaceBuffer[i];
+
+		int iStartVert = iNumVerts;
+
+		brushface->start_vertex = iStartVert;
+		brushface->plane_normal = surf->plane->normal;
+		brushface->plane_dist = surf->plane->dist;
+		brushface->plane_flags = surf->flags;
+
+		if (surf->flags & SURF_PLANEBACK)
 		{
-			brushface_t* brushface = &m_worldVertexArray->vFaceBuffer[i];
+			brushface->plane_normal = brushface->plane_normal  * (-1);
+			brushface->plane_dist = brushface->plane_dist  * (-1);
+		}
 
-			int iStartVert = iNumVerts;
+		for (const auto &poly : glpolys)
+		{
+			auto v = poly->verts[0];
 
-			brushface->start_vertex = iStartVert;
-			brushface->plane_normal = surf->plane->normal;
-			brushface->plane_dist = surf->plane->dist;
-			brushface->plane_flags = surf->flags;
-
-			if (surf->flags & SURF_PLANEBACK)
+			for (int j = 0; j < 3; j++, v += VERTEXSIZE)
 			{
-				brushface->plane_normal = brushface->plane_normal  * (-1);
-				brushface->plane_dist = brushface->plane_dist  * (-1);
+				Vertexes[j].pos[0] = v[0];
+				Vertexes[j].pos[1] = v[1];
+				Vertexes[j].pos[2] = v[2];
 			}
 
-			for (const auto &poly : glpolys)
-			{
-				auto v = poly->verts[0];
+			m_worldVertexArray->vVertexBuffer.emplace_back(Vertexes[0]);
+			m_worldVertexArray->vVertexBuffer.emplace_back(Vertexes[1]);
+			m_worldVertexArray->vVertexBuffer.emplace_back(Vertexes[2]);
+			iNumVerts += 3;
 
-				for (int j = 0; j < 3; j++, v += VERTEXSIZE)
-				{
-					Vertexes[j].pos[0] = v[0];
-					Vertexes[j].pos[1] = v[1];
-					Vertexes[j].pos[2] = v[2];
-				}
+			for (int j = 0; j < (poly->numverts - 3); j++, v += VERTEXSIZE)
+			{
+				Vertexes[1].pos[0] = Vertexes[2].pos[0];
+				Vertexes[1].pos[1] = Vertexes[2].pos[1];
+				Vertexes[1].pos[2] = Vertexes[2].pos[2];
+
+				Vertexes[2].pos[0] = v[0];
+				Vertexes[2].pos[1] = v[1];
+				Vertexes[2].pos[2] = v[2];
 
 				m_worldVertexArray->vVertexBuffer.emplace_back(Vertexes[0]);
 				m_worldVertexArray->vVertexBuffer.emplace_back(Vertexes[1]);
 				m_worldVertexArray->vVertexBuffer.emplace_back(Vertexes[2]);
 				iNumVerts += 3;
-
-				for (int j = 0; j < (poly->numverts - 3); j++, v += VERTEXSIZE)
-				{
-					Vertexes[1].pos[0] = Vertexes[2].pos[0];
-					Vertexes[1].pos[1] = Vertexes[2].pos[1];
-					Vertexes[1].pos[2] = Vertexes[2].pos[2];
-
-					Vertexes[2].pos[0] = v[0];
-					Vertexes[2].pos[1] = v[1];
-					Vertexes[2].pos[2] = v[2];
-
-					m_worldVertexArray->vVertexBuffer.emplace_back(Vertexes[0]);
-					m_worldVertexArray->vVertexBuffer.emplace_back(Vertexes[1]);
-					m_worldVertexArray->vVertexBuffer.emplace_back(Vertexes[2]);
-					iNumVerts += 3;
-				}
 			}
-
-			for (auto &poly : glpolys)
-			{
-				free(poly);
-			}
-
-			brushface->num_vertexes = iNumVerts - iStartVert;
 		}
+
+		for (auto &poly : glpolys)
+		{
+			free(poly);
+		}
+
+		brushface->num_vertexes = iNumVerts - iStartVert;
 	}
 }
 
@@ -667,9 +668,10 @@ void CPhysicsManager::GenerateArrayRecursiveWorldNode(mnode_t* node, vertexarray
 
 	GenerateArrayRecursiveWorldNode(node->children[0], worldvertexarray, brushindexarray, brushvertexarray);
 
-	for (int i = node->firstsurface; i < node->numsurfaces; ++i)
+	for (int i = 0; i < node->numsurfaces; ++i)
 	{
-		GenerateArrayForSurface(EngineGetSurfaceByIndex(i), worldvertexarray, brushindexarray, brushvertexarray);
+		auto surf = EngineGetSurfaceByIndex(node->firstsurface + i);
+		GenerateArrayForSurface(surf, worldvertexarray, brushindexarray, brushvertexarray);
 	}
 
 	GenerateArrayRecursiveWorldNode(node->children[1], worldvertexarray, brushindexarray, brushvertexarray);
@@ -677,9 +679,17 @@ void CPhysicsManager::GenerateArrayRecursiveWorldNode(mnode_t* node, vertexarray
 
 void CPhysicsManager::GenerateArrayForBrushModel(model_t* mod, vertexarray_t* vertexarray, indexarray_t* brushindexarray, vertexarray_t* brushvertexarray)
 {
-	for (int i = mod->firstmodelsurface; i < mod->nummodelsurfaces; i++)
+	if (mod == r_worldmodel)
 	{
-		GenerateArrayForSurface(EngineGetSurfaceByIndex(i), vertexarray, brushindexarray, brushvertexarray);
+		GenerateArrayRecursiveWorldNode(mod->nodes, vertexarray, brushindexarray, brushvertexarray);
+	}
+	else
+	{
+		for (int i = 0; i < mod->nummodelsurfaces; i++)
+		{
+			auto surf = EngineGetSurfaceByIndex(mod->firstmodelsurface + i);
+			GenerateArrayForSurface(surf, vertexarray, brushindexarray, brushvertexarray);
+		}
 	}
 }
 

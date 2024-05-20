@@ -120,7 +120,7 @@ typedef struct mnode_s
 	int			contents;		// 0, to differentiate from leafs
 	int			visframe;		// node needs to be traversed if current
 	
-	short		minmaxs[6];		// for bounding box culling
+	float		minmaxs[6];		// for bounding box culling // HZ FIXED: this is float instead of short in Sven Co-op
 
 	struct mnode_s	*parent;
 
