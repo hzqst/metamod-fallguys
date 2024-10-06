@@ -64,6 +64,10 @@ typedef struct areanode_s
 
 //Engine private functions
 
+
+typedef int(*fnbuildnum)();
+PRIVATE_FUNCTION_EXTERN(buildnum);
+
 typedef void(*fnSV_Physics)();
 void NewSV_Physics();
 PRIVATE_FUNCTION_EXTERN(SV_Physics);
@@ -98,6 +102,10 @@ PRIVATE_FUNCTION_EXTERN(SV_LinkEdict);
 typedef void(*fnSV_SingleClipMoveToEntity)(edict_t *ent, const vec3_t& start, const vec3_t& mins, const vec3_t& maxs, const vec3_t& end, trace_t *trace);
 void SV_SingleClipMoveToEntity(edict_t *ent, const vec3_t& start, const vec3_t& mins, const vec3_t& maxs, const vec3_t& end, trace_t *trace);
 PRIVATE_FUNCTION_EXTERN(SV_SingleClipMoveToEntity);
+
+typedef void(*fnSV_SingleClipMoveToEntity_10152)(edict_t* ent, const vec3_t& start, const vec3_t& mins, const vec3_t& maxs, const vec3_t& end, trace_t* trace, edict_t* passedict);
+void SV_SingleClipMoveToEntity_10152(edict_t* ent, const vec3_t& start, const vec3_t& mins, const vec3_t& maxs, const vec3_t& end, trace_t* trace, edict_t* passedict);
+PRIVATE_FUNCTION_EXTERN(SV_SingleClipMoveToEntity_10152);
 
 hull_t *SV_HullForBspNew(edict_t *ent, const vec3_t mins, const vec3_t maxs, vec3_t& offset);
 

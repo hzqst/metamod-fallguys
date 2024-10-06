@@ -12,12 +12,14 @@
 #include "fallguys.h"
 #include "physics.h"
 
+PRIVATE_FUNCTION_DEFINE(buildnum);
 PRIVATE_FUNCTION_DEFINE(SV_Physics);
 PRIVATE_FUNCTION_DEFINE(SV_PushEntity);
 PRIVATE_FUNCTION_DEFINE(SV_PushMove);
 PRIVATE_FUNCTION_DEFINE(SV_PushRotate);
 PRIVATE_FUNCTION_DEFINE(SV_WriteMovevarsToClient);
 PRIVATE_FUNCTION_DEFINE(SV_SingleClipMoveToEntity);
+PRIVATE_FUNCTION_DEFINE(SV_SingleClipMoveToEntity_10152);
 
 const Vector g_vecZero = { 0, 0, 0 };
 
@@ -132,6 +134,18 @@ void SV_SingleClipMoveToEntity(edict_t *ent, const vec3_t& start, const vec3_t& 
 	return g_call_original_SV_SingleClipMoveToEntity(ent, start, mins, maxs, end, trace);
 }
 
+void SV_SingleClipMoveToEntity_10152(edict_t* ent, const vec3_t& start, const vec3_t& mins, const vec3_t& maxs, const vec3_t& end, trace_t* trace, edict_t *passedict)
+{
+	if (g_call_original_SV_SingleClipMoveToEntity_10152)
+	{
+		return g_call_original_SV_SingleClipMoveToEntity_10152(ent, start, mins, maxs, end, trace, passedict);
+	}
+	else if (g_call_original_SV_SingleClipMoveToEntity)
+	{
+		return g_call_original_SV_SingleClipMoveToEntity(ent, start, mins, maxs, end, trace);
+	}
+}
+
 void SV_ClipToLinksEx(areanode_t *node, moveclip_t *clip)
 {
 	link_t		*l, *next;
@@ -213,13 +227,13 @@ void SV_ClipToLinksEx(areanode_t *node, moveclip_t *clip)
 
 		if ((int)touch->v.flags & FL_MONSTER)
 		{
-			SV_SingleClipMoveToEntity(touch, clip->start, clip->mins2, clip->maxs2, clip->end, &trace);
+			SV_SingleClipMoveToEntity_10152(touch, clip->start, clip->mins2, clip->maxs2, clip->end, &trace, clip->passedict);
 		}
 		else
 		{
 			vec3_t tempmins(clip->mins[0], clip->mins[1], clip->mins[2]);
 			vec3_t tempmaxs(clip->maxs[0], clip->maxs[1], clip->maxs[2]);
-			SV_SingleClipMoveToEntity(touch, clip->start, tempmins, tempmaxs, clip->end, &trace);
+			SV_SingleClipMoveToEntity_10152(touch, clip->start, tempmins, tempmaxs, clip->end, &trace, clip->passedict);
 		}
 
 		if (trace.allsolid || trace.startsolid ||
@@ -258,7 +272,7 @@ trace_t SV_MoveEx(vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int type, 
 	memset(&clip, 0, sizeof(moveclip_t));
 
 	// clip to world
-	SV_SingleClipMoveToEntity(g_engfuncs.pfnPEntityOfEntIndex(0), start, mins, maxs, end, &clip.trace);
+	SV_SingleClipMoveToEntity_10152(g_engfuncs.pfnPEntityOfEntIndex(0), start, mins, maxs, end, &clip.trace, passedict);
 
 	if (clip.trace.fraction != 0)
 	{

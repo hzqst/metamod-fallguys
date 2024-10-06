@@ -70,8 +70,8 @@ static META_FUNCTIONS gMetaFunctionTable = {
 plugin_info_t Plugin_info = {
 	META_INTERFACE_VERSION,	// ifvers
 	"FallGuys",	// name
-	"1.6",	// version
-	"2023",	// date
+	"1.7",	// version
+	"2024",	// date
 	"hzqst",	// author
 	"https://github.com/hzqst/metamod-fallguys",	// url
 	"FGUYS",	// logtag, all caps please
@@ -180,12 +180,22 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	FILL_FROM_SIGNATURE(engine, SV_PushMove);
 	FILL_FROM_SIGNATURE(engine, SV_PushRotate);
 	FILL_FROM_SIGNATURE(engine, SV_WriteMovevarsToClient);
-	FILL_FROM_SIGNATURE(engine, SV_SingleClipMoveToEntity);
-
-	FILL_FROM_SIGNATURE(server, CPlayerMove_PlayStepSound);
-	FILL_FROM_SIGNATURE(server, PM_PlaySoundFX_SERVER);
 
 #ifdef _WIN32
+
+	FILL_FROM_SIGNATURED_CALLER_FROM_START(engine, buildnum, 0);
+
+	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, PM_PlaySoundFX_SERVER, -1);
+	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CPlayerMove_PlayStepSound, -1);
+
+	if (g_pfn_buildnum() >= 10152)
+	{
+		FILL_FROM_SIGNATURED_CALLER_FROM_END(engine, SV_SingleClipMoveToEntity_10152, -1);
+	}
+	else
+	{
+		FILL_FROM_SIGNATURED_CALLER_FROM_END(engine, SV_SingleClipMoveToEntity, -1);
+	}
 
 	VAR_FROM_SIGNATURE_FROM_START(engine, sv_models, 13);
 
@@ -193,10 +203,16 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	VAR_FROM_SIGNATURE_FROM_END(engine, pmovevars, 0);
 	VAR_FROM_SIGNATURE_FROM_START(engine, sv_areanodes, 9);
 
-	VAR_FROM_SIGNATURE_FROM_START(engine, pg_groupop, 6);
-	VAR_FROM_SIGNATURE_FROM_START(engine, pg_groupmask, 12);
+	VAR_FROM_SIGNATURE_FROM_END(engine, pg_groupop, -8);
+	VAR_FROM_SIGNATURE_FROM_END(engine, pg_groupmask, -2);
 
 #else
+
+	//TODO 10152
+
+	FILL_FROM_SIGNATURE(server, PM_PlaySoundFX_SERVER);
+	FILL_FROM_SIGNATURE(server, CPlayerMove_PlayStepSound);
+	FILL_FROM_SIGNATURED(engine, SV_SingleClipMoveToEntity);
 
 	void *sv = NULL;
 

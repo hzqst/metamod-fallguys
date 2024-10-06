@@ -145,10 +145,10 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	FILL_FROM_SIGNATURE(server, CString_Assign);
 	FILL_FROM_SIGNATURE(server, CString_dtor);
 	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterEnum);
-	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterEnumValue);
 
 #ifdef _WIN32
 
+	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterEnumValue, -7);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectType, -1);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectProperty, -7);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterGlobalProperty, -15);
@@ -159,12 +159,14 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASFunction_Create, -1);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASBaseCallable_Call, -1);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASRefCountedBaseClass_InternalRelease, -7);
-	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CScriptAny_Release, -8);
+	FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptAny_Release, 7);
 
 	VAR_FROM_SIGNATURE_FROM_START(server, g_pServerManager, 5);
 
 #else
 
+	//TODO
+	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterEnumValue, -7);
 	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterObjectType);
 	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterObjectProperty);
 	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterGlobalProperty);
