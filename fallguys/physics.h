@@ -487,7 +487,6 @@ public:
 
 	void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects) override
 	{
-		CPhysicObject::AddToPhysicWorld(world, numDynamicObjects);
 		if (m_ghostobj)
 		{
 			world->addCollisionObject(m_ghostobj, btBroadphaseProxy::SensorTrigger, btBroadphaseProxy::DefaultFilter);
@@ -531,7 +530,7 @@ public:
 		return m_ghostobj;
 	}
 
-private:
+protected:
 	btPairCachingGhostObject* m_ghostobj;
 };
 
@@ -562,11 +561,9 @@ public:
 
 	void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects) override
 	{
-		CPhysicObject::AddToPhysicWorld(world, numDynamicObjects);
-
-		if (GetGhostObject())
+		if (m_ghostobj)
 		{
-			world->addCollisionObject(GetGhostObject(), btBroadphaseProxy::SensorTrigger, FallGuysCollisionFilterGroups::PlayerFilter);
+			world->addCollisionObject(m_ghostobj, btBroadphaseProxy::SensorTrigger, FallGuysCollisionFilterGroups::PlayerFilter);
 
 			(*numDynamicObjects)++;
 		}
@@ -613,8 +610,6 @@ public:
 
 	void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects) override
 	{
-		CPhysicObject::AddToPhysicWorld(world, numDynamicObjects);
-
 		if (m_rigbody)
 		{
 			world->addRigidBody(m_rigbody, m_group, m_mask);
