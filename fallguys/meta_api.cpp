@@ -42,6 +42,8 @@
 
 #include <meta_api.h>		// of course
 
+#include <interface.h>
+
 #include "sdk_util.h"		// UTIL_LogPrintf, etc
 
 #include "enginedef.h"
@@ -174,6 +176,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 	IMPORT_ASEXT_API(asext);
 
+	auto CreateInterface = (CreateInterfaceFn)gpMetaUtilFuncs->pfnGetProcAddress(serverHandle, "SCServerDLL003");
+
 #ifdef _WIN32
 
 	FILL_FROM_SIGNATURE(engine, SV_Physics);
@@ -208,13 +212,17 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 #else
 
 	//Sven Co-op 5.16 rc1 and rc2 (10152 and 10182)
-	if (gpMetaUtilFuncs->pfnGetProcAddress(serverHandle, "SCServerDLL003") != nullptr)
+	if (CreateInterface("SCServerDLL003", nullptr) != nullptr)
 	{
+		LOG_MESSAGE(PLID, "SCServerDLL003 found! Using signatures for Sven Co-op 5.16");
+
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CPlayerMove_PlayStepSound, -1);
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, PM_PlaySoundFX_SERVER, -1);
 	}
 	else
 	{
+		LOG_MESSAGE(PLID, "SCServerDLL003 not found! Using symbols for Sven Co-op 5.15");
+
 		FILL_FROM_SYMBOL(server, CPlayerMove_PlayStepSound);
 		FILL_FROM_SYMBOL(server, PM_PlaySoundFX_SERVER);
 	}

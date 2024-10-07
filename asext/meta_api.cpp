@@ -42,6 +42,8 @@
 
 #include <meta_api.h>		// of course
 
+#include <interface.h>
+
 #include "sdk_util.h"		// UTIL_LogPrintf, etc
 
 #include "asext.h"
@@ -139,6 +141,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		return FALSE;
 	}
 
+	auto CreateInterface = (CreateInterfaceFn)gpMetaUtilFuncs->pfnGetProcAddress(serverHandle, "SCServerDLL003");
+
 #ifdef _WIN32
 
 	FILL_FROM_SIGNATURE(server, CASHook_CASHook);
@@ -164,9 +168,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	VAR_FROM_SIGNATURE_FROM_START(server, g_pServerManager, 5);
 
 #else
-
 	//Sven Co-op 5.16 rc1 and rc2 (10152 and 10182)
-	if (gpMetaUtilFuncs->pfnGetProcAddress(serverHandle, "SCServerDLL003") != nullptr)
+	if (CreateInterface("SCServerDLL003", nullptr) != nullptr)
 	{
 		LOG_MESSAGE(PLID, "SCServerDLL003 found! Using signatures for Sven Co-op 5.16");
 
