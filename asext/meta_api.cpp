@@ -67,8 +67,8 @@ static META_FUNCTIONS gMetaFunctionTable = {
 plugin_info_t Plugin_info = {
 	META_INTERFACE_VERSION,	// ifvers
 	"AngelScriptExt",	// name
-	"1.5",	// version
-	"2023",	// date
+	"1.7",	// version
+	"2024",	// date
 	"hzqst",	// author
 	"https://github.com/hzqst/metamod-fallguys",	// url
 	"ASEXT",	// logtag, all caps please
@@ -139,47 +139,93 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		return FALSE;
 	}
 
-	//Fill private server functions
+#ifdef _WIN32
+
 	FILL_FROM_SIGNATURE(server, CASHook_CASHook);
 	FILL_FROM_SIGNATURE(server, CASHook_Call);
 	FILL_FROM_SIGNATURE(server, CString_Assign);
 	FILL_FROM_SIGNATURE(server, CString_dtor);
-	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterEnum);
 
-#ifdef _WIN32
-
-	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterEnumValue, -7);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectType, -1);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectProperty, -7);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterGlobalProperty, -15);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectMethod, -7);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectBehaviour, -8);
 	FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDocumentation_RegisterFuncDef, 0);
+	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterEnum, -7);
+	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterEnumValue, -7);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDirectoryList_CreateDirectory, -1);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASFunction_Create, -1);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASBaseCallable_Call, -1);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASRefCountedBaseClass_InternalRelease, -7);
 	FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptAny_Release, 7);
+	FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptArray_Release, 0);
 
 	VAR_FROM_SIGNATURE_FROM_START(server, g_pServerManager, 5);
 
 #else
 
-	//TODO
-	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterEnumValue, -7);
-	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterObjectType);
-	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterObjectProperty);
-	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterGlobalProperty);
-	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterObjectMethod);
-	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterObjectBehaviour);
-	FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterFuncDef);
-	FILL_FROM_SIGNATURE(server, CASDirectoryList_CreateDirectory);
-	FILL_FROM_SIGNATURE(server, CASFunction_Create);
-	FILL_FROM_SIGNATURE(server, CASBaseCallable_Call);
-	FILL_FROM_SIGNATURE(server, CASRefCountedBaseClass_InternalRelease);
-	FILL_FROM_SIGNATURE(server, CScriptAny_Release);
+	//Sven Co-op 5.16 rc1 and rc2 (10152 and 10182)
+	if (gpMetaUtilFuncs->pfnGetProcAddress(serverHandle, "SCServerDLL003") != nullptr)
+	{
+		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASHook_CASHook, -1);
+		FILL_FROM_SIGNATURE(server, CASHook_Call);
+		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CString_Assign, -1);
+		FILL_FROM_SIGNATURE(server, CString_dtor);
 
-	VAR_FROM_SIGNATURE(server, g_pServerManager);
+		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectType, -1);
+		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectProperty, -8);
+		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDocumentation_RegisterGlobalProperty, 9);
+		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDocumentation_RegisterObjectMethod, 0);
+		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectBehaviour, -1);
+		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDocumentation_RegisterFuncDef, 0);
+		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterEnum, -13);
+		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDocumentation_RegisterEnumValue, 7);
+		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDirectoryList_CreateDirectory, 0);
+		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASFunction_Create, 0);
+		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASBaseCallable_Call, -8);
+		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASRefCountedBaseClass_InternalRelease, 0);
+		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptAny_Release, 0);
+		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CScriptArray_Release, -8);
+
+		char pattern_CASHook_VCall[] = "\x83\xEC\x2A\xE8\x2A\x2A\x2A\x2A\x81\x2A\x2A\x2A\x2A\x2A\x8B\x2A\x24\x2A\x8B\x2A\x2A\x2A\x2A\x00\x85\x2A\x74\x2A\x0F\x2A\x2A\x06";
+		auto CASHook_VCall = (char *)LOCATE_FROM_SIGNATURE(server, pattern_CHook_VCall);
+		if (!CASHook_VCall)
+		{
+			LOG_ERROR(PLID, "CHook_VCall not found!");
+			return FALSE;
+		}
+		//__x86_get_pc_thunk_
+		auto pic_chunk_call = CASHook_VCall + 3;
+		//auto pic_chunk = gpMetaUtilFuncs->pfnGetNextCallAddr(pic_chunk_call, 1);
+		auto add_addr = pic_chunk_call + 5;
+		auto got_plt = add_addr + *(int*)(add_addr + 2);
+		auto mov_ebp_addr = CASHook_VCall + 18;
+		g_pServerManager = (decltype(g_pServerManager))(got_plt + *(int*)(mov_ebp_addr + 2));
+	}
+	else
+	{
+		FILL_FROM_SYMBOL(server, CASHook_CASHook);
+		FILL_FROM_SYMBOL(server, CASHook_Call);
+		FILL_FROM_SYMBOL(server, CString_Assign);
+		FILL_FROM_SYMBOL(server, CString_dtor);
+		FILL_FROM_SYMBOL(server, CASDocumentation_RegisterObjectType);
+		FILL_FROM_SYMBOL(server, CASDocumentation_RegisterObjectProperty);
+		FILL_FROM_SYMBOL(server, CASDocumentation_RegisterGlobalProperty);
+		FILL_FROM_SYMBOL(server, CASDocumentation_RegisterObjectMethod);
+		FILL_FROM_SYMBOL(server, CASDocumentation_RegisterObjectBehaviour);
+		FILL_FROM_SYMBOL(server, CASDocumentation_RegisterFuncDef);
+		FILL_FROM_SYMBOL(server, CASDocumentation_RegisterEnum);
+		FILL_FROM_SYMBOL(server, CASDocumentation_RegisterEnumValue);
+		FILL_FROM_SYMBOL(server, CASDirectoryList_CreateDirectory);
+		FILL_FROM_SYMBOL(server, CASFunction_Create);
+		FILL_FROM_SYMBOL(server, CASBaseCallable_Call);
+		FILL_FROM_SYMBOL(server, CASRefCountedBaseClass_InternalRelease);
+		FILL_FROM_SYMBOL(server, CScriptAny_Release);
+		FILL_FROM_SYMBOL(server, CScriptArray_Release);
+
+		VAR_FROM_SYMBOL(server, g_pServerManager);
+	}
 
 #endif
 

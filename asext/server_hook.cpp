@@ -27,6 +27,7 @@ PRIVATE_FUNCTION_DEFINE(CASFunction_Create);
 PRIVATE_FUNCTION_DEFINE(CASBaseCallable_Call);
 PRIVATE_FUNCTION_DEFINE(CASRefCountedBaseClass_InternalRelease);
 PRIVATE_FUNCTION_DEFINE(CScriptAny_Release);
+PRIVATE_FUNCTION_DEFINE(CScriptArray_Release);
 PRIVATE_FUNCTION_DEFINE(CString_Assign);
 PRIVATE_FUNCTION_DEFINE(CString_dtor);
 
@@ -225,4 +226,9 @@ C_DLLEXPORT bool ASEXT_CASRefCountedBaseClass_InternalRelease(void *ref)
 C_DLLEXPORT void ASEXT_CScriptAny_Release(void *anywhat)
 {
 	g_pfn_CScriptAny_Release(anywhat);
+}
+
+C_DLLEXPORT void ASEXT_CScriptArray_Release(void* anywhat)
+{
+	g_pfn_CScriptArray_Release(anywhat);
 }

@@ -210,9 +210,19 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 	//TODO 10152
 
-	FILL_FROM_SIGNATURE(server, PM_PlaySoundFX_SERVER);
-	FILL_FROM_SIGNATURE(server, CPlayerMove_PlayStepSound);
-	FILL_FROM_SIGNATURED(engine, SV_SingleClipMoveToEntity);
+	//Sven Co-op 5.16 rc1 and rc2 (10152 and 10182)
+	if (gpMetaUtilFuncs->pfnGetProcAddress(serverHandle, "SCServerDLL003") != nullptr)
+	{
+		FILL_FROM_SIGNATURE_FROM_END(server, CPlayerMove_PlayStepSound, -1);
+		FILL_FROM_SIGNATURE_FROM_END(server, PM_PlaySoundFX_SERVER, -1);
+	}
+	else
+	{
+		FILL_FROM_SYMBOL(server, CPlayerMove_PlayStepSound);
+		FILL_FROM_SYMBOL(server, PM_PlaySoundFX_SERVER);
+	}
+
+	FILL_FROM_SYMBOL(engine, SV_SingleClipMoveToEntity);
 
 	void *sv = NULL;
 
@@ -220,12 +230,12 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 	sv_models = (decltype(sv_models))((char *)sv + 0x276148);
 
-	VAR_FROM_SIGNATURE(engine, host_frametime);
-	VAR_FROM_SIGNATURE(engine, pmovevars);
-	VAR_FROM_SIGNATURE(engine, sv_areanodes);
+	VAR_FROM_SYMBOL(engine, host_frametime);
+	VAR_FROM_SYMBOL(engine, pmovevars);
+	VAR_FROM_SYMBOL(engine, sv_areanodes);
 
-	VAR_FROM_SIGNATURE(engine, pg_groupop);
-	VAR_FROM_SIGNATURE(engine, pg_groupmask);
+	VAR_FROM_SYMBOL(engine, pg_groupop);
+	VAR_FROM_SYMBOL(engine, pg_groupmask);
 
 #endif
 

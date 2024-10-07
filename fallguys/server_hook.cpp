@@ -86,7 +86,7 @@ bool SC_SERVER_DECL CASEntityFuncs__CreateCompoundPhysicObject(void* pthis, SC_S
 
 	bResult = gPhysicsManager.CreateCompoundPhysicObject(ent, pdata, shapeParamArray->size(), objectParams);
 	
-	ASEXT_CScriptAny_Release(shapeParamArray);
+	ASEXT_CScriptArray_Release(shapeParamArray);
 
 	return bResult;
 }
@@ -99,7 +99,7 @@ bool SC_SERVER_DECL CASEntityFuncs__CreatePhysicVehicle(void* pthis, SC_SERVER_D
 
 	bResult = gPhysicsManager.CreatePhysicVehicle(ent, vehicleParams, pdata, wheelParamArray->size());
 
-	ASEXT_CScriptAny_Release(wheelParamArray);
+	ASEXT_CScriptArray_Release(wheelParamArray);
 	
 	return bResult;
 }
@@ -142,7 +142,7 @@ bool SC_SERVER_DECL CASEntityFuncs__SetEntityEnvStudioAnim(void* pthis, SC_SERVE
 
 	bResult = gPhysicsManager.SetEntityEnvStudioAnim(ent, flags, overrideCurFrame, overrideMaxFrame, pdata, keyframes->size());
 
-	ASEXT_CScriptAny_Release(keyframes);
+	ASEXT_CScriptArray_Release(keyframes);
 
 	return bResult;
 }

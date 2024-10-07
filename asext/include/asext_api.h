@@ -324,7 +324,11 @@ extern fnASEXT_CASRefCountedBaseClass_InternalRelease ASEXT_CASRefCountedBaseCla
 
 typedef void(*fnASEXT_CScriptAny_Release)(void *anywhat);
 
+typedef void(*fnASEXT_CScriptArray_Release)(void* anywhat);
+
 extern fnASEXT_CScriptAny_Release ASEXT_CScriptAny_Release;
+
+extern fnASEXT_CScriptArray_Release ASEXT_CScriptArray_Release;
 
 #ifdef _WIN32
 
@@ -467,7 +471,8 @@ IMPORT_FUNCTION_DLSYM(asext, ASEXT_CStringdtor);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_GetServerManager);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CreateCASFunction);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CASRefCountedBaseClass_InternalRelease);\
-IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptAny_Release);
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptAny_Release);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptArray_Release);\
 
 
 #define IMPORT_ASEXT_API_DEFINE() IMPORT_FUNCTION_DEFINE(ASEXT_RegisterDocInitCallback);\
@@ -490,8 +495,9 @@ IMPORT_FUNCTION_DEFINE(ASEXT_GetServerManager);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CreateCASFunction);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CASRefCountedBaseClass_InternalRelease);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CScriptAny_Release);\
-fnASEXT_CallHook *ASEXT_CallHook = NULL;\
-fnASEXT_CallCASBaseCallable *ASEXT_CallCASBaseCallable = NULL;
+IMPORT_FUNCTION_DEFINE(ASEXT_CScriptArray_Release);\
+IMPORT_FUNCTION_POINTER_DEFINE(ASEXT_CallHook);\
+IMPORT_FUNCTION_POINTER_DEFINE(ASEXT_CallCASBaseCallable);\
 
 #define REGISTER_PLAIN_VALUE_OBJECT(name) ASEXT_RegisterObjectType(pASDoc, #name" plain value object", #name, sizeof(name), asOBJ_VALUE);\
 ASEXT_RegisterObjectBehaviour(pASDoc, "Default constructor",  #name, ObjectBehaviour_Constructor, "void "#name"()", (void *)name##_ctor, 4);\

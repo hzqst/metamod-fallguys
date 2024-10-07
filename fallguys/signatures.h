@@ -34,25 +34,28 @@
 
 #else
 
-#define SV_Physics_Signature "_Z10SV_Physicsv"
-#define SV_PushEntity_Signature "_Z13SV_PushEntityP7edict_sPf"
-#define SV_PushMove_Signature "_Z11SV_PushMoveP7edict_sf"
-#define SV_PushRotate_Signature "_Z13SV_PushRotateP7edict_sf"
-#define SV_WriteMovevarsToClient_Signature "_Z24SV_WriteMovevarsToClientP9sizebuf_s"
-#define SV_TestEntityPosition_Signature "_Z21SV_TestEntityPositionP7edict_s"
-#define SV_SingleClipMoveToEntity_Signature "_Z25SV_SingleClipMoveToEntityP7edict_sPKfS2_S2_S2_P7trace_t"
-#define SV_LinkEdict_Signature "_Z12SV_LinkEdictP7edict_si"
+#define SV_Physics_Symbol "_Z10SV_Physicsv"
+#define SV_PushEntity_Symbol "_Z13SV_PushEntityP7edict_sPf"
+#define SV_PushMove_Symbol "_Z11SV_PushMoveP7edict_sf"
+#define SV_PushRotate_Symbol "_Z13SV_PushRotateP7edict_sf"
+#define SV_WriteMovevarsToClient_Symbol "_Z24SV_WriteMovevarsToClientP9sizebuf_s"
+#define SV_TestEntityPosition_Symbol "_Z21SV_TestEntityPositionP7edict_s"
+#define SV_SingleClipMoveToEntity_Symbol "_Z25SV_SingleClipMoveToEntityP7edict_sPKfS2_S2_S2_P7trace_t"
+#define SV_LinkEdict_Symbol "_Z12SV_LinkEdictP7edict_si"
 
-#define CPlayerMove_PlayStepSound_Signature "_ZN11CPlayerMove13PlayStepSoundEifb"
-#define PM_PlaySoundFX_SERVER_Signature "PM_PlaySoundFX_SERVER"
+#define CPlayerMove_PlayStepSound_Signature "\x89\x2A\x0F\x2A\x2A\x89\x2A\x2A\x2A\xD9\x2A\x2A\x2A\x89\x2A\x2A\x2A\x89\x2A\x2A\xE8"
+#define CPlayerMove_PlayStepSound_Symbol "_ZN11CPlayerMove13PlayStepSoundEifb"
 
-#define sv_Signature "sv"
-#define sv_models_Signature "\x8B\x84\x82\x2A\x2A\x2A\x00\x89\x04\x24\xE8"
-#define host_frametime_Signature "host_frametime"
-#define pmovevars_Signature "movevars"
-#define sv_areanodes_Signature "sv_areanodes"
-#define pg_groupop_Signature "g_groupop"
-#define pg_groupmask_Signature "g_groupmask"
+#define PM_PlaySoundFX_SERVER_Signature "\xC7\x44\x24\x2A\x02\x00\x00\x00\x8D\x2A\x2A\x89\x2A\x2A\x2A\x8B\x00\x83\xC0\x01\x89\x2A\x2A\xE8"
+#define PM_PlaySoundFX_SERVER_Symbol "PM_PlaySoundFX_SERVER"
+
+#define sv_Symbol "sv"
+#define sv_models_Symbol "\x8B\x84\x82\x2A\x2A\x2A\x00\x89\x04\x24\xE8"
+#define host_frametime_Symbol "host_frametime"
+#define pmovevars_Symbol "movevars"
+#define sv_areanodes_Symbol "sv_areanodes"
+#define pg_groupop_Symbol "g_groupop"
+#define pg_groupmask_Symbol "g_groupmask"
 
 #define CLIENT_DLL_NAME "client.so"
 

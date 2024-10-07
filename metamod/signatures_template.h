@@ -1,6 +1,8 @@
 #ifndef SIGNATURE_TEMPLATE_H
 #define SIGNATURE_TEMPLATE_H
 
+#define IMPORT_FUNCTION_POINTER_DEFINE(name) fn##name *name = NULL;
+
 #define IMPORT_FUNCTION_DEFINE(name) fn##name name;
 
 #define IMPORT_FUNCTION_EXTERN(name) extern fn##name name;
@@ -13,6 +15,7 @@
 
 #define LOCATE_FROM_SIGNATURE(dll, sig) gpMetaUtilFuncs->pfnSearchPattern(dll##Base, gpMetaUtilFuncs->pfnGetImageSize(dll##Base), sig, sizeof(sig) - 1)
 #define LOCATE_FROM_SIGNATURE_FROM_FUNCTION(func, size, sig) gpMetaUtilFuncs->pfnSearchPattern(func, size, sig, sizeof(sig) - 1)
+#define LOCATE_FROM_SYMBOL(dll, sym) gpMetaUtilFuncs->pfnGetProcAddress(dll##Handle, sym)
 
 #define ENGINE_DLL_NAME "hw.dll"
 
@@ -22,7 +25,9 @@
 #define _ARRAYSIZE(A)   (sizeof(A)/sizeof((A)[0]))
 #endif
 
-#define LOCATE_FROM_SIGNATURE(dll, sig) gpMetaUtilFuncs->pfnGetProcAddress(dll##Handle, sig)
+#define LOCATE_FROM_SIGNATURE(dll, sig) gpMetaUtilFuncs->pfnSearchPattern(dll##Base, gpMetaUtilFuncs->pfnGetImageSize(dll##Base), sig, sizeof(sig) - 1)
+#define LOCATE_FROM_SIGNATURE_FROM_FUNCTION(func, size, sig) gpMetaUtilFuncs->pfnSearchPattern(func, size, sig, sizeof(sig) - 1)
+#define LOCATE_FROM_SYMBOL(dll, sym) gpMetaUtilFuncs->pfnGetProcAddress(dll##Handle, sym)
 
 #define ENGINE_DLL_NAME "hw.so"
 
@@ -36,6 +41,13 @@ if (!name)\
 }
 
 #define FILL_FROM_SIGNATURE(dll, name) g_pfn_##name = g_call_original_##name = (decltype(g_pfn_##name))LOCATE_FROM_SIGNATURE(dll, name##_Signature);\
+if (!g_pfn_##name)\
+{\
+	LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !");\
+	return FALSE;\
+}
+
+#define FILL_FROM_SYMBOL(dll, name) g_pfn_##name = g_call_original_##name = (decltype(g_pfn_##name))LOCATE_FROM_SYMBOL(dll, name##_Symbol);\
 if (!g_pfn_##name)\
 {\
 	LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !");\
@@ -69,6 +81,13 @@ if (!gpMetaUtilFuncs->pfnIsAddressInModuleRange((void *)g_pfn_##name, dll##Base)
 }
 
 #define VAR_FROM_SIGNATURE(dll, name) name = (decltype(name))LOCATE_FROM_SIGNATURE(dll, name##_Signature);\
+if (!name)\
+{\
+	LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !");\
+	return FALSE;\
+}
+
+#define VAR_FROM_SYMBOL(dll, name) name = (decltype(name))LOCATE_FROM_SYMBOL(dll, name##_Symbol);\
 if (!name)\
 {\
 	LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !");\

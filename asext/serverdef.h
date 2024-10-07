@@ -271,6 +271,9 @@ PRIVATE_FUNCTION_EXTERN(CASRefCountedBaseClass_InternalRelease);
 typedef void (SC_SERVER_DECL *fnCScriptAny_Release)(void *anywhat);
 PRIVATE_FUNCTION_EXTERN(CScriptAny_Release);
 
+typedef void (SC_SERVER_DECL* fnCScriptArray_Release)(void* anywhat);
+PRIVATE_FUNCTION_EXTERN(CScriptArray_Release);
+
 typedef void (*fnCASBaseCallable_Call)(CASFunction *, int dummy, ...);
 PRIVATE_FUNCTION_EXTERN(CASBaseCallable_Call);
 

@@ -101,3 +101,5 @@ C_DLLEXPORT CASServerManager *ASEXT_GetServerManager();
 C_DLLEXPORT bool ASEXT_CASRefCountedBaseClass_InternalRelease(void *ref);
 
 C_DLLEXPORT void ASEXT_CScriptAny_Release(void *anywhat);
+
+C_DLLEXPORT void ASEXT_CScriptArray_Release(void* anywhat);
