@@ -168,6 +168,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	//Sven Co-op 5.16 rc1 and rc2 (10152 and 10182)
 	if (gpMetaUtilFuncs->pfnGetProcAddress(serverHandle, "SCServerDLL003") != nullptr)
 	{
+		LOG_MESSAGE(PLID, "SCServerDLL003 found! Using signatures for Sven Co-op 5.16");
+
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASHook_CASHook, -1);
 		FILL_FROM_SIGNATURE(server, CASHook_Call);
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CString_Assign, -1);
@@ -205,6 +207,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	}
 	else
 	{
+		LOG_MESSAGE(PLID, "SCServerDLL003 not found! Using symbols for Sven Co-op 5.15");
+
 		FILL_FROM_SYMBOL(server, CASHook_CASHook);
 		FILL_FROM_SYMBOL(server, CASHook_Call);
 		FILL_FROM_SYMBOL(server, CString_Assign);

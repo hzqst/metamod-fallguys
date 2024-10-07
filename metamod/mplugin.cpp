@@ -1566,6 +1566,8 @@ const char * DLLINTERNAL MPlugin::str_reason(PL_UNLOAD_REASON preason, PL_UNLOAD
 			return(META_UTIL_VarArgs("%s (forced request from plugin[%d])", buf, unloader_index));
 		case PNL_RELOAD:
 			return("reloading");
+		case PNL_SHUTDOWN:
+			return("game shutting down");
 		default:
 			return(META_UTIL_VarArgs("unknown (%d)", preal_reason));
 	}
