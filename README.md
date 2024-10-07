@@ -141,9 +141,9 @@ The edited `liblist.gam` should be something like this ![](/img/1.png)
 
 1. GNU C++ Build environment. Install with `sudo apt-get install make build-essential gcc gcc-multilib g++-multilib` if missing.
 
-2. CMake. Install with `suto apt-get install cmake` if missing.
+2. CMake. Install with `sudo apt-get install cmake` if missing.
 
-3. Git client. Install with `suto apt-get install git` if missing.
+3. Git client. Install with `sudo apt-get install git` if missing.
 
 # Build Instruction (Linux)
 
