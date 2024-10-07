@@ -141,7 +141,13 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		return FALSE;
 	}
 
-	auto CreateInterface = (CreateInterfaceFn)gpMetaUtilFuncs->pfnGetProcAddress(serverHandle, "SCServerDLL003");
+	auto CreateInterface = (CreateInterfaceFn)gpMetaUtilFuncs->pfnGetProcAddress(serverHandle, "CreateInterface");
+
+	if (!CreateInterface)
+	{
+		LOG_ERROR(PLID, "CreateInterface not found!");
+		return FALSE;
+	}
 
 #ifdef _WIN32
 
