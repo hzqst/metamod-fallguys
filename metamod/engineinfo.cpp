@@ -46,15 +46,12 @@ void mutil_CloseModuleHandle(DLHANDLE handle);
 
 bool DLLINTERNAL EngineInfo::check_for_engine_module( const char* _pName )
 {
-	const char* pC;
-	size_t size;
-
 	if ( NULL == _pName ) return false;
 
 #ifdef _WIN32
 
 	// The engine module is either sw.dll or hw.dll or swds.dll
-	pC = strrchr( _pName, '.' );
+	auto pC = strrchr( _pName, '.' );
 
 	pC -= 2;
 	if ( 0 != strcmp(pC, "sw.dll") && 0 != strcmp(pC, "hw.dll") ) {
@@ -70,7 +67,7 @@ bool DLLINTERNAL EngineInfo::check_for_engine_module( const char* _pName )
 	// Ok, we found the string sw(ds).dll, thus we deduct that this is the
 	// name of the engine's shared object. We copy the string for future 
 	// reference and return successfully.
-	size = 0;
+	size_t size = 0;
 	while ( *pC != '.' && size < c_EngineInfo__typeLen-1 ) {
 		m_type[size++] = *pC++;
 	}
@@ -78,10 +75,17 @@ bool DLLINTERNAL EngineInfo::check_for_engine_module( const char* _pName )
 
 #else /* _WIN32 */
 
-	const char* pType;
+	auto pC = strrchr(_pName, '.');
 
+	pC -= 2;
+	// Sven Co-op uses hw.so
+	if (0 == strcmp(pC, "hw.so")) {
+		strcpy(m_type, "hw.so");
+		return true;
+	}
 
-	size = strlen( _pName );
+	size_t size = strlen( _pName );
+
 	if ( size < 11 ) {
 		// Forget it, this string is too short to even be 'engine_.so', so
 		// it can't the name of the engine shared library.
@@ -103,7 +107,7 @@ bool DLLINTERNAL EngineInfo::check_for_engine_module( const char* _pName )
 
 	// We are at the '_', thus the architecture identifier must start at
 	// the next character.
-	pType = pC +1;
+	auto pType = pC +1;
 
 	// Now we walk further back and check if we find the string 'engine'
 	// backwards.
