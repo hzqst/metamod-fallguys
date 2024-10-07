@@ -12,7 +12,7 @@
 #include "fallguys.h"
 #include "physics.h"
 
-PRIVATE_FUNCTION_DEFINE(buildnum);
+PRIVATE_FUNCTION_DEFINE(build_number);
 PRIVATE_FUNCTION_DEFINE(SV_Physics);
 PRIVATE_FUNCTION_DEFINE(SV_PushEntity);
 PRIVATE_FUNCTION_DEFINE(SV_PushMove);

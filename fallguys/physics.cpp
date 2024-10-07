@@ -2614,7 +2614,7 @@ public:
 
 	void StartFrame(btDiscreteDynamicsWorld* world) override
 	{
-		auto rigidbody = GetDynamicObject()->GetRigidBody();
+		//auto rigidbody = GetDynamicObject()->GetRigidBody();
 
 		DoRaycasts(world);
 	}

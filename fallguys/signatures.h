@@ -3,7 +3,7 @@
 #include <signatures_template.h>
 
 #ifdef _WIN32
-#define buildnum_Signature "\xE8\x2A\x2A\x2A\x2A\x50\x68\x2A\x2A\x2A\x2A\x6A\x30\x68"
+#define build_number_Signature "\xE8\x2A\x2A\x2A\x2A\x50\x68\x2A\x2A\x2A\x2A\x6A\x30\x68"
 #define SV_Physics_Signature "\xDD\x05\x2A\x2A\x2A\x2A\x83\xEC\x14\xD9\x1D\x2A\x2A\x2A\x2A\x55\xFF\x15"
 #define SV_PushEntity_Signature "\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC4\x89\x44\x24\x2A\x8B\x84\x24\x2A\x00\x00\x00"
 #define SV_PushMove_Signature "\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC4\x89\x44\x24\x2A\x2A\x8B\xBC\x24\x88\x00\x00\x00\xD9"
@@ -34,6 +34,7 @@
 
 #else
 
+#define build_number_Symbol "_Z12build_numberv"
 #define SV_Physics_Symbol "_Z10SV_Physicsv"
 #define SV_PushEntity_Symbol "_Z13SV_PushEntityP7edict_sPf"
 #define SV_PushMove_Symbol "_Z11SV_PushMoveP7edict_sf"
@@ -41,6 +42,7 @@
 #define SV_WriteMovevarsToClient_Symbol "_Z24SV_WriteMovevarsToClientP9sizebuf_s"
 #define SV_TestEntityPosition_Symbol "_Z21SV_TestEntityPositionP7edict_s"
 #define SV_SingleClipMoveToEntity_Symbol "_Z25SV_SingleClipMoveToEntityP7edict_sPKfS2_S2_S2_P7trace_t"
+#define SV_SingleClipMoveToEntity_10152_Symbol SV_SingleClipMoveToEntity_Symbol
 #define SV_LinkEdict_Symbol "_Z12SV_LinkEdictP7edict_si"
 
 #define CPlayerMove_PlayStepSound_Signature "\x89\x2A\x0F\x2A\x2A\x89\x2A\x2A\x2A\xD9\x2A\x2A\x2A\x89\x2A\x2A\x2A\x89\x2A\x2A\xE8"

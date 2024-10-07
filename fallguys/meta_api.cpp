@@ -174,21 +174,20 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 	IMPORT_ASEXT_API(asext);
 
-	//Fill private engine functions
+#ifdef _WIN32
+
 	FILL_FROM_SIGNATURE(engine, SV_Physics);
 	FILL_FROM_SIGNATURE(engine, SV_PushEntity);
 	FILL_FROM_SIGNATURE(engine, SV_PushMove);
 	FILL_FROM_SIGNATURE(engine, SV_PushRotate);
 	FILL_FROM_SIGNATURE(engine, SV_WriteMovevarsToClient);
 
-#ifdef _WIN32
-
-	FILL_FROM_SIGNATURED_CALLER_FROM_START(engine, buildnum, 0);
+	FILL_FROM_SIGNATURED_CALLER_FROM_START(engine, build_number, 0);
 
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, PM_PlaySoundFX_SERVER, -1);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CPlayerMove_PlayStepSound, -1);
 
-	if (g_pfn_buildnum() >= 10152)
+	if (g_pfn_build_number() >= 10152)
 	{
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(engine, SV_SingleClipMoveToEntity_10152, -1);
 	}
@@ -208,13 +207,11 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 #else
 
-	//TODO 10152
-
 	//Sven Co-op 5.16 rc1 and rc2 (10152 and 10182)
 	if (gpMetaUtilFuncs->pfnGetProcAddress(serverHandle, "SCServerDLL003") != nullptr)
 	{
-		FILL_FROM_SIGNATURE_FROM_END(server, CPlayerMove_PlayStepSound, -1);
-		FILL_FROM_SIGNATURE_FROM_END(server, PM_PlaySoundFX_SERVER, -1);
+		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CPlayerMove_PlayStepSound, -1);
+		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, PM_PlaySoundFX_SERVER, -1);
 	}
 	else
 	{
@@ -222,11 +219,26 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		FILL_FROM_SYMBOL(server, PM_PlaySoundFX_SERVER);
 	}
 
-	FILL_FROM_SYMBOL(engine, SV_SingleClipMoveToEntity);
+	FILL_FROM_SYMBOL(engine, build_number);
+
+	FILL_FROM_SYMBOL(engine, SV_Physics);
+	FILL_FROM_SYMBOL(engine, SV_PushEntity);
+	FILL_FROM_SYMBOL(engine, SV_PushMove);
+	FILL_FROM_SYMBOL(engine, SV_PushRotate);
+	FILL_FROM_SYMBOL(engine, SV_WriteMovevarsToClient);
+
+	if (g_pfn_build_number() >= 10152)
+	{
+		FILL_FROM_SYMBOL(engine, SV_SingleClipMoveToEntity_10152);
+	}
+	else
+	{
+		FILL_FROM_SYMBOL(engine, SV_SingleClipMoveToEntity);
+	}
 
 	void *sv = NULL;
 
-	VAR_FROM_SIGNATURE(engine, sv);
+	VAR_FROM_SYMBOL(engine, sv);
 
 	sv_models = (decltype(sv_models))((char *)sv + 0x276148);
 

@@ -4,6 +4,7 @@
 #include <vector>
 #include <deque>
 #include <algorithm>
+#include <cstdint>
 
 #include <btBulletDynamicsCommon.h>
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
@@ -539,7 +540,10 @@ CSolidOptimizerGhostPhysicObject : public CGhostPhysicObject
 {
 public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
-	CSolidOptimizerGhostPhysicObject(CGameObject *obj, int boneindex, int type) : CGhostPhysicObject(obj), m_boneindex(boneindex), m_type(type)
+	CSolidOptimizerGhostPhysicObject(CGameObject *obj, int boneindex, int type) :
+		CGhostPhysicObject(obj),
+		m_type(type),
+		m_boneindex(boneindex)
 	{
 		m_cached_sequence = -1;
 		m_cached_frame = 0;

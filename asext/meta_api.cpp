@@ -184,12 +184,12 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDirectoryList_CreateDirectory, 0);
 		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASFunction_Create, 0);
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASBaseCallable_Call, -8);
-		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASRefCountedBaseClass_InternalRelease, 0);
+		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASRefCountedBaseClass_InternalRelease, 3);
 		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptAny_Release, 0);
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CScriptArray_Release, -8);
 
 		char pattern_CASHook_VCall[] = "\x83\xEC\x2A\xE8\x2A\x2A\x2A\x2A\x81\x2A\x2A\x2A\x2A\x2A\x8B\x2A\x24\x2A\x8B\x2A\x2A\x2A\x2A\x00\x85\x2A\x74\x2A\x0F\x2A\x2A\x06";
-		auto CASHook_VCall = (char *)LOCATE_FROM_SIGNATURE(server, pattern_CHook_VCall);
+		auto CASHook_VCall = (char *)LOCATE_FROM_SIGNATURE(server, pattern_CASHook_VCall);
 		if (!CASHook_VCall)
 		{
 			LOG_ERROR(PLID, "CHook_VCall not found!");

@@ -65,8 +65,8 @@ typedef struct areanode_s
 //Engine private functions
 
 
-typedef int(*fnbuildnum)();
-PRIVATE_FUNCTION_EXTERN(buildnum);
+typedef int(*fnbuild_number)();
+PRIVATE_FUNCTION_EXTERN(build_number);
 
 typedef void(*fnSV_Physics)();
 void NewSV_Physics();
