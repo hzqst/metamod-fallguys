@@ -180,23 +180,47 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		LOG_MESSAGE(PLID, "SCServerDLL003 found! Using signatures for Sven Co-op 5.16");
 
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASHook_CASHook, -1);
+
+		LOG_MESSAGE(PLID, "222");
+
 		FILL_FROM_SIGNATURE(server, CASHook_Call);
+
+		LOG_MESSAGE(PLID, "333");
+
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CString_Assign, -1);
+
+		LOG_MESSAGE(PLID, "444");
+
 		FILL_FROM_SIGNATURE(server, CString_dtor);
 
+		LOG_MESSAGE(PLID, "555");
+
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectType, -1);
+		LOG_MESSAGE(PLID, "666");
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectProperty, -8);
+		LOG_MESSAGE(PLID, "777");
 		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDocumentation_RegisterGlobalProperty, 9);
+		LOG_MESSAGE(PLID, "888");
 		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDocumentation_RegisterObjectMethod, 0);
+		LOG_MESSAGE(PLID, "999");
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectBehaviour, -1);
+		LOG_MESSAGE(PLID, "000");
 		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDocumentation_RegisterFuncDef, 0);
+		LOG_MESSAGE(PLID, "1111");
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterEnum, -13);
+		LOG_MESSAGE(PLID, "2222");
 		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDocumentation_RegisterEnumValue, 7);
+		LOG_MESSAGE(PLID, "3333");
 		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDirectoryList_CreateDirectory, 0);
+		LOG_MESSAGE(PLID, "4444");
 		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASFunction_Create, 0);
+		LOG_MESSAGE(PLID, "5555");
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASBaseCallable_Call, -8);
+		LOG_MESSAGE(PLID, "6666");
 		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASRefCountedBaseClass_InternalRelease, 3);
+		LOG_MESSAGE(PLID, "7777");
 		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptAny_Release, 0);
+		LOG_MESSAGE(PLID, "8888");
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CScriptArray_Release, -8);
 
 		LOG_MESSAGE(PLID, "CScriptArray_Release found!");
