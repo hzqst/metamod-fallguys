@@ -110,7 +110,7 @@ static bool ParseInterfaceVersion(const char* interfaceVersion, int* pMajorVersi
 //  ifvers			(given) interface_version metamod is using
 //  pPlugInfo		(requested) struct with info about plugin
 //  pMetaUtilFuncs	(given) table of utility functions provided by metamod
-C_DLLEXPORT int Meta_Query(char * interfaceVersion, plugin_info_t **pPlugInfo, mutil_funcs_t *pMetaUtilFuncs) 
+C_DLLEXPORT int Meta_Query(const char * interfaceVersion, plugin_info_t **pPlugInfo, mutil_funcs_t *pMetaUtilFuncs) 
 {
 	int iMajorVersion = 0, iMinorVersion = 0;
 	if (!ParseInterfaceVersion(interfaceVersion, &iMajorVersion, &iMinorVersion))
