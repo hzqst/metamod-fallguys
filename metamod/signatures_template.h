@@ -11,11 +11,11 @@
 
 #define PRIVATE_FUNCTION_EXTERN(name) extern fn##name g_pfn_##name; extern fn##name g_call_original_##name;
 
-#ifdef _WIN32
-
 #define LOCATE_FROM_SIGNATURE(dll, sig) gpMetaUtilFuncs->pfnSearchPattern(dll##Base, gpMetaUtilFuncs->pfnGetImageSize(dll##Base), sig, sizeof(sig) - 1)
 #define LOCATE_FROM_SIGNATURE_FROM_FUNCTION(func, size, sig) gpMetaUtilFuncs->pfnSearchPattern(func, size, sig, sizeof(sig) - 1)
 #define LOCATE_FROM_SYMBOL(dll, sym) gpMetaUtilFuncs->pfnGetProcAddress(dll##Handle, sym)
+
+#ifdef _WIN32
 
 #define ENGINE_DLL_NAME "hw.dll"
 
@@ -24,10 +24,6 @@
 #ifndef _ARRAYSIZE
 #define _ARRAYSIZE(A)   (sizeof(A)/sizeof((A)[0]))
 #endif
-
-#define LOCATE_FROM_SIGNATURE(dll, sig) gpMetaUtilFuncs->pfnSearchPattern(dll##Base, gpMetaUtilFuncs->pfnGetImageSize(dll##Base), sig, sizeof(sig) - 1)
-#define LOCATE_FROM_SIGNATURE_FROM_FUNCTION(func, size, sig) gpMetaUtilFuncs->pfnSearchPattern(func, size, sig, sizeof(sig) - 1)
-#define LOCATE_FROM_SYMBOL(dll, sym) gpMetaUtilFuncs->pfnGetProcAddress(dll##Handle, sym)
 
 #define ENGINE_DLL_NAME "hw.so"
 

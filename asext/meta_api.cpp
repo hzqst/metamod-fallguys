@@ -196,34 +196,46 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		LOG_MESSAGE(PLID, "555");
 
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectType, -1);
-		LOG_MESSAGE(PLID, "666");
-		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectProperty, -8);
-		LOG_MESSAGE(PLID, "777");
-		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDocumentation_RegisterGlobalProperty, 9);
-		LOG_MESSAGE(PLID, "888");
-		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDocumentation_RegisterObjectMethod, 0);
-		LOG_MESSAGE(PLID, "999");
-		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectBehaviour, -1);
-		LOG_MESSAGE(PLID, "000");
-		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDocumentation_RegisterFuncDef, 0);
-		LOG_MESSAGE(PLID, "1111");
-		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterEnum, -13);
-		LOG_MESSAGE(PLID, "2222");
-		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDocumentation_RegisterEnumValue, 7);
-		LOG_MESSAGE(PLID, "3333");
-		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDirectoryList_CreateDirectory, 0);
-		LOG_MESSAGE(PLID, "4444");
-		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASFunction_Create, 0);
-		LOG_MESSAGE(PLID, "5555");
-		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASBaseCallable_Call, -8);
-		LOG_MESSAGE(PLID, "6666");
-		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASRefCountedBaseClass_InternalRelease, 3);
-		LOG_MESSAGE(PLID, "7777");
-		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptAny_Release, 0);
-		LOG_MESSAGE(PLID, "8888");
-		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CScriptArray_Release, -8);
+		LOG_MESSAGE(PLID, "CASDocumentation_RegisterObjectType found at %p", g_pfn_CASDocumentation_RegisterObjectType);
 
-		LOG_MESSAGE(PLID, "CScriptArray_Release found!");
+		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDocumentation_RegisterObjectProperty, 0);
+		LOG_MESSAGE(PLID, "CASDocumentation_RegisterObjectProperty found at %p", g_pfn_CASDocumentation_RegisterObjectProperty);
+
+		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDocumentation_RegisterGlobalProperty, 9);
+		LOG_MESSAGE(PLID, "CASDocumentation_RegisterGlobalProperty found at %p", g_pfn_CASDocumentation_RegisterGlobalProperty);
+
+		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDocumentation_RegisterObjectMethod, 0);
+		LOG_MESSAGE(PLID, "CASDocumentation_RegisterObjectMethod found at %p", g_pfn_CASDocumentation_RegisterObjectMethod);
+
+		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectBehaviour, -1);
+		LOG_MESSAGE(PLID, "CASDocumentation_RegisterObjectBehaviour found at %p", g_pfn_CASDocumentation_RegisterObjectBehaviour);
+
+		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDocumentation_RegisterFuncDef, 0);
+		LOG_MESSAGE(PLID, "CASDocumentation_RegisterFuncDef found at %p", g_pfn_CASDocumentation_RegisterFuncDef);
+
+		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterEnum, -13);
+		LOG_MESSAGE(PLID, "CASDocumentation_RegisterEnum found at %p", g_pfn_CASDocumentation_RegisterEnum);
+
+		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDocumentation_RegisterEnumValue, 7);
+		LOG_MESSAGE(PLID, "CASDocumentation_RegisterEnumValue found at %p", g_pfn_CASDocumentation_RegisterEnumValue);
+
+		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDirectoryList_CreateDirectory, 0);
+		LOG_MESSAGE(PLID, "CASDirectoryList_CreateDirectory found at %p", g_pfn_CASDirectoryList_CreateDirectory);
+
+		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASFunction_Create, 0);
+		LOG_MESSAGE(PLID, "CASFunction_Create found at %p", g_pfn_CASFunction_Create);
+
+		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASBaseCallable_Call, -8);
+		LOG_MESSAGE(PLID, "CASBaseCallable_Call found at %p", g_pfn_CASBaseCallable_Call);
+
+		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASRefCountedBaseClass_InternalRelease, 3);
+		LOG_MESSAGE(PLID, "CASRefCountedBaseClass_InternalRelease found at %p", g_pfn_CASRefCountedBaseClass_InternalRelease);
+
+		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptAny_Release, 0);
+		LOG_MESSAGE(PLID, "CScriptAny_Release found at %p", g_pfn_CScriptAny_Release);
+
+		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CScriptArray_Release, -8);
+		LOG_MESSAGE(PLID, "CScriptArray_Release found at %p", g_pfn_CScriptArray_Release);
 
 		char pattern_CASHook_VCall[] = "\x83\xEC\x2A\xE8\x2A\x2A\x2A\x2A\x81\x2A\x2A\x2A\x2A\x2A\x8B\x2A\x24\x2A\x8B\x2A\x2A\x2A\x2A\x00\x85\x2A\x74\x2A\x0F\x2A\x2A\x06";
 		auto CASHook_VCall = (char *)LOCATE_FROM_SIGNATURE(server, pattern_CASHook_VCall);
@@ -232,7 +244,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 			LOG_ERROR(PLID, "CHook_VCall not found!");
 			return FALSE;
 		}
-		LOG_MESSAGE(PLID, "CASHook_VCall at %p!", CASHook_VCall);
+		LOG_MESSAGE(PLID, "CASHook_VCall found at %p!", CASHook_VCall);
 
 		//__x86_get_pc_thunk_
 		auto pic_chunk_call = CASHook_VCall + 3;
@@ -242,7 +254,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		auto mov_ebp_addr = CASHook_VCall + 18;
 		g_pServerManager = (decltype(g_pServerManager))(got_plt + *(int*)(mov_ebp_addr + 2));
 
-		LOG_MESSAGE(PLID, "g_pServerManager at %p!", g_pServerManager);
+		LOG_MESSAGE(PLID, "g_pServerManager found at %p!", g_pServerManager);
 
 	}
 	else
