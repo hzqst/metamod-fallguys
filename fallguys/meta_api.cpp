@@ -431,8 +431,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 			if (1)
 			{
-				auto sv_models_addr = (char*)LOCATE_FROM_SIGNATURE(engine, sv_models_Signature);
-				if (!sv_models_addr)
+				auto sv_addr = (char*)LOCATE_FROM_SIGNATURE(engine, sv_Signature);
+				if (!sv_addr)
 				{
 					LOG_ERROR(PLID, "sv_models not found in engine dll!");
 					return FALSE;
@@ -442,7 +442,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 				ctx.imageEnd = engineEnd;
 				ctx.gotplt = got_plt;
 
-				gpMetaUtilFuncs->pfnDisasmSingleInstruction(sv_models_addr, DisasmSingleCallback_FindGotPltTarget, &ctx);
+				gpMetaUtilFuncs->pfnDisasmSingleInstruction(sv_addr, DisasmSingleCallback_FindGotPltTarget, &ctx);
 
 				if (ctx.result)
 				{
