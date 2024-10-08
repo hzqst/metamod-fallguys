@@ -199,6 +199,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptAny_Release, 0);
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CScriptArray_Release, -8);
 
+		LOG_MESSAGE(PLID, "CScriptArray_Release found!");
+
 		char pattern_CASHook_VCall[] = "\x83\xEC\x2A\xE8\x2A\x2A\x2A\x2A\x81\x2A\x2A\x2A\x2A\x2A\x8B\x2A\x24\x2A\x8B\x2A\x2A\x2A\x2A\x00\x85\x2A\x74\x2A\x0F\x2A\x2A\x06";
 		auto CASHook_VCall = (char *)LOCATE_FROM_SIGNATURE(server, pattern_CASHook_VCall);
 		if (!CASHook_VCall)
@@ -206,6 +208,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 			LOG_ERROR(PLID, "CHook_VCall not found!");
 			return FALSE;
 		}
+		LOG_MESSAGE(PLID, "CASHook_VCall at %p!", CASHook_VCall);
+
 		//__x86_get_pc_thunk_
 		auto pic_chunk_call = CASHook_VCall + 3;
 		//auto pic_chunk = gpMetaUtilFuncs->pfnGetNextCallAddr(pic_chunk_call, 1);
@@ -213,6 +217,9 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		auto got_plt = add_addr + *(int*)(add_addr + 2);
 		auto mov_ebp_addr = CASHook_VCall + 18;
 		g_pServerManager = (decltype(g_pServerManager))(got_plt + *(int*)(mov_ebp_addr + 2));
+
+		LOG_MESSAGE(PLID, "g_pServerManager at %p!", g_pServerManager);
+
 	}
 	else
 	{
