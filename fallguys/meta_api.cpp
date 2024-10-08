@@ -115,13 +115,6 @@ void DisasmSingleCallback_FindGotPltTarget(void* inst, byte* address, size_t ins
 	}
 }
 
-class CDisasmFindGotPltTargetContext
-{
-public:
-	char* gotplt;
-	char* result;
-};
-
 qboolean DisasmCallback_FindGotPltTarget(void* inst, byte* address, size_t instLen, int instCount, int depth, void* context)
 {
 	auto pinst = (struct cs_insn*)inst;
@@ -370,7 +363,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 				auto pFound = LOCATE_FROM_SIGNATURE_FROM_FUNCTION(searchBegin, searchEnd - searchBegin, pattern);
 				if (pFound)
 				{
-					auto pFoundNextInstruction = pFound + sizeof(pattern) - 1;
+					auto pFoundNextInstruction = (char *)pFound + sizeof(pattern) - 1;
 
 					CDisasmFindGotPltTargetContext ctx = { 0 };
 
@@ -432,7 +425,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 				auto pFound = LOCATE_FROM_SIGNATURE_FROM_FUNCTION(searchBegin, searchEnd - searchBegin, pattern);
 				if (pFound)
 				{
-					auto pFoundNextInstruction = pFound + sizeof(pattern) - 1;
+					auto pFoundNextInstruction = (char*)pFound + sizeof(pattern) - 1;
 
 					CDisasmFindGotPltTargetContext ctx = { 0 };
 
