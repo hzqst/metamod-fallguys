@@ -93,6 +93,8 @@ NEW_DLL_FUNCTIONS *gpNewDllFunctionsTable = NULL;
 class CDisasmFindGotPltTargetContext
 {
 public:
+	void * imageBase;
+	void* imageEnd;
 	char* gotplt;
 	char* result;
 };
@@ -107,11 +109,14 @@ void DisasmSingleCallback_FindGotPltTarget(void* inst, byte* address, size_t ins
 		&& pinst->detail->x86.operands[0].type == X86_OP_REG
 		&& pinst->detail->x86.operands[1].type == X86_OP_MEM
 		&& pinst->detail->x86.operands[1].mem.base != 0
-		&& pinst->detail->x86.operands[1].mem.disp > -0x1000000
-		&& pinst->detail->x86.operands[1].mem.disp < 0x1000000
+		&& pinst->detail->x86.operands[1].mem.disp != 0
 		)
 	{
-		ctx->result = ctx->gotplt + pinst->detail->x86.operands[1].mem.disp;
+		auto candidate = ctx->gotplt + pinst->detail->x86.operands[1].mem.disp;
+		if (candidate > ctx->imageBase && candidate < ctx->imageEnd)
+		{
+			ctx->result = candidate;
+		}
 	}
 }
 
@@ -127,11 +132,14 @@ qboolean DisasmCallback_FindGotPltTarget(void* inst, byte* address, size_t instL
 			&& pinst->detail->x86.operands[0].type == X86_OP_REG
 			&& pinst->detail->x86.operands[1].type == X86_OP_MEM
 			&& pinst->detail->x86.operands[1].mem.base != 0
-			&& pinst->detail->x86.operands[1].mem.disp > -0x1000000
-			&& pinst->detail->x86.operands[1].mem.disp < 0x1000000
+			&& pinst->detail->x86.operands[1].mem.disp != 0
 			)
 		{
-			ctx->result = ctx->gotplt + pinst->detail->x86.operands[1].mem.disp;
+			auto candidate = ctx->gotplt + pinst->detail->x86.operands[1].mem.disp;
+			if (candidate > ctx->imageBase && candidate < ctx->imageEnd)
+			{
+				ctx->result = candidate;
+			}
 
 			return TRUE;
 		}
@@ -201,6 +209,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		LOG_ERROR(PLID, "engine base not found!");
 		return FALSE;
 	}
+
+	auto engineEnd = (char *)engineBase + gpMetaUtilFuncs->pfnGetImageSize(engineBase);
 
 	auto serverHandle = gpMetaUtilFuncs->pfnGetGameDllHandle();
 	auto serverBase = gpMetaUtilFuncs->pfnGetGameDllBase();
@@ -360,7 +370,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 				char pattern[] = host_frametime_Signature;
 
 				auto searchBegin = (char*)engineBase;
-				auto searchEnd = (char*)engineBase + gpMetaUtilFuncs->pfnGetImageSize(engineBase);
+				auto searchEnd = (char*)engineEnd;
 				while (1)
 				{
 					auto pFound = LOCATE_FROM_SIGNATURE_FROM_FUNCTION(searchBegin, searchEnd - searchBegin, pattern);
@@ -369,7 +379,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 						auto pFoundNextInstruction = (char*)pFound + sizeof(pattern) - 1;
 
 						CDisasmFindGotPltTargetContext ctx = { 0 };
-
+						ctx.imageBase = engineBase;
+						ctx.imageEnd = engineEnd;
 						ctx.gotplt = got_plt;
 
 						gpMetaUtilFuncs->pfnDisasmSingleInstruction(pFoundNextInstruction, DisasmSingleCallback_FindGotPltTarget, &ctx);
@@ -399,6 +410,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 			{
 				CDisasmFindGotPltTargetContext ctx = { 0 };
 
+				ctx.imageBase = engineBase;
+				ctx.imageEnd = engineEnd;
 				ctx.gotplt = got_plt;
 
 				gpMetaUtilFuncs->pfnDisasmRanges((void*)g_pfn_SV_WriteMovevarsToClient, 0x150, DisasmCallback_FindGotPltTarget, 0, &ctx);
@@ -421,7 +434,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 				char pattern[] = sv_areanodes_Signature;
 
 				auto searchBegin = (char*)engineBase;
-				auto searchEnd = (char*)engineBase + gpMetaUtilFuncs->pfnGetImageSize(engineBase);
+				auto searchEnd = (char*)engineEnd;
 				while (1)
 				{
 					auto pFound = LOCATE_FROM_SIGNATURE_FROM_FUNCTION(searchBegin, searchEnd - searchBegin, pattern);
@@ -431,6 +444,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 						CDisasmFindGotPltTargetContext ctx = { 0 };
 
+						ctx.imageBase = engineBase;
+						ctx.imageEnd = engineEnd;
 						ctx.gotplt = got_plt;
 
 						gpMetaUtilFuncs->pfnDisasmSingleInstruction(pFoundNextInstruction, DisasmSingleCallback_FindGotPltTarget, &ctx);
@@ -462,7 +477,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 				char pattern[] = PF_SetGroupMask_Signature;
 
 				auto searchBegin = (char*)engineBase;
-				auto searchEnd = (char*)engineBase + gpMetaUtilFuncs->pfnGetImageSize(engineBase);
+				auto searchEnd = (char*)engineEnd;
 				while (1)
 				{
 					auto pFound = LOCATE_FROM_SIGNATURE_FROM_FUNCTION(searchBegin, searchEnd - searchBegin, pattern);
@@ -475,6 +490,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 						{
 							CDisasmFindGotPltTargetContext ctx = { 0 };
 
+							ctx.imageBase = engineBase;
+							ctx.imageEnd = engineEnd;
 							ctx.gotplt = got_plt;
 
 							gpMetaUtilFuncs->pfnDisasmSingleInstruction(g_groupmask_instruction, DisasmSingleCallback_FindGotPltTarget, &ctx);
@@ -489,6 +506,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 						{
 							CDisasmFindGotPltTargetContext ctx = { 0 };
 
+							ctx.imageBase = engineBase;
+							ctx.imageEnd = engineEnd;
 							ctx.gotplt = got_plt;
 
 							gpMetaUtilFuncs->pfnDisasmSingleInstruction(g_groupop_instruction, DisasmSingleCallback_FindGotPltTarget, &ctx);
