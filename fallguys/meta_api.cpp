@@ -295,232 +295,240 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 	if (!g_pfn_build_number)
 	{
-		FILL_FROM_SIGNATURE_TY(engine, build_number, i686);
-
-		LOG_MESSAGE(PLID, "build_number found at %p!", g_pfn_build_number);
-
-		LOG_MESSAGE(PLID, "Current engine build_number = %d!", g_pfn_build_number());
-
-		FILL_FROM_SIGNATURED_TY_CALLER_FROM_END(engine, SV_Physics, i686, -1);
-		LOG_MESSAGE(PLID, "SV_Physics found at %p!", g_pfn_SV_Physics);
-
-		FILL_FROM_SIGNATURED_TY_CALLER_FROM_START(engine, SV_PushEntity, i686, 0);
-		LOG_MESSAGE(PLID, "SV_PushEntity found at %p!", g_pfn_SV_PushEntity);
-
-		FILL_FROM_SIGNATURED_TY_CALLER_FROM_END(engine, SV_PushMove, i686, -1);
-		LOG_MESSAGE(PLID, "SV_PushMove found at %p!", g_pfn_SV_PushMove);
-
-		FILL_FROM_SIGNATURED_TY_CALLER_FROM_END(engine, SV_PushRotate, i686, -9);
-		LOG_MESSAGE(PLID, "SV_PushRotate found at %p!", g_pfn_SV_PushRotate);
-
-		FILL_FROM_SIGNATURED_TY_CALLER_FROM_START(engine, SV_WriteMovevarsToClient, i686, 3);
-		LOG_MESSAGE(PLID, "SV_WriteMovevarsToClient found at %p!", g_pfn_SV_WriteMovevarsToClient);
-
-		if (g_pfn_build_number() >= 10152)
+		if (!strcmp(gpMetaUtilFuncs->pfnGetEngineType(), "i686"))
 		{
-			FILL_FROM_SIGNATURED_TY_CALLER_FROM_END(engine, SV_SingleClipMoveToEntity_10152, i686, -1);
-			LOG_MESSAGE(PLID, "SV_SingleClipMoveToEntity_10152 found at %p!", g_pfn_SV_SingleClipMoveToEntity_10152);
+			FILL_FROM_SIGNATURED_TY_CALLER_FROM_START(engine, build_number, i686, 0);
+
+			LOG_MESSAGE(PLID, "build_number found at %p!", g_pfn_build_number);
+
+			LOG_MESSAGE(PLID, "Current engine build_number = %d!", g_pfn_build_number());
+
+			FILL_FROM_SIGNATURED_TY_CALLER_FROM_END(engine, SV_Physics, i686, -1);
+			LOG_MESSAGE(PLID, "SV_Physics found at %p!", g_pfn_SV_Physics);
+
+			FILL_FROM_SIGNATURED_TY_CALLER_FROM_START(engine, SV_PushEntity, i686, 0);
+			LOG_MESSAGE(PLID, "SV_PushEntity found at %p!", g_pfn_SV_PushEntity);
+
+			FILL_FROM_SIGNATURED_TY_CALLER_FROM_END(engine, SV_PushMove, i686, -1);
+			LOG_MESSAGE(PLID, "SV_PushMove found at %p!", g_pfn_SV_PushMove);
+
+			FILL_FROM_SIGNATURED_TY_CALLER_FROM_END(engine, SV_PushRotate, i686, -9);
+			LOG_MESSAGE(PLID, "SV_PushRotate found at %p!", g_pfn_SV_PushRotate);
+
+			FILL_FROM_SIGNATURED_TY_CALLER_FROM_START(engine, SV_WriteMovevarsToClient, i686, 3);
+			LOG_MESSAGE(PLID, "SV_WriteMovevarsToClient found at %p!", g_pfn_SV_WriteMovevarsToClient);
+
+			if (g_pfn_build_number() >= 10152)
+			{
+				FILL_FROM_SIGNATURED_TY_CALLER_FROM_END(engine, SV_SingleClipMoveToEntity_10152, i686, -1);
+				LOG_MESSAGE(PLID, "SV_SingleClipMoveToEntity_10152 found at %p!", g_pfn_SV_SingleClipMoveToEntity_10152);
+			}
+			else
+			{
+				FILL_FROM_SIGNATURED_TY_CALLER_FROM_END(engine, SV_SingleClipMoveToEntity, i686, -1);
+				LOG_MESSAGE(PLID, "SV_SingleClipMoveToEntity found at %p!", g_pfn_SV_SingleClipMoveToEntity);
+			}
+
+			auto gotplt_prolog = (char*)LOCATE_FROM_SIGNATURE(engine, gotplt_prolog_Signature);
+			if (!gotplt_prolog)
+			{
+				LOG_ERROR(PLID, "gotplt_prolog not found in engine dll!");
+				return FALSE;
+			}
+
+			//__x86_get_pc_thunk_
+			auto pic_chunk_call = gotplt_prolog + 8;
+			auto add_addr = pic_chunk_call + 5;
+			auto got_plt = add_addr + *(int*)(add_addr + 2);
+			LOG_MESSAGE(PLID, "got_plt found at %p!", got_plt);
+
+			if (1)
+			{
+				auto sv_models_addr = (char*)LOCATE_FROM_SIGNATURE(engine, sv_models_Signature);
+				if (!sv_models_addr)
+				{
+					LOG_ERROR(PLID, "sv_models not found in engine dll!");
+					return FALSE;
+				}
+
+				sv_models = (decltype(sv_models))((char*)got_plt + *(int*)(sv_models_addr + 3));
+				LOG_MESSAGE(PLID, "sv_models found at %p!", sv_models);
+			}
+
+			if (1)
+			{
+				char pattern[] = host_frametime_Signature;
+
+				auto searchBegin = (char*)engineBase;
+				auto searchEnd = (char*)engineBase + gpMetaUtilFuncs->pfnGetImageSize(engineBase);
+				while (1)
+				{
+					auto pFound = LOCATE_FROM_SIGNATURE_FROM_FUNCTION(searchBegin, searchEnd - searchBegin, pattern);
+					if (pFound)
+					{
+						auto pFoundNextInstruction = (char*)pFound + sizeof(pattern) - 1;
+
+						CDisasmFindGotPltTargetContext ctx = { 0 };
+
+						ctx.gotplt = got_plt;
+
+						gpMetaUtilFuncs->pfnDisasmSingleInstruction(pFoundNextInstruction, DisasmSingleCallback_FindGotPltTarget, &ctx);
+
+						if (ctx.result)
+						{
+							host_frametime = (decltype(host_frametime))ctx.result;
+							break;
+						}
+
+						searchBegin = (char*)pFound + sizeof(pattern) - 1;
+					}
+					else
+					{
+						break;
+					}
+				}
+
+				if (!host_frametime)
+				{
+					LOG_ERROR(PLID, "host_frametime not found in engine dll!");
+					return FALSE;
+				}
+			}
+
+			if (1)
+			{
+				CDisasmFindGotPltTargetContext ctx = { 0 };
+
+				ctx.gotplt = got_plt;
+
+				gpMetaUtilFuncs->pfnDisasmRanges((void*)g_pfn_SV_WriteMovevarsToClient, 0x150, DisasmCallback_FindGotPltTarget, 0, &ctx);
+
+				if (ctx.result)
+				{
+					pmovevars = (decltype(pmovevars))ctx.result;
+				}
+
+				if (!pmovevars)
+				{
+					LOG_ERROR(PLID, "movevars not found in engine dll!");
+					return FALSE;
+				}
+				LOG_MESSAGE(PLID, "movevars found at %p!", pmovevars);
+			}
+
+			if (1)
+			{
+				char pattern[] = sv_areanodes_Signature;
+
+				auto searchBegin = (char*)engineBase;
+				auto searchEnd = (char*)engineBase + gpMetaUtilFuncs->pfnGetImageSize(engineBase);
+				while (1)
+				{
+					auto pFound = LOCATE_FROM_SIGNATURE_FROM_FUNCTION(searchBegin, searchEnd - searchBegin, pattern);
+					if (pFound)
+					{
+						auto pFoundNextInstruction = (char*)pFound + sizeof(pattern) - 1;
+
+						CDisasmFindGotPltTargetContext ctx = { 0 };
+
+						ctx.gotplt = got_plt;
+
+						gpMetaUtilFuncs->pfnDisasmSingleInstruction(pFoundNextInstruction, DisasmSingleCallback_FindGotPltTarget, &ctx);
+
+						if (ctx.result)
+						{
+							sv_areanodes = (decltype(sv_areanodes))ctx.result;
+							break;
+						}
+
+						searchBegin = (char*)pFound + sizeof(pattern) - 1;
+					}
+					else
+					{
+						break;
+					}
+				}
+
+				if (!sv_areanodes)
+				{
+					LOG_ERROR(PLID, "sv_areanodes not found in engine dll!");
+					return FALSE;
+				}
+				LOG_MESSAGE(PLID, "sv_areanodes found at %p!", sv_areanodes);
+			}
+
+			if (1)
+			{
+				char pattern[] = PF_SetGroupMask_Signature;
+
+				auto searchBegin = (char*)engineBase;
+				auto searchEnd = (char*)engineBase + gpMetaUtilFuncs->pfnGetImageSize(engineBase);
+				while (1)
+				{
+					auto pFound = LOCATE_FROM_SIGNATURE_FROM_FUNCTION(searchBegin, searchEnd - searchBegin, pattern);
+					if (pFound)
+					{
+						auto g_groupmask_instruction = (char*)pFound + 4;
+						auto g_groupop_instruction = (char*)pFound + 14;
+
+						if (1)
+						{
+							CDisasmFindGotPltTargetContext ctx = { 0 };
+
+							ctx.gotplt = got_plt;
+
+							gpMetaUtilFuncs->pfnDisasmSingleInstruction(g_groupmask_instruction, DisasmSingleCallback_FindGotPltTarget, &ctx);
+
+							if (ctx.result)
+							{
+								pg_groupmask = (decltype(pg_groupmask))ctx.result;
+							}
+						}
+
+						if (1)
+						{
+							CDisasmFindGotPltTargetContext ctx = { 0 };
+
+							ctx.gotplt = got_plt;
+
+							gpMetaUtilFuncs->pfnDisasmSingleInstruction(g_groupop_instruction, DisasmSingleCallback_FindGotPltTarget, &ctx);
+
+							if (ctx.result)
+							{
+								pg_groupop = (decltype(pg_groupop))ctx.result;
+							}
+						}
+
+						if (pg_groupop)
+							break;
+
+						searchBegin = (char*)pFound + sizeof(pattern) - 1;
+					}
+					else
+					{
+						break;
+					}
+				}
+
+				if (!pg_groupmask)
+				{
+					LOG_ERROR(PLID, "g_groupmask not found in engine dll!");
+					return FALSE;
+				}
+				LOG_MESSAGE(PLID, "g_groupmask found at %p!", pg_groupmask);
+
+				if (!pg_groupop)
+				{
+					LOG_ERROR(PLID, "g_groupop not found in engine dll!");
+					return FALSE;
+				}
+				LOG_MESSAGE(PLID, "g_groupop found at %p!", pg_groupop);
+			}
 		}
 		else
 		{
-			FILL_FROM_SIGNATURED_TY_CALLER_FROM_END(engine, SV_SingleClipMoveToEntity, i686, -1);
-			LOG_MESSAGE(PLID, "SV_SingleClipMoveToEntity found at %p!", g_pfn_SV_SingleClipMoveToEntity);
-		}
-
-		auto gotplt_prolog = (char*)LOCATE_FROM_SIGNATURE(engine, gotplt_prolog_Signature);
-		if (!gotplt_prolog)
-		{
-			LOG_ERROR(PLID, "gotplt_prolog not found in engine dll!");
+			LOG_ERROR(PLID, "engine_amd.so is not supported yet!");
 			return FALSE;
-		}
-
-		//__x86_get_pc_thunk_
-		auto pic_chunk_call = gotplt_prolog + 8;
-		auto add_addr = pic_chunk_call + 5;
-		auto got_plt = add_addr + *(int*)(add_addr + 2);
-		LOG_MESSAGE(PLID, "got_plt found at %p!", got_plt);
-
-		if (1)
-		{
-			auto sv_models_addr = (char*)LOCATE_FROM_SIGNATURE(engine, sv_models_Signature);
-			if (!sv_models_addr)
-			{
-				LOG_ERROR(PLID, "sv_models not found in engine dll!");
-				return FALSE;
-			}
-
-			sv_models = (decltype(sv_models))((char*)got_plt + *(int*)(sv_models_addr + 3));
-			LOG_MESSAGE(PLID, "sv_models found at %p!", sv_models);
-		}
-
-		if (1)
-		{
-			char pattern[] = host_frametime_Signature;
-
-			auto searchBegin = (char *)engineBase;
-			auto searchEnd = (char *)engineBase + gpMetaUtilFuncs->pfnGetImageSize(engineBase);
-			while (1)
-			{
-				auto pFound = LOCATE_FROM_SIGNATURE_FROM_FUNCTION(searchBegin, searchEnd - searchBegin, pattern);
-				if (pFound)
-				{
-					auto pFoundNextInstruction = (char *)pFound + sizeof(pattern) - 1;
-
-					CDisasmFindGotPltTargetContext ctx = { 0 };
-
-					ctx.gotplt = got_plt;
-
-					gpMetaUtilFuncs->pfnDisasmSingleInstruction(pFoundNextInstruction, DisasmSingleCallback_FindGotPltTarget, &ctx);
-
-					if (ctx.result)
-					{
-						host_frametime = (decltype(host_frametime))ctx.result;
-						break;
-					}
-
-					searchBegin = (char *)pFound + sizeof(pattern) - 1;
-				}
-				else
-				{
-					break;
-				}
-			}
-
-			if (!host_frametime)
-			{
-				LOG_ERROR(PLID, "host_frametime not found in engine dll!");
-				return FALSE;
-			}
-		}
-
-		if (1)
-		{
-			CDisasmFindGotPltTargetContext ctx = { 0 };
-
-			ctx.gotplt = got_plt;
-
-			gpMetaUtilFuncs->pfnDisasmRanges((void*)g_pfn_SV_WriteMovevarsToClient, 0x150, DisasmCallback_FindGotPltTarget, 0, &ctx);
-
-			if (ctx.result)
-			{
-				pmovevars = (decltype(pmovevars))ctx.result;
-			}
-
-			if (!pmovevars)
-			{
-				LOG_ERROR(PLID, "movevars not found in engine dll!");
-				return FALSE;
-			}
-			LOG_MESSAGE(PLID, "movevars found at %p!", pmovevars);
-		}
-
-		if (1)
-		{
-			char pattern[] = sv_areanodes_Signature;
-
-			auto searchBegin = (char *)engineBase;
-			auto searchEnd = (char *)engineBase + gpMetaUtilFuncs->pfnGetImageSize(engineBase);
-			while (1)
-			{
-				auto pFound = LOCATE_FROM_SIGNATURE_FROM_FUNCTION(searchBegin, searchEnd - searchBegin, pattern);
-				if (pFound)
-				{
-					auto pFoundNextInstruction = (char*)pFound + sizeof(pattern) - 1;
-
-					CDisasmFindGotPltTargetContext ctx = { 0 };
-
-					ctx.gotplt = got_plt;
-
-					gpMetaUtilFuncs->pfnDisasmSingleInstruction(pFoundNextInstruction, DisasmSingleCallback_FindGotPltTarget, &ctx);
-
-					if (ctx.result)
-					{
-						sv_areanodes = (decltype(sv_areanodes))ctx.result;
-						break;
-					}
-
-					searchBegin = (char *)pFound + sizeof(pattern) - 1;
-				}
-				else
-				{
-					break;
-				}
-			}
-
-			if (!sv_areanodes)
-			{
-				LOG_ERROR(PLID, "sv_areanodes not found in engine dll!");
-				return FALSE;
-			}
-			LOG_MESSAGE(PLID, "sv_areanodes found at %p!", sv_areanodes);
-		}
-
-		if (1)
-		{
-			char pattern[] = PF_SetGroupMask_Signature;
-
-			auto searchBegin = (char *)engineBase;
-			auto searchEnd = (char *)engineBase + gpMetaUtilFuncs->pfnGetImageSize(engineBase);
-			while (1)
-			{
-				auto pFound = LOCATE_FROM_SIGNATURE_FROM_FUNCTION(searchBegin, searchEnd - searchBegin, pattern);
-				if (pFound)
-				{
-					auto g_groupmask_instruction = (char *)pFound + 4;
-					auto g_groupop_instruction = (char*)pFound + 14;
-
-					if (1)
-					{
-						CDisasmFindGotPltTargetContext ctx = { 0 };
-
-						ctx.gotplt = got_plt;
-
-						gpMetaUtilFuncs->pfnDisasmSingleInstruction(g_groupmask_instruction, DisasmSingleCallback_FindGotPltTarget, &ctx);
-
-						if (ctx.result)
-						{
-							pg_groupmask = (decltype(pg_groupmask))ctx.result;
-						}
-					}
-
-					if (1)
-					{
-						CDisasmFindGotPltTargetContext ctx = { 0 };
-
-						ctx.gotplt = got_plt;
-
-						gpMetaUtilFuncs->pfnDisasmSingleInstruction(g_groupop_instruction, DisasmSingleCallback_FindGotPltTarget, &ctx);
-
-						if (ctx.result)
-						{
-							pg_groupop = (decltype(pg_groupop))ctx.result;
-						}
-					}
-
-					if (pg_groupop)
-						break;
-
-					searchBegin = (char *)pFound + sizeof(pattern) - 1;
-				}
-				else
-				{
-					break;
-				}
-			}
-
-			if (!pg_groupmask)
-			{
-				LOG_ERROR(PLID, "g_groupmask not found in engine dll!");
-				return FALSE;
-			}
-			LOG_MESSAGE(PLID, "g_groupmask found at %p!", pg_groupmask);
-
-			if (!pg_groupop)
-			{
-				LOG_ERROR(PLID, "g_groupop not found in engine dll!");
-				return FALSE;
-			}
-			LOG_MESSAGE(PLID, "g_groupop found at %p!", pg_groupop);
 		}
 	}
 	else
