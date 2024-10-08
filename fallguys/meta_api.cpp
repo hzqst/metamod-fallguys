@@ -55,7 +55,7 @@
 #include "soundengine.h"
 
 #ifndef _WIN32//for debugging
-#include <unistd.h>
+//#include <unistd.h>
 #endif
 
 IMPORT_ASEXT_API_DEFINE();
@@ -721,7 +721,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 
 #ifndef _WIN32//for debugging
-	sleep(15);
+	//sleep(15);
 #endif
 
 	LoadFMOD();

@@ -80,7 +80,7 @@ static bool LoadFMOD_Server()
 
 	if (!g_FMOD_DllHandle)
 	{
-		LOG_ERROR(PLID, "Failed to load fmodex dll! The SoundEngine API may not work.");
+		LOG_ERROR(PLID, "Failed to load fmodex dll from \"%s\"! The SoundEngine API may not work.", szDllPath);
 		return false;
 	}
 

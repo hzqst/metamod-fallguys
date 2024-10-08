@@ -93,10 +93,10 @@
 
 #define CLIENT_DLL_NAME "client.so"
 
-#define CLIENT_DLL_PATH "cl_dlls\\client.so"
+#define CLIENT_DLL_PATH "cl_dlls/client.so"
 
 #define FMOD_DLL_NAME "fmodex.so"
 
-#define FMOD_DLL_PATH "%s\\cl_dlls\\libfmodex.so"
+#define FMOD_DLL_PATH "%s/cl_dlls/libfmodex.so"
 
 #endif
