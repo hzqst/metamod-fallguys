@@ -431,23 +431,62 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 			if (1)
 			{
-				auto sv_addr = (char*)LOCATE_FROM_SIGNATURE(engine, sv_Signature);
-				if (!sv_addr)
+				auto sv_models_addr = (char*)LOCATE_FROM_SIGNATURE(engine, sv_model_Signature);
+				if (!sv_models_addr)
+				{
+					LOG_ERROR(PLID, "sv_models_addr not found in engine dll!");
+					return FALSE;
+				}
+				if (!sv)
+				{
+					CDisasmFindGotPltTargetContext ctx = { 0 };
+					ctx.imageBase = engineBase;
+					ctx.imageEnd = engineEnd;
+					ctx.gotplt = got_plt;
+
+					gpMetaUtilFuncs->pfnDisasmSingleInstruction(sv_models_addr - 5, DisasmSingleCallback_FindGotPltTarget, &ctx);
+
+					if (ctx.result)
+					{
+						sv = (decltype(sv))ctx.result;
+					}
+				}
+				if (!sv)
+				{
+					CDisasmFindGotPltTargetContext ctx = { 0 };
+					ctx.imageBase = engineBase;
+					ctx.imageEnd = engineEnd;
+					ctx.gotplt = got_plt;
+
+					gpMetaUtilFuncs->pfnDisasmSingleInstruction(sv_models_addr - 6, DisasmSingleCallback_FindGotPltTarget, &ctx);
+
+					if (ctx.result)
+					{
+						sv = (decltype(sv))ctx.result;
+					}
+				}
+				if (!sv)
+				{
+					CDisasmFindGotPltTargetContext ctx = { 0 };
+					ctx.imageBase = engineBase;
+					ctx.imageEnd = engineEnd;
+					ctx.gotplt = got_plt;
+
+					gpMetaUtilFuncs->pfnDisasmSingleInstruction(sv_models_addr - 7, DisasmSingleCallback_FindGotPltTarget, &ctx);
+
+					if (ctx.result)
+					{
+						sv = (decltype(sv))ctx.result;
+					}
+				}
+
+				if (!sv)
 				{
 					LOG_ERROR(PLID, "sv not found in engine dll!");
 					return FALSE;
 				}
-				CDisasmFindGotPltTargetContext ctx = { 0 };
-				ctx.imageBase = engineBase;
-				ctx.imageEnd = engineEnd;
-				ctx.gotplt = got_plt;
 
-				gpMetaUtilFuncs->pfnDisasmSingleInstruction(sv_addr, DisasmSingleCallback_FindGotPltTarget, &ctx);
-
-				if (ctx.result)
-				{
-					sv = (decltype(sv))ctx.result;
-				}
+				LOG_MESSAGE(PLID, "sv found at %p!", sv);
 
 				sv_models = (decltype(sv_models))((char*)sv + offset_sv_models);
 
