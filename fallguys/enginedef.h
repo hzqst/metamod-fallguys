@@ -95,9 +95,9 @@ typedef edict_t *(*fnSV_TestEntityPosition)(edict_t *ent);
 edict_t *SV_TestEntityPositionEx(edict_t *ent);
 PRIVATE_FUNCTION_EXTERN(SV_TestEntityPosition);
 
-typedef void(*fnSV_LinkEdict)(edict_t *ent, qboolean touch_triggers);
-void SV_LinkEdict(edict_t *ent, qboolean touch_triggers);
-PRIVATE_FUNCTION_EXTERN(SV_LinkEdict);
+//typedef void(*fnSV_LinkEdict)(edict_t *ent, qboolean touch_triggers);
+//void SV_LinkEdict(edict_t *ent, qboolean touch_triggers);
+//PRIVATE_FUNCTION_EXTERN(SV_LinkEdict);
 
 typedef void(*fnSV_SingleClipMoveToEntity)(edict_t *ent, const vec3_t& start, const vec3_t& mins, const vec3_t& maxs, const vec3_t& end, trace_t *trace);
 void SV_SingleClipMoveToEntity(edict_t *ent, const vec3_t& start, const vec3_t& mins, const vec3_t& maxs, const vec3_t& end, trace_t *trace);

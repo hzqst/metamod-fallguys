@@ -141,6 +141,8 @@ typedef struct meta_util_funcs_s {
 	server_studio_api_t *(*pfnGetEngineStudioAPI)();
 	float *(*pfnGetRotationMatrix)();
 	float *(*pfnGetBoneMatrix)();
+	// 2024-10 Added by hzqst
+	const char * (*pfnGetEngineType)();
 } mutil_funcs_t;
 extern mutil_funcs_t MetaUtilFunctions DLLHIDDEN;
 

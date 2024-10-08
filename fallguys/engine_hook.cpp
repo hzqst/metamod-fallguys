@@ -140,10 +140,8 @@ void SV_SingleClipMoveToEntity_10152(edict_t* ent, const vec3_t& start, const ve
 	{
 		return g_call_original_SV_SingleClipMoveToEntity_10152(ent, start, mins, maxs, end, trace, passedict);
 	}
-	else if (g_call_original_SV_SingleClipMoveToEntity)
-	{
-		return g_call_original_SV_SingleClipMoveToEntity(ent, start, mins, maxs, end, trace);
-	}
+
+	return g_call_original_SV_SingleClipMoveToEntity(ent, start, mins, maxs, end, trace);
 }
 
 void SV_ClipToLinksEx(areanode_t *node, moveclip_t *clip)
@@ -213,7 +211,7 @@ void SV_ClipToLinksEx(areanode_t *node, moveclip_t *clip)
 		if (clip->passedict && clip->passedict->v.size[0] && !touch->v.size[0])
 			continue;	// points never interact
 
-	// might intersect, so do an exact clip
+		// might intersect, so do an exact clip
 		if (clip->trace.allsolid)
 			return;
 

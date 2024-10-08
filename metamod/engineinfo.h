@@ -29,7 +29,7 @@ typedef void* MemAddr;
 // in an INVALID state, i.e. no code address range could be determined.
 static const bool c_DefaultReturnOnInvalidState = true;
 
-static const int  c_EngineInfo__typeLen = 10;
+static const int  c_EngineInfo__typeLen = 16;
 
 
 class EngineInfo : public class_metamod_new

@@ -180,20 +180,16 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		LOG_MESSAGE(PLID, "SCServerDLL003 found! Using signatures for Sven Co-op 5.16");
 
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASHook_CASHook, -1);
-
-		LOG_MESSAGE(PLID, "222");
+		LOG_MESSAGE(PLID, "CASHook_CASHook found at %p", g_pfn_CASHook_CASHook);
 
 		FILL_FROM_SIGNATURE(server, CASHook_Call);
-
-		LOG_MESSAGE(PLID, "333");
+		LOG_MESSAGE(PLID, "CASHook_Call found at %p", g_pfn_CASHook_Call);
 
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CString_Assign, -1);
-
-		LOG_MESSAGE(PLID, "444");
+		LOG_MESSAGE(PLID, "CString_Assign found at %p", g_pfn_CString_Assign);
 
 		FILL_FROM_SIGNATURE(server, CString_dtor);
-
-		LOG_MESSAGE(PLID, "555");
+		LOG_MESSAGE(PLID, "CString_dtor found at %p", g_pfn_CString_dtor);
 
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectType, -1);
 		LOG_MESSAGE(PLID, "CASDocumentation_RegisterObjectType found at %p", g_pfn_CASDocumentation_RegisterObjectType);

@@ -1218,6 +1218,11 @@ static float* mutil_GetBoneMatrix()
 	return (float*)Engine.engine_bonetransform;
 }
 
+static const char* mutil_GetEngineType()
+{
+	return Engine.info.type();
+}
+
 // Meta Utility Function table.
 mutil_funcs_t MetaUtilFunctions = {
 	mutil_LogConsole,		// pfnLogConsole
@@ -1271,4 +1276,7 @@ mutil_funcs_t MetaUtilFunctions = {
 	mutil_GetEngineStudioAPI,
 	mutil_GetRotationMatrix,
 	mutil_GetBoneMatrix,
+
+	//2024-10 added by hzqst
+	mutil_GetEngineType
 };
