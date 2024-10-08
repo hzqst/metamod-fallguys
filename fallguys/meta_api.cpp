@@ -118,6 +118,21 @@ void DisasmSingleCallback_FindGotPltTarget(void* inst, byte* address, size_t ins
 			ctx->result = candidate;
 		}
 	}
+
+	else if (pinst->id == X86_INS_MOV
+		&& pinst->detail->x86.op_count == 2
+		&& pinst->detail->x86.operands[1].type == X86_OP_REG
+		&& pinst->detail->x86.operands[0].type == X86_OP_MEM
+		&& pinst->detail->x86.operands[0].mem.base != 0
+		&& pinst->detail->x86.operands[0].mem.disp != 0
+		)
+	{
+		auto candidate = ctx->gotplt + pinst->detail->x86.operands[0].mem.disp;
+		if (candidate > ctx->imageBase && candidate < ctx->imageEnd)
+		{
+			ctx->result = candidate;
+		}
+	}
 }
 
 qboolean DisasmCallback_FindGotPltTarget(void* inst, byte* address, size_t instLen, int instCount, int depth, void* context)
@@ -133,6 +148,23 @@ qboolean DisasmCallback_FindGotPltTarget(void* inst, byte* address, size_t instL
 			&& pinst->detail->x86.operands[1].type == X86_OP_MEM
 			&& pinst->detail->x86.operands[1].mem.base != 0
 			&& pinst->detail->x86.operands[1].mem.disp != 0
+			)
+		{
+			auto candidate = ctx->gotplt + pinst->detail->x86.operands[1].mem.disp;
+			if (candidate > ctx->imageBase && candidate < ctx->imageEnd)
+			{
+				ctx->result = candidate;
+			}
+
+			return TRUE;
+		}
+
+		else if (pinst->id == X86_INS_MOV
+			&& pinst->detail->x86.op_count == 2
+			&& pinst->detail->x86.operands[1].type == X86_OP_REG
+			&& pinst->detail->x86.operands[0].type == X86_OP_MEM
+			&& pinst->detail->x86.operands[0].mem.base != 0
+			&& pinst->detail->x86.operands[0].mem.disp != 0
 			)
 		{
 			auto candidate = ctx->gotplt + pinst->detail->x86.operands[1].mem.disp;
