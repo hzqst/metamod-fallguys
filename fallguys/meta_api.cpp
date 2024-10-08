@@ -97,7 +97,7 @@ NEW_DLL_FUNCTIONS *gpNewDllFunctionsTable = NULL;
 class CDisasmFindGotPltTargetContext
 {
 public:
-	void * imageBase;
+	void* imageBase;
 	void* imageEnd;
 	char* gotplt;
 	char* result;
@@ -190,15 +190,46 @@ qboolean DisasmCallback_FindGotPltTarget(void* inst, byte* address, size_t instL
 	return FALSE;
 }
 
+//thx OpenAI
+static bool ParseInterfaceVersion(const char * interfaceVersion, int *pMajorVersion, int* pMinorVersion)
+{
+	char* endPtr = nullptr;
+
+	*pMajorVersion = strtol(interfaceVersion, &endPtr, 10);
+
+	if (endPtr == interfaceVersion || (*endPtr != '\0' && *endPtr != ':')) {
+		return false;
+	}
+
+	if (*endPtr == ':') {
+		*pMinorVersion = strtol(endPtr + 1, &endPtr, 10);
+		if (endPtr == interfaceVersion + 1 || *endPtr != '\0') {
+			return false;
+		}
+	}
+	else {
+		*pMinorVersion = 0;
+	}
+
+	return true;
+}
+
 // Metamod requesting info about this plugin:
 //  ifvers			(given) interface_version metamod is using
 //  pPlugInfo		(requested) struct with info about plugin
 //  pMetaUtilFuncs	(given) table of utility functions provided by metamod
-C_DLLEXPORT int Meta_Query(char * interfaceVersion, plugin_info_t **pPlugInfo, mutil_funcs_t *pMetaUtilFuncs) 
+C_DLLEXPORT int Meta_Query(const char * interfaceVersion, plugin_info_t **pPlugInfo, mutil_funcs_t *pMetaUtilFuncs) 
 {
-	if (0 != strcmp(interfaceVersion, META_INTERFACE_VERSION))
+	int iMajorVersion = 0, iMinorVersion = 0;
+	if (!ParseInterfaceVersion(interfaceVersion, &iMajorVersion, &iMinorVersion))
 	{
-		pMetaUtilFuncs->pfnLogError(PLID, "Meta_Query version mismatch! expect %s but got %s", META_INTERFACE_VERSION, interfaceVersion);
+		pMetaUtilFuncs->pfnLogError(PLID, "Meta_Query failed to parse version string \"%s\"!", interfaceVersion);
+		return FALSE;
+	}
+
+	if (iMajorVersion < 5 || (iMajorVersion == 5 && iMinorVersion < 16))
+	{
+		pMetaUtilFuncs->pfnLogError(PLID, "Meta_Query version too low! expect \"%s\" but got \"%s\"", "5:16", interfaceVersion);
 		return FALSE;
 	}
 
