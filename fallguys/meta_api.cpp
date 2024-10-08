@@ -54,6 +54,10 @@
 #include "physics.h"
 #include "soundengine.h"
 
+#ifndef _WIN32//for debugging
+#include <unistd.h>
+#endif
+
 IMPORT_ASEXT_API_DEFINE();
 
 // Must provide at least one of these..
@@ -243,7 +247,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	}
 
 	auto engineSize = gpMetaUtilFuncs->pfnGetImageSize(engineBase);
-	auto engineEnd = (char *)engineBase + engineSize;
+	auto engineEnd = (char*)engineBase + engineSize;
 
 	LOG_MESSAGE(PLID, "Current engine dll range: %p ~ %p!", engineBase, engineEnd);
 
@@ -267,7 +271,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 	LOG_MESSAGE(PLID, "Current server dll range: %p ~ %p!", serverBase, serverEnd);
 
-	void *asextHandle = NULL;
+	void* asextHandle = NULL;
 
 #ifdef _WIN32
 	LOAD_PLUGIN(PLID, "addons/metamod/dlls/asext.dll", PLUG_LOADTIME::PT_ANYTIME, &asextHandle);
@@ -289,7 +293,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		LOG_ERROR(PLID, "CreateInterface not found!");
 		return FALSE;
 	}
-	
+
 	LOG_MESSAGE(PLID, "Current engine type: %s!", gpMetaUtilFuncs->pfnGetEngineType());
 
 #ifdef _WIN32
@@ -623,6 +627,11 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		VAR_FROM_SYMBOL(engine, pg_groupmask);
 	}
 
+#endif
+
+
+#ifndef _WIN32//for debugging
+	sleep(15);
 #endif
 
 	LoadFMOD();
