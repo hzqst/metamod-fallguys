@@ -427,6 +427,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 			auto got_plt = add_addr + *(int*)(add_addr + 2);
 			LOG_MESSAGE(PLID, "got_plt found at %p!", got_plt);
 
+			void* sv = NULL;
+
 			if (1)
 			{
 				auto sv_models_addr = (char*)LOCATE_FROM_SIGNATURE(engine, sv_models_Signature);
@@ -435,8 +437,21 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 					LOG_ERROR(PLID, "sv_models not found in engine dll!");
 					return FALSE;
 				}
+				CDisasmFindGotPltTargetContext ctx = { 0 };
+				ctx.imageBase = engineBase;
+				ctx.imageEnd = engineEnd;
+				ctx.gotplt = got_plt;
 
-				sv_models = (decltype(sv_models))((char*)got_plt + *(int*)(sv_models_addr + 3));
+				gpMetaUtilFuncs->pfnDisasmSingleInstruction(sv_models_addr, DisasmSingleCallback_FindGotPltTarget, &ctx);
+
+				if (ctx.result)
+				{
+					sv = (decltype(sv))ctx.result;
+					break;
+				}
+
+				sv_models = (decltype(sv_models))((char*)sv + offset_sv_models);
+
 				LOG_MESSAGE(PLID, "sv_models found at %p!", sv_models);
 			}
 
@@ -648,7 +663,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 		VAR_FROM_SYMBOL(engine, sv);
 
-		sv_models = (decltype(sv_models))((char*)sv + 0x276148);
+		sv_models = (decltype(sv_models))((char*)sv + offset_sv_models);
 
 		VAR_FROM_SYMBOL(engine, host_frametime);
 		VAR_FROM_SYMBOL(engine, pmovevars);
