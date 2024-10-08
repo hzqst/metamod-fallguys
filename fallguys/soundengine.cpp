@@ -80,7 +80,7 @@ static bool LoadFMOD_Server()
 
 	if (!g_FMOD_DllHandle)
 	{
-		LOG_ERROR(PLID, "failed to load fmodex dll!");
+		LOG_ERROR(PLID, "Failed to load fmodex dll! The SoundEngine API may not work.");
 		return false;
 	}
 
@@ -92,7 +92,7 @@ static bool LoadFMOD_Server()
 			gpMetaUtilFuncs->pfnFreeLibrary(g_FMOD_DllHandle);\
 			g_FMOD_DllHandle = NULL;\
 		}\
-		LOG_ERROR(PLID, "failed to find " #name);\
+		LOG_ERROR(PLID, "Failed to locate " #name " from fmodex dll!");\
 		return false;\
 	}
 
@@ -117,7 +117,7 @@ static bool LoadFMOD_Server()
 			g_FMOD_DllHandle = NULL;
 		}
 
-		LOG_ERROR(PLID, "failed to FMOD_System_Create, result: %d", result);
+		LOG_ERROR(PLID, "Failed to FMOD_System_Create, result: %d", result);
 		return false;
 	}
 
@@ -137,7 +137,7 @@ static bool LoadFMOD_Server()
 			g_FMOD_DllHandle = NULL;
 		}
 
-		LOG_ERROR(PLID, "failed to FMOD_System_SetCallback, result: %d", result);
+		LOG_ERROR(PLID, "Failed to FMOD_System_SetCallback, result: %d", result);
 		return false;
 	}
 
@@ -157,7 +157,7 @@ static bool LoadFMOD_Server()
 			g_FMOD_DllHandle = NULL;
 		}
 
-		LOG_ERROR(PLID, "failed to FMOD_System_SetOutput, result: %d", result);
+		LOG_ERROR(PLID, "Failed to FMOD_System_SetOutput, result: %d", result);
 		return false;
 	}
 
@@ -177,7 +177,7 @@ static bool LoadFMOD_Server()
 			g_FMOD_DllHandle = NULL;
 		}
 
-		LOG_ERROR(PLID, "failed to FMOD_System_Init, result: %d", result);
+		LOG_ERROR(PLID, "Failed to FMOD_System_Init, result: %d", result);
 		return false;
 	}
 

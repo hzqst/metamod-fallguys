@@ -96,6 +96,6 @@
 
 #define FMOD_DLL_NAME "fmodex.so"
 
-#define FMOD_DLL_PATH "%s\\fmodex.so"
+#define FMOD_DLL_PATH "%s\\cl_dlls\\libfmodex.so"
 
 #endif
