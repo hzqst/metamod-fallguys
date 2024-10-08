@@ -247,13 +247,13 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, PM_PlaySoundFX_SERVER, -1);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CPlayerMove_PlayStepSound, -1);
 
+	FILL_FROM_SIGNATURED_CALLER_FROM_START(engine, build_number, 0);
+
 	FILL_FROM_SIGNATURE(engine, SV_Physics);
 	FILL_FROM_SIGNATURE(engine, SV_PushEntity);
 	FILL_FROM_SIGNATURE(engine, SV_PushMove);
 	FILL_FROM_SIGNATURE(engine, SV_PushRotate);
 	FILL_FROM_SIGNATURE(engine, SV_WriteMovevarsToClient);
-
-	FILL_FROM_SIGNATURED_CALLER_FROM_START(engine, build_number, 0);
 
 	if (g_pfn_build_number() >= 10152)
 	{
@@ -296,6 +296,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	if (!g_pfn_build_number)
 	{
 		FILL_FROM_SIGNATURE_TY(engine, build_number, i686);
+
 		LOG_MESSAGE(PLID, "build_number found at %p!", g_pfn_build_number);
 
 		LOG_MESSAGE(PLID, "Current engine build_number = %d!", g_pfn_build_number());
@@ -524,6 +525,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	}
 	else
 	{
+		LOG_MESSAGE(PLID, "Current engine build_number = %d!", g_pfn_build_number());
+
 		FILL_FROM_SYMBOL(engine, SV_Physics);
 		FILL_FROM_SYMBOL(engine, SV_PushEntity);
 		FILL_FROM_SYMBOL(engine, SV_PushMove);
