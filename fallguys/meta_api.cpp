@@ -210,7 +210,10 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		return FALSE;
 	}
 
-	auto engineEnd = (char *)engineBase + gpMetaUtilFuncs->pfnGetImageSize(engineBase);
+	auto engineSize = gpMetaUtilFuncs->pfnGetImageSize(engineBase);
+	auto engineEnd = (char *)engineBase + engineSize;
+
+	LOG_MESSAGE(PLID, "Current engine dll range: %p ~ %p!", engineBase, engineEnd);
 
 	auto serverHandle = gpMetaUtilFuncs->pfnGetGameDllHandle();
 	auto serverBase = gpMetaUtilFuncs->pfnGetGameDllBase();
@@ -226,6 +229,11 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		LOG_ERROR(PLID, "server base not found!");
 		return FALSE;
 	}
+
+	auto serverSize = gpMetaUtilFuncs->pfnGetImageSize(serverBase);
+	auto serverEnd = (char*)serverBase + serverSize;
+
+	LOG_MESSAGE(PLID, "Current server dll range: %p ~ %p!", serverBase, serverEnd);
 
 	void *asextHandle = NULL;
 

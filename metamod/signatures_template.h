@@ -11,7 +11,7 @@
 
 #define PRIVATE_FUNCTION_EXTERN(name) extern fn##name g_pfn_##name; extern fn##name g_call_original_##name;
 
-#define LOCATE_FROM_SIGNATURE(dll, sig) gpMetaUtilFuncs->pfnSearchPattern(dll##Base, gpMetaUtilFuncs->pfnGetImageSize(dll##Base), sig, sizeof(sig) - 1)
+#define LOCATE_FROM_SIGNATURE(dll, sig) gpMetaUtilFuncs->pfnSearchPattern(dll##Base, dll##Size, sig, sizeof(sig) - 1)
 #define LOCATE_FROM_SIGNATURE_FROM_FUNCTION(func, size, sig) gpMetaUtilFuncs->pfnSearchPattern(func, size, sig, sizeof(sig) - 1)
 #define LOCATE_FROM_SYMBOL(dll, sym) gpMetaUtilFuncs->pfnGetProcAddress(dll##Handle, sym)
 
