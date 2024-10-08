@@ -466,8 +466,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 				auto pFound = LOCATE_FROM_SIGNATURE_FROM_FUNCTION(searchBegin, searchEnd - searchBegin, pattern);
 				if (pFound)
 				{
-					auto g_groupmask_instruction = pFound + 4;
-					auto g_groupop_instruction = pFound + 14;
+					auto g_groupmask_instruction = (char *)pFound + 4;
+					auto g_groupop_instruction = (char*)pFound + 14;
 
 					if (1)
 					{
@@ -480,7 +480,6 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 						if (ctx.result)
 						{
 							pg_groupmask = (decltype(pg_groupmask))ctx.result;
-							break;
 						}
 					}
 
@@ -495,9 +494,11 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 						if (ctx.result)
 						{
 							pg_groupop = (decltype(pg_groupop))ctx.result;
-							break;
 						}
 					}
+
+					if (pg_groupop)
+						break;
 
 					searchBegin = (char *)pFound + sizeof(pattern) - 1;
 				}

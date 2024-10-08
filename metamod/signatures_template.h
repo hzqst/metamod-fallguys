@@ -48,7 +48,7 @@ if (!g_pfn_##name)\
 #define FILL_FROM_SIGNATURE_TY(dll, name, ty) g_pfn_##name = g_call_original_##name = (decltype(g_pfn_##name))LOCATE_FROM_SIGNATURE(dll, name##_Signature_##ty);\
 if (!g_pfn_##name)\
 {\
-	LOG_ERROR(PLID, "Failed to locate " #name " from " #dll ## " (" ## (#ty) ## ") dll !");\
+	LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !");\
 	return FALSE;\
 }
 
