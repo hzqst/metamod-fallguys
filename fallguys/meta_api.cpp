@@ -403,7 +403,6 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 			if (ctx.result)
 			{
 				pmovevars = (decltype(pmovevars))ctx.result;
-				break;
 			}
 
 			if (!pmovevars)

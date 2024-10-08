@@ -262,12 +262,12 @@ void SV_ClipToLinksEx(areanode_t *node, moveclip_t *clip)
 
 trace_t SV_MoveEx(vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int type, edict_t *passedict, qboolean monsterClipBrush)
 {
-	moveclip_t	clip;
+	moveclip_t	clip = { 0 };
 	int			i;
 	vec3_t		worldEndPoint;
 	float		worldFraction;
 
-	memset(&clip, 0, sizeof(moveclip_t));
+	//memset(&clip, 0, sizeof(moveclip_t));
 
 	// clip to world
 	SV_SingleClipMoveToEntity_10152(g_engfuncs.pfnPEntityOfEntIndex(0), start, mins, maxs, end, &clip.trace, passedict);
