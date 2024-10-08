@@ -247,7 +247,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		return FALSE;
 	}
 	
-	LOG_MESSAGE(PLID, "Engine Type: %s", gpMetaUtilFuncs->pfnGetEngineType());
+	LOG_MESSAGE(PLID, "Current engine type: %s!", gpMetaUtilFuncs->pfnGetEngineType());
 
 #ifdef _WIN32
 
@@ -363,8 +363,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		{
 			char pattern[] = host_frametime_Signature;
 
-			auto searchBegin = (PUCHAR)engineBase;
-			auto searchEnd = (PUCHAR)engineBase + gpMetaUtilFuncs->pfnGetImageSize(engineBase);
+			auto searchBegin = (char *)engineBase;
+			auto searchEnd = (char *)engineBase + gpMetaUtilFuncs->pfnGetImageSize(engineBase);
 			while (1)
 			{
 				auto pFound = LOCATE_FROM_SIGNATURE_FROM_FUNCTION(searchBegin, searchEnd - searchBegin, pattern);
@@ -384,7 +384,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 						break;
 					}
 
-					searchBegin = (PUCHAR)pFound + sizeof(pattern) - 1;
+					searchBegin = (char *)pFound + sizeof(pattern) - 1;
 				}
 				else
 				{
@@ -425,8 +425,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		{
 			char pattern[] = sv_areanodes_Signature;
 
-			auto searchBegin = (PUCHAR)engineBase;
-			auto searchEnd = (PUCHAR)engineBase + gpMetaUtilFuncs->pfnGetImageSize(engineBase);
+			auto searchBegin = (char *)engineBase;
+			auto searchEnd = (char *)engineBase + gpMetaUtilFuncs->pfnGetImageSize(engineBase);
 			while (1)
 			{
 				auto pFound = LOCATE_FROM_SIGNATURE_FROM_FUNCTION(searchBegin, searchEnd - searchBegin, pattern);
@@ -446,7 +446,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 						break;
 					}
 
-					searchBegin = (PUCHAR)pFound + sizeof(pattern) - 1;
+					searchBegin = (char *)pFound + sizeof(pattern) - 1;
 				}
 				else
 				{
@@ -466,8 +466,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		{
 			char pattern[] = PF_SetGroupMask_Signature;
 
-			auto searchBegin = (PUCHAR)engineBase;
-			auto searchEnd = (PUCHAR)engineBase + gpMetaUtilFuncs->pfnGetImageSize(engineBase);
+			auto searchBegin = (char *)engineBase;
+			auto searchEnd = (char *)engineBase + gpMetaUtilFuncs->pfnGetImageSize(engineBase);
 			while (1)
 			{
 				auto pFound = LOCATE_FROM_SIGNATURE_FROM_FUNCTION(searchBegin, searchEnd - searchBegin, pattern);
@@ -506,7 +506,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 						}
 					}
 
-					searchBegin = (PUCHAR)pFound + sizeof(pattern) - 1;
+					searchBegin = (char *)pFound + sizeof(pattern) - 1;
 				}
 				else
 				{

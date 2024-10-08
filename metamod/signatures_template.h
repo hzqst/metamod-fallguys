@@ -106,7 +106,7 @@ if (!Caller_of_##name)\
 	LOG_ERROR(PLID, "Failed to locate Caller of " #name " from " #dll " dll !");\
 	return FALSE;\
 }\
-g_pfn_##name = g_call_original_##name = (decltype(g_pfn_##name))gpMetaUtilFuncs->pfnGetNextCallAddr(Caller_of_##name + (sizeof(name##_Signature) - 1) + (offset), 1);\
+g_pfn_##name = g_call_original_##name = (decltype(g_pfn_##name))gpMetaUtilFuncs->pfnGetNextCallAddr(Caller_of_##name + (sizeof(name##_Signature_##ty) - 1) + (offset), 1);\
 if (!gpMetaUtilFuncs->pfnIsAddressInModuleRange((void *)g_pfn_##name, dll##Base))\
 {\
 	LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !"); \
