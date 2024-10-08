@@ -483,29 +483,83 @@ void *mutil_GetModuleBaseByName(const char *name)
 	return base;
 }
 
-size_t mutil_GetImageSize(void *ImageBase)
-{
 #ifdef _WIN32
-	return ((IMAGE_NT_HEADERS *)((char *)ImageBase + ((IMAGE_DOS_HEADER *)ImageBase)->e_lfanew))->OptionalHeader.SizeOfImage;
+
+size_t mutil_GetImageSize(void* ImageBase)
+{
+	return ((IMAGE_NT_HEADERS*)((char*)ImageBase + ((IMAGE_DOS_HEADER*)ImageBase)->e_lfanew))->OptionalHeader.SizeOfImage;
+}
+
 #else
+
+static bool ends_with(const std::string& str, const std::string& suffix) {
+	if (suffix.size() > str.size()) {
+		return false;
+	}
+	return std::equal(suffix.rbegin(), suffix.rend(), str.rbegin());
+}
+
+static bool contains(const std::string& str, const std::string& substr) {
+	return str.find(substr) != std::string::npos;
+}
+
+size_t mutil_GetImageSize(void* ImageBase)
+{
 	std::string name;
-	void *startaddr = ImageBase;
-	void *endaddr = nullptr;
+	void* startaddr = ImageBase;
+	void* endaddr = nullptr;
+	void* data_startaddr = nullptr;
+	void* data_endaddr = nullptr;
+	void* bss_startaddr = nullptr;
+	void* bss_endaddr = nullptr;
 	size_t imageSize = 0;
 	procmap::MemoryMap m;
-	for (auto &segment : m) {
+	for (auto& segment : m) {
 		if (startaddr == segment.startAddress()) {
 			name = segment.name();
 		}
-		if (!name.empty() && name == segment.name() && segment.endAddress() > endaddr)
-		{
-			endaddr = segment.endAddress();
-			imageSize = (uintptr_t)endaddr - (uintptr_t)startaddr;
+
+		if (!name.empty()) {
+			if (name == segment.name() && segment.endAddress() > endaddr) {
+				endaddr = segment.endAddress();
+				imageSize = (uintptr_t)endaddr - (uintptr_t)startaddr;
+				
+				if (
+					segment.isReadable() &&
+					segment.isWriteable() &&
+					!segment.isExecutable())
+				{
+					data_startaddr = segment.startAddress();
+					data_endaddr = segment.endAddress();
+				}
+
+			}
+			else if (!bss_startaddr &&
+				!contains(segment.name(), ".so") &&
+				segment.isReadable() && 
+				segment.isWriteable() && 
+				!segment.isExecutable() && 
+				segment.endAddress() > endaddr &&
+				segment.startAddress() == data_endaddr)
+			{
+				bss_startaddr = segment.startAddress();
+				bss_endaddr = segment.endAddress();
+			}
+			else if (contains(segment.name(), ".so") && segment.name() != name && segment.endAddress() > endaddr)
+			{
+				if (bss_endaddr)
+				{
+					endaddr = bss_endaddr;
+					imageSize = (uintptr_t)endaddr - (uintptr_t)startaddr;
+				}
+				break;
+			}
 		}
 	}
-	return imageSize;//wtf?
-#endif
+	return imageSize;
 }
+
+#endif
 
 qboolean mutil_IsAddressInModuleRange(void *lpAddress, void *lpModuleBase)
 {
