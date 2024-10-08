@@ -434,7 +434,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 				auto sv_addr = (char*)LOCATE_FROM_SIGNATURE(engine, sv_Signature);
 				if (!sv_addr)
 				{
-					LOG_ERROR(PLID, "sv_models not found in engine dll!");
+					LOG_ERROR(PLID, "sv not found in engine dll!");
 					return FALSE;
 				}
 				CDisasmFindGotPltTargetContext ctx = { 0 };
@@ -447,10 +447,15 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 				if (ctx.result)
 				{
 					sv = (decltype(sv))ctx.result;
-					break;
 				}
 
 				sv_models = (decltype(sv_models))((char*)sv + offset_sv_models);
+
+				if (!sv_models)
+				{
+					LOG_ERROR(PLID, "sv_models not found in engine dll!");
+					return FALSE;
+				}
 
 				LOG_MESSAGE(PLID, "sv_models found at %p!", sv_models);
 			}
