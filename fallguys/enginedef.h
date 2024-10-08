@@ -64,7 +64,6 @@ typedef struct areanode_s
 
 //Engine private functions
 
-
 typedef int(*fnbuild_number)();
 PRIVATE_FUNCTION_EXTERN(build_number);
 

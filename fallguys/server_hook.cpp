@@ -263,24 +263,48 @@ void SC_SERVER_DECL NewCPlayerMove_PlayStepSound(void *pthis, SC_SERVER_DUMMYARG
 {
 	if (g_bUseCustomStepSound)
 	{
-		playermove_t * playermove = *(playermove_t **)((char *)pthis + 0x460);
-		
-		int uiFlags = 0;
-
-		if (ASEXT_CallHook)
+		if (g_pfn_build_number() >= 10152)
 		{
-			(*ASEXT_CallHook)(g_PlayerMovePlayStepSoundHook, 0, g_engfuncs.pfnPEntityOfEntIndex(g_iRunPlayerMoveIndex)->pvPrivateData, playermove, iType, flVolume, bIsJump, &uiFlags);
+			playermove_10152_t* playermove = *(playermove_10152_t**)((char*)pthis + 0x460);
+
+			int uiFlags = 0;
+
+			if (ASEXT_CallHook)
+			{
+				(*ASEXT_CallHook)(g_PlayerMovePlayStepSoundHook, 0, g_engfuncs.pfnPEntityOfEntIndex(g_iRunPlayerMoveIndex)->pvPrivateData, playermove, iType, flVolume, bIsJump, &uiFlags);
+			}
+
+			if (uiFlags & 1)
+				return;
+
+			int footsteps = playermove->movevars->footsteps;
+			playermove->movevars->footsteps = 1;
+
+			g_call_original_CPlayerMove_PlayStepSound(pthis, SC_SERVER_PASS_DUMMYARG iType, flVolume, bIsJump);
+
+			playermove->movevars->footsteps = footsteps;
 		}
+		else
+		{
+			playermove_t* playermove = *(playermove_t**)((char*)pthis + 0x460);
 
-		if (uiFlags & 1)
-			return;
+			int uiFlags = 0;
 
-		int footsteps = playermove->movevars->footsteps;
-		playermove->movevars->footsteps = 1;
+			if (ASEXT_CallHook)
+			{
+				(*ASEXT_CallHook)(g_PlayerMovePlayStepSoundHook, 0, g_engfuncs.pfnPEntityOfEntIndex(g_iRunPlayerMoveIndex)->pvPrivateData, playermove, iType, flVolume, bIsJump, &uiFlags);
+			}
 
-		g_call_original_CPlayerMove_PlayStepSound(pthis, SC_SERVER_PASS_DUMMYARG iType, flVolume, bIsJump);
+			if (uiFlags & 1)
+				return;
 
-		playermove->movevars->footsteps = footsteps;
+			int footsteps = playermove->movevars->footsteps;
+			playermove->movevars->footsteps = 1;
+
+			g_call_original_CPlayerMove_PlayStepSound(pthis, SC_SERVER_PASS_DUMMYARG iType, flVolume, bIsJump);
+
+			playermove->movevars->footsteps = footsteps;
+		}
 	}
 	else
 	{
