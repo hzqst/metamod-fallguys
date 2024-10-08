@@ -411,7 +411,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 				LOG_ERROR(PLID, "movevars not found in engine dll!");
 				return FALSE;
 			}
-			LOG_INFO(PLID, "movevars found at %p!", pmovevars);
+			LOG_MESSAGE(PLID, "movevars found at %p!", pmovevars);
 		}
 
 		if (1)
@@ -452,7 +452,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 				LOG_ERROR(PLID, "sv_areanodes not found in engine dll!");
 				return FALSE;
 			}
-			LOG_INFO(PLID, "sv_areanodes found at %p!", sv_areanodes);
+			LOG_MESSAGE(PLID, "sv_areanodes found at %p!", sv_areanodes);
 		}
 
 		if (1)

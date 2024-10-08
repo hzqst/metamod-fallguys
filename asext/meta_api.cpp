@@ -240,13 +240,15 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 			LOG_ERROR(PLID, "CHook_VCall not found!");
 			return FALSE;
 		}
-		LOG_MESSAGE(PLID, "CASHook_VCall found at %p!", CASHook_VCall);
 
 		//__x86_get_pc_thunk_
 		auto pic_chunk_call = CASHook_VCall + 3;
 		//auto pic_chunk = gpMetaUtilFuncs->pfnGetNextCallAddr(pic_chunk_call, 1);
 		auto add_addr = pic_chunk_call + 5;
 		auto got_plt = add_addr + *(int*)(add_addr + 2);
+
+		LOG_MESSAGE(PLID, "got_plt found at %p!", got_plt);
+
 		auto mov_ebp_addr = CASHook_VCall + 18;
 		g_pServerManager = (decltype(g_pServerManager))(got_plt + *(int*)(mov_ebp_addr + 2));
 
