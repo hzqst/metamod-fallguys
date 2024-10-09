@@ -942,7 +942,7 @@ std::shared_ptr<CPhysicIndexArray> CPhysicsManager::LoadIndexArrayFromResource(c
 
 	const auto extension = V_GetFileExtension(resourcePath.c_str());
 
-	if (0 == stricmp(extension, "obj"))
+	if (0 == strcasecmp(extension, "obj"))
 	{
 		//really needis shit ???
 	}
