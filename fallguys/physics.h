@@ -300,6 +300,7 @@ public:
 		m_engineIndex = 3;
 		m_steerIndex = 5;
 		m_rayCastHeight = 16;
+		m_flags = 0;
 
 		m_hitGround = false;
 		m_hitPointInWorld = btVector3(0, 0, 0);
@@ -313,6 +314,8 @@ public:
 		m_steerIndex = params->steerIndex;
 		m_flags = params->flags;
 		m_rayCastHeight = params->rayCastHeight;
+
+		m_hitGround = false;
 	}
 
 	//init
@@ -407,12 +410,12 @@ public:
 
 	}
 
-	virtual void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
+	virtual void AddToPhysicWorld(btDiscreteDynamicsWorld* world)
 	{
 
 	}
 
-	virtual void RemoveFromPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
+	virtual void RemoveFromPhysicWorld(btDiscreteDynamicsWorld* world)
 	{
 		for (auto action : m_actions)
 		{
@@ -509,25 +512,21 @@ public:
 		return false;
 	}
 
-	void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects) override
+	void AddToPhysicWorld(btDiscreteDynamicsWorld* world) override
 	{
 		if (m_ghostobj)
 		{
 			world->addCollisionObject(m_ghostobj, btBroadphaseProxy::SensorTrigger, btBroadphaseProxy::DefaultFilter);
-
-			(*numDynamicObjects)++;
 		}
 	}
 
-	void RemoveFromPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects) override
+	void RemoveFromPhysicWorld(btDiscreteDynamicsWorld* world) override
 	{
-		CPhysicObject::RemoveFromPhysicWorld(world, numDynamicObjects);
+		CPhysicObject::RemoveFromPhysicWorld(world);
 
 		if (m_ghostobj)
 		{
 			world->removeCollisionObject(m_ghostobj);
-
-			(*numDynamicObjects)--;
 		}
 	}
 
@@ -586,13 +585,11 @@ public:
 		return true;
 	}
 
-	void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects) override
+	void AddToPhysicWorld(btDiscreteDynamicsWorld* world) override
 	{
 		if (m_ghostobj)
 		{
 			world->addCollisionObject(m_ghostobj, btBroadphaseProxy::SensorTrigger, FallGuysCollisionFilterGroups::PlayerFilter);
-
-			(*numDynamicObjects)++;
 		}
 	}
 
@@ -635,7 +632,7 @@ public:
 		}
 	}
 
-	void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects) override
+	void AddToPhysicWorld(btDiscreteDynamicsWorld* world) override
 	{
 		if (m_rigbody)
 		{
@@ -643,12 +640,36 @@ public:
 		}
 	}
 
-	void RemoveFromPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects) override
+	void RemoveFromPhysicWorld(btDiscreteDynamicsWorld* world) override
 	{
-		CPhysicObject::RemoveFromPhysicWorld(world, numDynamicObjects);
+		CPhysicObject::RemoveFromPhysicWorld(world);
 
 		if (m_rigbody)
 		{
+			int numRefs = m_rigbody->getNumConstraintRefs();
+
+			std::vector<btTypedConstraint*> pendingRemoves;
+
+			pendingRemoves.reserve(numRefs);
+
+			for (int i = 0; i < numRefs; ++i)
+			{
+				auto pInternalContraint = m_rigbody->getConstraintRef(i);
+
+				pendingRemoves.emplace_back(pInternalContraint);
+			}
+
+			for (size_t i = 0; i < pendingRemoves.size(); ++i)
+			{
+				auto pInternalContraint = pendingRemoves[i];
+
+				world->removeConstraint(pInternalContraint);
+
+				OnBeforeDeleteConstraint(pInternalContraint);
+
+				delete pInternalContraint;
+			}
+
 			world->removeRigidBody(m_rigbody);
 		}
 	}
@@ -875,18 +896,14 @@ public:
 
 	void SetPhysicNoCollision(bool no_collision) override;
 
-	void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects) override
+	void AddToPhysicWorld(btDiscreteDynamicsWorld* world) override
 	{
-		CCollisionPhysicObject::AddToPhysicWorld(world, numDynamicObjects);
-
-		(*numDynamicObjects) ++ ;
+		CCollisionPhysicObject::AddToPhysicWorld(world);
 	}
 
-	void RemoveFromPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects) override
+	void RemoveFromPhysicWorld(btDiscreteDynamicsWorld* world) override
 	{
-		CCollisionPhysicObject::RemoveFromPhysicWorld(world, numDynamicObjects);
-
-		(*numDynamicObjects) --;
+		CCollisionPhysicObject::RemoveFromPhysicWorld(world);
 	}
 
 	void StartFrame(btDiscreteDynamicsWorld* world) override;
@@ -1127,9 +1144,9 @@ public:
 		m_solid_optimizer.emplace_back(bone, radius);
 	}
 
-	void AddPhysicObject(CPhysicObject *physobj, btDiscreteDynamicsWorld* world, int *numDynamicObjects)
+	void AddPhysicObject(CPhysicObject *physobj, btDiscreteDynamicsWorld* world)
 	{
-		physobj->AddToPhysicWorld(world, numDynamicObjects);
+		physobj->AddToPhysicWorld(world);
 
 		m_physics.emplace_back(physobj);
 	}
@@ -1139,46 +1156,48 @@ public:
 		world->addConstraint(constraint, disableCollisionsBetweenLinkedBodies);
 	}
 
-	void RemoveAllConstraints(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
+	void RemoveAllConstraints(btDiscreteDynamicsWorld* world)
 	{
-		std::vector<btTypedConstraint *> defRemoves;
+		std::vector<btTypedConstraint *> pendingRemoves;
 
 		for (int i = 0; i < world->getNumConstraints(); ++i)
 		{
-			auto constraint = world->getConstraint(i);
+			auto pInternalConstraint = world->getConstraint(i);
 
 			for (size_t j = 0; j < m_physics.size(); ++j)
 			{
-				auto physObj = m_physics[j];
+				auto pPhysicObject = m_physics[j];
 
-				if (constraint->getRigidBodyA().getUserPointer() == physObj || constraint->getRigidBodyB().getUserPointer() == physObj)
+				if (pInternalConstraint->getRigidBodyA().getUserPointer() == pPhysicObject || 
+					pInternalConstraint->getRigidBodyB().getUserPointer() == pPhysicObject)
 				{
-					defRemoves.emplace_back(constraint);
+					pendingRemoves.emplace_back(pInternalConstraint);
 					break;
 				}
 			}
 		}
 
-		for (size_t i = 0; i < defRemoves.size(); ++i)
+		for (size_t i = 0; i < pendingRemoves.size(); ++i)
 		{
-			auto constraint = defRemoves[i];
+			auto pInternalConstraint = pendingRemoves[i];
 
-			world->removeConstraint(constraint);
+			world->removeConstraint(pInternalConstraint);
 			
-			OnBeforeDeleteConstraint(constraint);
+			OnBeforeDeleteConstraint(pInternalConstraint);
 
-			delete constraint;
+			delete pInternalConstraint;
 		}
 	}
 
-	void RemoveAllPhysicObjects(btDiscreteDynamicsWorld* world, int *numDynamicObjects)
+	void RemoveAllPhysicObjects(btDiscreteDynamicsWorld* world)
 	{
 		for (size_t i = 0; i < m_physics.size(); ++i)
 		{
 			auto physobj = m_physics[i];
+
 			if (physobj)
 			{
-				physobj->RemoveFromPhysicWorld(world, numDynamicObjects);
+				physobj->RemoveFromPhysicWorld(world);
 
 				delete physobj;
 			}
@@ -1534,7 +1553,6 @@ public:
 	void StepSimulation(double framerate);
 
 	int GetSolidPlayerMask();
-	int GetNumDynamicBodies();
 	CGameObject* GetGameObject(int entindex);
 	CGameObject* GetGameObject(edict_t* ent);
 	void RemoveGameObject(int entindex);
@@ -1619,10 +1637,6 @@ private:
 
 	std::vector<CGameObject*> m_gameObjects;
 	int m_maxIndexGameObject;
-	int m_numDynamicObjects;
-	//std::vector<indexarray_t*> m_brushIndexArray;
-	//std::vector<vertexarray_t*> m_brushVertexArray;
-	//vertexarray_t* m_worldVertexArray;
 
 	std::unordered_map<std::string, std::shared_ptr<CPhysicIndexArray>> m_indexArrayResources;
 	std::unordered_map<std::string, std::shared_ptr<CPhysicVertexArray>> m_worldVertexResources;

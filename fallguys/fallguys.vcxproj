@@ -98,7 +98,8 @@
       <AdditionalLibraryDirectories>$(Bullet3LibrariesDirectory)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>$(DllPostBuildCommand)</Command>
+      <Command>$(DllPostBuildCommand)
+copy "D:\metamod-fallguys2\Debug\fallguys.dll" "D:\SteamLibrary\steamapps\common\Sven Co-op\svencoop\addons\metamod\dlls\"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>$(Bullet3CheckRequirements)</Command>

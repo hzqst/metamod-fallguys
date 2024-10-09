@@ -71,7 +71,8 @@ model_t* EngineFindWorldModelBySubModel(model_t* psubmodel)
 	for (int i = 0; i < EngineGetMaxPrecacheModel(); ++i)
 	{
 		auto mod = EngineGetPrecachedModelByIndex(i);
-		if (mod->type == mod_brush && mod->name[0] && mod->name[0] != '*')
+
+		if (mod && mod->type == mod_brush && mod->name[0] && mod->name[0] != '*')
 		{
 			if (mod->needload == NL_PRESENT || mod->needload == NL_CLIENT)
 			{
@@ -89,7 +90,7 @@ hull_t *SV_HullForBspNew(edict_t *ent, const vec3_t mins, const vec3_t maxs, vec
 	hull_t		*hull;
 	vec3_t		size;
 
-	model = (*sv_models)[(int)ent->v.modelindex];
+	model = EngineGetPrecachedModelByIndex(ent->v.modelindex);
 
 	if (!model || model->type != mod_brush)
 		return NULL;

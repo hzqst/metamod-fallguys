@@ -599,10 +599,7 @@ CPhysicsManager::CPhysicsManager()
 	m_ghostPairCallback = NULL;
 	m_overlapFilterCallback = NULL;
 
-	//m_worldVertexArray = NULL;
-
 	m_gravityAcceleration = 0;
-	m_numDynamicObjects = 0;
 	m_maxIndexGameObject = 0;
 
 	m_solidPlayerMask = 0;
@@ -750,8 +747,17 @@ std::shared_ptr<CPhysicVertexArray> CPhysicsManager::GenerateWorldVertexArray(mo
 		int iStartVert = iNumVerts;
 
 		brushface->start_vertex = iStartVert;
+		brushface->plane_normal = surf->plane->normal;
+		brushface->plane_dist = surf->plane->dist;
+		brushface->plane_flags = surf->flags;
 
-		for (poly = surf->polys; poly; poly = poly->next)
+		if (surf->flags & SURF_PLANEBACK)
+		{
+			brushface->plane_normal = brushface->plane_normal * (-1);
+			brushface->plane_dist = brushface->plane_dist * (-1);
+		}
+
+		for (const auto& poly : glpolys)
 		{
 			auto v = poly->verts[0];
 
@@ -2498,7 +2504,7 @@ bool CPhysicsManager::CreatePhysicObjectForBrushModel(edict_t* ent)
 
 	auto staticObject = CreateStaticObject(obj, pCollisionShape, bKinematic);
 	
-	obj->AddPhysicObject(staticObject, m_dynamicsWorld, &m_numDynamicObjects);
+	obj->AddPhysicObject(staticObject, m_dynamicsWorld);
 
 	if (ent->v.flags & FL_CONVEYOR)
 	{
@@ -2531,7 +2537,7 @@ bool CPhysicsManager::CreateSolidPlayer(edict_t* ent)
 
 		auto playerobj = CreatePlayerObject(obj, shape, 36, 400 * m_simrate, false);
 
-		obj->AddPhysicObject(playerobj, m_dynamicsWorld, &m_numDynamicObjects);
+		obj->AddPhysicObject(playerobj, m_dynamicsWorld);
 	}
 
 	if (1)
@@ -2540,7 +2546,7 @@ bool CPhysicsManager::CreateSolidPlayer(edict_t* ent)
 
 		auto playerobj = CreatePlayerObject(obj, shape, 18, 400 * m_simrate, true);
 
-		obj->AddPhysicObject(playerobj, m_dynamicsWorld, &m_numDynamicObjects);
+		obj->AddPhysicObject(playerobj, m_dynamicsWorld);
 	}
 	
 	return true;
@@ -3460,7 +3466,7 @@ bool CPhysicsManager::SetEntityEnvStudioAnim(edict_t* ent, int flags, float over
 		return false;
 	}
 
-	auto mod = (*sv_models)[ent->v.modelindex];
+	auto mod = EngineGetPrecachedModelByIndex(ent->v.modelindex);
 
 	if (!mod)
 	{
@@ -3682,7 +3688,7 @@ bool CPhysicsManager::CreateSolidOptimizer(edict_t* ent, int boneindex, const Ve
 		return false;
 	}
 
-	auto mod = (*sv_models)[ent->v.modelindex];
+	auto mod = EngineGetPrecachedModelByIndex(ent->v.modelindex);
 
 	if (!mod)
 	{
@@ -3722,7 +3728,7 @@ bool CPhysicsManager::CreateSolidOptimizer(edict_t* ent, int boneindex, const Ve
 		ghost->GetGhostObject()->setCollisionShape(shape);
 		ghost->GetGhostObject()->setCollisionFlags(ghost->GetGhostObject()->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
 
-		obj->AddPhysicObject(ghost, m_dynamicsWorld, &m_numDynamicObjects);
+		obj->AddPhysicObject(ghost, m_dynamicsWorld);
 	}
 
 	if (1)
@@ -3735,7 +3741,7 @@ bool CPhysicsManager::CreateSolidOptimizer(edict_t* ent, int boneindex, const Ve
 		ghost->GetGhostObject()->setCollisionShape(shape);
 		ghost->GetGhostObject()->setCollisionFlags(ghost->GetGhostObject()->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
 
-		obj->AddPhysicObject(ghost, m_dynamicsWorld, &m_numDynamicObjects);
+		obj->AddPhysicObject(ghost, m_dynamicsWorld);
 	}
 
 	obj->AddSolidOptimizer(boneindex, 0);
@@ -3752,7 +3758,7 @@ model_t *CPhysicsManager::GetBrushModelFromEntity(edict_t *ent)
 		return NULL;
 	}
 
-	auto mod = (*sv_models)[modelindex];
+	auto mod = EngineGetPrecachedModelByIndex(modelindex);
 
 	if (!mod)
 	{
@@ -3788,6 +3794,9 @@ btBvhTriangleMeshShape *CPhysicsManager::CreateTriMeshShapeFromBrushEntity(edict
 	auto pIndexArray = GetIndexArrayFromBrushEntity(ent);
 
 	if (!pIndexArray)
+		return nullptr;
+
+	if (!pIndexArray->vIndexBuffer.size())
 		return nullptr;
 
 	auto pTriangleIndexVertexArray = new btTriangleIndexVertexArray(
@@ -3836,15 +3845,13 @@ public:
 		return false;
 	}
 
-	void AddToPhysicWorld(btDiscreteDynamicsWorld* world, int *numDynamicObjects) override
+	void AddToPhysicWorld(btDiscreteDynamicsWorld* world) override
 	{
-		CPhysicObject::AddToPhysicWorld(world, numDynamicObjects);
+		CPhysicObject::AddToPhysicWorld(world);
 
 		if (GetGhostObject())
 		{
 			world->addCollisionObject(GetGhostObject(), btBroadphaseProxy::SensorTrigger, FallGuysCollisionFilterGroups::DynamicObjectFilter | FallGuysCollisionFilterGroups::ClippingHullFilter);
-
-			(*numDynamicObjects)++;
 		}
 	}
 
@@ -3904,7 +3911,7 @@ bool CPhysicsManager::CreatePhysicTrigger(edict_t* ent)
 	ghostobj->GetGhostObject()->setCollisionShape(shape);
 	ghostobj->GetGhostObject()->setCollisionFlags(ghostobj->GetGhostObject()->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
 
-	obj->AddPhysicObject(ghostobj, m_dynamicsWorld, &m_numDynamicObjects);
+	obj->AddPhysicObject(ghostobj, m_dynamicsWorld);
 
 	return true;
 }
@@ -4433,7 +4440,7 @@ bool CPhysicsManager::CreatePhysicWater(edict_t* ent, float density, float linea
 	ghostobj->GetGhostObject()->setCollisionShape(shape);
 	ghostobj->GetGhostObject()->setCollisionFlags(ghostobj->GetGhostObject()->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
 
-	obj->AddPhysicObject(ghostobj, m_dynamicsWorld, &m_numDynamicObjects);
+	obj->AddPhysicObject(ghostobj, m_dynamicsWorld);
 
 	return true;
 }
@@ -4619,7 +4626,7 @@ bool CPhysicsManager::CreatePhysicObjectPost(edict_t *ent, CGameObject *obj, btC
 	ent->v.velocity = g_vecZero;
 	ent->v.avelocity = g_vecZero;
 
-	obj->AddPhysicObject(dynamicobj, m_dynamicsWorld, &m_numDynamicObjects);
+	obj->AddPhysicObject(dynamicobj, m_dynamicsWorld);
 
 	if (objectParams->flags & PhysicObject_HasImpactImpulse)
 	{
@@ -4664,7 +4671,7 @@ bool CPhysicsManager::CreatePhysicObjectPost(edict_t *ent, CGameObject *obj, btC
 
 				constraint->setUserConstraintType(ConstraintType_ClippingHull);
 
-				obj->AddPhysicObject(hullobj, m_dynamicsWorld, &m_numDynamicObjects);
+				obj->AddPhysicObject(hullobj, m_dynamicsWorld);
 
 				obj->AddConstraint(constraint, m_dynamicsWorld, true);
 
@@ -4775,7 +4782,7 @@ bool CPhysicsManager::CreatePhysicObject(edict_t* ent, PhysicShapeParams *shapeP
 		return false;
 	}
 
-	auto mod = (*sv_models)[ent->v.modelindex];
+	auto mod = EngineGetPrecachedModelByIndex(ent->v.modelindex);
 
 	if (!mod)
 	{
@@ -4824,7 +4831,7 @@ void CPhysicsManager::PostSpawn(edict_t *ent)
 	{
 		auto mod = EngineGetPrecachedModelByIndex(i);
 
-		if (mod->type == mod_brush && mod->name[0])
+		if (mod && mod->type == mod_brush && mod->name[0])
 		{
 			if (mod->needload == NL_PRESENT || mod->needload == NL_CLIENT)
 			{
@@ -5106,9 +5113,6 @@ void CPhysicsManager::StepSimulation(double frametime)
 	if (!m_bEnabled)
 		return;
 
-	//if (!gPhysicsManager.GetNumDynamicBodies())
-	//	return;
-
 	m_dynamicsWorld->stepSimulation((btScalar)frametime, 2, m_simrate);
 }
 
@@ -5134,11 +5138,6 @@ int CPhysicsManager::GetSolidPlayerMask()
 	return m_solidPlayerMask;
 }
 
-int CPhysicsManager::GetNumDynamicBodies()
-{
-	return m_numDynamicObjects;
-}
-
 CGameObject *CPhysicsManager::GetGameObject(int entindex)
 {
 	if (entindex < 0 || entindex >= (int)m_gameObjects.size())
@@ -5161,8 +5160,8 @@ void CPhysicsManager::RemoveGameObject(int entindex)
 
 	if (obj)
 	{
-		obj->RemoveAllConstraints(m_dynamicsWorld, &m_numDynamicObjects);
-		obj->RemoveAllPhysicObjects(m_dynamicsWorld, &m_numDynamicObjects);
+		obj->RemoveAllConstraints(m_dynamicsWorld);
+		obj->RemoveAllPhysicObjects(m_dynamicsWorld);
 
 		delete obj;
 
@@ -5235,12 +5234,9 @@ void CGameObject::EndFrame(btDiscreteDynamicsWorld* world)
 		ent->v.maxs = m_backup_maxs;
 	}
 
-	//if (gPhysicsManager.GetNumDynamicBodies() > 0)
+	for (size_t i = 0; i < m_physics.size(); ++i)
 	{
-		for (size_t i = 0; i < m_physics.size(); ++i)
-		{
-			m_physics[i]->EndFrame(world);
-		}
+		m_physics[i]->EndFrame(world);
 	}
 
 	if (m_anim_flags & EnvStudioAnim_AnimatedStudio)
