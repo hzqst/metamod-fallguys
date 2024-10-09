@@ -59,7 +59,7 @@ bool IsEntitySolidPusher(edict_t* ent)
 
 bool Legacy_IsEntitySuperPusher(edict_t *ent)
 {
-	return ent && (ent->v.sequence <= 114514 || ent->v.sequence <= 114515);
+	return ent && (ent->v.sequence >= 114514 || ent->v.sequence <= 114515);
 }
 
 bool Legacy_IsEntitySuperPusherFlexible(edict_t *ent)

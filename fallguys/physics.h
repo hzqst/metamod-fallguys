@@ -4,6 +4,7 @@
 #include <vector>
 #include <deque>
 #include <algorithm>
+#include <memory>
 #include <cstdint>
 
 #include <btBulletDynamicsCommon.h>
@@ -14,6 +15,11 @@
 #include <pmtrace.h>
 #include <pm_defs.h>
 #include "ehandle.h"
+
+#define INCHES_PER_METER 1//39.3700787402f
+
+const float B2GScale = INCHES_PER_METER;
+const float G2BScale = 1.0f / B2GScale;
 
 void OnBeforeDeleteRigidBody(btRigidBody *rigidbody);
 void OnBeforeDeletePairCachingGhostObject(btPairCachingGhostObject *ghostobj);
@@ -199,14 +205,16 @@ enum FallGuysCollisionFilterGroups
 	ClippingHullFilter = 0x100,
 };
 
-typedef struct brushvertex_s
+class CPhysicBrushVertex
 {
+public:
 	vec3_t	pos;
-}brushvertex_t;
+};
 
-typedef struct brushface_s
+class CPhysicBrushFace
 {
-	brushface_s()
+public:
+	CPhysicBrushFace()
 	{
 		start_vertex = 0;
 		num_vertexes = 0;
@@ -218,49 +226,70 @@ typedef struct brushface_s
 	vec3_t plane_normal;
 	float plane_dist;
 	int plane_flags;
-}brushface_t;
+};
 
-typedef struct vertexarray_s
+class CPhysicVertexArray
 {
-	vertexarray_s()
-	{
-	}
-	std::vector<brushvertex_t> vVertexBuffer;
-	std::vector<brushface_t> vFaceBuffer;
-}vertexarray_t;
+public:
+	std::vector<CPhysicBrushVertex> vVertexBuffer;
+	std::vector<CPhysicBrushFace> vFaceBuffer;
+};
 
-typedef struct indexarray_s
+const int PhysicIndexArrayFlag_FromBSP = 0x1;
+const int PhysicIndexArrayFlag_LoadFailed = 0x2;
+const int PhysicIndexArrayFlag_FromOBJ = 0x4;
+const int PhysicIndexArrayFlag_FromExternal = (PhysicIndexArrayFlag_FromOBJ);
+
+class CPhysicIndexArray
 {
-	indexarray_s()
-	{
-	}
-	std::vector<int> vIndiceBuffer;
-}indexarray_t;
+public:
+	std::shared_ptr<CPhysicVertexArray> pVertexArray;
+	std::vector<CPhysicBrushFace> vFaceBuffer;
+	std::vector<int> vIndexBuffer;
+	int flags{};
+};
 
 class CGameObject;
 
 ATTRIBUTE_ALIGNED16(class)
-CPhysicShapeInfo
+CBulletBaseSharedUserData
+{
+public:
+	virtual ~CBulletBaseSharedUserData()
+	{
+
+	}
+};
+
+ATTRIBUTE_ALIGNED16(class)
+CBulletCollisionShapeSharedUserData : public CBulletBaseSharedUserData
 {
 public:
 
 	BT_DECLARE_ALIGNED_ALLOCATOR();
 
-	CPhysicShapeInfo()
+	CBulletCollisionShapeSharedUserData()
 	{
 		m_volume = 0;
+		m_pTriangleIndexVertexArray = nullptr;
 	}
 
-	virtual ~CPhysicShapeInfo()
+	~CBulletCollisionShapeSharedUserData()
 	{
-
+		if (m_pTriangleIndexVertexArray)
+		{
+			delete m_pTriangleIndexVertexArray;
+			m_pTriangleIndexVertexArray = nullptr;
+		}
 	}
 
 	btScalar m_volume;
+	btTriangleIndexVertexArray* m_pTriangleIndexVertexArray;
+	std::shared_ptr<CPhysicIndexArray> m_pIndexArray;
 };
 
 ATTRIBUTE_ALIGNED16(class)
-CPhysicVehicleWheelInfo
+CPhysicVehicleWheelInfo : public CBulletBaseSharedUserData
 {
 public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
@@ -286,11 +315,6 @@ public:
 		m_rayCastHeight = params->rayCastHeight;
 	}
 
-	virtual ~CPhysicVehicleWheelInfo()
-	{
-
-	}
-
 	//init
 	int m_springIndex;
 	int m_engineIndex;
@@ -303,7 +327,6 @@ public:
 	btVector3 m_hitPointInWorld;
 	btVector3 m_hitNormalInWorld;
 };
-
 
 ATTRIBUTE_ALIGNED16(class)
 CPhysicObject
@@ -678,11 +701,11 @@ public:
 	{
 		auto shape = m_rigbody->getCollisionShape();
 
-		auto shapeInfo = (CPhysicShapeInfo *)shape->getUserPointer();
+		auto shapeSharedUserData = (CBulletCollisionShapeSharedUserData *)shape->getUserPointer();
 
-		if (shapeInfo)
+		if (shapeSharedUserData)
 		{
-			return shapeInfo->m_volume;
+			return shapeSharedUserData->m_volume;
 		}
 
 		return 0;
@@ -1494,15 +1517,17 @@ public:
 	void PostSpawn(edict_t *ent);
 	void Shutdown(void);
 
-	//Mesh Builder
+	//Vertex/IndexArray Resource Management
 	void BuildSurfaceDisplayList(model_t* mod, msurface_t* fa, std::deque<glpoly_t*> &glpolys);
-	void GenerateBrushIndiceArray();
-	void GenerateWorldVerticeArray();
-	void GenerateArrayForBrushface(brushface_t* brushface, indexarray_t* brushindexarray, vertexarray_t* brushvertexarray);
-	void GenerateArrayRecursiveWorldNode(mnode_t* node, vertexarray_t* vertexarray, indexarray_t* brushindexarray, vertexarray_t* brushvertexarray);
-	void GenerateArrayForSurface(msurface_t* psurf, vertexarray_t* worldvertexarray, indexarray_t* brushindexarray, vertexarray_t* brushvertexarray);
-	void GenerateArrayForBrushModel(model_t* mod, vertexarray_t* worldvertexarray, indexarray_t* brushindexarray, vertexarray_t* brushvertexarray);
-	
+	std::shared_ptr<CPhysicVertexArray> GenerateWorldVertexArray(model_t* mod);
+	std::shared_ptr<CPhysicIndexArray> GenerateBrushIndexArray(model_t* mod, const std::shared_ptr<CPhysicVertexArray>& pWorldVertexArray);
+	void FreeAllIndexArrays(int withflags, int withoutflags);
+	void GenerateIndexArrayForBrushModel(model_t* mod, CPhysicIndexArray* pIndexArray);
+	void GenerateIndexArrayForSurface(model_t* mod, msurface_t* surf, CPhysicIndexArray* pIndexArray);
+	void GenerateIndexArrayRecursiveWorldNode(model_t* mod, mnode_t* node, CPhysicIndexArray* pIndexArray);
+	void GenerateIndexArrayForBrushface(CPhysicBrushFace* brushface, CPhysicIndexArray* pIndexArray);
+	std::shared_ptr<CPhysicIndexArray> LoadIndexArrayFromResource(const std::string& resourcePath);
+
 	void SetSimRate(float rate);
 	void SetGravityAcceleration(float value);
 	float GetGravityAcceleration() const;
@@ -1516,7 +1541,7 @@ public:
 	void RemoveAllGameBodies();
 
 	model_t *GetBrushModelFromEntity(edict_t *ent);
-	bool GetVertexIndexArrayFromBrushEntity(edict_t *ent, vertexarray_t **worldvertexarray, indexarray_t **brushindexarray, vertexarray_t **brushvertexarray);
+	std::shared_ptr<CPhysicIndexArray> GetIndexArrayFromBrushEntity(edict_t* ent);
 	btBvhTriangleMeshShape *CreateTriMeshShapeFromBrushEntity(edict_t *ent);
 	CDynamicObject* CreateDynamicObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass, float density, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, int flags);
 	CStaticObject* CreateStaticObject(CGameObject *obj, btCollisionShape *collisionShape, bool kinematic);
@@ -1525,7 +1550,7 @@ public:
 
 	void AddGameObject(CGameObject *obj);
 
-	bool CreateBrushModel(edict_t* ent);
+	bool CreatePhysicObjectForBrushModel(edict_t* ent);
 	bool CreatePhysicObject(edict_t* ent, PhysicShapeParams *shapeParams, PhysicObjectParams *objectParams);
 	bool CreateCompoundPhysicObject(edict_t* ent, PhysicShapeParams **shapeParamArray, size_t numShapeParam, PhysicObjectParams *objectParams);
 	btCollisionShape *CreateCollisionShapeFromParams(CGameObject *obj, PhysicShapeParams *shapeParams);
@@ -1595,9 +1620,13 @@ private:
 	std::vector<CGameObject*> m_gameObjects;
 	int m_maxIndexGameObject;
 	int m_numDynamicObjects;
-	std::vector<indexarray_t*> m_brushIndexArray;
-	std::vector<vertexarray_t*> m_brushVertexArray;
-	vertexarray_t* m_worldVertexArray;
+	//std::vector<indexarray_t*> m_brushIndexArray;
+	//std::vector<vertexarray_t*> m_brushVertexArray;
+	//vertexarray_t* m_worldVertexArray;
+
+	std::unordered_map<std::string, std::shared_ptr<CPhysicIndexArray>> m_indexArrayResources;
+	std::unordered_map<std::string, std::shared_ptr<CPhysicVertexArray>> m_worldVertexResources;
+
 	float m_gravityAcceleration;
 	float m_simrate;
 	float m_playerMass;

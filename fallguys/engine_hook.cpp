@@ -52,18 +52,35 @@ model_t* EngineGetPrecachedModelByIndex(int i)
 	return (*sv_models)[i];
 }
 
-msurface_t *EngineGetSurfaceByIndex(int index)
+msurface_t *EngineGetSurfaceByIndex(model_t *mod, int index)
 {
-	auto base = r_worldmodel->surfaces;
+	auto base = mod->surfaces;
 
 	return base + index;
 }
 
-int EngineGetSurfaceIndex(msurface_t *psurf)
+int EngineGetSurfaceIndex(model_t* mod, msurface_t *psurf)
 {
-	auto base = r_worldmodel->surfaces;
+	auto base = mod->surfaces;
 
 	return psurf - base;
+}
+
+model_t* EngineFindWorldModelBySubModel(model_t* psubmodel)
+{
+	for (int i = 0; i < EngineGetMaxPrecacheModel(); ++i)
+	{
+		auto mod = EngineGetPrecachedModelByIndex(i);
+		if (mod->type == mod_brush && mod->name[0] && mod->name[0] != '*')
+		{
+			if (mod->needload == NL_PRESENT || mod->needload == NL_CLIENT)
+			{
+				if (mod->vertexes == psubmodel->vertexes)
+					return mod;
+			}
+		}
+	}
+	return nullptr;
 }
 
 hull_t *SV_HullForBspNew(edict_t *ent, const vec3_t mins, const vec3_t maxs, vec3_t& offset)

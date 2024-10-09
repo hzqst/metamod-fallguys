@@ -15,6 +15,213 @@ extern edict_t* r_worldentity;
 extern model_t* r_worldmodel;
 
 //Utils
+#ifndef PATHSEPARATOR
+#if defined( _WIN32 ) || defined( WIN32 )
+#define PATHSEPARATOR(c) ((c) == '\\' || (c) == '/')
+#else	//_WIN32
+#define PATHSEPARATOR(c) ((c) == '/')
+#endif	//_WIN32
+#endif
+
+const char* V_GetFileExtension(const char* path)
+{
+	const char* src;
+
+	src = path + strlen(path) - 1;
+
+	//
+	// back up until a . or the start
+	//
+	while (src != path && *(src - 1) != '.')
+		src--;
+
+	// check to see if the '.' is part of a pathname
+	if (src == path || PATHSEPARATOR(*src))
+	{
+		return NULL;  // no extension
+	}
+
+	return src;
+}
+
+std::string UTIL_GetAbsoluteModelName(model_t* mod)
+{
+	if (mod->type == mod_brush)
+	{
+		if (mod->name[0] == '*')
+		{
+			auto worldmodel = EngineFindWorldModelBySubModel(mod);
+
+			if (worldmodel)
+			{
+				std::string fullname = worldmodel->name;
+				fullname += "/";
+				fullname += mod->name;
+				return fullname;
+			}
+		}
+	}
+
+	return mod->name;
+}
+
+void Matrix4x4_Transpose(float out[4][4], float in1[4][4])
+{
+	out[0][0] = in1[0][0];
+	out[0][1] = in1[1][0];
+	out[0][2] = in1[2][0];
+	out[0][3] = in1[3][0];
+	out[1][0] = in1[0][1];
+	out[1][1] = in1[1][1];
+	out[1][2] = in1[2][1];
+	out[1][3] = in1[3][1];
+	out[2][0] = in1[0][2];
+	out[2][1] = in1[1][2];
+	out[2][2] = in1[2][2];
+	out[2][3] = in1[3][2];
+	out[3][0] = in1[0][3];
+	out[3][1] = in1[1][3];
+	out[3][2] = in1[2][3];
+	out[3][3] = in1[3][3];
+}
+
+void Matrix3x4ToTransform(const float matrix3x4[3][4], btTransform& trans)
+{
+	float matrix4x4[4][4] = {
+		{1.0f, 0.0f, 0.0f, 0.0f},
+		{0.0f, 1.0f, 0.0f, 0.0f},
+		{0.0f, 0.0f, 1.0f, 0.0f},
+		{0.0f, 0.0f, 0.0f, 1.0f}
+	};
+	memcpy(matrix4x4, matrix3x4, sizeof(float[3][4]));
+
+	float matrix4x4_transposed[4][4];
+	Matrix4x4_Transpose(matrix4x4_transposed, matrix4x4);
+
+	trans.setFromOpenGLMatrix((float*)matrix4x4_transposed);
+}
+
+void TransformToMatrix3x4(const btTransform& trans, float matrix3x4[3][4])
+{
+	float matrix4x4_transposed[4][4];
+	trans.getOpenGLMatrix((float*)matrix4x4_transposed);
+
+	float matrix4x4[4][4];
+	Matrix4x4_Transpose(matrix4x4, matrix4x4_transposed);
+
+	memcpy(matrix3x4, matrix4x4, sizeof(float[3][4]));
+}
+
+void EulerMatrix(const btVector3& in_euler, btMatrix3x3& out_matrix) {
+	btVector3 angles = in_euler;
+	angles *= SIMD_RADS_PER_DEG;
+
+	btScalar c1(btCos(angles[0]));
+	btScalar c2(btCos(angles[1]));
+	btScalar c3(btCos(angles[2]));
+	btScalar s1(btSin(angles[0]));
+	btScalar s2(btSin(angles[1]));
+	btScalar s3(btSin(angles[2]));
+
+	out_matrix.setValue(c1 * c2, -c3 * s2 - s1 * s3 * c2, s3 * s2 - s1 * c3 * c2,
+		c1 * s2, c3 * c2 - s1 * s3 * s2, -s3 * c2 - s1 * c3 * s2,
+		s1, c1 * s3, c1 * c3);
+}
+
+void MatrixEuler(const btMatrix3x3& in_matrix, btVector3& out_euler) {
+
+	/*float xyDist = btSqrt(in_matrix[0][0] * in_matrix[0][0] + in_matrix[1][0] * in_matrix[1][0]);
+
+	if (xyDist > 0.001f)
+	{
+		out_euler[0] = btAtan2(-in_matrix[2][0], xyDist);
+		out_euler[1] = btAtan2(in_matrix[1][0], in_matrix[0][0]);
+		out_euler[2] = btAtan2(in_matrix[2][1], in_matrix[2][2]);
+	}
+	else
+	{
+		out_euler[0] = btAtan2(-in_matrix[2][0], xyDist);
+		out_euler[1] = btAtan2(-in_matrix[0][1], in_matrix[1][1]);
+		out_euler[2] = 0;
+	}*/
+
+	out_euler[0] = btAsin(in_matrix[2][0]);
+
+	if (in_matrix[2][0] >= (1 - 0.002f) && in_matrix[2][0] < 1.002f) {
+		out_euler[1] = btAtan2(in_matrix[1][0], in_matrix[0][0]);
+		out_euler[2] = btAtan2(in_matrix[2][1], in_matrix[2][2]);
+	}
+	else if (btFabs(in_matrix[2][0]) < (1 - 0.002f)) {
+		out_euler[1] = btAtan2(in_matrix[1][0], in_matrix[0][0]);
+		out_euler[2] = btAtan2(in_matrix[2][1], in_matrix[2][2]);
+	}
+	else {
+		out_euler[1] = btAtan2(in_matrix[1][2], in_matrix[1][1]);
+		out_euler[2] = 0;
+	}
+
+	out_euler[3] = 0;
+
+	out_euler *= SIMD_DEGS_PER_RAD;
+}
+
+//GoldSrcToBullet Scaling
+
+void FloatGoldSrcToBullet(float* v)
+{
+	(*v) *= G2BScale;
+}
+
+void FloatBulletToGoldSrc(float* v)
+{
+	(*v) *= B2GScale;
+}
+
+void TransformGoldSrcToBullet(btTransform& trans)
+{
+	auto& org = trans.getOrigin();
+
+	org.m_floats[0] *= G2BScale;
+	org.m_floats[1] *= G2BScale;
+	org.m_floats[2] *= G2BScale;
+}
+
+void Vec3GoldSrcToBullet(vec3_t &vec)
+{
+	vec[0] *= G2BScale;
+	vec[1] *= G2BScale;
+	vec[2] *= G2BScale;
+}
+
+void Vector3GoldSrcToBullet(btVector3& vec)
+{
+	vec.m_floats[0] *= G2BScale;
+	vec.m_floats[1] *= G2BScale;
+	vec.m_floats[2] *= G2BScale;
+}
+
+//BulletToGoldSrc Scaling
+
+void TransformBulletToGoldSrc(btTransform& trans)
+{
+	trans.getOrigin().m_floats[0] *= B2GScale;
+	trans.getOrigin().m_floats[1] *= B2GScale;
+	trans.getOrigin().m_floats[2] *= B2GScale;
+}
+
+void Vec3BulletToGoldSrc(vec3_t vec)
+{
+	vec[0] *= B2GScale;
+	vec[1] *= B2GScale;
+	vec[2] *= B2GScale;
+}
+
+void Vector3BulletToGoldSrc(btVector3& vec)
+{
+	vec.m_floats[0] *= B2GScale;
+	vec.m_floats[1] *= B2GScale;
+	vec.m_floats[2] *= B2GScale;
+}
 
 Vector GetVectorFromBtVector3(const btVector3 &v)
 {
@@ -94,6 +301,11 @@ btScalar CalcVolumeForCylinderShapeZ(const btVector3 &halfExtents)
 	btScalar volume = (float)(M_PI)* radius * radius * height;
 
 	return volume;
+}
+
+CBulletCollisionShapeSharedUserData* GetSharedUserDataFromCollisionShape(btCollisionShape* pCollisionShape)
+{
+	return (CBulletCollisionShapeSharedUserData*)pCollisionShape->getUserPointer();
 }
 
 //EnvStudioKeyframe
@@ -387,7 +599,8 @@ CPhysicsManager::CPhysicsManager()
 	m_ghostPairCallback = NULL;
 	m_overlapFilterCallback = NULL;
 
-	m_worldVertexArray = NULL;
+	//m_worldVertexArray = NULL;
+
 	m_gravityAcceleration = 0;
 	m_numDynamicObjects = 0;
 	m_maxIndexGameObject = 0;
@@ -403,48 +616,6 @@ CPhysicsManager::CPhysicsManager()
 	m_CurrentImpactEntity = NULL;
 
 	m_bEnabled = false;
-}
-
-void CPhysicsManager::GenerateBrushIndiceArray()
-{
-	int maxNum = EngineGetMaxPrecacheModel();
-
-	for (size_t i = 0; i < m_brushIndexArray.size(); ++i)
-	{
-		if (m_brushIndexArray[i])
-		{
-			delete m_brushIndexArray[i];
-			m_brushIndexArray[i] = NULL;
-		}
-	}
-
-	m_brushIndexArray.resize(maxNum);
-
-	for (size_t i = 0; i < m_brushVertexArray.size(); ++i)
-	{
-		if (m_brushVertexArray[i])
-		{
-			delete m_brushVertexArray[i];
-			m_brushVertexArray[i] = NULL;
-		}
-	}
-
-	m_brushVertexArray.resize(maxNum);
-
-	for (int i = 0; i < EngineGetMaxPrecacheModel(); ++i)
-	{
-		auto mod = EngineGetPrecachedModelByIndex(i);
-		if (mod && mod->type == mod_brush && mod->name[0])
-		{
-			if (mod->needload == NL_PRESENT || mod->needload == NL_CLIENT)
-			{
-				m_brushIndexArray[i] = new indexarray_t;
-				m_brushVertexArray[i] = new vertexarray_t;
-
-				GenerateArrayForBrushModel(mod, m_worldVertexArray, m_brushIndexArray[i], m_brushVertexArray[i]);
-			}
-		}
-	}
 }
 
 void CPhysicsManager::BuildSurfaceDisplayList(model_t *mod, msurface_t* fa, std::deque<glpoly_t*> &glpolys)
@@ -521,51 +692,66 @@ void CPhysicsManager::BuildSurfaceDisplayList(model_t *mod, msurface_t* fa, std:
 	poly->numverts = lnumverts;
 }
 
-void CPhysicsManager::GenerateWorldVerticeArray()
+std::shared_ptr<CPhysicVertexArray> CPhysicsManager::GenerateWorldVertexArray(model_t* mod)
 {
-	if (m_worldVertexArray) {
-		delete m_worldVertexArray;
-		m_worldVertexArray = NULL;
+	std::string worldModelName;
+
+	if (mod->name[0] == '*')
+	{
+		auto worldmodel = EngineFindWorldModelBySubModel(mod);
+
+		if (!worldmodel)
+		{
+			ALERT(at_console, "CBasePhysicManager::GenerateWorldVertexArray: Failed to find worldmodel for submodel \"%s\"!\n", mod->name);
+			return nullptr;
+		}
+
+		worldModelName = worldmodel->name;
+	}
+	else
+	{
+		worldModelName = mod->name;
 	}
 
-	m_worldVertexArray = new vertexarray_t;
+	auto found = m_worldVertexResources.find(worldModelName);
 
-	brushvertex_t Vertexes[3];
+	if (found != m_worldVertexResources.end())
+	{
+		return found->second;
+	}
 
+	auto worldVertexArray = std::make_shared<CPhysicVertexArray>();
+
+	CPhysicBrushVertex Vertexes[3];
+
+	int iNumFaces = 0;
 	int iNumVerts = 0;
 
-	m_worldVertexArray->vFaceBuffer.resize(r_worldmodel->numsurfaces);
+	worldVertexArray->vFaceBuffer.resize(mod->numsurfaces);
 
-	for (int i = 0; i < r_worldmodel->numsurfaces; i++)
+	for (int i = 0; i < mod->numsurfaces; i++)
 	{
-		auto surf = EngineGetSurfaceByIndex(i);
+		auto surf = EngineGetSurfaceByIndex(mod, i);
 
 		if ((surf->flags & (SURF_DRAWTURB | SURF_UNDERWATER | SURF_DRAWSKY)))
 			continue;
 
 		std::deque<glpoly_t*> glpolys;
 
-		BuildSurfaceDisplayList(r_worldmodel, surf, glpolys);
+		BuildSurfaceDisplayList(mod, surf, glpolys);
 
 		if (glpolys.empty())
 			continue;
 
-		brushface_t* brushface = &m_worldVertexArray->vFaceBuffer[i];
+		auto poly = surf->polys;
+
+		auto brushface = &worldVertexArray->vFaceBuffer[i];
 
 		int iStartVert = iNumVerts;
 
 		brushface->start_vertex = iStartVert;
-		brushface->plane_normal = surf->plane->normal;
-		brushface->plane_dist = surf->plane->dist;
-		brushface->plane_flags = surf->flags;
 
-		if (surf->flags & SURF_PLANEBACK)
-		{
-			brushface->plane_normal = brushface->plane_normal  * (-1);
-			brushface->plane_dist = brushface->plane_dist  * (-1);
-		}
-
-		for (const auto &poly : glpolys)
+		for (poly = surf->polys; poly; poly = poly->next)
 		{
 			auto v = poly->verts[0];
 
@@ -574,40 +760,144 @@ void CPhysicsManager::GenerateWorldVerticeArray()
 				Vertexes[j].pos[0] = v[0];
 				Vertexes[j].pos[1] = v[1];
 				Vertexes[j].pos[2] = v[2];
+
+				Vec3GoldSrcToBullet(Vertexes[j].pos);
 			}
 
-			m_worldVertexArray->vVertexBuffer.emplace_back(Vertexes[0]);
-			m_worldVertexArray->vVertexBuffer.emplace_back(Vertexes[1]);
-			m_worldVertexArray->vVertexBuffer.emplace_back(Vertexes[2]);
+			worldVertexArray->vVertexBuffer.emplace_back(Vertexes[0]);
+			worldVertexArray->vVertexBuffer.emplace_back(Vertexes[1]);
+			worldVertexArray->vVertexBuffer.emplace_back(Vertexes[2]);
+
 			iNumVerts += 3;
 
 			for (int j = 0; j < (poly->numverts - 3); j++, v += VERTEXSIZE)
 			{
-				Vertexes[1].pos[0] = Vertexes[2].pos[0];
-				Vertexes[1].pos[1] = Vertexes[2].pos[1];
-				Vertexes[1].pos[2] = Vertexes[2].pos[2];
+				Vertexes[1] = Vertexes[2];
 
 				Vertexes[2].pos[0] = v[0];
 				Vertexes[2].pos[1] = v[1];
 				Vertexes[2].pos[2] = v[2];
 
-				m_worldVertexArray->vVertexBuffer.emplace_back(Vertexes[0]);
-				m_worldVertexArray->vVertexBuffer.emplace_back(Vertexes[1]);
-				m_worldVertexArray->vVertexBuffer.emplace_back(Vertexes[2]);
+				Vec3GoldSrcToBullet(Vertexes[2].pos);
+
+				worldVertexArray->vVertexBuffer.emplace_back(Vertexes[0]);
+				worldVertexArray->vVertexBuffer.emplace_back(Vertexes[1]);
+				worldVertexArray->vVertexBuffer.emplace_back(Vertexes[2]);
+
 				iNumVerts += 3;
 			}
 		}
 
-		for (auto &poly : glpolys)
+		for (auto& poly : glpolys)
 		{
 			free(poly);
 		}
 
 		brushface->num_vertexes = iNumVerts - iStartVert;
 	}
+
+	//Always shrink to save system memory
+	worldVertexArray->vVertexBuffer.shrink_to_fit();
+
+	m_worldVertexResources[worldModelName] = worldVertexArray;
+
+	return worldVertexArray;
 }
 
-void CPhysicsManager::GenerateArrayForBrushface(brushface_t* brushface, indexarray_t* brushindexarray, vertexarray_t* brushvertexarray)
+std::shared_ptr<CPhysicIndexArray> CPhysicsManager::GenerateBrushIndexArray(model_t* mod, const std::shared_ptr<CPhysicVertexArray>& pWorldVertexArray)
+{
+	auto pIndexArray = std::make_shared<CPhysicIndexArray>();
+	pIndexArray->flags |= PhysicIndexArrayFlag_FromBSP;
+	pIndexArray->pVertexArray = pWorldVertexArray;
+
+	GenerateIndexArrayForBrushModel(mod, pIndexArray.get());
+
+	auto name = UTIL_GetAbsoluteModelName(mod);
+
+	m_indexArrayResources[name] = pIndexArray;
+
+	return pIndexArray;
+}
+
+void CPhysicsManager::FreeAllIndexArrays(int withflags, int withoutflags)
+{
+	for (auto itor = m_indexArrayResources.begin(); itor != m_indexArrayResources.end(); )
+	{
+		const auto& pIndexArray = itor->second;
+
+		if ((pIndexArray->flags & withflags) && !(pIndexArray->flags & withoutflags))
+		{
+			itor = m_indexArrayResources.erase(itor);
+			continue;
+		}
+
+		itor++;
+	}
+}
+
+void CPhysicsManager::GenerateIndexArrayForBrushModel(model_t* mod, CPhysicIndexArray* pIndexArray)
+{
+	if (mod == r_worldmodel)
+	{
+		GenerateIndexArrayRecursiveWorldNode(mod, mod->nodes, pIndexArray);
+	}
+	else
+	{
+		for (int i = 0; i < mod->nummodelsurfaces; i++)
+		{
+			auto surf = EngineGetSurfaceByIndex(mod, mod->firstmodelsurface + i);
+
+			GenerateIndexArrayForSurface(mod, surf, pIndexArray);
+		}
+	}
+
+	//Always shrink to save system memory
+	pIndexArray->vIndexBuffer.shrink_to_fit();
+}
+
+void CPhysicsManager::GenerateIndexArrayForSurface(model_t* mod, msurface_t* surf, CPhysicIndexArray* pIndexArray)
+{
+	if (surf->flags & SURF_DRAWTURB)
+	{
+		return;
+	}
+
+	if (surf->flags & SURF_DRAWSKY)
+	{
+		return;
+	}
+
+	if (surf->flags & SURF_UNDERWATER)
+	{
+		return;
+	}
+
+	auto surfIndex = EngineGetSurfaceIndex(mod, surf);
+
+	GenerateIndexArrayForBrushface(&pIndexArray->pVertexArray->vFaceBuffer[surfIndex], pIndexArray);
+}
+
+void CPhysicsManager::GenerateIndexArrayRecursiveWorldNode(model_t *mod, mnode_t* node, CPhysicIndexArray* pIndexArray)
+{
+	if (node->contents == CONTENTS_SOLID)
+		return;
+
+	if (node->contents < 0)
+		return;
+
+	GenerateIndexArrayRecursiveWorldNode(mod, node->children[0], pIndexArray);
+
+	for (int i = 0; i < node->numsurfaces; ++i)
+	{
+		auto surf = EngineGetSurfaceByIndex(mod, node->firstsurface + i);
+
+		GenerateIndexArrayForSurface(mod, surf, pIndexArray);
+	}
+
+	GenerateIndexArrayRecursiveWorldNode(mod, node->children[1], pIndexArray);
+}
+
+void CPhysicsManager::GenerateIndexArrayForBrushface(CPhysicBrushFace* brushface, CPhysicIndexArray* pIndexArray)
 {
 	int first = -1;
 	int prv0 = -1;
@@ -618,11 +908,11 @@ void CPhysicsManager::GenerateArrayForBrushface(brushface_t* brushface, indexarr
 	{
 		if (prv0 != -1 && prv1 != -1 && prv2 != -1)
 		{
-			brushindexarray->vIndiceBuffer.emplace_back(brushface->start_vertex + first);
-			brushindexarray->vIndiceBuffer.emplace_back(brushface->start_vertex + prv2);
+			pIndexArray->vIndexBuffer.emplace_back(brushface->start_vertex + first);
+			pIndexArray->vIndexBuffer.emplace_back(brushface->start_vertex + prv2);
 		}
 
-		brushindexarray->vIndiceBuffer.emplace_back(brushface->start_vertex + i);
+		pIndexArray->vIndexBuffer.emplace_back(brushface->start_vertex + i);
 
 		if (first == -1)
 			first = i;
@@ -632,65 +922,27 @@ void CPhysicsManager::GenerateArrayForBrushface(brushface_t* brushface, indexarr
 		prv2 = i;
 	}
 
-	brushvertexarray->vFaceBuffer.emplace_back(*brushface);
+	pIndexArray->vFaceBuffer.emplace_back(*brushface);
 }
 
-void CPhysicsManager::GenerateArrayForSurface(msurface_t* psurf, vertexarray_t* worldvertexarray, indexarray_t* brushindexarray, vertexarray_t* brushvertexarray)
+std::shared_ptr<CPhysicIndexArray> CPhysicsManager::LoadIndexArrayFromResource(const std::string& resourcePath)
 {
-	if (psurf->flags & SURF_DRAWTURB)
+	auto found = m_indexArrayResources.find(resourcePath);
+
+	if (found != m_indexArrayResources.end())
 	{
-		return;
+		return found->second;
 	}
 
-	if (psurf->flags & SURF_DRAWSKY)
+	const auto extension = V_GetFileExtension(resourcePath.c_str());
+
+	if (0 == stricmp(extension, "obj"))
 	{
-		return;
+		//really needis shit ???
 	}
 
-	if (psurf->flags & SURF_UNDERWATER)
-	{
-		return;
-	}
-
-	GenerateArrayForBrushface(&worldvertexarray->vFaceBuffer[EngineGetSurfaceIndex(psurf)], brushindexarray, brushvertexarray);
-}
-
-void CPhysicsManager::GenerateArrayRecursiveWorldNode(mnode_t* node, vertexarray_t* worldvertexarray, indexarray_t* brushindexarray, vertexarray_t* brushvertexarray)
-{
-	if (!node)
-		return;
-
-	if (node->contents == CONTENTS_SOLID)
-		return;
-
-	if (node->contents < 0)
-		return;
-
-	GenerateArrayRecursiveWorldNode(node->children[0], worldvertexarray, brushindexarray, brushvertexarray);
-
-	for (int i = 0; i < node->numsurfaces; ++i)
-	{
-		auto surf = EngineGetSurfaceByIndex(node->firstsurface + i);
-		GenerateArrayForSurface(surf, worldvertexarray, brushindexarray, brushvertexarray);
-	}
-
-	GenerateArrayRecursiveWorldNode(node->children[1], worldvertexarray, brushindexarray, brushvertexarray);
-}
-
-void CPhysicsManager::GenerateArrayForBrushModel(model_t* mod, vertexarray_t* vertexarray, indexarray_t* brushindexarray, vertexarray_t* brushvertexarray)
-{
-	if (mod == r_worldmodel)
-	{
-		GenerateArrayRecursiveWorldNode(mod->nodes, vertexarray, brushindexarray, brushvertexarray);
-	}
-	else
-	{
-		for (int i = 0; i < mod->nummodelsurfaces; i++)
-		{
-			auto surf = EngineGetSurfaceByIndex(mod->firstmodelsurface + i);
-			GenerateArrayForSurface(surf, vertexarray, brushindexarray, brushvertexarray);
-		}
-	}
+	ALERT(at_console, "LoadIndexArrayFromResource: Could not load \"%s\", unsupported file extension!\n", resourcePath.c_str());
+	return nullptr;
 }
 
 CDynamicObject* CPhysicsManager::CreateDynamicObject(CGameObject *obj, btCollisionShape* collisionShape, const btVector3& localInertia, float mass, float density, float friction, float rollingFriction, float restitution, float ccdRadius, float ccdThreshold, int flags)
@@ -803,106 +1055,6 @@ CClippingHullObject* CPhysicsManager::CreateClippingHullObject(CGameObject *obj,
 	hullobj->GetRigidBody()->setWorldTransform(initTransfrm);
 
 	return hullobj;
-}
-
-void EulerMatrix(const btVector3& in_euler, btMatrix3x3& out_matrix) {
-	btVector3 angles = in_euler;
-	angles *= SIMD_RADS_PER_DEG;
-
-	btScalar c1(btCos(angles[0]));
-	btScalar c2(btCos(angles[1]));
-	btScalar c3(btCos(angles[2]));
-	btScalar s1(btSin(angles[0]));
-	btScalar s2(btSin(angles[1]));
-	btScalar s3(btSin(angles[2]));
-
-	out_matrix.setValue(c1 * c2, -c3 * s2 - s1 * s3 * c2, s3 * s2 - s1 * c3 * c2,
-		c1 * s2, c3 * c2 - s1 * s3 * s2, -s3 * c2 - s1 * c3 * s2,
-		s1, c1 * s3, c1 * c3);
-}
-
-void MatrixEuler(const btMatrix3x3& in_matrix, btVector3& out_euler) {
-	
-	/*float xyDist = btSqrt(in_matrix[0][0] * in_matrix[0][0] + in_matrix[1][0] * in_matrix[1][0]);
-
-	if (xyDist > 0.001f)
-	{
-		out_euler[0] = btAtan2(-in_matrix[2][0], xyDist);
-		out_euler[1] = btAtan2(in_matrix[1][0], in_matrix[0][0]);
-		out_euler[2] = btAtan2(in_matrix[2][1], in_matrix[2][2]);
-	}
-	else
-	{
-		out_euler[0] = btAtan2(-in_matrix[2][0], xyDist);
-		out_euler[1] = btAtan2(-in_matrix[0][1], in_matrix[1][1]);
-		out_euler[2] = 0;
-	}*/
-
-	out_euler[0] = btAsin(in_matrix[2][0]);
-
-	if (in_matrix[2][0] >= (1 - 0.002f) && in_matrix[2][0] < 1.002f) {
-		out_euler[1] = btAtan2(in_matrix[1][0], in_matrix[0][0]);
-		out_euler[2] = btAtan2(in_matrix[2][1], in_matrix[2][2]);
-	}
-	else if (btFabs(in_matrix[2][0]) < (1 - 0.002f)) {
-		out_euler[1] = btAtan2(in_matrix[1][0], in_matrix[0][0]);
-		out_euler[2] = btAtan2(in_matrix[2][1], in_matrix[2][2]);
-	}
-	else {
-		out_euler[1] = btAtan2(in_matrix[1][2], in_matrix[1][1]);
-		out_euler[2] = 0;
-	}
-
-	out_euler[3] = 0;
-
-	out_euler *= SIMD_DEGS_PER_RAD;
-}
-
-void Matrix4x4_Transpose(float out[4][4], float in1[4][4])
-{
-	out[0][0] = in1[0][0];
-	out[0][1] = in1[1][0];
-	out[0][2] = in1[2][0];
-	out[0][3] = in1[3][0];
-	out[1][0] = in1[0][1];
-	out[1][1] = in1[1][1];
-	out[1][2] = in1[2][1];
-	out[1][3] = in1[3][1];
-	out[2][0] = in1[0][2];
-	out[2][1] = in1[1][2];
-	out[2][2] = in1[2][2];
-	out[2][3] = in1[3][2];
-	out[3][0] = in1[0][3];
-	out[3][1] = in1[1][3];
-	out[3][2] = in1[2][3];
-	out[3][3] = in1[3][3];
-}
-
-void Matrix3x4ToTransform(const float matrix3x4[3][4], btTransform &trans)
-{
-	float matrix4x4[4][4] = {
-		{1.0f, 0.0f, 0.0f, 0.0f},
-		{0.0f, 1.0f, 0.0f, 0.0f},
-		{0.0f, 0.0f, 1.0f, 0.0f},
-		{0.0f, 0.0f, 0.0f, 1.0f}
-	};
-	memcpy(matrix4x4, matrix3x4, sizeof(float[3][4]));
-
-	float matrix4x4_transposed[4][4];
-	Matrix4x4_Transpose(matrix4x4_transposed, matrix4x4);
-
-	trans.setFromOpenGLMatrix((float *)matrix4x4_transposed);
-}
-
-void TransformToMatrix3x4(const btTransform &trans, float matrix3x4[3][4])
-{
-	float matrix4x4_transposed[4][4];
-	trans.getOpenGLMatrix((float *)matrix4x4_transposed);
-
-	float matrix4x4[4][4];
-	Matrix4x4_Transpose(matrix4x4, matrix4x4_transposed);
-
-	memcpy(matrix3x4, matrix4x4, sizeof(float[3][4]));
 }
 
 void EntityMotionState::ResetWorldTransform(const Vector &origin, const Vector &angles)
@@ -1059,9 +1211,10 @@ void CPhysicsManager::EntityStartFrame()
 					SetEntitySuperPusher(ent, true);
 				}
 
-				CreateBrushModel(ent);
+				CreatePhysicObjectForBrushModel(ent);
 				continue;
 			}
+
 			if (IsEntitySolidPlayer(i, ent))
 			{
 				CreateSolidPlayer(ent);
@@ -1076,10 +1229,11 @@ void CPhysicsManager::EntityStartFrame()
 				RemoveGameObject(i);
 				continue;
 			}
+
 			//Just in case not created?
 			if (IsEntitySolidPusher(ent))
 			{
-				CreateBrushModel(ent);
+				CreatePhysicObjectForBrushModel(ent);
 			}
 
 			if (IsEntitySolidPlayer(i, ent))
@@ -1525,16 +1679,25 @@ void CPlayerObject::StartFrame_Post(btDiscreteDynamicsWorld* world)
 
 bool CPhysicsManager::IsPointInsideBrushEntity(edict_t *ent, const vec3_t &p)
 {
-	vertexarray_t *worldvertexarray = NULL;
-	indexarray_t *brushindexarray = NULL;
-	vertexarray_t *brushvertexarray = NULL;
+	auto pIndexArray = GetIndexArrayFromBrushEntity(ent);
 
-	if (GetVertexIndexArrayFromBrushEntity(ent, &worldvertexarray, &brushindexarray, &brushvertexarray))
+	if (!pIndexArray)
+		return false;
+
+	bool bIsInside = true;
+
+	for (const auto& face : pIndexArray->vFaceBuffer)
 	{
+		float dist_to_plane = GetSignedDistanceToSurface_GoldSrc(p, face.plane_normal, face.plane_dist);
 
+		if (dist_to_plane > 0)
+		{
+			bIsInside = false;
+			break;
+		}
 	}
 
-	return true;
+	return bIsInside;
 }
 
 void CGhostPhysicObject::StartFrame_Post(btDiscreteDynamicsWorld* world)
@@ -1549,7 +1712,7 @@ void CGhostPhysicObject::StartFrame_Post(btDiscreteDynamicsWorld* world)
 	{
 		ManifoldArray.clear();
 
-		btBroadphasePair* CollisionPair = world->getPairCache()->findPair(PairArray[i].m_pProxy0, PairArray[i].m_pProxy1);
+		auto CollisionPair = world->getPairCache()->findPair(PairArray[i].m_pProxy0, PairArray[i].m_pProxy1);
 
 		if (!CollisionPair)
 		{
@@ -1594,11 +1757,9 @@ void CGhostPhysicObject::StartFrame_Post(btDiscreteDynamicsWorld* world)
 
 	if (GetGhostObject()->getCollisionShape()->getShapeType() == TRIANGLE_MESH_SHAPE_PROXYTYPE)
 	{
-		vertexarray_t *worldvertexarray = NULL;
-		indexarray_t *brushindexarray = NULL;
-		vertexarray_t *brushvertexarray = NULL;
+		auto pIndexArray = gPhysicsManager.GetIndexArrayFromBrushEntity(ent);
 
-		if (gPhysicsManager.GetVertexIndexArrayFromBrushEntity(ent, &worldvertexarray, &brushindexarray, &brushvertexarray))
+		if (pIndexArray)
 		{
 			for (int i = 0; i < GetGhostObject()->getNumOverlappingObjects(); i++)
 			{
@@ -1615,9 +1776,9 @@ void CGhostPhysicObject::StartFrame_Post(btDiscreteDynamicsWorld* world)
 
 						bool bIsInside = true;
 
-						for (const auto &vFace : brushvertexarray->vFaceBuffer)
+						for (const auto &face : pIndexArray->vFaceBuffer)
 						{
-							float dist_to_plane = GetSignedDistanceToSurface_GoldSrc(vecPoint, vFace.plane_normal, vFace.plane_dist);
+							float dist_to_plane = GetSignedDistanceToSurface_GoldSrc(vecPoint, face.plane_normal, face.plane_dist);
 
 							if (dist_to_plane > 0)
 							{
@@ -2311,7 +2472,7 @@ void CPhysicsManager::AddGameObject(CGameObject *obj)
 		m_maxIndexGameObject = obj->GetEntIndex();
 }
 
-bool CPhysicsManager::CreateBrushModel(edict_t* ent)
+bool CPhysicsManager::CreatePhysicObjectForBrushModel(edict_t* ent)
 {
 	auto obj = GetGameObject(ent);
 
@@ -2326,16 +2487,16 @@ bool CPhysicsManager::CreateBrushModel(edict_t* ent)
 	if (obj->GetNumPhysicObject() > 0)
 		return false;
 
-	auto shape = CreateTriMeshShapeFromBrushEntity(ent);
+	auto pCollisionShape = CreateTriMeshShapeFromBrushEntity(ent);
 
-	if (!shape)
+	if (!pCollisionShape)
 	{
 		return false;
 	}
 
 	bool bKinematic = ((ent != r_worldentity) && (ent->v.movetype == MOVETYPE_PUSH && ent->v.solid == SOLID_BSP)) ? true : false;
 
-	auto staticObject = CreateStaticObject(obj, shape, bKinematic);
+	auto staticObject = CreateStaticObject(obj, pCollisionShape, bKinematic);
 	
 	obj->AddPhysicObject(staticObject, m_dynamicsWorld, &m_numDynamicObjects);
 
@@ -3585,6 +3746,7 @@ bool CPhysicsManager::CreateSolidOptimizer(edict_t* ent, int boneindex, const Ve
 model_t *CPhysicsManager::GetBrushModelFromEntity(edict_t *ent)
 {
 	int modelindex = ent->v.modelindex;
+
 	if (modelindex == -1)
 	{
 		return NULL;
@@ -3607,52 +3769,41 @@ model_t *CPhysicsManager::GetBrushModelFromEntity(edict_t *ent)
 	return mod;
 }
 
-bool CPhysicsManager::GetVertexIndexArrayFromBrushEntity(edict_t *ent, vertexarray_t **worldvertexarray, indexarray_t **brushindexarray, vertexarray_t **brushvertexarray)
+std::shared_ptr<CPhysicIndexArray> CPhysicsManager::GetIndexArrayFromBrushEntity(edict_t *ent)
 {
 	auto mod = GetBrushModelFromEntity(ent);
 
 	if(!mod)
 	{
-		return false;
+		return nullptr;
 	}
 
-	auto modelindex = ent->v.modelindex;
-
-	if (!m_brushIndexArray[modelindex])
-	{
-		return false;
-	}
-
-	if (!m_brushIndexArray[modelindex]->vIndiceBuffer.size())
-	{
-		return false;
-	}
-
-	*worldvertexarray = m_worldVertexArray;
-	*brushindexarray = m_brushIndexArray[modelindex];
-	*brushvertexarray = m_brushVertexArray[modelindex];
-
-	return true;
+	auto resourceName = UTIL_GetAbsoluteModelName(mod);
+	
+	return LoadIndexArrayFromResource(resourceName);
 }
 
 btBvhTriangleMeshShape *CPhysicsManager::CreateTriMeshShapeFromBrushEntity(edict_t *ent)
 {
-	vertexarray_t *worldvertexarray = NULL;
-	indexarray_t *brushindexarray = NULL;
-	vertexarray_t *brushvertexarray = NULL;
+	auto pIndexArray = GetIndexArrayFromBrushEntity(ent);
 
-	if (!GetVertexIndexArrayFromBrushEntity(ent, &worldvertexarray, &brushindexarray, &brushvertexarray))
-		return NULL;
+	if (!pIndexArray)
+		return nullptr;
 
-	auto bulletVertexArray = new btTriangleIndexVertexArray(
-		brushindexarray->vIndiceBuffer.size() / 3, brushindexarray->vIndiceBuffer.data(), 3 * sizeof(int),
-		worldvertexarray->vVertexBuffer.size(), (float*)worldvertexarray->vVertexBuffer.data(), sizeof(brushvertex_t));
+	auto pTriangleIndexVertexArray = new btTriangleIndexVertexArray(
+		pIndexArray->vIndexBuffer.size() / 3, pIndexArray->vIndexBuffer.data(), 3 * sizeof(int),
+		pIndexArray->pVertexArray->vVertexBuffer.size(), (float*)pIndexArray->pVertexArray->vVertexBuffer.data(), sizeof(CPhysicBrushVertex));
 
-	auto shape = new btBvhTriangleMeshShape(bulletVertexArray, true, true);
+	auto shapeSharedUserData = new CBulletCollisionShapeSharedUserData();
 
-	shape->setUserPointer(bulletVertexArray);
+	shapeSharedUserData->m_pIndexArray = pIndexArray;
+	shapeSharedUserData->m_pTriangleIndexVertexArray  = pTriangleIndexVertexArray;
 
-	return shape;
+	auto pCollisionShape = new btBvhTriangleMeshShape(pTriangleIndexVertexArray, true, true);
+
+	pCollisionShape->setUserPointer(shapeSharedUserData);
+
+	return pCollisionShape;
 }
 
 /*
@@ -3848,7 +3999,7 @@ public:
 
 	void GetSubmergedVolumeForBoxShape(btDiscreteDynamicsWorld* world, btBoxShape *shape, const btTransform &worldTransform, float &outSubmergedVolume, btVector3 &outCenterOfBuoyancy)
 	{
-		auto shapeInfo = (CPhysicShapeInfo *)shape->getUserPointer();
+		auto shapeSharedUserData = GetSharedUserDataFromCollisionShape(shape);
 
 		// Points of the bounding box
 		btVector3 points[] =
@@ -3892,7 +4043,7 @@ public:
 		else if (submerged_vol_calc.AreAllBelow())
 		{
 			// We're fully submerged
-			outSubmergedVolume = shapeInfo->m_volume;
+			outSubmergedVolume = shapeSharedUserData->m_volume;
 			outCenterOfBuoyancy = worldTransform.getOrigin();
 		}
 		else
@@ -3914,14 +4065,14 @@ public:
 
 			outSubmergedVolume /= 8;
 
-			if (outSubmergedVolume > shapeInfo->m_volume)
-				outSubmergedVolume = shapeInfo->m_volume;
+			if (outSubmergedVolume > shapeSharedUserData->m_volume)
+				outSubmergedVolume = shapeSharedUserData->m_volume;
 		}
 	}
 
 	void GetSubmergedVolumeForSphereShape(btDiscreteDynamicsWorld* world, btSphereShape *shape, const btTransform &worldTransform, float &outSubmergedVolume, btVector3 &outCenterOfBuoyancy)
 	{
-		auto shapeInfo = (CPhysicShapeInfo *)shape->getUserPointer();
+		auto shapeSharedUserData = GetSharedUserDataFromCollisionShape(shape);
 
 		auto scaled_radius = shape->getRadius();
 
@@ -3937,7 +4088,7 @@ public:
 		{
 			// Under surface
 			outCenterOfBuoyancy = worldTransform.getOrigin();
-			outSubmergedVolume = shapeInfo->m_volume;
+			outSubmergedVolume = shapeSharedUserData->m_volume;
 		}
 		else
 		{
@@ -3955,7 +4106,7 @@ public:
 
 	void GetSubmergedVolumeForCylinderShape(btDiscreteDynamicsWorld* world, btCylinderShape *shape, const btTransform &worldTransform, float &outSubmergedVolume, btVector3 &outCenterOfBuoyancy)
 	{
-		auto shapeInfo = (CPhysicShapeInfo *)shape->getUserPointer();
+		auto shapeSharedUserData = GetSharedUserDataFromCollisionShape(shape);
 
 		// Points of the bounding box
 		btVector3 points[] =
@@ -3999,7 +4150,7 @@ public:
 		else if (submerged_vol_calc.AreAllBelow())
 		{
 			// We're fully submerged
-			outSubmergedVolume = shapeInfo->m_volume;
+			outSubmergedVolume = shapeSharedUserData->m_volume;
 			outCenterOfBuoyancy = worldTransform.getOrigin();
 		}
 		else
@@ -4024,14 +4175,14 @@ public:
 
 			outSubmergedVolume /= 8;
 
-			if (outSubmergedVolume > shapeInfo->m_volume)
-				outSubmergedVolume = shapeInfo->m_volume;
+			if (outSubmergedVolume > shapeSharedUserData->m_volume)
+				outSubmergedVolume = shapeSharedUserData->m_volume;
 		}
 	}
 
 	void GetSubmergedVolumeForCapsuleShape(btDiscreteDynamicsWorld* world, btCapsuleShape *shape, const btTransform &worldTransform, float &outSubmergedVolume, btVector3 &outCenterOfBuoyancy)
 	{
-		auto shapeInfo = (CPhysicShapeInfo *)shape->getUserPointer();
+		auto shapeSharedUserData = GetSharedUserDataFromCollisionShape(shape);
 
 		// Points of the bounding box
 		btVector3 points[] =
@@ -4075,7 +4226,7 @@ public:
 		else if (submerged_vol_calc.AreAllBelow())
 		{
 			// We're fully submerged
-			outSubmergedVolume = shapeInfo->m_volume;
+			outSubmergedVolume = shapeSharedUserData->m_volume;
 			outCenterOfBuoyancy = worldTransform.getOrigin();
 		}
 		else
@@ -4100,8 +4251,8 @@ public:
 
 			outSubmergedVolume /= 8;
 
-			if (outSubmergedVolume > shapeInfo->m_volume)
-				outSubmergedVolume = shapeInfo->m_volume;
+			if (outSubmergedVolume > shapeSharedUserData->m_volume)
+				outSubmergedVolume = shapeSharedUserData->m_volume;
 		}
 	}
 	/*
@@ -4251,22 +4402,23 @@ bool CPhysicsManager::CreatePhysicWater(edict_t* ent, float density, float linea
 		AddGameObject(obj);
 	}
 
-	btCollisionShape *shape = CreateTriMeshShapeFromBrushEntity(ent);
+	auto shape = CreateTriMeshShapeFromBrushEntity(ent);
 
 	if (!shape)
 	{
 		//No you can't!
 		//shape = new btBoxShape(btVector3((ent->v.maxs.x - ent->v.mins.x) * 0.5f, (ent->v.maxs.y - ent->v.mins.y) * 0.5f, (ent->v.maxs.z - ent->v.mins.z) * 0.5f));
-
 		return false;
 	}
 
 	btVector3 inSurfaceNormal = btVector3(0, 0, 0);
 	btScalar inSurfacePlane = -99999;
 
-	auto brushvertexarray = m_brushVertexArray[ent->v.modelindex];
+	auto shapeSharedUserData = (CBulletCollisionShapeSharedUserData*)shape->getUserPointer();
 
-	for (const auto &face : brushvertexarray->vFaceBuffer)
+	auto pIndexArray = shapeSharedUserData->m_pIndexArray;
+
+	for (const auto &face : pIndexArray->vFaceBuffer)
 	{
 		if (face.plane_normal.z * face.plane_dist > inSurfaceNormal.getZ() * inSurfacePlane)
 		{
@@ -4298,11 +4450,11 @@ btCollisionShape *CPhysicsManager::CreateCollisionShapeFromParams(CGameObject *o
 
 		shape = new btBoxShape(size);
 
-		auto shapeInfo = new CPhysicShapeInfo();
+		auto shapeSharedUserData = new CBulletCollisionShapeSharedUserData();
 
-		shapeInfo->m_volume = CalcVolumeForBoxShape(size);
+		shapeSharedUserData->m_volume = CalcVolumeForBoxShape(size);
 
-		shape->setUserPointer(shapeInfo);
+		shape->setUserPointer(shapeSharedUserData);
 
 		break;
 	}
@@ -4312,11 +4464,11 @@ btCollisionShape *CPhysicsManager::CreateCollisionShapeFromParams(CGameObject *o
 
 		shape = new btSphereShape(size);
 
-		auto shapeInfo = new CPhysicShapeInfo();
+		auto shapeSharedUserData = new CBulletCollisionShapeSharedUserData();
 
-		shapeInfo->m_volume = CalcVolumeForSphereShape(size);
+		shapeSharedUserData->m_volume = CalcVolumeForSphereShape(size);
 
-		shape->setUserPointer(shapeInfo);
+		shape->setUserPointer(shapeSharedUserData);
 
 		break;
 	}
@@ -4335,11 +4487,11 @@ btCollisionShape *CPhysicsManager::CreateCollisionShapeFromParams(CGameObject *o
 			shape = new btCapsuleShapeZ(btScalar(shapeParams->size.x), btScalar(shapeParams->size.y));
 		}
 
-		auto shapeInfo = new CPhysicShapeInfo();
+		auto shapeSharedUserData = new CBulletCollisionShapeSharedUserData();
 
-		shapeInfo->m_volume = CalcVolumeForCapsuleShape(btScalar(shapeParams->size.x), btScalar(shapeParams->size.y));
+		shapeSharedUserData->m_volume = CalcVolumeForCapsuleShape(btScalar(shapeParams->size.x), btScalar(shapeParams->size.y));
 
-		shape->setUserPointer(shapeInfo);
+		shape->setUserPointer(shapeSharedUserData);
 
 		break;
 	}
@@ -4358,22 +4510,22 @@ btCollisionShape *CPhysicsManager::CreateCollisionShapeFromParams(CGameObject *o
 			shape = new btCylinderShapeZ(btVector3(shapeParams->size.x, shapeParams->size.y, shapeParams->size.z));
 		}
 
-		auto shapeInfo = new CPhysicShapeInfo();
+		auto shapeSharedUserData = new CBulletCollisionShapeSharedUserData();
 
 		if (shapeParams->direction == PhysicShapeDirection_X)
 		{
-			shapeInfo->m_volume = CalcVolumeForCylinderShapeX(btVector3(shapeParams->size.x, shapeParams->size.y, shapeParams->size.z));
+			shapeSharedUserData->m_volume = CalcVolumeForCylinderShapeX(btVector3(shapeParams->size.x, shapeParams->size.y, shapeParams->size.z));
 		}
 		else if (shapeParams->direction == PhysicShapeDirection_Y)
 		{
-			shapeInfo->m_volume = CalcVolumeForCylinderShapeY(btVector3(shapeParams->size.x, shapeParams->size.y, shapeParams->size.z));
+			shapeSharedUserData->m_volume = CalcVolumeForCylinderShapeY(btVector3(shapeParams->size.x, shapeParams->size.y, shapeParams->size.z));
 		}
 		else if (shapeParams->direction == PhysicShapeDirection_Z)
 		{
-			shapeInfo->m_volume = CalcVolumeForCylinderShapeZ(btVector3(shapeParams->size.x, shapeParams->size.y, shapeParams->size.z));
+			shapeSharedUserData->m_volume = CalcVolumeForCylinderShapeZ(btVector3(shapeParams->size.x, shapeParams->size.y, shapeParams->size.z));
 		}
 
-		shape->setUserPointer(shapeInfo);
+		shape->setUserPointer(shapeSharedUserData);
 
 		break;
 	}
@@ -4543,8 +4695,8 @@ bool CPhysicsManager::CreateCompoundPhysicObject(edict_t* ent, PhysicShapeParams
 		//Must have a model
 		return false;
 	}
-
-	auto mod = (*sv_models)[ent->v.modelindex];
+	
+	auto mod = EngineGetPrecachedModelByIndex(ent->v.modelindex);
 
 	if (!mod)
 	{
@@ -4564,9 +4716,9 @@ bool CPhysicsManager::CreateCompoundPhysicObject(edict_t* ent, PhysicShapeParams
 
 	auto compound = new btCompoundShape();
 
-	auto shapeInfo = new CPhysicShapeInfo();
+	auto shapeSharedUserData = new CBulletCollisionShapeSharedUserData();
 
-	compound->setUserPointer(shapeInfo);
+	compound->setUserPointer(shapeSharedUserData);
 
 	for (size_t i = 0; i < numShapeParams; ++i)
 	{
@@ -4585,11 +4737,11 @@ bool CPhysicsManager::CreateCompoundPhysicObject(edict_t* ent, PhysicShapeParams
 
 			compound->addChildShape(trans, shape);
 
-			auto childShapeInfo = (CPhysicShapeInfo *)shape->getUserPointer();
+			auto childShapeSharedUserData = GetSharedUserDataFromCollisionShape(shape);
 
-			if (childShapeInfo)
+			if (childShapeSharedUserData)
 			{
-				shapeInfo->m_volume += childShapeInfo->m_volume;
+				childShapeSharedUserData->m_volume += childShapeSharedUserData->m_volume;
 			}
 		}
 	}
@@ -4664,10 +4816,29 @@ void CPhysicsManager::PostSpawn(edict_t *ent)
 
 	r_worldmodel = EngineGetPrecachedModelByIndex(r_worldentity->v.modelindex);
 
-	GenerateWorldVerticeArray();
-	GenerateBrushIndiceArray();
+	m_worldVertexResources.clear();
 
-	CreateBrushModel(r_worldentity);
+	FreeAllIndexArrays(PhysicIndexArrayFlag_FromBSP, 0);
+
+	for (int i = 0; i < EngineGetMaxPrecacheModel(); ++i)
+	{
+		auto mod = EngineGetPrecachedModelByIndex(i);
+
+		if (mod->type == mod_brush && mod->name[0])
+		{
+			if (mod->needload == NL_PRESENT || mod->needload == NL_CLIENT)
+			{
+				std::shared_ptr<CPhysicVertexArray> worldVertexArray = GenerateWorldVertexArray(mod);
+
+				if (worldVertexArray)
+				{
+					GenerateBrushIndexArray(mod, worldVertexArray);
+				}
+			}
+		}
+	}
+
+	CreatePhysicObjectForBrushModel(r_worldentity);
 }
 
 struct GameFilterCallback : public btOverlapFilterCallback
@@ -4888,32 +5059,9 @@ void CPhysicsManager::Shutdown(void)
 {
 	RemoveAllGameBodies();
 
-	for (size_t i = 0; i < m_brushIndexArray.size(); ++i)
-	{
-		if (m_brushIndexArray[i])
-		{
-			delete m_brushIndexArray[i];
-			m_brushIndexArray[i] = NULL;
-		}
-	}
+	FreeAllIndexArrays(PhysicIndexArrayFlag_FromBSP, 0);
 
-	m_brushIndexArray.clear();
-
-	for (size_t i = 0; i < m_brushVertexArray.size(); ++i)
-	{
-		if (m_brushVertexArray[i])
-		{
-			delete m_brushVertexArray[i];
-			m_brushVertexArray[i] = NULL;
-		}
-	}
-
-	m_brushVertexArray.clear();
-
-	if (m_worldVertexArray) {
-		delete m_worldVertexArray;
-		m_worldVertexArray = NULL;
-	}
+	m_worldVertexResources.clear();
 
 	if (m_overlapFilterCallback)
 	{
@@ -5087,7 +5235,7 @@ void CGameObject::EndFrame(btDiscreteDynamicsWorld* world)
 		ent->v.maxs = m_backup_maxs;
 	}
 
-	if (gPhysicsManager.GetNumDynamicBodies() > 0)
+	//if (gPhysicsManager.GetNumDynamicBodies() > 0)
 	{
 		for (size_t i = 0; i < m_physics.size(); ++i)
 		{
@@ -5518,6 +5666,7 @@ void OnBeforeDeleteRigidBody(btRigidBody *rigidbody)
 		if (shape)
 		{
 			OnBeforeDeleteCollisionShape(shape);
+
 			delete shape;
 		}
 
@@ -5533,16 +5682,14 @@ void OnBeforeDeleteRigidBody(btRigidBody *rigidbody)
 void OnBeforeDeletePairCachingGhostObject(btPairCachingGhostObject *ghostobj)
 {
 	//Should be removed from world before free
+
 	if (ghostobj)
 	{
 		auto shape = ghostobj->getCollisionShape();
+
 		if (shape)
 		{
-			if (shape->getShapeType() == TRIANGLE_MESH_SHAPE_PROXYTYPE && shape->getUserPointer())
-			{
-				delete (btTriangleIndexVertexArray *)shape->getUserPointer();
-			}
-
+			OnBeforeDeleteCollisionShape(shape);
 			delete shape;
 		}
 	}
@@ -5552,14 +5699,14 @@ void OnBeforeDeleteConstraint(btTypedConstraint *constraint)
 {
 	if (constraint->getUserConstraintType() == ConstraintType_Wheel)
 	{
-		auto ptr = (CPhysicVehicleWheelInfo *)constraint->getUserConstraintPtr();
+		auto pSharedUserData = (CBulletBaseSharedUserData*)constraint->getUserConstraintPtr();
 
-		if (ptr)
+		if (pSharedUserData)
 		{
-			delete ptr;
+			delete pSharedUserData;
 		}
 
-		constraint->setUserConstraintPtr(NULL);
+		constraint->setUserConstraintPtr(nullptr);
 	}
 }
 
@@ -5570,45 +5717,12 @@ void OnBeforeDeleteActionInterface(btActionInterface *action)
 
 void OnBeforeDeleteCollisionShape(btCollisionShape *shape)
 {
-	if (shape->getShapeType() == TRIANGLE_MESH_SHAPE_PROXYTYPE && shape->getUserPointer())
-	{
-		auto vertexArray = (btTriangleIndexVertexArray *)shape->getUserPointer();
-		delete vertexArray;
-		shape->setUserPointer(NULL);
-	}
+	auto shapeSharedUserData = GetSharedUserDataFromCollisionShape(shape);
 
-	if (shape->getShapeType() == BOX_SHAPE_PROXYTYPE && shape->getUserPointer())
+	if (shapeSharedUserData)
 	{
-		auto shapeInfo = (CPhysicShapeInfo *)shape->getUserPointer();
-		delete shapeInfo;
-		shape->setUserPointer(NULL);
-	}
+		delete shapeSharedUserData;
 
-	if (shape->getShapeType() == SPHERE_SHAPE_PROXYTYPE && shape->getUserPointer())
-	{
-		auto shapeInfo = (CPhysicShapeInfo *)shape->getUserPointer();
-		delete shapeInfo;
-		shape->setUserPointer(NULL);
-	}
-
-	if (shape->getShapeType() == CAPSULE_SHAPE_PROXYTYPE && shape->getUserPointer())
-	{
-		auto shapeInfo = (CPhysicShapeInfo *)shape->getUserPointer();
-		delete shapeInfo;
-		shape->setUserPointer(NULL);
-	}
-
-	if (shape->getShapeType() == CYLINDER_SHAPE_PROXYTYPE && shape->getUserPointer())
-	{
-		auto shapeInfo = (CPhysicShapeInfo *)shape->getUserPointer();
-		delete shapeInfo;
-		shape->setUserPointer(NULL);
-	}
-
-	if (shape->getShapeType() == COMPOUND_SHAPE_PROXYTYPE && shape->getUserPointer())
-	{
-		auto shapeInfo = (CPhysicShapeInfo *)shape->getUserPointer();
-		delete shapeInfo;
-		shape->setUserPointer(NULL);
+		shape->setUserPointer(nullptr);
 	}
 }
