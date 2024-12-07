@@ -78,7 +78,7 @@ static META_FUNCTIONS gMetaFunctionTable = {
 plugin_info_t Plugin_info = {
 	META_INTERFACE_VERSION,	// ifvers
 	"FallGuys",	// name
-	"1.7",	// version
+	"1.8",	// version
 	"2024",	// date
 	"hzqst",	// author
 	"https://github.com/hzqst/metamod-fallguys",	// url
@@ -351,7 +351,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 	VAR_FROM_SIGNATURE_FROM_START(engine, sv_models, 13);
 
-	VAR_FROM_SIGNATURE_FROM_END(engine, host_frametime, 0);
+	VAR_FROM_SIGNATURE_FROM_START(engine, host_frametime, 7);
 	VAR_FROM_SIGNATURE_FROM_END(engine, pmovevars, 0);
 	VAR_FROM_SIGNATURE_FROM_START(engine, sv_areanodes, 9);
 
