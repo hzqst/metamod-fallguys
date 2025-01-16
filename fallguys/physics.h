@@ -1114,6 +1114,7 @@ public:
 		m_backup_maxs = g_vecZero;
 		m_semi_vis_mask = 0;
 		m_semiclip_to_entities.clear();
+		m_pm_semiclip_to_entities.clear();
 		//m_player_semi_clip_mask = 0;
 		m_original_solid = 0;
 		m_anim_flags = 0;
@@ -1300,8 +1301,6 @@ public:
 
 	void SetPlayerSemiClipMask(int player_mask)
 	{
-		//m_player_semi_clip_mask = player_mask;
-
 		for (int entindex = 1; entindex <= gpGlobals->maxClients; ++entindex)
 		{
 			if (player_mask & (1 << (entindex - 1)))
@@ -1315,10 +1314,23 @@ public:
 		}
 	}
 
+	void SetPlayerPMSemiClipMask(int player_mask)
+	{
+		for (int entindex = 1; entindex <= gpGlobals->maxClients; ++entindex)
+		{
+			if (player_mask & (1 << (entindex - 1)))
+			{
+				SetPMSemiClipToEntity(entindex);
+			}
+			else
+			{
+				UnsetPMSemiClipToEntity(entindex);
+			}
+		}
+	}
+
 	void AddPlayerSemiClipMask(int player_mask)
 	{
-		//m_player_semi_clip_mask |= player_mask;
-
 		for (int entindex = 1; entindex <= gpGlobals->maxClients; ++entindex)
 		{
 			if (player_mask & (1 << (entindex - 1)))
@@ -1328,10 +1340,19 @@ public:
 		}
 	}
 
+	void AddPlayerPMSemiClipMask(int player_mask)
+	{
+		for (int entindex = 1; entindex <= gpGlobals->maxClients; ++entindex)
+		{
+			if (player_mask & (1 << (entindex - 1)))
+			{
+				SetPMSemiClipToEntity(entindex);
+			}
+		}
+	}
+
 	void RemovePlayerSemiClipMask(int player_mask)
 	{
-		//m_player_semi_clip_mask &= ~player_mask;
-
 		for (int entindex = 1; entindex <= gpGlobals->maxClients; ++entindex)
 		{
 			if (player_mask & (1 << (entindex - 1)))
@@ -1341,11 +1362,19 @@ public:
 		}
 	}
 
+	void RemovePlayerPMSemiClipMask(int player_mask)
+	{
+		for (int entindex = 1; entindex <= gpGlobals->maxClients; ++entindex)
+		{
+			if (player_mask & (1 << (entindex - 1)))
+			{
+				UnsetPMSemiClipToEntity(entindex);
+			}
+		}
+	}
+
 	void SetSemiClipToEntity(int entindex)
 	{
-		//int player_mask = (1 << (entindex - 1));
-		//AddPlayerSemiClipMask(player_mask);
-
 		auto ent = g_engfuncs.pfnPEntityOfEntIndex(entindex);
 
 		if (ent && !ent->free)
@@ -1354,16 +1383,33 @@ public:
 		}
 	}
 
-	void UnsetSemiClipToEntity(int entindex)
+	void SetPMSemiClipToEntity(int entindex)
 	{
-		//int player_mask = (1 << (entindex - 1));
-		//RemovePlayerSemiClipMask(player_mask);
-
 		auto ent = g_engfuncs.pfnPEntityOfEntIndex(entindex);
 
 		if (ent && !ent->free)
 		{
-			SetSemiClipToEntity(ent);
+			SetPMSemiClipToEntity(ent);
+		}
+	}
+
+	void UnsetSemiClipToEntity(int entindex)
+	{
+		auto ent = g_engfuncs.pfnPEntityOfEntIndex(entindex);
+
+		if (ent && !ent->free)
+		{
+			UnsetSemiClipToEntity(ent);
+		}
+	}
+
+	void UnsetPMSemiClipToEntity(int entindex)
+	{
+		auto ent = g_engfuncs.pfnPEntityOfEntIndex(entindex);
+
+		if (ent && !ent->free)
+		{
+			UnsetPMSemiClipToEntity(ent);
 		}
 	}
 
@@ -1379,6 +1425,18 @@ public:
 		}
 	}
 
+	void SetPMSemiClipToEntity(edict_t* targetEntity)
+	{
+		auto itor = std::find_if(m_pm_semiclip_to_entities.begin(), m_pm_semiclip_to_entities.end(), [targetEntity](const EHANDLE& ehandle) {
+			return ehandle.Get() == targetEntity;
+			});
+
+		if (itor == m_pm_semiclip_to_entities.end())
+		{
+			m_pm_semiclip_to_entities.emplace_back(targetEntity);
+		}
+	}
+
 	void UnsetSemiClipToEntity(edict_t* targetEntity)
 	{
 		auto itor = std::find_if(m_semiclip_to_entities.begin(), m_semiclip_to_entities.end(), [targetEntity](const EHANDLE& ehandle) {
@@ -1391,21 +1449,46 @@ public:
 		}
 	}
 
+	void UnsetPMSemiClipToEntity(edict_t* targetEntity)
+	{
+		auto itor = std::find_if(m_pm_semiclip_to_entities.begin(), m_pm_semiclip_to_entities.end(), [targetEntity](const EHANDLE& ehandle) {
+			return ehandle.Get() == targetEntity;
+			});
+
+		if (itor == m_pm_semiclip_to_entities.end())
+		{
+			m_pm_semiclip_to_entities.erase(itor);
+		}
+	}
+
 	void UnsetSemiClipToAll()
 	{
 		m_semiclip_to_entities.clear();
 	}
 
+	void UnsetPMSemiClipToAll()
+	{
+		m_pm_semiclip_to_entities.clear();
+	}
+
 	bool IsSemiClipToEntity(int entindex) const
 	{
-		//int player_mask = (1 << (entindex - 1));
-		//return (GetPlayerSemiClipMask() &  player_mask) ? true : false;
-
 		auto ent = g_engfuncs.pfnPEntityOfEntIndex(entindex);
 
 		if (ent && !ent->free)
 		{
 			return IsSemiClipToEntity(ent);
+		}
+		return false;
+	}
+
+	bool IsPMSemiClipToEntity(int entindex) const
+	{
+		auto ent = g_engfuncs.pfnPEntityOfEntIndex(entindex);
+
+		if (ent && !ent->free)
+		{
+			return IsPMSemiClipToEntity(ent);
 		}
 		return false;
 	}
@@ -1417,6 +1500,20 @@ public:
 		});
 
 		if (itor == m_semiclip_to_entities.end())
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	bool IsPMSemiClipToEntity(edict_t* targetEntity) const
+	{
+		auto itor = std::find_if(m_pm_semiclip_to_entities.begin(), m_pm_semiclip_to_entities.end(), [targetEntity](const EHANDLE& ehandle) {
+			return ehandle.Get() == targetEntity;
+			});
+
+		if (itor == m_pm_semiclip_to_entities.end())
 		{
 			return false;
 		}
@@ -1497,6 +1594,7 @@ private:
 
 	//int m_player_semi_clip_mask;
 	std::vector<EHANDLE> m_semiclip_to_entities;
+	std::vector<EHANDLE> m_pm_semiclip_to_entities;
 
 	int m_original_solid;
 
@@ -1588,11 +1686,18 @@ public:
 	bool SetEntityLevelOfDetail(edict_t* ent, int flags, int body_0, float scale_0, int body_1, float scale_1, float distance_1, int body_2, float scale_2, float distance_2, int body_3, float scale_3, float distance_3);
 	bool SetEntitySemiVisible(edict_t* ent, int player_mask);
 	bool SetEntitySemiClip(edict_t* ent, int player_mask);
+	bool SetEntityPMSemiClip(edict_t* ent, int player_mask);
 	bool SetEntitySemiClipToEntityIndex(edict_t* ent, int playerIndex);
+	bool SetEntityPMSemiClipToEntityIndex(edict_t* ent, int entindex);
 	bool UnsetEntitySemiClipToEntityIndex(edict_t* ent, int playerIndex);
+	bool UnsetEntityPMSemiClipToEntityIndex(edict_t* ent, int entindex);
 	bool SetEntitySemiClipToEntity(edict_t* ent, edict_t* targetEntity);
+	bool SetEntityPMSemiClipToEntity(edict_t* ent, edict_t* targetEntity);
 	bool UnsetEntitySemiClipToEntity(edict_t* ent, edict_t* targetEntity);
+	bool UnsetEntityPMSemiClipToEntity(edict_t* ent, edict_t* targetEntity);
 	bool UnsetEntitySemiClipToAll(edict_t* ent);
+	bool UnsetEntityPMSemiClipToAll(edict_t* ent);
+
 	bool SetEntitySuperPusher(edict_t* ent, bool enable);
 	bool SetEntityFollow(edict_t* ent, edict_t* follow, int flags, const Vector &origin_offset, const Vector &angles_offset);
 	bool SetEntityEnvStudioAnim(edict_t* ent, int flags, float overrideCurFrame, float overrideMaxFrame, EnvStudioKeyframe **keyframes, size_t numKeyframes);

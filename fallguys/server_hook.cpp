@@ -173,12 +173,25 @@ bool SC_SERVER_DECL CASEntityFuncs__SetEntitySemiClip(void* pthis, SC_SERVER_DUM
 	return gPhysicsManager.SetEntitySemiClip(ent, player_mask);
 }
 
+bool SC_SERVER_DECL CASEntityFuncs__SetEntityPMSemiClip(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int player_mask)
+{
+	return gPhysicsManager.SetEntityPMSemiClip(ent, player_mask);
+}
+
 bool SC_SERVER_DECL CASEntityFuncs__SetEntitySemiClipToPlayer(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int entindex)
 {
 	if (!(entindex >= 1 && entindex <= gpGlobals->maxClients))
 		return false;
 
 	return gPhysicsManager.SetEntitySemiClipToEntityIndex(ent, entindex);
+}
+
+bool SC_SERVER_DECL CASEntityFuncs__SetEntityPMSemiClipToPlayer(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int entindex)
+{
+	if (!(entindex >= 1 && entindex <= gpGlobals->maxClients))
+		return false;
+
+	return gPhysicsManager.SetEntityPMSemiClipToEntityIndex(ent, entindex);
 }
 
 bool SC_SERVER_DECL CASEntityFuncs__UnsetEntitySemiClipToPlayer(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int entindex)
@@ -189,14 +202,32 @@ bool SC_SERVER_DECL CASEntityFuncs__UnsetEntitySemiClipToPlayer(void* pthis, SC_
 	return gPhysicsManager.SetEntitySemiClipToEntityIndex(ent, entindex);
 }
 
+bool SC_SERVER_DECL CASEntityFuncs__UnsetEntityPMSemiClipToPlayer(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int entindex)
+{
+	if (!(entindex >= 1 && entindex <= gpGlobals->maxClients))
+		return false;
+
+	return gPhysicsManager.SetEntityPMSemiClipToEntityIndex(ent, entindex);
+}
+
 bool SC_SERVER_DECL CASEntityFuncs__SetEntitySemiClipToEntityIndex(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int entindex)
 {
 	return gPhysicsManager.SetEntitySemiClipToEntityIndex(ent, entindex);
 }
 
+bool SC_SERVER_DECL CASEntityFuncs__SetEntityPMSemiClipToEntityIndex(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int entindex)
+{
+	return gPhysicsManager.SetEntityPMSemiClipToEntityIndex(ent, entindex);
+}
+
 bool SC_SERVER_DECL CASEntityFuncs__UnsetEntitySemiClipToEntityIndex(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int entindex)
 {
-	return gPhysicsManager.SetEntitySemiClipToEntityIndex(ent, entindex);
+	return gPhysicsManager.UnsetEntitySemiClipToEntityIndex(ent, entindex);
+}
+
+bool SC_SERVER_DECL CASEntityFuncs__UnsetEntityPMSemiClipToEntityIndex(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int entindex)
+{
+	return gPhysicsManager.UnsetEntityPMSemiClipToEntityIndex(ent, entindex);
 }
 
 bool SC_SERVER_DECL CASEntityFuncs__SetEntitySemiClipToEntity(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, edict_t* targetEntity)
@@ -204,14 +235,29 @@ bool SC_SERVER_DECL CASEntityFuncs__SetEntitySemiClipToEntity(void* pthis, SC_SE
 	return gPhysicsManager.SetEntitySemiClipToEntity(ent, targetEntity);
 }
 
+bool SC_SERVER_DECL CASEntityFuncs__SetEntityPMSemiClipToEntity(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, edict_t* targetEntity)
+{
+	return gPhysicsManager.SetEntityPMSemiClipToEntity(ent, targetEntity);
+}
+
 bool SC_SERVER_DECL CASEntityFuncs__UnsetEntitySemiClipToEntity(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, edict_t* targetEntity)
 {
 	return gPhysicsManager.UnsetEntitySemiClipToEntity(ent, targetEntity);
 }
 
+bool SC_SERVER_DECL CASEntityFuncs__UnsetEntityPMSemiClipToEntity(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, edict_t* targetEntity)
+{
+	return gPhysicsManager.UnsetEntityPMSemiClipToEntity(ent, targetEntity);
+}
+
 bool SC_SERVER_DECL CASEntityFuncs__UnsetEntitySemiClipToAll(void* pthis, SC_SERVER_DUMMYARG edict_t* ent)
 {
 	return gPhysicsManager.UnsetEntitySemiClipToAll(ent);
+}
+
+bool SC_SERVER_DECL CASEntityFuncs__UnsetEntityPMSemiClipToAll(void* pthis, SC_SERVER_DUMMYARG edict_t* ent)
+{
+	return gPhysicsManager.UnsetEntityPMSemiClipToAll(ent);
 }
 
 edict_t *SC_SERVER_DECL CASEntityFuncs__GetCurrentSuperPusher(void* pthis, SC_SERVER_DUMMYARG Vector* vecPushDirection)
