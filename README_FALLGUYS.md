@@ -188,13 +188,25 @@ g_EntityFuncs.SetEntityPMSemiClip(pEntity.edict(), (1 << (pPlayer.entindex() - 1
 
 ```
 
-//Set second arg to 0 to turn SemiClip off
+//Use 0 to completely deactivated SemiClip
 
 g_EntityFuncs.SetEntitySemiClip(pEntity.edict(), 0 );
 
-//Set second arg to 0 to turn PlayerMove-Only-SemiClip off
+//Use 0 to completely deactivated PlayerMove-Only-SemiClip
 
 g_EntityFuncs.SetEntityPMSemiClip(pEntity.edict(), 0 );
+
+```
+
+```
+
+//Use -1 to activated SemiClip between pEntity and all 32 players on server.
+
+g_EntityFuncs.SetEntitySemiClip(pEntity.edict(), -1 );
+
+//Use -1 to activated PlayerMove-Only-SemiClip between pEntity and all 32 players on server.
+
+g_EntityFuncs.SetEntityPMSemiClip(pEntity.edict(), -1 );
 
 ```
 
