@@ -164,17 +164,25 @@ g_EntityFuncs.SetEntitySemiVisible(pEntity.edict(), 0 );
 
 ```
 
-//pEntity is noclip to "pPlayer" and stays clipping to any other players.
+//pEntity is noclip to "pPlayer" and stays clipping to any other players. and his bullet / traceline / hitscan will just go through any other players.
 
 g_EntityFuncs.SetEntitySemiClip(pEntity.edict(), (1 << (pPlayer.entindex() - 1)) );
 
-```
+//pEntity is noclip to "pPlayer" and stays clipping to any other players. his bullet / traceline / hitscan will not be affected.
+
+g_EntityFuncs.SetEntityPMSemiClip(pEntity.edict(), (1 << (pPlayer.entindex() - 1)) );
 
 ```
 
-//pEntity is noclip to "pPlayer" and "pPlayer2" and stays clipping to any other players.
+```
+
+//pEntity is noclip to "pPlayer" and "pPlayer2" and stays clipping to any other players. and his bullet / traceline / hitscan will go through "pPlayer" and "pPlayer2"
 
 g_EntityFuncs.SetEntitySemiClip(pEntity.edict(), (1 << (pPlayer.entindex() - 1)) |  (1 << (pPlayer2.entindex() - 1)) );
+
+//pEntity is noclip to "pPlayer" and "pPlayer2" and stays clipping to any other players. his bullet / traceline / hitscan will not be affected.
+
+g_EntityFuncs.SetEntityPMSemiClip(pEntity.edict(), (1 << (pPlayer.entindex() - 1)) |  (1 << (pPlayer2.entindex() - 1)) );
 
 ```
 
@@ -184,13 +192,21 @@ g_EntityFuncs.SetEntitySemiClip(pEntity.edict(), (1 << (pPlayer.entindex() - 1))
 
 g_EntityFuncs.SetEntitySemiClip(pEntity.edict(), 0 );
 
+//Set second arg to 0 to turn PlayerMove-Only-SemiClip off
+
+g_EntityFuncs.SetEntityPMSemiClip(pEntity.edict(), 0 );
+
 ```
 
 ```
 
 //Easier-to-use API
 
+//pEntity is noclip to "pPlayer" and stays clipping to any other players. and his bullet / traceline / hitscan will just go through any other players.
+
 g_EntityFuncs.SetEntitySemiClipToPlayer(pEntity.edict(), pPlayer.entindex() );
+
+//pEntity is noclip to "pPlayer" and stays clipping to any other players. his bullet / traceline / hitscan will not be affected.
 
 g_EntityFuncs.UnsetEntitySemiClipToPlayer(pEntity.edict(), pPlayer.entindex() );
 
