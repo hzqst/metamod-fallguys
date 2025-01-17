@@ -158,9 +158,9 @@ g_EntityFuncs.SetEntitySemiVisible(pEntity.edict(), 0 );
 
 ### SemiClip
 
-//semiclip: The collision or phys-interaction (including firebullet, traceline) between EntityA and EntityB will be completely disabled.
+* semiclip: The collision or phys-interaction (including firebullet, traceline) between EntityA and EntityB will be completely disabled.
 
-//PlayerMove-only-semiclip: Only player movement will be affected. traceline will not be affected.
+* PlayerMove-only-semiclip: Only player movement will be affected. traceline will not be affected.
 
 ```
 
