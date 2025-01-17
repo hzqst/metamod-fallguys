@@ -6,7 +6,7 @@ Most features are provided via angelscript interfaces.
 
 ### Set Brush Entity as **Super Pusher**
 
-```
+```angelscript
 g_EntityFuncs.SetEntitySuperPusher(self.edict(), true);
 ```
 
@@ -20,7 +20,7 @@ You have to call `g_EngineFuncs.EnableCustomStepSound(true);` to enable custom f
 
 Custom footsteps will be automatically disabled after level changes or server restarts.
 
-```
+```angelscript
 void MapInit()
 {
    //...
@@ -30,7 +30,7 @@ void MapInit()
 }
 ```
 
-```
+```angelscript
 
 //Play whatever footstep sound you want here
 
@@ -73,9 +73,9 @@ HookReturnCode PlayerMovePlaySoundFX( CBasePlayer@ pPlayer, int playerindex, Vec
 
 ### Server-Side Level of Detail
 
-```
+```angelscript
 
-//Constant
+//Constants
 
 const int LOD_BODY = 1;
 const int LOD_MODELINDEX = 2;
@@ -84,7 +84,7 @@ const int LOD_SCALE_INTERP = 8;
 
 ```
 
-```
+```angelscript
 
 //pEntity 's pev.modelindex will be changed to g_iPlayerArrowSprite1ModelIndex when it's distance to player ranges from 0 to 300 units
 //pEntity 's pev.modelindex will be changed to g_iPlayerArrowSprite2ModelIndex when it's distance to player ranges from 300 to 700 units
@@ -109,7 +109,8 @@ g_EntityFuncs.SetEntityLevelOfDetail(pEntity.edict(),
 
 ```
 
-```
+```angelscript
+
 //pEntity 's pev.body will be changed to 0 when it's distance to player ranges from 0 to fuser1 units
 //pEntity 's pev.body will be changed to pEntity.pev.iuser1 when it's distance to player ranges from pEntity.pev.fuser1 to pEntity.pev.fuser2 units
 //pEntity 's pev.body will be changed to pEntity.pev.iuser2 when it's distance to player ranges from pEntity.pev.fuser2 to pEntity.pev.fuser3 units
@@ -133,7 +134,7 @@ g_EntityFuncs.SetEntityLevelOfDetail(pEntity.edict(),
 
 Entity set as Semi-Visible will be visible only to specified player(s)
 
-```
+```angelscript
 
 //pEntity is visible to "pPlayer" while keep invisbie to any other players.
 
@@ -141,7 +142,7 @@ g_EntityFuncs.SetEntitySemiVisible(pEntity.edict(), (1 << (pPlayer.entindex() - 
 
 ```
 
-```
+```angelscript
 
 //pEntity is visible to "pPlayer" and "pPlayer2" while keep invisbie to any other players.
 
@@ -163,7 +164,7 @@ g_EntityFuncs.SetEntitySemiVisible(pEntity.edict(), 0 );
 
 * PlayerMove-only-semiclip: Only player movement will be affected. traceline will not be affected.
 
-```
+```angelscript
 
 //pEntity will become semiclip to "pPlayer". their traceline operation (or called hitscan) will also go through each other.
 
@@ -175,7 +176,7 @@ g_EntityFuncs.SetEntityPMSemiClip(pEntity.edict(), (1 << (pPlayer.entindex() - 1
 
 ```
 
-```
+```angelscript
 
 //pEntity will become semiclip to "pPlayer" and "pPlayer2". their traceline operation (or called hitscan) will also go through each other.
 
@@ -187,7 +188,7 @@ g_EntityFuncs.SetEntityPMSemiClip(pEntity.edict(), (1 << (pPlayer.entindex() - 1
 
 ```
 
-```
+```angelscript
 
 //Use 0 to completely deactivated semiclip for pEntity
 
@@ -199,7 +200,7 @@ g_EntityFuncs.SetEntityPMSemiClip(pEntity.edict(), 0 );
 
 ```
 
-```
+```angelscript
 
 //Use -1 to activated semiclip between pEntity and all 32 players on server.
 
@@ -211,7 +212,7 @@ g_EntityFuncs.SetEntityPMSemiClip(pEntity.edict(), -1 );
 
 ```
 
-```
+```angelscript
 
 //Easier-to-use API
 
@@ -245,7 +246,7 @@ g_EntityFuncs.UnsetEntityPMSemiClipToAll(pEntity.edict());
 
 Physic objects run physic simulation (gravity, movement, collision) in Bullet Engine instead of GoldSrc hull clipping.
 
-```
+```angelscript
 
 //You have to enable physic world for current map first before using any feature from Bullet Engine.
 
@@ -263,7 +264,7 @@ g_EngineFuncs.EnablePhysicWorld(true);
 
 The following code creates a physic box with size of (32 x 32 x 32) units
 
-```
+```angelscript
 
 //Constant
 
@@ -319,9 +320,9 @@ g_EntityFuncs.CreatePhysicObject(pEntity.edict(), shapeParams, objectParams);
 
 ### Entity follow (similar to trigger_setorigin but save entity count and reduce potential latency)
 
-```
+```angelscript
 
-//Constant
+//Constants
 
 const int FollowEnt_CopyOriginX = 1;
 const int FollowEnt_CopyOriginY = 2;
@@ -339,7 +340,7 @@ const int FollowEnt_ApplyAngularVelocity = 0x400;
 
 ```
 
-```
+```angelscript
 
 Vector vecOriginOffset = Vector(0, 0, 0);
 Vector vecAnglesOffset = Vector(0, 0, 0);
@@ -353,7 +354,7 @@ g_EntityFuncs.SetEntityFollow(pEntity.edict(), pCopyFromEntity.edict(), flags, v
 
 ### Detect who is currently running player move code
 
-```
+```angelscript
 void Touch( CBaseEntity@ pOther )
 {
    int playerIndex = g_EngineFuncs.GetRunPlayerMovePlayerIndex();
@@ -370,13 +371,13 @@ void Touch( CBaseEntity@ pOther )
 
 ### Hook AddToFullPack
 
-//Do not use, this dramatically hurts your performance.
+//Warning: this dramatically hurts your performance.
 
-```
+```angelscript
 g_Hooks.RegisterHook(Hooks::Player::PlayerAddToFullPack, @PlayerAddToFullPack);// register at initialization
 ```
 
-```
+```angelscript
 HookReturnCode PlayerAddToFullPack( entity_state_t@ state, int e, edict_t @ent, edict_t@ host, int hostflags, int player, uint& out uiFlags )
 {
    //if uiFlags is set to 1, the entity will not be transmitted to client represented by edict_t@ host.
@@ -386,11 +387,11 @@ HookReturnCode PlayerAddToFullPack( entity_state_t@ state, int e, edict_t @ent, 
 
 ### Hook post call of PlayerPostThink (aka PlayerPostThink_Post)
 
-```
+```angelscript
 g_Hooks.RegisterHook(Hooks::Player::PlayerPostThinkPost, @PlayerPostThinkPost);// register at initialization
 ```
 
-```
+```angelscript
 //You can override player's pev.sequence or whatever you want which is updated on every frame in PlayerPostThink
 HookReturnCode PlayerPostThinkPost(CBasePlayer@ pPlayer)
 {
@@ -406,13 +407,12 @@ pPlayer.pev.velocity will be set to impact velocity temporarily in the hook hand
 
 Any changes to pPlayer.pev.velocity will be dropped and ignored.
 
-```
+```angelscript
 g_Hooks.RegisterHook(Hooks::Player::PlayerTouchTrigger, @PlayerTouchTrigger);
 
 ```
 
-```
-
+```angelscript
 HookReturnCode PlayerTouchTrigger( CBasePlayer@ pPlayer, CBaseEntity@ pOther )
 {
     return HOOK_CONTINUE;
@@ -427,12 +427,12 @@ pPlayer.pev.velocity will be set to impact velocity temporarily in the hook hand
 
 Any changes to pPlayer.pev.velocity will be dropped and ignored.
 
-```
+```angelscript
 g_Hooks.RegisterHook(Hooks::Player::PlayerTouchPlayer, @PlayerTouchPlayer);
 
 ```
 
-```
+```angelscript
 
 HookReturnCode PlayerTouchPlayer( CBasePlayer@ pPlayer, CBasePlayer@ pOther )
 {
@@ -448,12 +448,12 @@ pPlayer.pev.velocity will be set to impact velocity temporarily in the hook hand
 
 Any changes to pPlayer.pev.velocity will be dropped and ignored.
 
-```
+```angelscript
 g_Hooks.RegisterHook(Hooks::Player::PlayerTouchImpact, @PlayerTouchImpact);
 
 ```
 
-```
+```angelscript
 
 HookReturnCode PlayerTouchImpact( CBasePlayer@ pPlayer, CBaseEntity@ pOther )
 {
@@ -463,7 +463,7 @@ HookReturnCode PlayerTouchImpact( CBasePlayer@ pPlayer, CBaseEntity@ pOther )
 
 ### Get player's view entity (e.g trigger_camera)
 
-```
+```angelscript
 //edict_t@ GetViewEntity(edict_t@ pClient)
 
 edict_t@viewent = g_EngineFuncs.GetViewEntity(pPlayer.edict());
@@ -471,7 +471,7 @@ edict_t@viewent = g_EngineFuncs.GetViewEntity(pPlayer.edict());
 
 ### Get some important information from sound file
 
-```
+```cpp
 //From FMOD.h header file.
 
 /*
@@ -567,7 +567,7 @@ typedef enum
 } FMOD_SOUND_FORMAT;
 ```
 
-```
+```angelscript
 
 //bool GetSoundInfo(const string& in szSoundName, SoundEngine_SoundInfo & out SoundInfo)
 
