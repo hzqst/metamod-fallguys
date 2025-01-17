@@ -16,9 +16,10 @@ g_EntityFuncs.SetEntitySuperPusher(self.edict(), true);
 
 ### Custom Footsteps
 
-//You have to enable custom footsteps for current map.
+You have to call `g_EngineFuncs.EnableCustomStepSound(true);` to enable custom footsteps for current map.
 
-//Custom footsteps will be automatically disabled after level changes.
+Custom footsteps will be automatically disabled after level changes or server restarts.
+
 ```
 void MapInit()
 {
