@@ -158,17 +158,17 @@ g_EntityFuncs.SetEntitySemiVisible(pEntity.edict(), 0 );
 
 ### SemiClip
 
-//Entity set as SemiClip will be noclip to specified player(s)
+//semiclip: The collision or phys-interaction (including firebullet, traceline) between EntityA and EntityB will be completely disabled.
 
-//The collision between player and this entity is completely disabled.
+//PlayerMove-only-semiclip: Only player movement will be affected. One's bullet don't go through each other.
 
 ```
 
-//pEntity is noclip to "pPlayer" and stays clipping to any other players. and his bullet / traceline / hitscan will just go through any other players.
+//pEntity is semiclip to "pPlayer" and stays clipping to any other players. their bullet / traceline will just go through each other.
 
 g_EntityFuncs.SetEntitySemiClip(pEntity.edict(), (1 << (pPlayer.entindex() - 1)) );
 
-//pEntity is noclip to "pPlayer" and stays clipping to any other players. his bullet / traceline / hitscan will not be affected.
+//pEntity is PlayerMove-only-semiclip to "pPlayer" and stays clipping to any other players. their bullet / traceline / phys-interaction will not be affected.
 
 g_EntityFuncs.SetEntityPMSemiClip(pEntity.edict(), (1 << (pPlayer.entindex() - 1)) );
 
@@ -176,11 +176,11 @@ g_EntityFuncs.SetEntityPMSemiClip(pEntity.edict(), (1 << (pPlayer.entindex() - 1
 
 ```
 
-//pEntity is noclip to "pPlayer" and "pPlayer2" and stays clipping to any other players. and his bullet / traceline / hitscan will go through "pPlayer" and "pPlayer2"
+//pEntity is semiclip to "pPlayer" and "pPlayer2". their bullet / traceline will just go through each other.
 
 g_EntityFuncs.SetEntitySemiClip(pEntity.edict(), (1 << (pPlayer.entindex() - 1)) |  (1 << (pPlayer2.entindex() - 1)) );
 
-//pEntity is noclip to "pPlayer" and "pPlayer2" and stays clipping to any other players. his bullet / traceline / hitscan will not be affected.
+//pEntity is semiclip to "pPlayer" and "pPlayer2". their bullet / traceline / phys-interaction will not be affected.
 
 g_EntityFuncs.SetEntityPMSemiClip(pEntity.edict(), (1 << (pPlayer.entindex() - 1)) |  (1 << (pPlayer2.entindex() - 1)) );
 
@@ -188,11 +188,11 @@ g_EntityFuncs.SetEntityPMSemiClip(pEntity.edict(), (1 << (pPlayer.entindex() - 1
 
 ```
 
-//Use 0 to completely deactivated SemiClip
+//Use 0 to completely deactivated semiclip
 
 g_EntityFuncs.SetEntitySemiClip(pEntity.edict(), 0 );
 
-//Use 0 to completely deactivated PlayerMove-Only-SemiClip
+//Use 0 to completely deactivated PlayerMove-only-semiclip
 
 g_EntityFuncs.SetEntityPMSemiClip(pEntity.edict(), 0 );
 
@@ -200,11 +200,11 @@ g_EntityFuncs.SetEntityPMSemiClip(pEntity.edict(), 0 );
 
 ```
 
-//Use -1 to activated SemiClip between pEntity and all 32 players on server.
+//Use -1 to activated semiclip between pEntity and all 32 players on server.
 
 g_EntityFuncs.SetEntitySemiClip(pEntity.edict(), -1 );
 
-//Use -1 to activated PlayerMove-Only-SemiClip between pEntity and all 32 players on server.
+//Use -1 to activated PlayerMove-only-semiclip between pEntity and all 32 players on server.
 
 g_EntityFuncs.SetEntityPMSemiClip(pEntity.edict(), -1 );
 
@@ -214,13 +214,29 @@ g_EntityFuncs.SetEntityPMSemiClip(pEntity.edict(), -1 );
 
 //Easier-to-use API
 
-//pEntity is noclip to "pPlayer" and stays clipping to any other players. and his bullet / traceline / hitscan will just go through any other players.
+//pEntity is semiclip to "pPlayer". their bullet / traceline / hitscan will just go through each other.
 
-g_EntityFuncs.SetEntitySemiClipToPlayer(pEntity.edict(), pPlayer.entindex() );
+g_EntityFuncs.SetEntitySemiClipToPlayer(pEntity.edict(), pPlayer.entindex() );// the second arg must be a player index.
+g_EntityFuncs.SetEntitySemiClipToEntityIndex(pEntity.edict(), pPlayer.entindex() );//same as SetEntitySemiClipToPlayer, the second arg can be non-player entity index.
+g_EntityFuncs.SetEntitySemiClipToEntity(pEntity.edict(), pPlayer.edict() );//same as SetEntitySemiClipToPlayer, the second arg can be non-player entity.
 
-//pEntity is noclip to "pPlayer" and stays clipping to any other players. his bullet / traceline / hitscan will not be affected.
+//pEntity is PlayerMove-only-semiclip to "pPlayer". their bullet / traceline / hitscan interaction will not be affected.
 
-g_EntityFuncs.UnsetEntitySemiClipToPlayer(pEntity.edict(), pPlayer.entindex() );
+g_EntityFuncs.SetEntityPMSemiClipToPlayer(pEntity.edict(), pPlayer.entindex() );// the second arg must be a player index.
+g_EntityFuncs.SetEntityPMSemiClipToEntityIndex(pEntity.edict(), pPlayer.entindex() );//same as SetEntityPMSemiClipToPlayer, the second arg can be non-player entity index.
+g_EntityFuncs.SetEntityPMSemiClipToEntity(pEntity.edict(), pPlayer.edict() );//same as SetEntityPMSemiClipToPlayer, the second arg can be non-player entity.
+
+//Deactivate semiclip between "pEntity" and "pPlayer"
+g_EntityFuncs.UnsetEntitySemiClipToEntity(pEntity.edict(), pPlayer.edict());
+
+//Deactivate PlayerMove-only-semiclip between "pEntity" and "pPlayer"
+g_EntityFuncs.UnsetEntityPMSemiClipToEntity(pEntity.edict(), pPlayer.edict());
+
+//Deactivate semiclip between "pEntity" and any other entity. (if was semiclip before).
+g_EntityFuncs.UnsetEntitySemiClipToAll(pEntity.edict());
+
+//Deactivate PlayerMove-only-semiclip between "pEntity" and any other entity. (if was semiclip before).
+g_EntityFuncs.UnsetEntityPMSemiClipToAll(pEntity.edict());
 
 ```
 
