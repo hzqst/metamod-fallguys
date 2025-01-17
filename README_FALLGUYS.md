@@ -110,6 +110,13 @@ g_EntityFuncs.SetEntityLevelOfDetail(pEntity.edict(),
 ```
 
 ```
+//pEntity 's pev.body will be changed to 0 when it's distance to player ranges from 0 to fuser1 units
+//pEntity 's pev.body will be changed to pEntity.pev.iuser1 when it's distance to player ranges from pEntity.pev.fuser1 to pEntity.pev.fuser2 units
+//pEntity 's pev.body will be changed to pEntity.pev.iuser2 when it's distance to player ranges from pEntity.pev.fuser2 to pEntity.pev.fuser3 units
+//pEntity 's pev.body will be changed to pEntity.pev.iuser3 when it's distance to player ranges from pEntity.pev.fuser3 to +inf units
+
+//pev.body is calculated at runtime for each players separately.
+
 g_EntityFuncs.SetEntityLevelOfDetail(pEntity.edict(), 
 	LOD_BODY,
 	0, 0.0, //LoD 0
@@ -117,25 +124,18 @@ g_EntityFuncs.SetEntityLevelOfDetail(pEntity.edict(),
 	pEntity.pev.iuser2, 0, pEntity.pev.fuser2, //LoD 2
 	pEntity.pev.iuser3, 0, pEntity.pev.fuser3 //LoD 3
 );
-         
-//pEntity 's body will be changed to 0 when it's distance to player ranges from 0 to fuser1 units
-//pEntity 's body will be changed to pEntity.pev.iuser1 when it's distance to player ranges from pEntity.pev.fuser1 to pEntity.pev.fuser2 units
-//pEntity 's body will be changed to pEntity.pev.iuser2 when it's distance to player ranges from pEntity.pev.fuser2 to pEntity.pev.fuser3 units
-//pEntity 's body will be changed to pEntity.pev.iuser3 when it's distance to player ranges from pEntity.pev.fuser3 to +inf units
-
-//body is calculated at runtime for each players separately.
 
 ```
 
 ###
 
-### Semi Visible
+### Semi-Visible
 
-//Entity set as Semi Visible can only be seen by specified player(s)
+Entity set as Semi-Visible will be visible only to specified player(s)
 
 ```
 
-//pEntity is visible to "pPlayer" and invisbie to any other players.
+//pEntity is visible to "pPlayer" while keep invisbie to any other players.
 
 g_EntityFuncs.SetEntitySemiVisible(pEntity.edict(), (1 << (pPlayer.entindex() - 1)) );
 
@@ -143,7 +143,7 @@ g_EntityFuncs.SetEntitySemiVisible(pEntity.edict(), (1 << (pPlayer.entindex() - 
 
 ```
 
-//pEntity is visible to "pPlayer" and "pPlayer2" and invisbie to any other players.
+//pEntity is visible to "pPlayer" and "pPlayer2" while keep invisbie to any other players.
 
 g_EntityFuncs.SetEntitySemiVisible(pEntity.edict(), (1 << (pPlayer.entindex() - 1)) |  (1 << (pPlayer2.entindex() - 1)) );
 
@@ -151,7 +151,7 @@ g_EntityFuncs.SetEntitySemiVisible(pEntity.edict(), (1 << (pPlayer.entindex() - 
 
 ```
 
-//Set second arg to 0 to turn Semi Visible off
+//Use 0 to turn Semi-Visible off, pEntity will be visible to all players.
 
 g_EntityFuncs.SetEntitySemiVisible(pEntity.edict(), 0 );
 
