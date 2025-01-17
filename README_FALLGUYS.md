@@ -86,6 +86,19 @@ const int LOD_SCALE_INTERP = 8;
 
 ```
 
+//pEntity 's pev.modelindex will be changed to g_iPlayerArrowSprite1ModelIndex when it's distance to player ranges from 0 to 300 units
+//pEntity 's pev.modelindex will be changed to g_iPlayerArrowSprite2ModelIndex when it's distance to player ranges from 300 to 700 units
+//pEntity 's pev.modelindex will be changed to g_iPlayerArrowSprite3ModelIndex when it's distance to player ranges from 700 to 1000 units
+//pEntity 's pev.modelindex will be changed to g_iPlayerArrowSprite3ModelIndex when it's distance to player ranges from 1000 to +inf units
+
+//pEntity 's pev.scale will be changed to 0.15 when it's distance to player ranges from 0 to 300 units
+//pEntity 's pev.scale will be changed to 0.15 + (0.75 - 0.15) * (distance - 300) / (700 - 300) when it's distance to player ranges from 300 to 700 units
+//pEntity 's pev.scale will be changed to 0.75 when it's distance to player ranges from 700 to 1000 units
+//pEntity 's pev.scale will be changed to 0.75 when it's distance to player ranges from 1000 to +inf units
+
+//pev.modelindex is calculated at runtime for each players separately.
+//pev.scale is calculated at runtime for each players separately.
+
 g_EntityFuncs.SetEntityLevelOfDetail(pEntity.edict(),
 	LOD_MODELINDEX | LOD_SCALE_INTERP, //modelindex LoD
 	g_iPlayerArrowSprite1ModelIndex, 0.15,      //LoD 0
@@ -93,19 +106,6 @@ g_EntityFuncs.SetEntityLevelOfDetail(pEntity.edict(),
 	g_iPlayerArrowSprite3ModelIndex, 0.75, 700, //Lod 2
 	g_iPlayerArrowSprite4ModelIndex, 0.75, 1000 //Lod 3
 );
-   
-//pEntity 's modelindex will be changed to g_iPlayerArrowSprite1ModelIndex when it's distance to player ranges from 0 to 300 units
-//pEntity 's modelindex will be changed to g_iPlayerArrowSprite2ModelIndex when it's distance to player ranges from 300 to 700 units
-//pEntity 's modelindex will be changed to g_iPlayerArrowSprite3ModelIndex when it's distance to player ranges from 700 to 1000 units
-//pEntity 's modelindex will be changed to g_iPlayerArrowSprite3ModelIndex when it's distance to player ranges from 1000 to +inf units
-
-//pEntity 's scale will be changed to 0.15 when it's distance to player ranges from 0 to 300 units
-//pEntity 's scale will be changed to 0.15 + (0.75 - 0.15) * (distance - 300) / (700 - 300) when it's distance to player ranges from 300 to 700 units
-//pEntity 's scale will be changed to 0.75 when it's distance to player ranges from 700 to 1000 units
-//pEntity 's scale will be changed to 0.75 when it's distance to player ranges from 1000 to +inf units
-
-//modelindex is calculated at runtime for each players separately.
-//scale is calculated at runtime for each players separately.
 
 ```
 
