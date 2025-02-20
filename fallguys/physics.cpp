@@ -740,8 +740,6 @@ std::shared_ptr<CPhysicVertexArray> CPhysicsManager::GenerateWorldVertexArray(mo
 		if (glpolys.empty())
 			continue;
 
-		auto poly = surf->polys;
-
 		auto brushface = &worldVertexArray->vFaceBuffer[i];
 
 		int iStartVert = iNumVerts;
