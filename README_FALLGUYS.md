@@ -6,7 +6,7 @@ Most features are provided via angelscript interfaces.
 
 ### Set Brush Entity as **Super Pusher**
 
-```
+```angelscript
 g_EntityFuncs.SetEntitySuperPusher(self.edict(), true);
 ```
 
@@ -16,10 +16,11 @@ g_EntityFuncs.SetEntitySuperPusher(self.edict(), true);
 
 ### Custom Footsteps
 
-//You have to enable custom footsteps for current map.
+You have to call `g_EngineFuncs.EnableCustomStepSound(true);` to enable custom footsteps for current map.
 
-//Custom footsteps will be automatically disabled after level changes.
-```
+Custom footsteps will be automatically disabled after level changes or server restarts.
+
+```angelscript
 void MapInit()
 {
    //...
@@ -29,7 +30,7 @@ void MapInit()
 }
 ```
 
-```
+```angelscript
 
 //Play whatever footstep sound you want here
 
@@ -72,9 +73,9 @@ HookReturnCode PlayerMovePlaySoundFX( CBasePlayer@ pPlayer, int playerindex, Vec
 
 ### Server-Side Level of Detail
 
-```
+```angelscript
 
-//Constant
+//Constants
 
 const int LOD_BODY = 1;
 const int LOD_MODELINDEX = 2;
@@ -83,7 +84,20 @@ const int LOD_SCALE_INTERP = 8;
 
 ```
 
-```
+```angelscript
+
+//pEntity 's pev.modelindex will be changed to g_iPlayerArrowSprite1ModelIndex when it's distance to player ranges from 0 to 300 units
+//pEntity 's pev.modelindex will be changed to g_iPlayerArrowSprite2ModelIndex when it's distance to player ranges from 300 to 700 units
+//pEntity 's pev.modelindex will be changed to g_iPlayerArrowSprite3ModelIndex when it's distance to player ranges from 700 to 1000 units
+//pEntity 's pev.modelindex will be changed to g_iPlayerArrowSprite3ModelIndex when it's distance to player ranges from 1000 to +inf units
+
+//pEntity 's pev.scale will be changed to 0.15 when it's distance to player ranges from 0 to 300 units
+//pEntity 's pev.scale will be changed to 0.15 + (0.75 - 0.15) * (distance - 300) / (700 - 300) when it's distance to player ranges from 300 to 700 units
+//pEntity 's pev.scale will be changed to 0.75 when it's distance to player ranges from 700 to 1000 units
+//pEntity 's pev.scale will be changed to 0.75 when it's distance to player ranges from 1000 to +inf units
+
+//pev.modelindex is calculated at runtime for each players separately.
+//pev.scale is calculated at runtime for each players separately.
 
 g_EntityFuncs.SetEntityLevelOfDetail(pEntity.edict(),
 	LOD_MODELINDEX | LOD_SCALE_INTERP, //modelindex LoD
@@ -92,23 +106,18 @@ g_EntityFuncs.SetEntityLevelOfDetail(pEntity.edict(),
 	g_iPlayerArrowSprite3ModelIndex, 0.75, 700, //Lod 2
 	g_iPlayerArrowSprite4ModelIndex, 0.75, 1000 //Lod 3
 );
-   
-//pEntity 's modelindex will be changed to g_iPlayerArrowSprite1ModelIndex when it's distance to player ranges from 0 to 300 units
-//pEntity 's modelindex will be changed to g_iPlayerArrowSprite2ModelIndex when it's distance to player ranges from 300 to 700 units
-//pEntity 's modelindex will be changed to g_iPlayerArrowSprite3ModelIndex when it's distance to player ranges from 700 to 1000 units
-//pEntity 's modelindex will be changed to g_iPlayerArrowSprite3ModelIndex when it's distance to player ranges from 1000 to +inf units
-
-//pEntity 's scale will be changed to 0.15 when it's distance to player ranges from 0 to 300 units
-//pEntity 's scale will be changed to 0.15 + (0.75 - 0.15) * (distance - 300) / (700 - 300) when it's distance to player ranges from 300 to 700 units
-//pEntity 's scale will be changed to 0.75 when it's distance to player ranges from 700 to 1000 units
-//pEntity 's scale will be changed to 0.75 when it's distance to player ranges from 1000 to +inf units
-
-//modelindex is calculated at runtime for each players separately.
-//scale is calculated at runtime for each players separately.
 
 ```
 
-```
+```angelscript
+
+//pEntity 's pev.body will be changed to 0 when it's distance to player ranges from 0 to fuser1 units
+//pEntity 's pev.body will be changed to pEntity.pev.iuser1 when it's distance to player ranges from pEntity.pev.fuser1 to pEntity.pev.fuser2 units
+//pEntity 's pev.body will be changed to pEntity.pev.iuser2 when it's distance to player ranges from pEntity.pev.fuser2 to pEntity.pev.fuser3 units
+//pEntity 's pev.body will be changed to pEntity.pev.iuser3 when it's distance to player ranges from pEntity.pev.fuser3 to +inf units
+
+//pev.body is calculated at runtime for each players separately.
+
 g_EntityFuncs.SetEntityLevelOfDetail(pEntity.edict(), 
 	LOD_BODY,
 	0, 0.0, //LoD 0
@@ -116,33 +125,26 @@ g_EntityFuncs.SetEntityLevelOfDetail(pEntity.edict(),
 	pEntity.pev.iuser2, 0, pEntity.pev.fuser2, //LoD 2
 	pEntity.pev.iuser3, 0, pEntity.pev.fuser3 //LoD 3
 );
-         
-//pEntity 's body will be changed to 0 when it's distance to player ranges from 0 to fuser1 units
-//pEntity 's body will be changed to pEntity.pev.iuser1 when it's distance to player ranges from pEntity.pev.fuser1 to pEntity.pev.fuser2 units
-//pEntity 's body will be changed to pEntity.pev.iuser2 when it's distance to player ranges from pEntity.pev.fuser2 to pEntity.pev.fuser3 units
-//pEntity 's body will be changed to pEntity.pev.iuser3 when it's distance to player ranges from pEntity.pev.fuser3 to +inf units
-
-//body is calculated at runtime for each players separately.
 
 ```
 
 ###
 
-### Semi Visible
+### Semi-Visible
 
-//Entity set as Semi Visible can only be seen by specified player(s)
+Entity set as Semi-Visible will be visible only to specified player(s)
 
-```
+```angelscript
 
-//pEntity is visible to "pPlayer" and invisbie to any other players.
+//pEntity is visible to "pPlayer" while keep invisbie to any other players.
 
 g_EntityFuncs.SetEntitySemiVisible(pEntity.edict(), (1 << (pPlayer.entindex() - 1)) );
 
 ```
 
-```
+```angelscript
 
-//pEntity is visible to "pPlayer" and "pPlayer2" and invisbie to any other players.
+//pEntity is visible to "pPlayer" and "pPlayer2" while keep invisbie to any other players.
 
 g_EntityFuncs.SetEntitySemiVisible(pEntity.edict(), (1 << (pPlayer.entindex() - 1)) |  (1 << (pPlayer2.entindex() - 1)) );
 
@@ -150,7 +152,7 @@ g_EntityFuncs.SetEntitySemiVisible(pEntity.edict(), (1 << (pPlayer.entindex() - 
 
 ```
 
-//Set second arg to 0 to turn Semi Visible off
+//Use 0 to turn Semi-Visible off, pEntity will be visible to all players.
 
 g_EntityFuncs.SetEntitySemiVisible(pEntity.edict(), 0 );
 
@@ -158,69 +160,85 @@ g_EntityFuncs.SetEntitySemiVisible(pEntity.edict(), 0 );
 
 ### SemiClip
 
-//Entity set as SemiClip will be noclip to specified player(s)
+* semiclip: The collision or phys-interaction (including firebullet, traceline) between EntityA and EntityB will be completely disabled.
 
-//The collision between player and this entity is completely disabled.
+* PlayerMove-only-semiclip: Only player movement will be affected. traceline will not be affected.
 
-```
+```angelscript
 
-//pEntity is noclip to "pPlayer" and stays clipping to any other players. and his bullet / traceline / hitscan will just go through any other players.
+//pEntity will become semiclip to "pPlayer". their traceline operation (or called hitscan) will also go through each other.
 
 g_EntityFuncs.SetEntitySemiClip(pEntity.edict(), (1 << (pPlayer.entindex() - 1)) );
 
-//pEntity is noclip to "pPlayer" and stays clipping to any other players. his bullet / traceline / hitscan will not be affected.
+//pEntity will become PlayerMove-only-semiclip to "pPlayer". their bullet / traceline / phys-interaction will not be affected.
 
 g_EntityFuncs.SetEntityPMSemiClip(pEntity.edict(), (1 << (pPlayer.entindex() - 1)) );
 
 ```
 
-```
+```angelscript
 
-//pEntity is noclip to "pPlayer" and "pPlayer2" and stays clipping to any other players. and his bullet / traceline / hitscan will go through "pPlayer" and "pPlayer2"
+//pEntity will become semiclip to "pPlayer" and "pPlayer2". their traceline operation (or called hitscan) will also go through each other.
 
 g_EntityFuncs.SetEntitySemiClip(pEntity.edict(), (1 << (pPlayer.entindex() - 1)) |  (1 << (pPlayer2.entindex() - 1)) );
 
-//pEntity is noclip to "pPlayer" and "pPlayer2" and stays clipping to any other players. his bullet / traceline / hitscan will not be affected.
+//pEntity will become semiclip to "pPlayer" and "pPlayer2". their bullet / traceline / phys-interaction will not be affected.
 
 g_EntityFuncs.SetEntityPMSemiClip(pEntity.edict(), (1 << (pPlayer.entindex() - 1)) |  (1 << (pPlayer2.entindex() - 1)) );
 
 ```
 
-```
+```angelscript
 
-//Use 0 to completely deactivated SemiClip
+//Use 0 to completely deactivated semiclip for pEntity
 
 g_EntityFuncs.SetEntitySemiClip(pEntity.edict(), 0 );
 
-//Use 0 to completely deactivated PlayerMove-Only-SemiClip
+//Use 0 to completely deactivated PlayerMove-only-semiclip for pEntity
 
 g_EntityFuncs.SetEntityPMSemiClip(pEntity.edict(), 0 );
 
 ```
 
-```
+```angelscript
 
-//Use -1 to activated SemiClip between pEntity and all 32 players on server.
+//Use -1 to activated semiclip between pEntity and all 32 players on server.
 
 g_EntityFuncs.SetEntitySemiClip(pEntity.edict(), -1 );
 
-//Use -1 to activated PlayerMove-Only-SemiClip between pEntity and all 32 players on server.
+//Use -1 to activated PlayerMove-only-semiclip between pEntity and all 32 players on server.
 
 g_EntityFuncs.SetEntityPMSemiClip(pEntity.edict(), -1 );
 
 ```
 
-```
+```angelscript
 
 //Easier-to-use API
 
-//pEntity is noclip to "pPlayer" and stays clipping to any other players. and his bullet / traceline / hitscan will just go through any other players.
+//pEntity will become semiclip to "pPlayer". their traceline operation (or called hitscan) will also go through each other.
 
-g_EntityFuncs.SetEntitySemiClipToPlayer(pEntity.edict(), pPlayer.entindex() );
+g_EntityFuncs.SetEntitySemiClipToPlayer(pEntity.edict(), pPlayer.entindex() );// the second arg must be a player index.
+g_EntityFuncs.SetEntitySemiClipToEntityIndex(pEntity.edict(), pPlayer.entindex() );//same as SetEntitySemiClipToPlayer, the second arg can be non-player entity index.
+g_EntityFuncs.SetEntitySemiClipToEntity(pEntity.edict(), pPlayer.edict() );//same as SetEntitySemiClipToPlayer, the second arg can be non-player entity.
 
-//pEntity is noclip to "pPlayer" and stays clipping to any other players. his bullet / traceline / hitscan will not be affected.
+//pEntity will become PlayerMove-only-semiclip to "pPlayer". their bullet / traceline / hitscan interaction will not be affected.
 
-g_EntityFuncs.UnsetEntitySemiClipToPlayer(pEntity.edict(), pPlayer.entindex() );
+g_EntityFuncs.SetEntityPMSemiClipToPlayer(pEntity.edict(), pPlayer.entindex() );// the second arg must be a player index.
+g_EntityFuncs.SetEntityPMSemiClipToEntityIndex(pEntity.edict(), pPlayer.entindex() );//same as SetEntityPMSemiClipToPlayer, the second arg can be non-player entity index.
+g_EntityFuncs.SetEntityPMSemiClipToEntity(pEntity.edict(), pPlayer.edict() );//same as SetEntityPMSemiClipToPlayer, the second arg can be non-player entity.
+
+//Deactivate semiclip between "pEntity" and "pPlayer"
+g_EntityFuncs.UnsetEntitySemiClipToEntity(pEntity.edict(), pPlayer.edict());
+
+//Deactivate PlayerMove-only-semiclip between "pEntity" and "pPlayer"
+g_EntityFuncs.UnsetEntityPMSemiClipToEntity(pEntity.edict(), pPlayer.edict());
+
+//Deactivate semiclip between "pEntity" and any other entity. (if was set to semiclip before).
+g_EntityFuncs.UnsetEntitySemiClipToAll(pEntity.edict());
+
+//Deactivate PlayerMove-only-semiclip between "pEntity" and any other entity. (if was semiclip before).
+g_EntityFuncs.UnsetEntityPMSemiClipToAll(pEntity.edict());
 
 ```
 
@@ -228,7 +246,7 @@ g_EntityFuncs.UnsetEntitySemiClipToPlayer(pEntity.edict(), pPlayer.entindex() );
 
 Physic objects run physic simulation (gravity, movement, collision) in Bullet Engine instead of GoldSrc hull clipping.
 
-```
+```angelscript
 
 //You have to enable physic world for current map first before using any feature from Bullet Engine.
 
@@ -246,7 +264,7 @@ g_EngineFuncs.EnablePhysicWorld(true);
 
 The following code creates a physic box with size of (32 x 32 x 32) units
 
-```
+```angelscript
 
 //Constant
 
@@ -302,9 +320,9 @@ g_EntityFuncs.CreatePhysicObject(pEntity.edict(), shapeParams, objectParams);
 
 ### Entity follow (similar to trigger_setorigin but save entity count and reduce potential latency)
 
-```
+```angelscript
 
-//Constant
+//Constants
 
 const int FollowEnt_CopyOriginX = 1;
 const int FollowEnt_CopyOriginY = 2;
@@ -322,7 +340,7 @@ const int FollowEnt_ApplyAngularVelocity = 0x400;
 
 ```
 
-```
+```angelscript
 
 Vector vecOriginOffset = Vector(0, 0, 0);
 Vector vecAnglesOffset = Vector(0, 0, 0);
@@ -336,7 +354,7 @@ g_EntityFuncs.SetEntityFollow(pEntity.edict(), pCopyFromEntity.edict(), flags, v
 
 ### Detect who is currently running player move code
 
-```
+```angelscript
 void Touch( CBaseEntity@ pOther )
 {
    int playerIndex = g_EngineFuncs.GetRunPlayerMovePlayerIndex();
@@ -353,13 +371,13 @@ void Touch( CBaseEntity@ pOther )
 
 ### Hook AddToFullPack
 
-//Do not use, this dramatically hurts your performance.
+//Warning: this dramatically hurts your performance.
 
-```
+```angelscript
 g_Hooks.RegisterHook(Hooks::Player::PlayerAddToFullPack, @PlayerAddToFullPack);// register at initialization
 ```
 
-```
+```angelscript
 HookReturnCode PlayerAddToFullPack( entity_state_t@ state, int e, edict_t @ent, edict_t@ host, int hostflags, int player, uint& out uiFlags )
 {
    //if uiFlags is set to 1, the entity will not be transmitted to client represented by edict_t@ host.
@@ -369,11 +387,11 @@ HookReturnCode PlayerAddToFullPack( entity_state_t@ state, int e, edict_t @ent, 
 
 ### Hook post call of PlayerPostThink (aka PlayerPostThink_Post)
 
-```
+```angelscript
 g_Hooks.RegisterHook(Hooks::Player::PlayerPostThinkPost, @PlayerPostThinkPost);// register at initialization
 ```
 
-```
+```angelscript
 //You can override player's pev.sequence or whatever you want which is updated on every frame in PlayerPostThink
 HookReturnCode PlayerPostThinkPost(CBasePlayer@ pPlayer)
 {
@@ -389,13 +407,12 @@ pPlayer.pev.velocity will be set to impact velocity temporarily in the hook hand
 
 Any changes to pPlayer.pev.velocity will be dropped and ignored.
 
-```
+```angelscript
 g_Hooks.RegisterHook(Hooks::Player::PlayerTouchTrigger, @PlayerTouchTrigger);
 
 ```
 
-```
-
+```angelscript
 HookReturnCode PlayerTouchTrigger( CBasePlayer@ pPlayer, CBaseEntity@ pOther )
 {
     return HOOK_CONTINUE;
@@ -410,12 +427,12 @@ pPlayer.pev.velocity will be set to impact velocity temporarily in the hook hand
 
 Any changes to pPlayer.pev.velocity will be dropped and ignored.
 
-```
+```angelscript
 g_Hooks.RegisterHook(Hooks::Player::PlayerTouchPlayer, @PlayerTouchPlayer);
 
 ```
 
-```
+```angelscript
 
 HookReturnCode PlayerTouchPlayer( CBasePlayer@ pPlayer, CBasePlayer@ pOther )
 {
@@ -431,12 +448,12 @@ pPlayer.pev.velocity will be set to impact velocity temporarily in the hook hand
 
 Any changes to pPlayer.pev.velocity will be dropped and ignored.
 
-```
+```angelscript
 g_Hooks.RegisterHook(Hooks::Player::PlayerTouchImpact, @PlayerTouchImpact);
 
 ```
 
-```
+```angelscript
 
 HookReturnCode PlayerTouchImpact( CBasePlayer@ pPlayer, CBaseEntity@ pOther )
 {
@@ -446,7 +463,7 @@ HookReturnCode PlayerTouchImpact( CBasePlayer@ pPlayer, CBaseEntity@ pOther )
 
 ### Get player's view entity (e.g trigger_camera)
 
-```
+```angelscript
 //edict_t@ GetViewEntity(edict_t@ pClient)
 
 edict_t@viewent = g_EngineFuncs.GetViewEntity(pPlayer.edict());
@@ -454,7 +471,7 @@ edict_t@viewent = g_EngineFuncs.GetViewEntity(pPlayer.edict());
 
 ### Get some important information from sound file
 
-```
+```cpp
 //From FMOD.h header file.
 
 /*
@@ -550,7 +567,7 @@ typedef enum
 } FMOD_SOUND_FORMAT;
 ```
 
-```
+```angelscript
 
 //bool GetSoundInfo(const string& in szSoundName, SoundEngine_SoundInfo & out SoundInfo)
 
