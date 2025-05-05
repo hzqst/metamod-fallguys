@@ -4429,7 +4429,7 @@ public:
 		btVector3 relative_center_of_buoyancy = center_of_buoyancy - rigidbody->getCenterOfMassPosition();
 
 		// If we're not submerged, there's no point in doing the rest of the calculations
-		if (submerged_volume > 0.0f)
+		if (submerged_volume > 0.0f && total_volume > 0.0f)
 		{
 			physobj->SetWaterVolume(submerged_volume);
 
@@ -4467,8 +4467,8 @@ public:
 			btVector3 drag_force = (0.5f * density_ratio * GetWaterLinearDrag() * area * volume_ratio) * relative_center_of_buoyancy_velocity * relative_center_of_buoyancy_velocity.length();
 			btVector3 angular_drag = (-1.0f) * GetWaterAngularDrag() * rigidbody->getMass() * volume_ratio * area * angular_velocity;//* rigidbody->getGravity()
 
-			rigidbody->applyCentralForce(drag_force);
-			rigidbody->applyTorque(angular_drag);
+			//rigidbody->applyCentralForce(drag_force);
+			//rigidbody->applyTorque(angular_drag);
 		}
 	}
 
