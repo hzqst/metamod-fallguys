@@ -1,5 +1,7 @@
 @echo off
 
+setlocal
+
 :: Check if SolutionDir is already set and non-empty
 if not defined SolutionDir (
     :: Only set SolutionDir if it's not already set
@@ -26,3 +28,5 @@ if exist "%InstallDir%\Common7\Tools\vsdevcmd.bat" (
     MSBuild.exe metamod.sln "/target:ascurl" /p:Configuration="Release" /p:Platform="Win32"
     MSBuild.exe metamod.sln "/target:fallguys" /p:Configuration="Release" /p:Platform="Win32"
 )
+
+endlocal
