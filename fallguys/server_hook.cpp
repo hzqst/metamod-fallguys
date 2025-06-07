@@ -199,7 +199,7 @@ bool SC_SERVER_DECL CASEntityFuncs__UnsetEntitySemiClipToPlayer(void* pthis, SC_
 	if (!(entindex >= 1 && entindex <= gpGlobals->maxClients))
 		return false;
 
-	return gPhysicsManager.SetEntitySemiClipToEntityIndex(ent, entindex);
+	return gPhysicsManager.UnsetEntitySemiClipToEntityIndex(ent, entindex);
 }
 
 bool SC_SERVER_DECL CASEntityFuncs__UnsetEntityPMSemiClipToPlayer(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int entindex)
@@ -207,7 +207,7 @@ bool SC_SERVER_DECL CASEntityFuncs__UnsetEntityPMSemiClipToPlayer(void* pthis, S
 	if (!(entindex >= 1 && entindex <= gpGlobals->maxClients))
 		return false;
 
-	return gPhysicsManager.SetEntityPMSemiClipToEntityIndex(ent, entindex);
+	return gPhysicsManager.UnsetEntityPMSemiClipToEntityIndex(ent, entindex);
 }
 
 bool SC_SERVER_DECL CASEntityFuncs__SetEntitySemiClipToEntityIndex(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, int entindex)
