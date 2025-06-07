@@ -1443,7 +1443,7 @@ public:
 			return ehandle.Get() == targetEntity;
 		});
 
-		if (itor == m_semiclip_to_entities.end())
+		if (itor != m_semiclip_to_entities.end())
 		{
 			m_semiclip_to_entities.erase(itor);
 		}
@@ -1455,7 +1455,7 @@ public:
 			return ehandle.Get() == targetEntity;
 			});
 
-		if (itor == m_pm_semiclip_to_entities.end())
+		if (itor != m_pm_semiclip_to_entities.end())
 		{
 			m_pm_semiclip_to_entities.erase(itor);
 		}

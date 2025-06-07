@@ -27,6 +27,8 @@ public:
 			m_pent = pEnt;
 			if (m_pent)
 				m_serialnumber = m_pent->serialnumber;
+			else
+				m_serialnumber = 0;
 		}
 		else
 		{
