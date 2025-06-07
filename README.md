@@ -135,7 +135,7 @@ The edited `liblist.gam` should be something like this ![](/img/1.png)
 
 2. Run `build-win32-all.bat`
 
-3. Be patient, `metamod.dll`, `asext.dll`, `ascurl.dll`, `asqcvar.dll` and `fallguys.dll` will be generated at `build/addons/metamod/dlls` if no error(s) occours.
+3. `metamod.dll`, `asext.dll`, `ascurl.dll`, `asqcvar.dll` and `fallguys.dll` will be generated under `build/addons/metamod/dlls` if no error(s) occours.
 
 # Build Requirements (Linux)
 
@@ -151,4 +151,4 @@ The edited `liblist.gam` should be something like this ![](/img/1.png)
 
 2. `sudo chmod +777 *.sh` to make all .sh executable, then `./build-all-linux.sh`
 
-3. Be patient, `metamod.so`, `asext.so` and `fallguys.so` will be generated at `build/addons/metamod/dlls` if no error(s) occours.
+3. `metamod.so`, `asext.so`, `ascurl.so`, `asqcvar.so` and `fallguys.so` will be generated under `build/addons/metamod/dlls` if no error(s) occours.
