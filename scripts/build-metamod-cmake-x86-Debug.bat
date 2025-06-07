@@ -17,4 +17,6 @@ cmake -G "Visual Studio 17 2022" -B "%SolutionDir%build-cmake\x86\Debug" -A Win3
 
 cmake --build "%SolutionDir%build-cmake\x86\Debug" --config Debug --target install
 
+copy "$SolutionDir/install/x86/Debug/bin/*.dll" "$SolutionDir/build/addons/metamod/dlls/"
+
 endlocal 

@@ -25,7 +25,7 @@ jobs:
         run: |
           cd scripts
           sudo chmod +777 *.sh
-          ./build-all-linux.sh
+          ./build-all-opt.linux_i386.sh
           
       - name: Remove placeholder
         working-directory: ${{env.GITHUB_WORKSPACE}}

@@ -17,4 +17,6 @@ cmake -G "Visual Studio 17 2022" -B "%SolutionDir%build-cmake\x86\Release" -A Wi
 
 cmake --build "%SolutionDir%build-cmake\x86\Release" --config Release --target install
 
+copy "$SolutionDir/install/x86/Release/bin/*.dll" "$SolutionDir/build/addons/metamod/dlls/"
+
 endlocal 

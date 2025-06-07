@@ -30,7 +30,7 @@ jobs:
         working-directory: ${{env.GITHUB_WORKSPACE}}
         run: |
           cd scripts
-          build-all-win32.bat
+          build-all-x86-Release.bat
         shell: cmd
 
       - name: Remove placeholder
