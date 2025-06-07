@@ -133,7 +133,7 @@ The edited `liblist.gam` should be something like this ![](/img/1.png)
 
 1. `git clone --recursive https://github.com/hzqst/metamod-fallguys`, then `cd metamod-fallguys/scripts/`
 
-2. Run `build-win32-all.bat`
+2. Run `build-all-x86-Release.bat`
 
 3. `metamod.dll`, `asext.dll`, `ascurl.dll`, `asqcvar.dll` and `fallguys.dll` will be generated under `build/addons/metamod/dlls` if no error(s) occours.
 
@@ -147,8 +147,10 @@ The edited `liblist.gam` should be something like this ![](/img/1.png)
 
 # Build Instruction (Linux)
 
-1. `git clone --recursive https://github.com/hzqst/metamod-fallguys`, then `cd metamod-fallguys/scripts/`
+1. Run `git clone --recursive https://github.com/hzqst/metamod-fallguys`, then `cd metamod-fallguys/scripts/`
 
-2. `sudo chmod +777 *.sh` to make all .sh executable, then `./build-all-linux.sh`
+2. Run `sudo chmod +777 *.sh`
 
-3. `metamod.so`, `asext.so`, `ascurl.so`, `asqcvar.so` and `fallguys.so` will be generated under `build/addons/metamod/dlls` if no error(s) occours.
+3. Run `./build-all-opt.linux_i386.sh`
+
+4. `metamod.so`, `asext.so`, `ascurl.so`, `asqcvar.so` and `fallguys.so` will be generated under `build/addons/metamod/dlls` if no error(s) occours.
