@@ -5,15 +5,21 @@ project(metamod-fallguys)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+option(METAMOD_64BIT "Compile as 64bit" OFF)
+
+if(METAMOD_64BIT)
+    add_definitions(-DMETAMOD_64BIT)
+endif()
+
 # 设置平台名称
 if(WIN32)
-    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    if(METAMOD_64BIT)
         set(PLATFORM_TARGET "x64")
     else()
         set(PLATFORM_TARGET "x86")
     endif()
 else()
-    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    if(METAMOD_64BIT)
         if(CMAKE_BUILD_TYPE STREQUAL "Debug")
             set(PLATFORM_TARGET "dbg.linux_amd64")
             set(OBJDIR_LINUX "dbg.linux_amd64")
@@ -52,6 +58,10 @@ include_directories(
 # 平台特定设置
 if(WIN32)
     add_definitions(-DWIN32 -D_WINDOWS -D_USRDLL -D_CRT_SECURE_NO_WARNINGS)
+
+    if(METAMOD_64BIT)
+        add_definitions(-D_WIN64)
+    endif()
     
     # Windows 下的编译选项 - 支持多配置生成器
     # 使用生成器表达式来设置运行时库
@@ -102,7 +112,8 @@ else()
     # Linux 下的第三方库路径
     set(CAPSTONE_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/thirdparty/install/capstone/${OBJDIR_LINUX}/include)
     set(CAPSTONE_LIBRARIES ${CMAKE_SOURCE_DIR}/thirdparty/install/capstone/${OBJDIR_LINUX}/lib/libcapstone.a)
-    
+    message("${CAPSTONE_INCLUDE_DIR}")
+
     set(BULLET3_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/thirdparty/install/bullet3/${OBJDIR_LINUX}/include/bullet)
     set(BULLET3_LIBRARIES 
         ${CMAKE_SOURCE_DIR}/thirdparty/install/bullet3/${OBJDIR_LINUX}/lib/libBullet3Dynamics.a
