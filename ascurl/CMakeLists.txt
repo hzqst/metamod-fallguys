@@ -1,17 +1,21 @@
 # ascurl 项目
 project(ascurl)
 
-# 定义源文件
+# 定义基础源文件
 set(ASCURL_SOURCES
     ascurl.cpp
     dllapi.cpp
-    dllmain.cpp
     engine_api.cpp
     engine_hook.cpp
     h_export.cpp
     meta_api.cpp
     server_hook.cpp
 )
+
+# Windows 特定源文件
+if(WIN32)
+    list(APPEND ASCURL_SOURCES dllmain.cpp)
+endif()
 
 # 添加包含目录
 include_directories(

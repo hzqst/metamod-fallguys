@@ -1,15 +1,19 @@
 # asext 项目
 project(asext)
 
-# 定义源文件
+# 定义基础源文件
 set(ASEXT_SOURCES
     dllapi.cpp
-    dllmain.cpp
     engine_api.cpp
     h_export.cpp
     meta_api.cpp
     server_hook.cpp
 )
+
+# Windows 特定源文件
+if(WIN32)
+    list(APPEND ASEXT_SOURCES dllmain.cpp)
+endif()
 
 # 添加包含目录
 include_directories(

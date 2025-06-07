@@ -1,10 +1,9 @@
 # fallguys 项目
 project(fallguys)
 
-# 定义源文件
+# 定义基础源文件
 set(FALLGUYS_SOURCES
     dllapi.cpp
-    dllmain.cpp
     engine_api.cpp
     engine_hook.cpp
     fallguys.cpp
@@ -14,6 +13,11 @@ set(FALLGUYS_SOURCES
     server_hook.cpp
     soundengine.cpp
 )
+
+# Windows 特定源文件
+if(WIN32)
+    list(APPEND FALLGUYS_SOURCES dllmain.cpp)
+endif()
 
 # 添加包含目录
 include_directories(

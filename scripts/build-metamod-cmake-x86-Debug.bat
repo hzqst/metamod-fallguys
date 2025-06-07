@@ -13,7 +13,7 @@ if not "%SolutionDir:~-1%"=="\" SET "SolutionDir=%SolutionDir%\"
 
 cd /d "%SolutionDir%"
 
-cmake -G "Visual Studio 17 2022" -B "%SolutionDir%build-cmake\x86\Debug" -A Win32 -DCMAKE_INSTALL_PREFIX="%SolutionDir%install\x86\Debug" -S %SolutionDir%
+cmake -G "Visual Studio 17 2022" -B "%SolutionDir%build-cmake\x86\Debug" -A Win32 -DCMAKE_INSTALL_PREFIX="%SolutionDir%install\x86\Debug" -DCMAKE_BUILD_TYPE=Debug -S %SolutionDir%
 
 cmake --build "%SolutionDir%build-cmake\x86\Debug" --config Debug --target install
 

@@ -96,11 +96,4 @@ if(UNIX)
         dl
         m
     )
-    
-    # 设置链接器脚本
-    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/i386pe.merge")
-        set_target_properties(metamod PROPERTIES
-            LINK_FLAGS "-Wl,--script,${CMAKE_CURRENT_SOURCE_DIR}/i386pe.merge"
-        )
-    endif()
 endif() 
