@@ -6,4 +6,4 @@ cmake --build "$SolutionDir/build-cmake/dbg.linux_i386" --target install
 
 mkdir -p "$SolutionDir/build/addons/metamod/dlls"
 
-cp "$SolutionDir/install/dbg.linux_i386/bin/*.so" "$SolutionDir/build/addons/metamod/dlls/"
+cp "$SolutionDir/install/dbg.linux_i386/lib/*.so" "$SolutionDir/build/addons/metamod/dlls/"

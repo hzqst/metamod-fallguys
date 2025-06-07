@@ -3,7 +3,7 @@ MODNAME = metamod
 #__METAMOD_BUILD__ for our special eiface.h
 EXTRA_CFLAGS += -D__METAMOD_BUILD__ 
 EXTRA_CFLAGS += -DPLATFORM_POSIX
-EXTRA_LINK2 += -ldl
+EXTRA_LINK2 += -ldl -static-libgcc -static-libstdc++
 #-DMETA_PERFMON
 
 SRCFILES = api_hook.cpp api_info.cpp commands_meta.cpp conf_meta.cpp \

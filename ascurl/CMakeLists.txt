@@ -44,4 +44,8 @@ if(UNIX)
         dl
         m
     )
+    # 静态链接 libgcc 和 libstdc++ 以提高兼容性
+    set_target_properties(metamod PROPERTIES
+        LINK_FLAGS "-static-libgcc -static-libstdc++"
+    )
 endif() 
