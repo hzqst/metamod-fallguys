@@ -305,18 +305,9 @@ inline const char * DLLINTERNAL str_os_error(void) {
 
 #ifdef linux
 
-int __xstat(int ver, const char * path, struct stat * stat_buf);
+int xxstat(char const* const _FileName, struct stat* const _Stat);
 
 #endif
 
-__inline int xxstat(char const* const _FileName, struct stat* const _Stat)
-{
-#ifdef linux
-	return __xstat(3, _FileName, _Stat);
-#elif defined(_WIN32)
-	return stat(_FileName, _Stat);
-#endif
-}
-	
 
 #endif /* OSDEP_H */

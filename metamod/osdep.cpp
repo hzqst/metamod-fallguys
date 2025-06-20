@@ -397,3 +397,15 @@ mBOOL DLLINTERNAL os_safe_call(REG_CMD_FN pfn) {
 	return(mTRUE);
 }
 
+#ifdef linux
+extern "C" int __xstat(int ver, const char * path, struct stat * stat_buf);
+#endif
+
+int xxstat(char const* const _FileName, struct stat* const _Stat)
+{
+#ifdef linux
+	return __xstat(3, _FileName, _Stat);
+#elif defined(_WIN32)
+	return stat(_FileName, _Stat);
+#endif
+}
