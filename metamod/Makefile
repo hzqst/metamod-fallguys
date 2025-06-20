@@ -252,7 +252,7 @@ $(STLOBJ): CFLAGS += -Wno-error
 
 # linux .so compile commands
 DO_CC_LINUX=$(CC) $(CFLAGS) -fPIC $(INCLUDEDIRS) -o $@ -c $< $(FILTER)
-LINK_LINUX=$(CC) $(CFLAGS) -o $@ -shared $(EXTRA_LINK) $(OBJ_LINUX) -lm $(EXTRA_LINK2)
+LINK_LINUX=$(CC) $(CFLAGS) -o $@ -shared -static-libgcc -static-libstdc++ $(EXTRA_LINK) $(OBJ_LINUX) -lm $(EXTRA_LINK2)
 
 # sort by date
 #SRCFILES := $(shell ls -t $(SRCFILES))
