@@ -1,0 +1,49 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 9eaf8e3..c3c447b 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -8,7 +8,7 @@ set(CMAKE_VERBOSE_MAKEFILE OFF)
+ 
+ # get list of source files
+ file(GLOB_RECURSE procmap_src relative ${CMAKE_CURRENT_SOURCE_DIR} "src/*.cpp" "src/*c")
+-add_library(procmap SHARED ${procmap_src})
++add_library(procmap STATIC ${procmap_src})
+ 
+ set_property(TARGET procmap PROPERTY POSITION_INDEPENDENT_CODE on)
+ 
+diff --git a/src/procmap/MemorySegment.cpp b/src/procmap/MemorySegment.cpp
+index 29b269c..60cbf9a 100644
+--- a/src/procmap/MemorySegment.cpp
++++ b/src/procmap/MemorySegment.cpp
+@@ -1,19 +1,25 @@
+ #include "procmap/MemorySegment.hpp"
+ #include "procmap/Logger.hpp"
++#include <sys/sysmacros.h>
+ 
+ namespace procmap {
+ 
+ MemorySegment::MemorySegment(char *line) {
+   int name_start = 0, name_end = 0;
+-  unsigned long addr_start, addr_end;
+-  char perms_str[8];
+-  //printf("line: %s", line);
++  void * addr_start = nullptr;
++  void * addr_end = nullptr;
++  char perms_str[8] = {0};
+ 
+-  // parse string
+-  DIEIF(sscanf(line, "%lx-%lx %7s %lx %u:%u %lu %n%*[^\n]%n",
++  //printf("line: %s\n", line);
++
++int parsed = sscanf(line, "%p-%p %7s %lx %x:%x %lu %n%*[^\n]%n",
+                      &addr_start, &addr_end, perms_str, &_offset,
+                      &_deviceMajor, &_deviceMinor, &_inode,
+-                     &name_start, &name_end) < 7,
++                     &name_start, &name_end);
++
++   //printf("parsed: %d\n", parsed);
++  // parse string
++  DIEIF(parsed < 7,
+         "FAILED TO PARSE");
+ 
+   // convert addresses

@@ -2,7 +2,7 @@
 
 #include <meta_api.h>		// of course
 
-#include <curl.h>		// of course
+#include <curl/curl.h>		// of course
 
 #undef read
 #undef write
