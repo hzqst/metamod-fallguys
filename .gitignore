@@ -9,6 +9,9 @@ build/addons/metamod/dlls/*
 thirdparty/build/*
 thirdparty/install/*
 
+!build/addons/metamod/plugins.ini
+!build/addons/metamod/dlls/.gitkeep
+
 ### xmake ###
 # Xmake cache
 .xmake/

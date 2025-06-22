@@ -60,3 +60,7 @@ target("metamod")
     if is_plat("linux") then
         set_runtimes("stdc++_static")
     end
+
+    after_install(function (target)
+        os.cp(path.join(os.projectdir(), "build/addons/metamod/plugins.ini"), target:installdir())
+    end)
