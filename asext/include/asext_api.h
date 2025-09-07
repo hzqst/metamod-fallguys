@@ -330,7 +330,7 @@ extern fnASEXT_CScriptAny_Release ASEXT_CScriptAny_Release;
 
 extern fnASEXT_CScriptArray_Release ASEXT_CScriptArray_Release;
 
-typedef void*(*fnASEXT_GetCurrentContext);
+typedef void*(*fnASEXT_GetCurrentContext)();
 extern fnASEXT_GetCurrentContext ASEXT_GetCurrentContext;
 
 #ifdef _WIN32
