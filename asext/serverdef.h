@@ -289,4 +289,7 @@ PRIVATE_FUNCTION_EXTERN(CASBLOB_ReadData);
 typedef bool (SC_SERVER_DECL *fnCASBLOB_WriteData)(CASBLOB *pthis, SC_SERVER_DUMMYARG  void *outbuf, size_t read_bytes);
 PRIVATE_FUNCTION_EXTERN(CASBLOB_WriteData);
 
+typedef void* (*fnasGetActiveContext)();
+PRIVATE_FUNCTION_EXTERN(asGetActiveContext);
+
 extern CASServerManager **g_pServerManager;

@@ -330,6 +330,9 @@ extern fnASEXT_CScriptAny_Release ASEXT_CScriptAny_Release;
 
 extern fnASEXT_CScriptArray_Release ASEXT_CScriptArray_Release;
 
+typedef void*(*fnASEXT_GetCurrentContext)();
+extern fnASEXT_GetCurrentContext ASEXT_GetCurrentContext;
+
 #ifdef _WIN32
 
 #define SC_SERVER_DECL __fastcall
@@ -473,6 +476,7 @@ IMPORT_FUNCTION_DLSYM(asext, ASEXT_CreateCASFunction);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CASRefCountedBaseClass_InternalRelease);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptAny_Release);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptArray_Release);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_GetCurrentContext);\
 
 
 #define IMPORT_ASEXT_API_DEFINE() IMPORT_FUNCTION_DEFINE(ASEXT_RegisterDocInitCallback);\
@@ -496,6 +500,7 @@ IMPORT_FUNCTION_DEFINE(ASEXT_CreateCASFunction);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CASRefCountedBaseClass_InternalRelease);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CScriptAny_Release);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CScriptArray_Release);\
+IMPORT_FUNCTION_DEFINE(ASEXT_GetCurrentContext);\
 IMPORT_FUNCTION_POINTER_DEFINE(ASEXT_CallHook);\
 IMPORT_FUNCTION_POINTER_DEFINE(ASEXT_CallCASBaseCallable);\
 

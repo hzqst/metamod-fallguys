@@ -30,6 +30,7 @@ PRIVATE_FUNCTION_DEFINE(CScriptAny_Release);
 PRIVATE_FUNCTION_DEFINE(CScriptArray_Release);
 PRIVATE_FUNCTION_DEFINE(CString_Assign);
 PRIVATE_FUNCTION_DEFINE(CString_dtor);
+PRIVATE_FUNCTION_DEFINE(asGetActiveContext);
 
 CASServerManager **g_pServerManager = NULL;
 
@@ -231,4 +232,9 @@ C_DLLEXPORT void ASEXT_CScriptAny_Release(void *anywhat)
 C_DLLEXPORT void ASEXT_CScriptArray_Release(void* anywhat)
 {
 	g_pfn_CScriptArray_Release(anywhat);
+}
+
+C_DLLEXPORT void* ASEXT_GetCurrentContext()
+{
+	return g_pfn_asGetActiveContext();
 }

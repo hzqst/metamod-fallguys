@@ -161,6 +161,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	FILL_FROM_SIGNATURE(server, CString_Assign);
 	FILL_FROM_SIGNATURE(server, CString_dtor);
 
+	FILL_FROM_SIGNATURE(server, asGetActiveContext);
+
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectType, -1);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectProperty, -7);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterGlobalProperty, -15);
@@ -195,6 +197,9 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 		FILL_FROM_SIGNATURE(server, CString_dtor);
 		LOG_MESSAGE(PLID, "CString_dtor found at %p", g_pfn_CString_dtor);
+
+		FILL_FROM_SIGNATURE(server, asGetActiveContext);
+		LOG_MESSAGE(PLID, "asGetActiveContext found at %p", asGetActiveContext);
 
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectType, -1);
 		LOG_MESSAGE(PLID, "CASDocumentation_RegisterObjectType found at %p", g_pfn_CASDocumentation_RegisterObjectType);
