@@ -2,7 +2,7 @@
 
 You can register your own hooks or methods in Sven Co-op AngelScript engine.
 
-```
+```cpp
 // Include this header file : "metamod-fallguys\asext\include\asext_api.h"
 #include "asext_api.h"
 
@@ -10,7 +10,7 @@ You can register your own hooks or methods in Sven Co-op AngelScript engine.
 IMPORT_ASEXT_API_DEFINE();
 ```
 
-```
+```cpp
 // Add the following code in meta_api.cpp->Meta_Attach
 
 	void *asextHandle = NULL;
@@ -32,7 +32,7 @@ IMPORT_ASEXT_API_DEFINE();
 
 ## Register your own methods in AngelScript engine
 
-```
+```cpp
 int SC_SERVER_DECL CASEngineFuncs__TestFunc(void* pthis SC_SERVER_DUMMYARG_NOCOMMA)
 {
 	return 114514;
@@ -52,13 +52,13 @@ int SC_SERVER_DECL CASEngineFuncs__TestFunc(void* pthis SC_SERVER_DUMMYARG_NOCOM
 
 Now call g_EngineFuncs.TestFunc from angelscript, you will get test = 114514 if the registeration works fine
 
-```
+```angelscript
 int test = g_EngineFuncs.TestFunc();
 ```
 
 ## Register your own hooks in AngelScript engine
 
-```
+```cpp
 
 // Define a global var
 
@@ -66,7 +66,7 @@ void *g_PlayerPostThinkPostHook = NULL;
 
 ```
 
-```
+```cpp
 
 //Must be registered before AS initialization, Meta_Attach is okay
 
@@ -74,9 +74,10 @@ g_PlayerPostThinkPostHook = ASEXT_RegisterHook("Post call of gEntityInterface.pf
 
 ```
 
-```
+```cpp
 
 //Add to where you would like to call AngelScript hooks
+
 void NewPlayerPostThink_Post(edict_t *pEntity)
 {
 	if(ASEXT_CallHook)//The second arg must be zero, the third, 4th, 5th, 6th... args are the real args pass to AngelScript VM.
@@ -88,11 +89,26 @@ void NewPlayerPostThink_Post(edict_t *pEntity)
 
 
 //Now you can register hook from AngelScript map script or plugin :
-```
+
+```angelscript
 
 void MapInit()
 {
     g_Hooks.RegisterHook(Hooks::Player::PlayerPostThinkPost, @PlayerPostThinkPost);
 }
 
+```
+
+## Expose yourself as a macro to AngelScript module
+
+```cpp
+
+void RegisterAngelScriptMethods(void)
+{
+	ASEXT_RegisterScriptBuilderDefineCallback([](CScriptBuilder *pScriptBuilder) {
+
+		ASEXT_CScriptBuilder_DefineWord(pScriptBuilder, "METAMOD_PLUGIN_FALLGUYS");
+
+	});
+}
 ```
