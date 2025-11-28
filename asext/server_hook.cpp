@@ -257,7 +257,7 @@ C_DLLEXPORT void* ASEXT_GetCurrentContext()
 	return g_pfn_asGetActiveContext();
 }
 
-C_DLLEXPORT void ASEXT_ScriptBuilder_DefineWord(CScriptBuilder* pthis, const char* word)
+C_DLLEXPORT void ASEXT_CScriptBuilder_DefineWord(CScriptBuilder* pthis, const char* word)
 {
 	SC_SERVER_DUMMYVAR;
 
@@ -269,7 +269,7 @@ C_DLLEXPORT void ASEXT_ScriptBuilder_DefineWord(CScriptBuilder* pthis, const cha
 
 void SC_SERVER_DECL NewCScriptBuilder_DefineWord(CScriptBuilder* pthis, SC_SERVER_DUMMYARG const char* word)
 {
-	ASEXT_ScriptBuilder_DefineWord(pthis, word);
+	ASEXT_CScriptBuilder_DefineWord(pthis, word);
 
 	if (!strcmp(word, "SERVER"))
 	{

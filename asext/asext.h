@@ -116,4 +116,4 @@ C_DLLEXPORT void* ASEXT_GetCurrentContext();
 /*
 	Can only be called in ScriptBuilder_DefineCallback
 */
-C_DLLEXPORT void ASEXT_ScriptBuilder_DefineWord(CScriptBuilder* pthis, const char* word);
+C_DLLEXPORT void ASEXT_CScriptBuilder_DefineWord(CScriptBuilder* pthis, const char* word);
