@@ -396,6 +396,12 @@ void UninstallServerHooks()
 
 void RegisterAngelScriptMethods(void)
 {
+	ASEXT_RegisterScriptBuilderDefineCallback([](CScriptBuilder *pScriptBuilder) {
+
+		ASEXT_CScriptBuilder_DefineWord(pScriptBuilder, "METAMOD_PLUGIN_FALLGUYS");
+
+	});
+
 	ASEXT_RegisterDocInitCallback([](CASDocumentation *pASDoc) {
 
 		/* SoundEngine_SoundInfo */

@@ -31,6 +31,7 @@ PRIVATE_FUNCTION_DEFINE(CScriptArray_Release);
 PRIVATE_FUNCTION_DEFINE(CString_Assign);
 PRIVATE_FUNCTION_DEFINE(CString_dtor);
 PRIVATE_FUNCTION_DEFINE(asGetActiveContext);
+PRIVATE_FUNCTION_DEFINE(CScriptBuilder_DefineWord);
 
 CASServerManager **g_pServerManager = NULL;
 
@@ -43,6 +44,8 @@ std::vector<fnASDocInitCallback> g_ASDocInitCallbacks;
 
 bool g_ASDirInit = false;
 std::vector<fnASDirInitCallback> g_ASDirInitCallbacks;
+
+std::vector<fnScriptBuilderDefineCallback> g_ScriptBuilderDefineCallbacks;
 
 std::vector<CASHook *> g_ASHooks;
 
@@ -178,6 +181,21 @@ C_DLLEXPORT bool ASEXT_RegisterDirInitCallback(fnASDirInitCallback callback)
 	return true;
 }
 
+C_DLLEXPORT bool ASEXT_RegisterScriptBuilderDefineCallback(fnScriptBuilderDefineCallback callback)
+{
+	g_ScriptBuilderDefineCallbacks.emplace_back(callback);
+
+	return true;
+}
+
+C_DLLEXPORT bool ASEXT_UnregisterScriptBuilderDefineCallback(fnScriptBuilderDefineCallback callback)
+{
+	auto it = std::remove_if(g_ScriptBuilderDefineCallbacks.begin(), g_ScriptBuilderDefineCallbacks.end(), [callback](fnScriptBuilderDefineCallback cb) {
+		return cb == callback;
+	});
+	return it == g_ScriptBuilderDefineCallbacks.end() ? false : true;
+}
+
 C_DLLEXPORT void *ASEXT_RegisterHook(const char *docs, int stopMode, int type, int flags, const char *domain, const char *func, const char *args)
 {
 	SC_SERVER_DUMMYVAR;
@@ -237,4 +255,27 @@ C_DLLEXPORT void ASEXT_CScriptArray_Release(void* anywhat)
 C_DLLEXPORT void* ASEXT_GetCurrentContext()
 {
 	return g_pfn_asGetActiveContext();
+}
+
+C_DLLEXPORT void ASEXT_ScriptBuilder_DefineWord(CScriptBuilder* pthis, const char* word)
+{
+	SC_SERVER_DUMMYVAR;
+
+	if(g_call_original_CScriptBuilder_DefineWord)
+		g_call_original_CScriptBuilder_DefineWord(pthis, SC_SERVER_PASS_DUMMYARG word);
+	else
+		g_pfn_CScriptBuilder_DefineWord(pthis, SC_SERVER_PASS_DUMMYARG word);
+}
+
+void SC_SERVER_DECL NewCScriptBuilder_DefineWord(CScriptBuilder* pthis, SC_SERVER_DUMMYARG const char* word)
+{
+	ASEXT_ScriptBuilder_DefineWord(pthis, word);
+
+	if (!strcmp(word, "SERVER"))
+	{
+		for (size_t i = 0; i < g_ScriptBuilderDefineCallbacks.size(); ++i)
+		{
+			g_ScriptBuilderDefineCallbacks[i](pthis);
+		}
+	}
 }

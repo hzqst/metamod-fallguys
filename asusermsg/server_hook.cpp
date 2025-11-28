@@ -61,6 +61,12 @@ void SC_SERVER_DECL UserMsgArgs_GetArgString(void* pthis SC_SERVER_DUMMYARG_NOCO
 
 void RegisterAngelScriptMethods()
 {
+	ASEXT_RegisterScriptBuilderDefineCallback([](CScriptBuilder* pScriptBuilder) {
+
+		ASEXT_CScriptBuilder_DefineWord(pScriptBuilder, "METAMOD_PLUGIN_ASUSERMSG");
+
+	});
+
 	ASEXT_RegisterDocInitCallback([](CASDocumentation *pASDoc) {
 		
 		ASEXT_RegisterFuncDef(pASDoc, "callback for usermsg hook", "void UserMsgHookCallback(int msgDest, int msgType, Vector origin, edict_t @pEdict)");

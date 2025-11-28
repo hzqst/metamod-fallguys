@@ -52,6 +52,7 @@
 
 hook_t *g_phook_CASDocumentation_RegisterObjectType = NULL;
 hook_t *g_phook_CASDirectoryList_CreateDirectory = NULL;
+hook_t *g_phook_CScriptBuilder_DefineWord = NULL;
 
 // Must provide at least one of these..
 static META_FUNCTIONS gMetaFunctionTable = {
@@ -69,8 +70,8 @@ static META_FUNCTIONS gMetaFunctionTable = {
 plugin_info_t Plugin_info = {
 	META_INTERFACE_VERSION,	// ifvers
 	"AngelScriptExt",	// name
-	"1.7",	// version
-	"2024",	// date
+	"2.0",	// version
+	"2025",	// date
 	"hzqst",	// author
 	"https://github.com/hzqst/metamod-fallguys",	// url
 	"ASEXT",	// logtag, all caps please
@@ -178,6 +179,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptAny_Release, 7);
 	FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptArray_Release, 0);
 
+	FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptBuilder_DefineWord, 8);
+
 	VAR_FROM_SIGNATURE_FROM_START(server, g_pServerManager, 5);
 
 #else
@@ -243,6 +246,9 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CScriptArray_Release, -8);
 		LOG_MESSAGE(PLID, "CScriptArray_Release found at %p", g_pfn_CScriptArray_Release);
 
+		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CScriptBuilder_DefineWord, -1);
+		LOG_MESSAGE(PLID, "CScriptBuilder_DefineWord found at %p", g_pfn_CScriptBuilder_DefineWord);
+
 		char pattern_CASHook_VCall[] = "\x83\xEC\x2A\xE8\x2A\x2A\x2A\x2A\x81\x2A\x2A\x2A\x2A\x2A\x8B\x2A\x24\x2A\x8B\x2A\x2A\x2A\x2A\x00\x85\x2A\x74\x2A\x0F\x2A\x2A\x06";
 		auto CASHook_VCall = (char *)LOCATE_FROM_SIGNATURE(server, pattern_CASHook_VCall);
 		if (!CASHook_VCall)
@@ -287,6 +293,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		FILL_FROM_SYMBOL(server, CASRefCountedBaseClass_InternalRelease);
 		FILL_FROM_SYMBOL(server, CScriptAny_Release);
 		FILL_FROM_SYMBOL(server, CScriptArray_Release);
+		FILL_FROM_SYMBOL(server, CScriptBuilder_DefineWord);
 
 		VAR_FROM_SYMBOL(server, g_pServerManager);
 	}
@@ -299,6 +306,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 	INSTALL_INLINEHOOK(CASDocumentation_RegisterObjectType);
 	INSTALL_INLINEHOOK(CASDirectoryList_CreateDirectory);
+	INSTALL_INLINEHOOK(CScriptBuilder_DefineWord);
 
 	return TRUE;
 }
@@ -313,6 +321,7 @@ C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME /* now */,
 
 	UNINSTALL_HOOK(CASDocumentation_RegisterObjectType);
 	UNINSTALL_HOOK(CASDirectoryList_CreateDirectory);
+	UNINSTALL_HOOK(CScriptBuilder_DefineWord);
 
 	return TRUE;
 }

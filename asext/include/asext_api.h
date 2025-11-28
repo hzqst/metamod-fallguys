@@ -190,8 +190,11 @@ public:
 	CASModule *curModule;//24
 };
 
+class CScriptBuilder;
+
 typedef void(*fnASDocInitCallback)(CASDocumentation *pASDoc);
 typedef void(*fnASDirInitCallback)(CASDirectoryList *pASDir);
+typedef void(*fnScriptBuilderDefineCallback)(CScriptBuilder* pScriptBuilder);
 
 /*
 	Callbacks must be registered before AngelScript initialization
@@ -208,6 +211,19 @@ extern fnASEXT_RegisterDocInitCallback ASEXT_RegisterDocInitCallback;
 typedef bool(*fnASEXT_RegisterDirInitCallback)(fnASDirInitCallback callback);
 
 extern fnASEXT_RegisterDirInitCallback ASEXT_RegisterDirInitCallback;
+
+
+/*
+	Callbacks must be registered before module start
+*/
+
+typedef bool(*fnASEXT_RegisterScriptBuilderDefineCallback)(fnScriptBuilderDefineCallback callback);
+
+extern fnASEXT_RegisterScriptBuilderDefineCallback ASEXT_RegisterScriptBuilderDefineCallback;
+
+typedef bool(*fnASEXT_UnregisterScriptBuilderDefineCallback)(fnScriptBuilderDefineCallback callback);
+
+extern fnASEXT_UnregisterScriptBuilderDefineCallback ASEXT_UnregisterScriptBuilderDefineCallback;
 
 /*
 	Must be called inside DocInitCallback
@@ -333,6 +349,9 @@ extern fnASEXT_CScriptArray_Release ASEXT_CScriptArray_Release;
 typedef void*(*fnASEXT_GetCurrentContext)();
 extern fnASEXT_GetCurrentContext ASEXT_GetCurrentContext;
 
+typedef void (*fnASEXT_CScriptBuilder_DefineWord)(CScriptBuilder* pthis, const char* word);
+extern fnASEXT_CScriptBuilder_DefineWord ASEXT_CScriptBuilder_DefineWord;
+
 #ifdef _WIN32
 
 #define SC_SERVER_DECL __fastcall
@@ -457,6 +476,8 @@ public:
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CallCASBaseCallable);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterDocInitCallback);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterDirInitCallback);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterScriptBuilderDefineCallback);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_UnregisterScriptBuilderDefineCallback);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectMethod);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectMethodEx);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectBehaviour);\
@@ -477,10 +498,13 @@ IMPORT_FUNCTION_DLSYM(asext, ASEXT_CASRefCountedBaseClass_InternalRelease);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptAny_Release);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptArray_Release);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_GetCurrentContext);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptBuilder_DefineWord);\
 
 
 #define IMPORT_ASEXT_API_DEFINE() IMPORT_FUNCTION_DEFINE(ASEXT_RegisterDocInitCallback);\
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterDirInitCallback);\
+IMPORT_FUNCTION_DEFINE(ASEXT_RegisterScriptBuilderDefineCallback);\
+IMPORT_FUNCTION_DEFINE(ASEXT_UnregisterScriptBuilderDefineCallback);\
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectMethod);\
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectMethodEx);\
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectBehaviour);\
@@ -501,6 +525,7 @@ IMPORT_FUNCTION_DEFINE(ASEXT_CASRefCountedBaseClass_InternalRelease);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CScriptAny_Release);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CScriptArray_Release);\
 IMPORT_FUNCTION_DEFINE(ASEXT_GetCurrentContext);\
+IMPORT_FUNCTION_DEFINE(ASEXT_CScriptBuilder_DefineWord);\
 IMPORT_FUNCTION_POINTER_DEFINE(ASEXT_CallHook);\
 IMPORT_FUNCTION_POINTER_DEFINE(ASEXT_CallCASBaseCallable);\
 

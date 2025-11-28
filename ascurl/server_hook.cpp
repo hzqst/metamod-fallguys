@@ -130,6 +130,12 @@ bool SC_SERVER_DECL CASEngineFuncs__base64_encode(void* pthis SC_SERVER_DUMMYARG
 
 void RegisterAngelScriptMethods()
 {
+	ASEXT_RegisterScriptBuilderDefineCallback([](CScriptBuilder* pScriptBuilder) {
+
+		ASEXT_CScriptBuilder_DefineWord(pScriptBuilder, "METAMOD_PLUGIN_ASCURL");
+
+	});
+
 	ASEXT_RegisterDirInitCallback([](CASDirectoryList *pASDir) {
 
 		ASEXT_CreateDirectory(pASDir, "maps", ASFlag_Plugin, ASFileAccessControl_Read, true, 0);

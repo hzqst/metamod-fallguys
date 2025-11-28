@@ -17,6 +17,12 @@ bool SC_SERVER_DECL CASEngineFuncs__SetQueryCvar2Callback(void* pthis SC_SERVER_
 
 void RegisterAngelScriptMethods()
 {
+	ASEXT_RegisterScriptBuilderDefineCallback([](CScriptBuilder* pScriptBuilder) {
+
+		ASEXT_CScriptBuilder_DefineWord(pScriptBuilder, "METAMOD_PLUGIN_ASQCVAR");
+
+		});
+
 	ASEXT_RegisterDocInitCallback([](CASDocumentation *pASDoc) {
 		
 		ASEXT_RegisterFuncDef(pASDoc, "callback for svc_querycvar2 response", "void QueryCvar2ResponseCallback(CBasePlayer @pPlayer, int request_id, string cvar, string value)");

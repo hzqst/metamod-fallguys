@@ -17,9 +17,11 @@ class CASServerManager;
 class CASDocumentation;
 class CASDirectoryList;
 class CScriptArray;
+class CScriptBuilder;
 
 typedef void(*fnASDocInitCallback)(CASDocumentation *pASDoc);
 typedef void(*fnASDirInitCallback)(CASDirectoryList *pASDir);
+typedef void(*fnScriptBuilderDefineCallback)(CScriptBuilder* pScriptBuilder);
 
 /*
 	Callbacks must be registered before AngelScript initialization
@@ -30,6 +32,13 @@ C_DLLEXPORT bool ASEXT_RegisterDocInitCallback(fnASDocInitCallback callback);
 	Callbacks must be registered before AngelScript initialization
 */
 C_DLLEXPORT bool ASEXT_RegisterDirInitCallback(fnASDirInitCallback callback);
+
+/*
+	Callbacks must be registered before module start
+*/
+C_DLLEXPORT bool ASEXT_RegisterScriptBuilderDefineCallback(fnScriptBuilderDefineCallback callback);
+
+C_DLLEXPORT bool ASEXT_UnregisterScriptBuilderDefineCallback(fnScriptBuilderDefineCallback callback);
 
 /*
 	Must be called inside DocInitCallback
@@ -75,8 +84,6 @@ C_DLLEXPORT void ASEXT_RegisterFuncDef(CASDocumentation *pASDoc, const char *doc
 /* Create directory in the virtual file system */
 C_DLLEXPORT void ASEXT_CreateDirectory(void *pASDir, const char *path, unsigned char flags, unsigned char access_control, unsigned char permanent, unsigned char unk);
 
-C_DLLEXPORT bool ASEXT_RegisterDirInitCallback(fnASDirInitCallback callback);
-
 C_DLLEXPORT void ASEXT_CStringAssign(void *pthis, const char *src, size_t len);
 
 C_DLLEXPORT void ASEXT_CStringdtor(void *pthis);
@@ -104,5 +111,9 @@ C_DLLEXPORT void ASEXT_CScriptAny_Release(void *anywhat);
 
 C_DLLEXPORT void ASEXT_CScriptArray_Release(void* anywhat);
 
-
 C_DLLEXPORT void* ASEXT_GetCurrentContext();
+
+/*
+	Can only be called in ScriptBuilder_DefineCallback
+*/
+C_DLLEXPORT void ASEXT_ScriptBuilder_DefineWord(CScriptBuilder* pthis, const char* word);

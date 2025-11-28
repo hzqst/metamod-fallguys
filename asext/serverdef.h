@@ -194,6 +194,8 @@ public:
 	unsigned char flag;//+0x20  // 1 = generic, 2 = global func, 3 = method
 };
 
+class CScriptBuilder;
+
 #ifdef _WIN32
 
 #define SC_SERVER_DECL __fastcall
@@ -291,5 +293,10 @@ PRIVATE_FUNCTION_EXTERN(CASBLOB_WriteData);
 
 typedef void* (*fnasGetActiveContext)();
 PRIVATE_FUNCTION_EXTERN(asGetActiveContext);
+
+//https://www.angelcode.com/angelscript/sdk/docs/manual/doc_addon_build.html
+typedef void (SC_SERVER_DECL *fnCScriptBuilder_DefineWord)(CScriptBuilder* pthis, SC_SERVER_DUMMYARG const char* word);
+PRIVATE_FUNCTION_EXTERN(CScriptBuilder_DefineWord);
+void SC_SERVER_DECL NewCScriptBuilder_DefineWord(CScriptBuilder* pthis, SC_SERVER_DUMMYARG const char* word);
 
 extern CASServerManager **g_pServerManager;
