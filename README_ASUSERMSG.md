@@ -2,6 +2,18 @@
 
 * Provide ability of blocking or intercepting UserMsg in Sven Co-op AngelScript engine
 
+## Macro support
+
+Use macro `METAMOD_PLUGIN_ASUSERMSG` to identify the accessbility of `asusermsg.dll`
+
+```angelscript
+#if METAMOD_PLUGIN_ASUSERMSG
+
+    //WHATEVER...
+
+#endif
+```
+
 ## Register a usermsg hook, block the old message, and resend with your own message
 
 ```

@@ -4,6 +4,18 @@
 
 * Provides ability of reading responses of querycvar request.
 
+## Macro support
+
+Use macro `METAMOD_PLUGIN_ASQCVAR` to identify the accessbility of `asqcvar.dll`
+
+```angelscript
+#if METAMOD_PLUGIN_ASQCVAR
+
+    //WHATEVER...
+
+#endif
+```
+
 ## Send a querycvar requset to client
 
 * You can do this without metamod but you won't be able to receive response

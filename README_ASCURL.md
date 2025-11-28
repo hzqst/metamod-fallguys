@@ -2,6 +2,18 @@
 
 * Taking advantage of `libcurl.dll` (`libcurl.so`) via AngelScript
 
+## Macro support
+
+Use macro `METAMOD_PLUGIN_ASCURL` to identify the accessbility of `ascurl.dll`
+
+```angelscript
+#if METAMOD_PLUGIN_ASCURL
+
+    //WHATEVER...
+
+#endif
+```
+
 ## constants
 
 ```

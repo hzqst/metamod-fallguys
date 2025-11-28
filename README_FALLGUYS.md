@@ -4,6 +4,18 @@ Most features are provided via angelscript interfaces.
 
 ## AngelScript interfaces
 
+### Macro support
+
+Use macro `METAMOD_PLUGIN_FALLGUYS` to identify the accessbility of `fallguys.dll`
+
+```angelscript
+#if METAMOD_PLUGIN_FALLGUYS
+
+    //WHATEVER...
+
+#endif
+```
+
 ### Set Brush Entity as **Super Pusher**
 
 ```angelscript
