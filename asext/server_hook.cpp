@@ -7,6 +7,7 @@
 #include <entity_state.h>
 
 #include <vector>
+#include <algorithm>
 
 #include "asext.h"
 
