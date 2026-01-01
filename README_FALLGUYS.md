@@ -16,6 +16,14 @@ Use macro `METAMOD_PLUGIN_FALLGUYS` to identify the accessbility of `fallguys.dl
 
 ## AngelScript interfaces
 
+### GroupMask / GroupOperation manipulation
+
+```angelscript
+g_EngineFuncs.SetGroupTrace(groupMask, groupOp);
+```
+
+* Counterpart of `UTIL_SetGroupTrace` from HLSDK
+
 ### Set Brush Entity as **Super Pusher**
 
 ```angelscript
