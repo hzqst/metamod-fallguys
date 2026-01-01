@@ -45,6 +45,11 @@ bool SC_SERVER_DECL CASEngineFuncs__SetViewEntity(void* pthis, SC_SERVER_DUMMYAR
 	return SetClientViewEntity(pClient, pViewEnt);
 }
 
+void SC_SERVER_DECL CASEngineFuncs__SetGroupTrace(void* pthis, SC_SERVER_DUMMYARG int groupMask, int groupOp)
+{
+	return g_engfuncs.pfnSetGroupMask(groupMask, groupOp);
+}
+
 int SC_SERVER_DECL CASEngineFuncs__GetRunPlayerMovePlayerIndex(void* pthis SC_SERVER_DUMMYARG_NOCOMMA)
 {
 	return GetRunPlayerMovePlayerIndex();
@@ -641,6 +646,10 @@ void RegisterAngelScriptMethods(void)
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Set client's view entity", "CEngineFuncs", "bool SetViewEntity(edict_t@ pClient, edict_t@ pViewEnt)",
 			(void *)CASEngineFuncs__SetViewEntity, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Counterpart to UTIL_SetGroupTrace in HLSDK", "CEngineFuncs", "void SetGroupTrace(int groupMask, int groupOp)",
+			(void*)CASEngineFuncs__SetGroupTrace, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Create physic box for entity", "CEntityFuncs", "bool CreateSolidOptimizer(edict_t@ ent, int boneindex, const Vector& in halfextent, const Vector& in halfextent2)",
