@@ -789,9 +789,6 @@ static void *mutil_GetNextCallAddr(void *pAddress, int dwCount)
 
 static void *mutil_SearchPattern(void *pStartSearch, size_t dwSearchLen, const char *pPattern, size_t dwPatternLen)
 {
-	if (!pStartSearch)
-		return nullptr;
-
 	char * dwStartAddr = (char *)pStartSearch;
 	char * dwEndAddr = dwStartAddr + dwSearchLen - dwPatternLen;
 

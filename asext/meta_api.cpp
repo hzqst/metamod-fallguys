@@ -187,8 +187,11 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	FILL_FROM_SIGNATURE(server, CScriptDictionary_Set);
 	FILL_FROM_SIGNATURE(server, CScriptDictionary_Get);
 	FILL_FROM_SIGNATURE(server, CScriptDictionary_Exists);
-	FILL_FROM_SIGNATURE_FROM_FUNCTION(server, CScriptDictionary_IsEmpty, g_pfn_CScriptDictionary_Exists, 0x100);
-	FILL_FROM_SIGNATURE_FROM_FUNCTION(server, CScriptDictionary_GetSize, g_pfn_CScriptDictionary_Exists, 0x100);
+	if (g_pfn_CScriptDictionary_Exists)
+	{
+		FILL_FROM_SIGNATURE_FROM_FUNCTION(server, CScriptDictionary_IsEmpty, g_pfn_CScriptDictionary_Exists, 0x100);
+		FILL_FROM_SIGNATURE_FROM_FUNCTION(server, CScriptDictionary_GetSize, g_pfn_CScriptDictionary_Exists, 0x100);
+	}
 	FILL_FROM_SIGNATURE(server, CScriptDictionary_Delete);
 	FILL_FROM_SIGNATURE(server, CScriptDictionary_DeleteAll);
 
