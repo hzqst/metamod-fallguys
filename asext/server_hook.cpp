@@ -34,6 +34,7 @@ PRIVATE_FUNCTION_DEFINE(CString_dtor);
 PRIVATE_FUNCTION_DEFINE(asGetActiveContext);
 PRIVATE_FUNCTION_DEFINE(CScriptBuilder_DefineWord);
 PRIVATE_FUNCTION_DEFINE(CScriptDictionary_Create);
+PRIVATE_FUNCTION_DEFINE(CScriptDictionary_AddRef);
 PRIVATE_FUNCTION_DEFINE(CScriptDictionary_Release);
 PRIVATE_FUNCTION_DEFINE(CScriptDictionary_Set);
 PRIVATE_FUNCTION_DEFINE(CScriptDictionary_Get);
@@ -293,6 +294,12 @@ void SC_SERVER_DECL NewCScriptBuilder_DefineWord(CScriptBuilder* pthis, SC_SERVE
 C_DLLEXPORT CScriptDictionary* ASEXT_CScriptDictionary_Create(void* pScriptEngine)
 {
 	return g_pfn_CScriptDictionary_Create(pScriptEngine);
+}
+
+C_DLLEXPORT void ASEXT_CScriptDictionary_AddRef(CScriptDictionary* pScriptDictionary)
+{
+	SC_SERVER_DUMMYVAR;
+	g_pfn_CScriptDictionary_AddRef(pScriptDictionary SC_SERVER_PASS_DUMMYARG2);
 }
 
 C_DLLEXPORT void ASEXT_CScriptDictionary_Release(CScriptDictionary* pScriptDictionary)

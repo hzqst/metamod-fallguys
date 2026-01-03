@@ -309,6 +309,9 @@ void SC_SERVER_DECL NewCScriptBuilder_DefineWord(CScriptBuilder* pthis, SC_SERVE
 typedef CScriptDictionary* (*fnCScriptDictionary_Create)(void* pScriptEngine);
 PRIVATE_FUNCTION_EXTERN(CScriptDictionary_Create);
 
+typedef void (SC_SERVER_DECL* fnCScriptDictionary_AddRef)(CScriptDictionary* pthis SC_SERVER_DUMMYARG_NOCOMMA);
+PRIVATE_FUNCTION_EXTERN(CScriptDictionary_AddRef);
+
 typedef void (SC_SERVER_DECL *fnCScriptDictionary_Release)(CScriptDictionary* pthis SC_SERVER_DUMMYARG_NOCOMMA);
 PRIVATE_FUNCTION_EXTERN(CScriptDictionary_Release);
 

@@ -38,7 +38,16 @@ if (!name)\
 
 #define FILL_FROM_SIGNATURE_NO_CHECK(dll, name) g_pfn_##name = g_call_original_##name = (decltype(g_pfn_##name))LOCATE_FROM_SIGNATURE(dll, name##_Signature)
 
+#define FILL_FROM_SIGNATURE_FROM_FUNCTION_NO_CHECK(dll, name, fromfunc, fromsize) g_pfn_##name = g_call_original_##name = (decltype(g_pfn_##name))LOCATE_FROM_SIGNATURE_FROM_FUNCTION(fromfunc, fromsize, name##_Signature)
+
 #define FILL_FROM_SIGNATURE(dll, name) FILL_FROM_SIGNATURE_NO_CHECK(dll, name);\
+if (!g_pfn_##name)\
+{\
+	LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !");\
+	return FALSE;\
+}
+
+#define FILL_FROM_SIGNATURE_FROM_FUNCTION(dll, name, fromfunc, fromsize) FILL_FROM_SIGNATURE_FROM_FUNCTION_NO_CHECK(dll, name, fromfunc, fromsize);\
 if (!g_pfn_##name)\
 {\
 	LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !");\

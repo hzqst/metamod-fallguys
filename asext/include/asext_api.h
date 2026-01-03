@@ -349,6 +349,10 @@ typedef int(*fnASEXT_CallCASBaseCallable)(void *callable, int dummy, ...);
 
 extern fnASEXT_CallCASBaseCallable *ASEXT_CallCASBaseCallable;
 
+/*
+	It's possible to get current IScriptEngine with ASEXT_GetServerManager()->scriptEngine
+*/
+
 typedef CASServerManager *(*fnASEXT_GetServerManager)();
 
 extern fnASEXT_GetServerManager ASEXT_GetServerManager;
@@ -371,11 +375,13 @@ extern fnASEXT_CScriptArray_Release ASEXT_CScriptArray_Release;
 
 typedef CScriptDictionary*(*fnASEXT_CScriptDictionary_Create)(void* pScriptEngine);
 
+typedef void(*fnASEXT_CScriptDictionary_AddRef)(CScriptDictionary* pScriptDictionary);
+
 typedef void(*fnASEXT_CScriptDictionary_Release)(CScriptDictionary* pScriptDictionary);
 
-typedef void(*fnASEXT_CScriptDictionary_Set)(CScriptDictionary* pScriptDictionary, const CString* key, const void* val, int asTypeId);
+typedef void(*fnASEXT_CScriptDictionary_Set)(CScriptDictionary* pScriptDictionary, const CString* key, const void* val, int asTypeId);//asETypeIdFlags
 
-typedef bool(*fnASEXT_CScriptDictionary_GetDouble)(CScriptDictionary* pScriptDictionary, const CString* key, const double* outval);
+typedef bool(*fnASEXT_CScriptDictionary_Get)(CScriptDictionary* pScriptDictionary, const CString* key, void* val, int asTypeId);//asETypeIdFlags
 
 typedef bool(*fnASEXT_CScriptDictionary_Exists)(CScriptDictionary* pScriptDictionary, const CString* key);
 
@@ -389,11 +395,13 @@ typedef void(*fnASEXT_CScriptDictionary_DeleteAll)(CScriptDictionary* pScriptDic
 
 extern fnASEXT_CScriptDictionary_Create ASEXT_CScriptDictionary_Create;
 
+extern fnASEXT_CScriptDictionary_AddRef ASEXT_CScriptDictionary_AddRef;
+
 extern fnASEXT_CScriptDictionary_Release ASEXT_CScriptDictionary_Release;
 
 extern fnASEXT_CScriptDictionary_Set ASEXT_CScriptDictionary_Set;
 
-extern fnASEXT_CScriptDictionary_GetDouble ASEXT_CScriptDictionary_GetDouble;
+extern fnASEXT_CScriptDictionary_Get ASEXT_CScriptDictionary_Get;
 
 extern fnASEXT_CScriptDictionary_Exists ASEXT_CScriptDictionary_Exists;
 
@@ -563,6 +571,7 @@ IMPORT_FUNCTION_DLSYM(asext, ASEXT_CASRefCountedBaseClass_InternalRelease);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptAny_Release);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptArray_Release);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_Create);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_AddRef);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_Release);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_Set);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_GetDouble);\
@@ -599,6 +608,7 @@ IMPORT_FUNCTION_DEFINE(ASEXT_CASRefCountedBaseClass_InternalRelease);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CScriptAny_Release);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CScriptArray_Release);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_Create);\
+IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_AddRef);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_Release);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_Set);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_GetDouble);\

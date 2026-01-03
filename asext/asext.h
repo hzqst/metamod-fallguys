@@ -94,6 +94,8 @@ C_DLLEXPORT CASFunction *ASEXT_CreateCASFunction(aslScriptFunction *aslfn, CASMo
 
 C_DLLEXPORT CScriptDictionary* ASEXT_CScriptDictionary_Create(void* pScriptEngine);
 
+C_DLLEXPORT void ASEXT_CScriptDictionary_AddRef(CScriptDictionary* pScriptDictionary);
+
 C_DLLEXPORT void ASEXT_CScriptDictionary_Release(CScriptDictionary* pScriptDictionary);
 
 C_DLLEXPORT void ASEXT_CScriptDictionary_Set(CScriptDictionary* pScriptDictionary, const CString *key, const void *val, int asTypeId);

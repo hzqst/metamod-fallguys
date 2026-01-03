@@ -181,13 +181,14 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 	FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptBuilder_DefineWord, 8);
 
-	FILL_FROM_SIGNATURE(server, CScriptDictionary_Create);
-	FILL_FROM_SIGNATURE(server, CScriptDictionary_Release);
+	FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptDictionary_Create, 3);
+	FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptDictionary_AddRef, 6);
+	FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptDictionary_Release, 10);
 	FILL_FROM_SIGNATURE(server, CScriptDictionary_Set);
 	FILL_FROM_SIGNATURE(server, CScriptDictionary_Get);
 	FILL_FROM_SIGNATURE(server, CScriptDictionary_Exists);
-	FILL_FROM_SIGNATURE(server, CScriptDictionary_IsEmpty);
-	FILL_FROM_SIGNATURE(server, CScriptDictionary_GetSize);
+	FILL_FROM_SIGNATURE_FROM_FUNCTION(server, CScriptDictionary_IsEmpty, g_pfn_CScriptDictionary_Exists, 0x100);
+	FILL_FROM_SIGNATURE_FROM_FUNCTION(server, CScriptDictionary_GetSize, g_pfn_CScriptDictionary_Exists, 0x100);
 	FILL_FROM_SIGNATURE(server, CScriptDictionary_Delete);
 	FILL_FROM_SIGNATURE(server, CScriptDictionary_DeleteAll);
 
@@ -220,6 +221,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CScriptArray_Release, -8);
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CScriptBuilder_DefineWord, -1);
 		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptDictionary_Create, 8);
+		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptDictionary_AddRef, 13);
 		FILL_FROM_SIGNATURE(server, CScriptDictionary_Release);
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CScriptDictionary_Set, -1);
 		FILL_FROM_SIGNATURE(server, CScriptDictionary_Get);
@@ -273,6 +275,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		FILL_FROM_SYMBOL(server, CScriptArray_Release);
 		FILL_FROM_SYMBOL(server, CScriptBuilder_DefineWord);
 		FILL_FROM_SYMBOL(server, CScriptDictionary_Create);
+		FILL_FROM_SYMBOL(server, CScriptDictionary_AddRef);
 		FILL_FROM_SYMBOL(server, CScriptDictionary_Release);
 		FILL_FROM_SYMBOL(server, CScriptDictionary_Set);
 		FILL_FROM_SYMBOL(server, CScriptDictionary_Get);
@@ -312,6 +315,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	LOG_MESSAGE(PLID, "CScriptArray_Release found at %p", g_pfn_CScriptArray_Release);
 	LOG_MESSAGE(PLID, "CScriptBuilder_DefineWord found at %p", g_pfn_CScriptBuilder_DefineWord);
 	LOG_MESSAGE(PLID, "CScriptDictionary_Create found at %p", g_pfn_CScriptDictionary_Create);
+	LOG_MESSAGE(PLID, "CScriptDictionary_AddRef found at %p", g_pfn_CScriptDictionary_AddRef);
 	LOG_MESSAGE(PLID, "CScriptDictionary_Release found at %p", g_pfn_CScriptDictionary_Release);
 	LOG_MESSAGE(PLID, "CScriptDictionary_Set found at %p", g_pfn_CScriptDictionary_Set);
 	LOG_MESSAGE(PLID, "CScriptDictionary_Get found at %p", g_pfn_CScriptDictionary_Get);
