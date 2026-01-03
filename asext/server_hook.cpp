@@ -36,7 +36,7 @@ PRIVATE_FUNCTION_DEFINE(CScriptBuilder_DefineWord);
 PRIVATE_FUNCTION_DEFINE(CScriptDictionary_Create);
 PRIVATE_FUNCTION_DEFINE(CScriptDictionary_Release);
 PRIVATE_FUNCTION_DEFINE(CScriptDictionary_Set);
-PRIVATE_FUNCTION_DEFINE(CScriptDictionary_GetDouble);
+PRIVATE_FUNCTION_DEFINE(CScriptDictionary_Get);
 PRIVATE_FUNCTION_DEFINE(CScriptDictionary_Exists);
 PRIVATE_FUNCTION_DEFINE(CScriptDictionary_IsEmpty);
 PRIVATE_FUNCTION_DEFINE(CScriptDictionary_GetSize);
@@ -301,22 +301,16 @@ C_DLLEXPORT void ASEXT_CScriptDictionary_Release(CScriptDictionary* pScriptDicti
 	g_pfn_CScriptDictionary_Release(pScriptDictionary SC_SERVER_PASS_DUMMYARG2);
 }
 
-C_DLLEXPORT void ASEXT_CScriptDictionary_SetDouble(CScriptDictionary* pScriptDictionary, const CString* key, const double* val)
-{
-	SC_SERVER_DUMMYVAR;
-	g_pfn_CScriptDictionary_SetDouble(pScriptDictionary, SC_SERVER_PASS_DUMMYARG key, val);
-}
-
 C_DLLEXPORT void ASEXT_CScriptDictionary_Set(CScriptDictionary* pScriptDictionary, const CString* key, const void* val, int asTypeId)
 {
 	SC_SERVER_DUMMYVAR;
 	g_pfn_CScriptDictionary_Set(pScriptDictionary, SC_SERVER_PASS_DUMMYARG key, val, asTypeId);
 }
 
-C_DLLEXPORT bool ASEXT_CScriptDictionary_GetDouble(CScriptDictionary* pScriptDictionary, const CString* key, const double* outval)
+C_DLLEXPORT bool ASEXT_CScriptDictionary_Get(CScriptDictionary* pScriptDictionary, const CString* key, void* val, int asTypeId)
 {
 	SC_SERVER_DUMMYVAR;
-	return g_pfn_CScriptDictionary_GetDouble(pScriptDictionary, SC_SERVER_PASS_DUMMYARG key, outval);
+	return g_pfn_CScriptDictionary_Get(pScriptDictionary, SC_SERVER_PASS_DUMMYARG key, val, asTypeId);
 }
 
 C_DLLEXPORT bool ASEXT_CScriptDictionary_Exists(CScriptDictionary* pScriptDictionary, const CString* key)

@@ -33,9 +33,8 @@
 
 #define CScriptDictionary_Create_Signature ""
 #define CScriptDictionary_Release_Signature ""
-#define CScriptDictionary_SetDouble_Signature ""
 #define CScriptDictionary_Set_Signature ""
-#define CScriptDictionary_GetDouble_Signature ""
+#define CScriptDictionary_Get_Signature ""
 #define CScriptDictionary_Exists_Signature ""
 #define CScriptDictionary_IsEmpty_Signature ""
 #define CScriptDictionary_GetSize_Signature ""
@@ -112,24 +111,24 @@
 #define CScriptDictionary_Release_Symbol "_ZNK17CScriptDictionary7ReleaseEv"
 
 #define CScriptDictionary_Set_Signature "\xFF\x50\x18\x89\x44\x24\x0C\x89\x6C\x24\x08\x89\x7C\x24\x04\x89\x34\x24\xE8"
-#define CScriptDictionary_Set_Symbol ""//no such thing
+#define CScriptDictionary_Set_Symbol "_ZN17CScriptDictionary3SetERK7CStringPvi"
 
-#define CScriptDictionary_GetDouble_Signature ""
-#define CScriptDictionary_GetDouble_Symbol "_ZNK17CScriptDictionary3GetERK7CStringRd"
+#define CScriptDictionary_Get_Signature "\x57\x56\x53\x83\xEC\x20\x8B\x5C\x24\x30\x8B\x74\x24\x38\x8B\x7C\x24\x3C\x8D\x44\x24\x1C"
+#define CScriptDictionary_Get_Symbol "_ZNK17CScriptDictionary3GetERK7CStringPvi"
 
-#define CScriptDictionary_Exists_Signature ""
+#define CScriptDictionary_Exists_Signature "\x83\xEC\x2C\x8D\x54\x24\x1C\x8B\x44\x24\x34\x89\x44\x24\x08\x8B\x4C\x24\x30\x83\xC1\x10\x89\x4C\x24\x04\x89\x14\x24\xE8\x2A\x2A\x2A\x2A\x83\xEC\x04\x8B\x54\x24\x1C\x85\xD2\x0F\x95\xC0"
 #define CScriptDictionary_Exists_Symbol "_ZNK17CScriptDictionary6ExistsERK7CString"
 
-#define CScriptDictionary_IsEmpty_Signature ""
+#define CScriptDictionary_IsEmpty_Signature "\x8B\x44\x24\x04\x8B\x50\x1C\x85\xD2\x0F\x94\xC0\xC3"
 #define CScriptDictionary_IsEmpty_Symbol "_ZNK17CScriptDictionary7IsEmptyEv"
 
-#define CScriptDictionary_GetSize_Signature ""
+#define CScriptDictionary_GetSize_Signature "\x8B\x44\x24\x04\x8B\x40\x1C\xC3"
 #define CScriptDictionary_GetSize_Symbol "_ZNK17CScriptDictionary7GetSizeEv"
 
-#define CScriptDictionary_Delete_Signature ""
+#define CScriptDictionary_Delete_Signature "\x55\x57\x56\x53\x83\xEC\x3C\xE8\x2A\x2A\x2A\x2A\x05\x2A\x2A\x2A\x2A\x89\x44\x24\x18\x8B\x7C\x24\x50\x8D\x4C\x24\x2C\x8B\x54\x24\x54\x89\x54\x24\x08"
 #define CScriptDictionary_Delete_Symbol "_ZN17CScriptDictionary6DeleteERK7CString"
 
-#define CScriptDictionary_DeleteAll_Signature ""
+#define CScriptDictionary_DeleteAll_Signature "\x56\x53\x83\xEC\x14\x8B\x74\x24\x20\x8B\x5E\x18\x85\xDB"
 #define CScriptDictionary_DeleteAll_Symbol "_ZN17CScriptDictionary9DeleteAllEv"
 
 #endif

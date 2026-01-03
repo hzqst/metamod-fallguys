@@ -98,7 +98,7 @@ C_DLLEXPORT void ASEXT_CScriptDictionary_Release(CScriptDictionary* pScriptDicti
 
 C_DLLEXPORT void ASEXT_CScriptDictionary_Set(CScriptDictionary* pScriptDictionary, const CString *key, const void *val, int asTypeId);
 
-C_DLLEXPORT bool ASEXT_CScriptDictionary_GetDouble(CScriptDictionary* pScriptDictionary, const CString* key, const double* outval);
+C_DLLEXPORT bool ASEXT_CScriptDictionary_Get(CScriptDictionary* pScriptDictionary, const CString* key, void* val, int asTypeId);
 
 C_DLLEXPORT bool ASEXT_CScriptDictionary_Exists(CScriptDictionary* pScriptDictionary, const CString* key);
 
