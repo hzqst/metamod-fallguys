@@ -142,10 +142,12 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		return FALSE;
 	}
 
-	auto serverSize = gpMetaUtilFuncs->pfnGetImageSize(serverBase);
-	auto serverEnd = (char*)serverBase + serverSize;
+	auto serverCodeBase = gpMetaUtilFuncs->pfnGetCodeBase(serverBase);
+	auto serverCodeSize = gpMetaUtilFuncs->pfnGetCodeSize(serverBase);
 
-	LOG_MESSAGE(PLID, "Current server dll range: %p ~ %p!", serverBase, serverEnd);
+	auto serverCodeEnd = (char*)serverCodeBase + serverCodeSize;
+
+	LOG_MESSAGE(PLID, "Current server code range: %p ~ %p!", serverCodeBase, serverCodeEnd);
 
 	auto CreateInterface = (CreateInterfaceFn)gpMetaUtilFuncs->pfnGetProcAddress(serverHandle, "CreateInterface");
 

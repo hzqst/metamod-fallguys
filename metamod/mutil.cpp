@@ -490,6 +490,60 @@ size_t mutil_GetImageSize(void* ImageBase)
 	return ((IMAGE_NT_HEADERS*)((char*)ImageBase + ((IMAGE_DOS_HEADER*)ImageBase)->e_lfanew))->OptionalHeader.SizeOfImage;
 }
 
+void* mutil_GetCodeBase(void* ImageBase)
+{
+	auto pDosHeader = (IMAGE_DOS_HEADER*)ImageBase;
+	auto pNtHeaders = (IMAGE_NT_HEADERS*)((char*)ImageBase + pDosHeader->e_lfanew);
+	auto pSectionHeader = IMAGE_FIRST_SECTION(pNtHeaders);
+	
+	for (int i = 0; i < pNtHeaders->FileHeader.NumberOfSections; i++)
+	{
+		// Find first executable and non-writable section (RX)
+		if ((pSectionHeader[i].Characteristics & IMAGE_SCN_MEM_EXECUTE) &&
+			!(pSectionHeader[i].Characteristics & IMAGE_SCN_MEM_WRITE))
+		{
+			return (void*)((char*)ImageBase + pSectionHeader[i].VirtualAddress);
+		}
+	}
+	
+	return ImageBase;
+}
+
+size_t mutil_GetCodeSize(void* ImageBase)
+{
+	auto pDosHeader = (IMAGE_DOS_HEADER*)ImageBase;
+	auto pNtHeaders = (IMAGE_NT_HEADERS*)((char*)ImageBase + pDosHeader->e_lfanew);
+	auto pSectionHeader = IMAGE_FIRST_SECTION(pNtHeaders);
+	
+	// Calculate total size of all executable and non-writable sections (RX)
+	void* code_start = nullptr;
+	void* code_end = nullptr;
+	
+	for (int i = 0; i < pNtHeaders->FileHeader.NumberOfSections; i++)
+	{
+		if ((pSectionHeader[i].Characteristics & IMAGE_SCN_MEM_EXECUTE) &&
+			!(pSectionHeader[i].Characteristics & IMAGE_SCN_MEM_WRITE))
+		{
+			void* section_start = (void*)((char*)ImageBase + pSectionHeader[i].VirtualAddress);
+			void* section_end = (void*)((char*)section_start + pSectionHeader[i].Misc.VirtualSize);
+			
+			if (!code_start || section_start < code_start) {
+				code_start = section_start;
+			}
+			
+			if (!code_end || section_end > code_end) {
+				code_end = section_end;
+			}
+		}
+	}
+	
+	if (code_start && code_end) {
+		return (uintptr_t)code_end - (uintptr_t)code_start;
+	}
+	
+	return 0;
+}
+
 #else
 
 static bool ends_with(const std::string& str, const std::string& suffix) {
@@ -559,6 +613,80 @@ size_t mutil_GetImageSize(void* ImageBase)
 	return imageSize;
 }
 
+void* mutil_GetCodeBase(void* ImageBase)
+{
+	procmap::MemoryMap m;
+	std::string name;
+	
+	// First, find the module name
+	for (auto& segment : m) {
+		if (ImageBase == segment.startAddress()) {
+			name = segment.name();
+			break;
+		}
+	}
+	
+	if (name.empty()) {
+		return ImageBase;
+	}
+	
+	// Find the first executable segment of this module
+	for (auto& segment : m) {
+		if (name == segment.name() && 
+			segment.isReadable() && 
+			segment.isExecutable() && 
+			!segment.isWriteable()) {
+			return segment.startAddress();
+		}
+	}
+	
+	return ImageBase;
+}
+
+size_t mutil_GetCodeSize(void* ImageBase)
+{
+	procmap::MemoryMap m;
+	std::string name;
+	
+	// First, find the module name
+	for (auto& segment : m) {
+		if (ImageBase == segment.startAddress()) {
+			name = segment.name();
+			break;
+		}
+	}
+	
+	if (name.empty()) {
+		return 0;
+	}
+	
+	// Find all executable segments and calculate total size
+	void* code_start = nullptr;
+	void* code_end = nullptr;
+	
+	for (auto& segment : m) {
+		if (name == segment.name() && 
+			segment.isReadable() && 
+			segment.isExecutable() && 
+			!segment.isWriteable()) {
+			
+			if (!code_start || segment.startAddress() < code_start) {
+				code_start = segment.startAddress();
+			}
+			
+			if (!code_end || segment.endAddress() > code_end) {
+				code_end = segment.endAddress();
+			}
+		}
+	}
+	
+	if (code_start && code_end) {
+		return (uintptr_t)code_end - (uintptr_t)code_start;
+	}
+	
+	return 0;
+}
+
 #endif
 
 qboolean mutil_IsAddressInModuleRange(void *lpAddress, void *lpModuleBase)
@@ -572,6 +700,27 @@ qboolean mutil_IsAddressInModuleRange(void *lpAddress, void *lpModuleBase)
 
 	return false;
 #endif
+}
+
+void* mutil_GetImageBaseFromAddress(void* lpAddress)
+{
+	void* lpBaseAddress = nullptr;
+#ifdef _WIN32
+
+	MEMORY_BASIC_INFORMATION mbi = { 0 };
+	if (VirtualQuery(lpAddress, &mbi, sizeof(mbi)))
+	{
+		lpBaseAddress = (void*)mbi.AllocationBase;
+	}
+
+#else
+	Dl_info info;
+	if (dladdr(lpAddress, &info) != 0 && info.dli_fbase != nullptr) {
+		lpBaseAddress = (void*)info.dli_fbase;
+	}
+#endif
+
+	return lpBaseAddress;
 }
 
 DLHANDLE mutil_GetGameDllHandle(void)
@@ -1332,5 +1481,8 @@ mutil_funcs_t MetaUtilFunctions = {
 	mutil_GetBoneMatrix,
 
 	//2024-10 added by hzqst
-	mutil_GetEngineType
+	mutil_GetEngineType,
+	//2026-01-03 added by hzqst
+	mutil_GetCodeBase,
+	mutil_GetCodeSize,
 };

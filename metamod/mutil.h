@@ -143,6 +143,8 @@ typedef struct meta_util_funcs_s {
 	float *(*pfnGetBoneMatrix)();
 	// 2024-10 Added by hzqst
 	const char * (*pfnGetEngineType)();
+	void* (*pfnGetCodeBase)(void* ImageBase);
+	size_t(*pfnGetCodeSize)(void* ImageBase);
 } mutil_funcs_t;
 extern mutil_funcs_t MetaUtilFunctions DLLHIDDEN;
 

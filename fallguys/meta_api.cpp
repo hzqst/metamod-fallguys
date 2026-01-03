@@ -277,10 +277,11 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		return FALSE;
 	}
 
-	auto engineSize = gpMetaUtilFuncs->pfnGetImageSize(engineBase);
-	auto engineEnd = (char*)engineBase + engineSize;
+	auto engineCodeBase = gpMetaUtilFuncs->pfnGetCodeBase(engineBase);
+	auto engineCodeSize = gpMetaUtilFuncs->pfnGetImageSize(engineBase);
+	auto engineCodeEnd = (char*)engineCodeBase + engineCodeSize;
 
-	LOG_MESSAGE(PLID, "Current engine dll range: %p ~ %p!", engineBase, engineEnd);
+	LOG_MESSAGE(PLID, "Current engine code range: %p ~ %p!", engineBase, engineCodeEnd);
 
 	auto serverHandle = gpMetaUtilFuncs->pfnGetGameDllHandle();
 	auto serverBase = gpMetaUtilFuncs->pfnGetGameDllBase();
@@ -297,10 +298,12 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		return FALSE;
 	}
 
-	auto serverSize = gpMetaUtilFuncs->pfnGetImageSize(serverBase);
-	auto serverEnd = (char*)serverBase + serverSize;
+	auto serverCodeBase = gpMetaUtilFuncs->pfnGetCodeBase(serverBase);
+	auto serverCodeSize = gpMetaUtilFuncs->pfnGetCodeSize(serverBase);
 
-	LOG_MESSAGE(PLID, "Current server dll range: %p ~ %p!", serverBase, serverEnd);
+	auto serverCodeEnd = (char*)serverCodeBase + serverCodeSize;
+
+	LOG_MESSAGE(PLID, "Current server code range: %p ~ %p!", serverCodeBase, serverCodeEnd);
 
 	void* asextHandle = NULL;
 
