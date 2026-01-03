@@ -146,6 +146,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	auto serverCodeBase = gpMetaUtilFuncs->pfnGetCodeBase(serverBase);
 	auto serverCodeSize = gpMetaUtilFuncs->pfnGetCodeSize(serverBase);
 
+	auto serverEnd = (char*)serverBase + serverSize;
 	auto serverCodeEnd = (char*)serverCodeBase + serverCodeSize;
 
 	LOG_MESSAGE(PLID, "Current server code range: %p ~ %p!", serverCodeBase, serverCodeEnd);
