@@ -305,4 +305,35 @@ typedef void (SC_SERVER_DECL *fnCScriptBuilder_DefineWord)(CScriptBuilder* pthis
 PRIVATE_FUNCTION_EXTERN(CScriptBuilder_DefineWord);
 void SC_SERVER_DECL NewCScriptBuilder_DefineWord(CScriptBuilder* pthis, SC_SERVER_DUMMYARG const char* word);
 
+// CScriptDictionary functions
+typedef CScriptDictionary* (*fnCScriptDictionary_Create)(void* pScriptEngine);
+PRIVATE_FUNCTION_EXTERN(CScriptDictionary_Create);
+
+typedef void (SC_SERVER_DECL *fnCScriptDictionary_Release)(CScriptDictionary* pthis SC_SERVER_DUMMYARG_NOCOMMA);
+PRIVATE_FUNCTION_EXTERN(CScriptDictionary_Release);
+
+typedef void (SC_SERVER_DECL *fnCScriptDictionary_SetDouble)(CScriptDictionary* pthis, SC_SERVER_DUMMYARG const CString* key, const double* val);
+PRIVATE_FUNCTION_EXTERN(CScriptDictionary_SetDouble);
+
+typedef void (SC_SERVER_DECL *fnCScriptDictionary_SetInt64)(CScriptDictionary* pthis, SC_SERVER_DUMMYARG const CString* key, const int64* val);
+PRIVATE_FUNCTION_EXTERN(CScriptDictionary_SetInt64);
+
+typedef bool (SC_SERVER_DECL *fnCScriptDictionary_GetDouble)(CScriptDictionary* pthis, SC_SERVER_DUMMYARG const CString* key, const double* outval);
+PRIVATE_FUNCTION_EXTERN(CScriptDictionary_GetDouble);
+
+typedef bool (SC_SERVER_DECL *fnCScriptDictionary_Exists)(CScriptDictionary* pthis, SC_SERVER_DUMMYARG const CString* key);
+PRIVATE_FUNCTION_EXTERN(CScriptDictionary_Exists);
+
+typedef bool (SC_SERVER_DECL *fnCScriptDictionary_IsEmpty)(CScriptDictionary* pthis SC_SERVER_DUMMYARG_NOCOMMA);
+PRIVATE_FUNCTION_EXTERN(CScriptDictionary_IsEmpty);
+
+typedef unsigned int (SC_SERVER_DECL *fnCScriptDictionary_GetSize)(CScriptDictionary* pthis SC_SERVER_DUMMYARG_NOCOMMA);
+PRIVATE_FUNCTION_EXTERN(CScriptDictionary_GetSize);
+
+typedef void (SC_SERVER_DECL *fnCScriptDictionary_Delete)(CScriptDictionary* pthis, SC_SERVER_DUMMYARG const CString* key);
+PRIVATE_FUNCTION_EXTERN(CScriptDictionary_Delete);
+
+typedef void (SC_SERVER_DECL *fnCScriptDictionary_DeleteAll)(CScriptDictionary* pthis SC_SERVER_DUMMYARG_NOCOMMA);
+PRIVATE_FUNCTION_EXTERN(CScriptDictionary_DeleteAll);
+
 extern CASServerManager **g_pServerManager;

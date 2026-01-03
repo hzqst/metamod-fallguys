@@ -31,6 +31,17 @@
 
 #define CScriptBuilder_DefineWord_Signature "\x8B\x4F\x04\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x8B\x77\x04"
 
+#define CScriptDictionary_Create_Signature ""
+#define CScriptDictionary_Release_Signature ""
+#define CScriptDictionary_SetDouble_Signature ""
+#define CScriptDictionary_SetInt64_Signature ""
+#define CScriptDictionary_GetDouble_Signature ""
+#define CScriptDictionary_Exists_Signature ""
+#define CScriptDictionary_IsEmpty_Signature ""
+#define CScriptDictionary_GetSize_Signature ""
+#define CScriptDictionary_Delete_Signature ""
+#define CScriptDictionary_DeleteAll_Signature ""
+
 #else
 
 #define CASHook_CASHook_Signature "\xC7\x44\x24\x2A\x03\x00\x00\x00\xC7\x44\x24\x2A\x02\x00\x00\x00\x8D\x2A\x2A\x2A\x2A\x2A\x89\x0C\x2A\xE8"
@@ -93,5 +104,35 @@
 
 #define CScriptBuilder_DefineWord_Signature "\x89\x54\x24\x04\x8B\x4E\x04\x89\x0C\x24\x89\xFB\xE8"
 #define CScriptBuilder_DefineWord_Symbol "_ZN14CScriptBuilder10DefineWordEPKc"
+
+#define CScriptDictionary_Create_Signature ""
+#define CScriptDictionary_Create_Symbol "_ZN17CScriptDictionary6CreateEP15asIScriptEngine"
+
+#define CScriptDictionary_Release_Signature ""
+#define CScriptDictionary_Release_Symbol "_ZNK17CScriptDictionary7ReleaseEv"
+
+#define CScriptDictionary_SetDouble_Signature ""
+#define CScriptDictionary_SetDouble_Symbol "_ZN17CScriptDictionary3SetERK7CStringRKd"
+
+#define CScriptDictionary_SetInt64_Signature ""
+#define CScriptDictionary_SetInt64_Symbol "_ZN17CScriptDictionary3SetERK7CStringRKx"
+
+#define CScriptDictionary_GetDouble_Signature ""
+#define CScriptDictionary_GetDouble_Symbol "_ZNK17CScriptDictionary3GetERK7CStringRd"
+
+#define CScriptDictionary_Exists_Signature ""
+#define CScriptDictionary_Exists_Symbol "_ZNK17CScriptDictionary6ExistsERK7CString"
+
+#define CScriptDictionary_IsEmpty_Signature ""
+#define CScriptDictionary_IsEmpty_Symbol "_ZNK17CScriptDictionary7IsEmptyEv"
+
+#define CScriptDictionary_GetSize_Signature ""
+#define CScriptDictionary_GetSize_Symbol "_ZNK17CScriptDictionary7GetSizeEv"
+
+#define CScriptDictionary_Delete_Signature ""
+#define CScriptDictionary_Delete_Symbol "_ZN17CScriptDictionary6DeleteERK7CString"
+
+#define CScriptDictionary_DeleteAll_Signature ""
+#define CScriptDictionary_DeleteAll_Symbol "_ZN17CScriptDictionary9DeleteAllEv"
 
 #endif

@@ -33,6 +33,16 @@ PRIVATE_FUNCTION_DEFINE(CString_Assign);
 PRIVATE_FUNCTION_DEFINE(CString_dtor);
 PRIVATE_FUNCTION_DEFINE(asGetActiveContext);
 PRIVATE_FUNCTION_DEFINE(CScriptBuilder_DefineWord);
+PRIVATE_FUNCTION_DEFINE(CScriptDictionary_Create);
+PRIVATE_FUNCTION_DEFINE(CScriptDictionary_Release);
+PRIVATE_FUNCTION_DEFINE(CScriptDictionary_SetDouble);
+PRIVATE_FUNCTION_DEFINE(CScriptDictionary_SetInt64);
+PRIVATE_FUNCTION_DEFINE(CScriptDictionary_GetDouble);
+PRIVATE_FUNCTION_DEFINE(CScriptDictionary_Exists);
+PRIVATE_FUNCTION_DEFINE(CScriptDictionary_IsEmpty);
+PRIVATE_FUNCTION_DEFINE(CScriptDictionary_GetSize);
+PRIVATE_FUNCTION_DEFINE(CScriptDictionary_Delete);
+PRIVATE_FUNCTION_DEFINE(CScriptDictionary_DeleteAll);
 
 CASServerManager **g_pServerManager = NULL;
 
@@ -279,4 +289,63 @@ void SC_SERVER_DECL NewCScriptBuilder_DefineWord(CScriptBuilder* pthis, SC_SERVE
 			g_ScriptBuilderDefineCallbacks[i](pthis);
 		}
 	}
+}
+
+C_DLLEXPORT CScriptDictionary* ASEXT_CScriptDictionary_Create(void* pScriptEngine)
+{
+	return g_pfn_CScriptDictionary_Create(pScriptEngine);
+}
+
+C_DLLEXPORT void ASEXT_CScriptDictionary_Release(CScriptDictionary* pScriptDictionary)
+{
+	SC_SERVER_DUMMYVAR;
+	g_pfn_CScriptDictionary_Release(pScriptDictionary SC_SERVER_PASS_DUMMYARG2);
+}
+
+C_DLLEXPORT void ASEXT_CScriptDictionary_SetDouble(CScriptDictionary* pScriptDictionary, const CString* key, const double* val)
+{
+	SC_SERVER_DUMMYVAR;
+	g_pfn_CScriptDictionary_SetDouble(pScriptDictionary, SC_SERVER_PASS_DUMMYARG key, val);
+}
+
+C_DLLEXPORT void ASEXT_CScriptDictionary_SetInt64(CScriptDictionary* pScriptDictionary, const CString* key, const int64* val)
+{
+	SC_SERVER_DUMMYVAR;
+	g_pfn_CScriptDictionary_SetInt64(pScriptDictionary, SC_SERVER_PASS_DUMMYARG key, val);
+}
+
+C_DLLEXPORT bool ASEXT_CScriptDictionary_GetDouble(CScriptDictionary* pScriptDictionary, const CString* key, const double* outval)
+{
+	SC_SERVER_DUMMYVAR;
+	return g_pfn_CScriptDictionary_GetDouble(pScriptDictionary, SC_SERVER_PASS_DUMMYARG key, outval);
+}
+
+C_DLLEXPORT bool ASEXT_CScriptDictionary_Exists(CScriptDictionary* pScriptDictionary, const CString* key)
+{
+	SC_SERVER_DUMMYVAR;
+	return g_pfn_CScriptDictionary_Exists(pScriptDictionary, SC_SERVER_PASS_DUMMYARG key);
+}
+
+C_DLLEXPORT bool ASEXT_CScriptDictionary_IsEmpty(CScriptDictionary* pScriptDictionary)
+{
+	SC_SERVER_DUMMYVAR;
+	return g_pfn_CScriptDictionary_IsEmpty(pScriptDictionary SC_SERVER_PASS_DUMMYARG2);
+}
+
+C_DLLEXPORT unsigned int ASEXT_CScriptDictionary_GetSize(CScriptDictionary* pScriptDictionary)
+{
+	SC_SERVER_DUMMYVAR;
+	return g_pfn_CScriptDictionary_GetSize(pScriptDictionary SC_SERVER_PASS_DUMMYARG2);
+}
+
+C_DLLEXPORT void ASEXT_CScriptDictionary_Delete(CScriptDictionary* pScriptDictionary, const CString* key)
+{
+	SC_SERVER_DUMMYVAR;
+	g_pfn_CScriptDictionary_Delete(pScriptDictionary, SC_SERVER_PASS_DUMMYARG key);
+}
+
+C_DLLEXPORT void ASEXT_CScriptDictionary_DeleteAll(CScriptDictionary* pScriptDictionary)
+{
+	SC_SERVER_DUMMYVAR;
+	g_pfn_CScriptDictionary_DeleteAll(pScriptDictionary SC_SERVER_PASS_DUMMYARG2);
 }
