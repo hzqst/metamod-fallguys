@@ -213,7 +213,9 @@ public:
 	CASModule *curModule;//24
 };
 
+class CString;
 class CScriptBuilder;
+class CScriptDictionary;
 
 typedef void(*fnASDocInitCallback)(CASDocumentation *pASDoc);
 typedef void(*fnASDirInitCallback)(CASDirectoryList *pASDir);
@@ -574,7 +576,7 @@ IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_Create);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_AddRef);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_Release);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_Set);\
-IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_GetDouble);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_Get);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_Exists);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_IsEmpty);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_GetSize);\
@@ -611,7 +613,7 @@ IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_Create);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_AddRef);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_Release);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_Set);\
-IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_GetDouble);\
+IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_Get);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_Exists);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_IsEmpty);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_GetSize);\
