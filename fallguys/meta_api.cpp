@@ -388,7 +388,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 	if (!g_pfn_build_number)
 	{
-		if (!strcmp(gpMetaUtilFuncs->pfnGetEngineType(), "i686"))
+		if (!strcmp(gpMetaUtilFuncs->pfnGetEngineType(), "i686") || !strcmp(gpMetaUtilFuncs->pfnGetEngineType(), "hw.so"))
 		{
 			FILL_FROM_SIGNATURED_TY_CALLER_FROM_START(engine, build_number, i686, 0);
 
