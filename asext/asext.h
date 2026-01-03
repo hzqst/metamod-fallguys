@@ -96,9 +96,7 @@ C_DLLEXPORT CScriptDictionary* ASEXT_CScriptDictionary_Create(void* pScriptEngin
 
 C_DLLEXPORT void ASEXT_CScriptDictionary_Release(CScriptDictionary* pScriptDictionary);
 
-C_DLLEXPORT void ASEXT_CScriptDictionary_SetDouble(CScriptDictionary* pScriptDictionary, const CString *key, const double *val);
-
-C_DLLEXPORT void ASEXT_CScriptDictionary_SetInt64(CScriptDictionary* pScriptDictionary, const CString* key, const int64* val);
+C_DLLEXPORT void ASEXT_CScriptDictionary_Set(CScriptDictionary* pScriptDictionary, const CString *key, const void *val, int asTypeId);
 
 C_DLLEXPORT bool ASEXT_CScriptDictionary_GetDouble(CScriptDictionary* pScriptDictionary, const CString* key, const double* outval);
 

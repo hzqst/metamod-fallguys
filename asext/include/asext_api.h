@@ -77,6 +77,29 @@ enum asEObjTypeFlags
 	asOBJ_APP_ALIGN16 = (1 << 30)
 };
 
+enum asETypeIdFlags
+{
+	asTYPEID_VOID = 0,
+	asTYPEID_BOOL = 1,
+	asTYPEID_INT8 = 2,
+	asTYPEID_INT16 = 3,
+	asTYPEID_INT32 = 4,
+	asTYPEID_INT64 = 5,
+	asTYPEID_UINT8 = 6,
+	asTYPEID_UINT16 = 7,
+	asTYPEID_UINT32 = 8,
+	asTYPEID_UINT64 = 9,
+	asTYPEID_FLOAT = 10,
+	asTYPEID_DOUBLE = 11,
+	asTYPEID_OBJHANDLE = 0x40000000,
+	asTYPEID_HANDLETOCONST = 0x20000000,
+	asTYPEID_MASK_OBJECT = 0x1C000000,
+	asTYPEID_APPOBJECT = 0x04000000,
+	asTYPEID_SCRIPTOBJECT = 0x08000000,
+	asTYPEID_TEMPLATE = 0x10000000,
+	asTYPEID_MASK_SEQNBR = 0x03FFFFFF
+};
+
 class CASDocumentation
 {
 public:
@@ -346,6 +369,42 @@ extern fnASEXT_CScriptAny_Release ASEXT_CScriptAny_Release;
 
 extern fnASEXT_CScriptArray_Release ASEXT_CScriptArray_Release;
 
+typedef CScriptDictionary*(*fnASEXT_CScriptDictionary_Create)(void* pScriptEngine);
+
+typedef void(*fnASEXT_CScriptDictionary_Release)(CScriptDictionary* pScriptDictionary);
+
+typedef void(*fnASEXT_CScriptDictionary_Set)(CScriptDictionary* pScriptDictionary, const CString* key, const void* val, int asTypeId);
+
+typedef bool(*fnASEXT_CScriptDictionary_GetDouble)(CScriptDictionary* pScriptDictionary, const CString* key, const double* outval);
+
+typedef bool(*fnASEXT_CScriptDictionary_Exists)(CScriptDictionary* pScriptDictionary, const CString* key);
+
+typedef bool(*fnASEXT_CScriptDictionary_IsEmpty)(CScriptDictionary* pScriptDictionary);
+
+typedef unsigned int(*fnASEXT_CScriptDictionary_GetSize)(CScriptDictionary* pScriptDictionary);
+
+typedef void(*fnASEXT_CScriptDictionary_Delete)(CScriptDictionary* pScriptDictionary, const CString* key);
+
+typedef void(*fnASEXT_CScriptDictionary_DeleteAll)(CScriptDictionary* pScriptDictionary);
+
+extern fnASEXT_CScriptDictionary_Create ASEXT_CScriptDictionary_Create;
+
+extern fnASEXT_CScriptDictionary_Release ASEXT_CScriptDictionary_Release;
+
+extern fnASEXT_CScriptDictionary_Set ASEXT_CScriptDictionary_Set;
+
+extern fnASEXT_CScriptDictionary_GetDouble ASEXT_CScriptDictionary_GetDouble;
+
+extern fnASEXT_CScriptDictionary_Exists ASEXT_CScriptDictionary_Exists;
+
+extern fnASEXT_CScriptDictionary_IsEmpty ASEXT_CScriptDictionary_IsEmpty;
+
+extern fnASEXT_CScriptDictionary_GetSize ASEXT_CScriptDictionary_GetSize;
+
+extern fnASEXT_CScriptDictionary_Delete ASEXT_CScriptDictionary_Delete;
+
+extern fnASEXT_CScriptDictionary_DeleteAll ASEXT_CScriptDictionary_DeleteAll;
+
 typedef void*(*fnASEXT_GetCurrentContext)();
 extern fnASEXT_GetCurrentContext ASEXT_GetCurrentContext;
 
@@ -503,6 +562,15 @@ IMPORT_FUNCTION_DLSYM(asext, ASEXT_CreateCASFunction);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CASRefCountedBaseClass_InternalRelease);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptAny_Release);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptArray_Release);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_Create);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_Release);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_Set);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_GetDouble);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_Exists);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_IsEmpty);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_GetSize);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_Delete);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_DeleteAll);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_GetCurrentContext);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptBuilder_DefineWord);\
 
@@ -530,6 +598,15 @@ IMPORT_FUNCTION_DEFINE(ASEXT_CreateCASFunction);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CASRefCountedBaseClass_InternalRelease);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CScriptAny_Release);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CScriptArray_Release);\
+IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_Create);\
+IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_Release);\
+IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_Set);\
+IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_GetDouble);\
+IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_Exists);\
+IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_IsEmpty);\
+IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_GetSize);\
+IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_Delete);\
+IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_DeleteAll);\
 IMPORT_FUNCTION_DEFINE(ASEXT_GetCurrentContext);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CScriptBuilder_DefineWord);\
 IMPORT_FUNCTION_POINTER_DEFINE(ASEXT_CallHook);\

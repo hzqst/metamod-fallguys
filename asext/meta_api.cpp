@@ -181,6 +181,10 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 	FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptBuilder_DefineWord, 8);
 
+	FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptDictionary_Create, 8);
+	FILL_FROM_SIGNATURE(server, CScriptDictionary_Release);
+	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CScriptDictionary_Set, -1);
+
 	VAR_FROM_SIGNATURE_FROM_START(server, g_pServerManager, 5);
 
 #else

@@ -34,7 +34,7 @@
 #define CScriptDictionary_Create_Signature ""
 #define CScriptDictionary_Release_Signature ""
 #define CScriptDictionary_SetDouble_Signature ""
-#define CScriptDictionary_SetInt64_Signature ""
+#define CScriptDictionary_Set_Signature ""
 #define CScriptDictionary_GetDouble_Signature ""
 #define CScriptDictionary_Exists_Signature ""
 #define CScriptDictionary_IsEmpty_Signature ""
@@ -105,17 +105,14 @@
 #define CScriptBuilder_DefineWord_Signature "\x89\x54\x24\x04\x8B\x4E\x04\x89\x0C\x24\x89\xFB\xE8"
 #define CScriptBuilder_DefineWord_Symbol "_ZN14CScriptBuilder10DefineWordEPKc"
 
-#define CScriptDictionary_Create_Signature ""
+#define CScriptDictionary_Create_Signature "\x89\x1C\x24\xFF\x10\x89\x04\x24\xE8\x2A\x2A\x2A\x2A\x89\x06"
 #define CScriptDictionary_Create_Symbol "_ZN17CScriptDictionary6CreateEP15asIScriptEngine"
 
-#define CScriptDictionary_Release_Signature ""
+#define CScriptDictionary_Release_Signature "\x56\x53\x83\xEC\x14\xE8\x2A\x2A\x2A\x2A\x81\x2A\x2A\x2A\x2A\x\x00\x8B\x2A\x2A\x20\xC6\x46\x0C\x00"
 #define CScriptDictionary_Release_Symbol "_ZNK17CScriptDictionary7ReleaseEv"
 
-#define CScriptDictionary_SetDouble_Signature ""
-#define CScriptDictionary_SetDouble_Symbol "_ZN17CScriptDictionary3SetERK7CStringRKd"
-
-#define CScriptDictionary_SetInt64_Signature ""
-#define CScriptDictionary_SetInt64_Symbol "_ZN17CScriptDictionary3SetERK7CStringRKx"
+#define CScriptDictionary_Set_Signature "\xFF\x50\x18\x89\x44\x24\x0C\x89\x6C\x24\x08\x89\x7C\x24\x04\x89\x34\x24\xE8"
+#define CScriptDictionary_Set_Symbol ""//no such thing
 
 #define CScriptDictionary_GetDouble_Signature ""
 #define CScriptDictionary_GetDouble_Symbol "_ZNK17CScriptDictionary3GetERK7CStringRd"

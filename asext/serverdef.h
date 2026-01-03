@@ -315,8 +315,8 @@ PRIVATE_FUNCTION_EXTERN(CScriptDictionary_Release);
 typedef void (SC_SERVER_DECL *fnCScriptDictionary_SetDouble)(CScriptDictionary* pthis, SC_SERVER_DUMMYARG const CString* key, const double* val);
 PRIVATE_FUNCTION_EXTERN(CScriptDictionary_SetDouble);
 
-typedef void (SC_SERVER_DECL *fnCScriptDictionary_SetInt64)(CScriptDictionary* pthis, SC_SERVER_DUMMYARG const CString* key, const int64* val);
-PRIVATE_FUNCTION_EXTERN(CScriptDictionary_SetInt64);
+typedef void (SC_SERVER_DECL *fnCScriptDictionary_Set)(CScriptDictionary* pthis, SC_SERVER_DUMMYARG const CString* key, const void* val, int asTypeId);
+PRIVATE_FUNCTION_EXTERN(CScriptDictionary_Set);
 
 typedef bool (SC_SERVER_DECL *fnCScriptDictionary_GetDouble)(CScriptDictionary* pthis, SC_SERVER_DUMMYARG const CString* key, const double* outval);
 PRIVATE_FUNCTION_EXTERN(CScriptDictionary_GetDouble);
