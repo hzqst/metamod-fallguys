@@ -139,6 +139,12 @@ public:
 
 };
 
+class CScriptDictionary
+{
+public:
+
+};
+
 class CASFunction
 {
 public:

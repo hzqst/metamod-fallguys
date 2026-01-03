@@ -17,7 +17,9 @@ class CASServerManager;
 class CASDocumentation;
 class CASDirectoryList;
 class CScriptArray;
+class CScriptDictionary;
 class CScriptBuilder;
+class CString;
 
 typedef void(*fnASDocInitCallback)(CASDocumentation *pASDoc);
 typedef void(*fnASDirInitCallback)(CASDirectoryList *pASDir);
@@ -89,6 +91,26 @@ C_DLLEXPORT void ASEXT_CStringAssign(void *pthis, const char *src, size_t len);
 C_DLLEXPORT void ASEXT_CStringdtor(void *pthis);
 
 C_DLLEXPORT CASFunction *ASEXT_CreateCASFunction(aslScriptFunction *aslfn, CASModule *asmodule, int unk);
+
+C_DLLEXPORT CScriptDictionary* ASEXT_CScriptDictionary_Create(void* pScriptEngine);
+
+C_DLLEXPORT void ASEXT_CScriptDictionary_Release(CScriptDictionary* pScriptDictionary);
+
+C_DLLEXPORT void ASEXT_CScriptDictionary_SetDouble(CScriptDictionary* pScriptDictionary, const CString *key, const double *val);
+
+C_DLLEXPORT void ASEXT_CScriptDictionary_SetInt64(CScriptDictionary* pScriptDictionary, const CString* key, const int64* val);
+
+C_DLLEXPORT bool ASEXT_CScriptDictionary_GetDouble(CScriptDictionary* pScriptDictionary, const CString* key, const double* outval);
+
+C_DLLEXPORT bool ASEXT_CScriptDictionary_Exists(CScriptDictionary* pScriptDictionary, const CString* key);
+
+C_DLLEXPORT bool ASEXT_CScriptDictionary_IsEmpty(CScriptDictionary* pScriptDictionary);
+
+C_DLLEXPORT unsigned int ASEXT_CScriptDictionary_GetSize(CScriptDictionary* pScriptDictionary);
+
+C_DLLEXPORT void ASEXT_CScriptDictionary_Delete(CScriptDictionary* pScriptDictionary, const CString* key);
+
+C_DLLEXPORT void ASEXT_CScriptDictionary_DeleteAll(CScriptDictionary* pScriptDictionary);
 
 /*
 	Must be registered before call hook

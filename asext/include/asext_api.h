@@ -472,6 +472,12 @@ public:
 	int m_ElementTypeId;//24
 };
 
+class CScriptDictionary
+{
+public:
+
+};
+
 #define IMPORT_ASEXT_API(asext) IMPORT_FUNCTION_DLSYM(asext, ASEXT_CallHook);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CallCASBaseCallable);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterDocInitCallback);\
