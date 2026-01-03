@@ -277,8 +277,9 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		return FALSE;
 	}
 
+	auto engineSize = gpMetaUtilFuncs->pfnGetImageSize(engineBase);
 	auto engineCodeBase = gpMetaUtilFuncs->pfnGetCodeBase(engineBase);
-	auto engineCodeSize = gpMetaUtilFuncs->pfnGetImageSize(engineBase);
+	auto engineCodeSize = gpMetaUtilFuncs->pfnGetCodeSize(engineBase);
 	auto engineCodeEnd = (char*)engineCodeBase + engineCodeSize;
 
 	LOG_MESSAGE(PLID, "Current engine code range: %p ~ %p!", engineBase, engineCodeEnd);
@@ -298,6 +299,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		return FALSE;
 	}
 
+	auto serverSize = gpMetaUtilFuncs->pfnGetImageSize(serverBase);
 	auto serverCodeBase = gpMetaUtilFuncs->pfnGetCodeBase(serverBase);
 	auto serverCodeSize = gpMetaUtilFuncs->pfnGetCodeSize(serverBase);
 

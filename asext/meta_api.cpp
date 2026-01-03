@@ -142,6 +142,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		return FALSE;
 	}
 
+	auto serverSize = gpMetaUtilFuncs->pfnGetImageSize(serverBase);
 	auto serverCodeBase = gpMetaUtilFuncs->pfnGetCodeBase(serverBase);
 	auto serverCodeSize = gpMetaUtilFuncs->pfnGetCodeSize(serverBase);
 
