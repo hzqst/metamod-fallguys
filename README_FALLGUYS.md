@@ -338,6 +338,8 @@ g_EntityFuncs.CreatePhysicObject(pEntity.edict(), shapeParams, objectParams);
 
 * You should add `$flags 512` in the `.qc` or check `HLAM -> Model Flags -> Hitbox Collision` for this studiomodel to force engine to use hitbox as collision shape instead of axis-locked box in playermove simulation.
 
+* `g_EngineFuncs.EnablePhysicWorld(true);` must be called when enabling physic objects.
+
 ### Entity follow (similar to trigger_setorigin but save entity count and reduce potential latency)
 
 ```angelscript
@@ -371,6 +373,8 @@ int flags = FollowEnt_CopyOrigin | FollowEnt_CopyAngles;
 g_EntityFuncs.SetEntityFollow(pEntity.edict(), pCopyFromEntity.edict(), flags, vecOriginOffset, vecAnglesOffset);
 
 ```
+
+* `g_EngineFuncs.EnablePhysicWorld(true);` must be called when enabling "entity follow".
 
 ### Detect who is currently running player move code
 
