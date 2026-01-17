@@ -1,4 +1,4 @@
-# asext 模块源码级分析
+# asext 模块
 
 ## 概述
 - asext 是 `metamod-fallguys` 的 AngelScript 扩展插件（动态库）。它通过签名扫描/符号解析定位 server.dll/server.so 中的 AngelScript 私有实现，并将注册与 hook 能力导出给其他插件使用。

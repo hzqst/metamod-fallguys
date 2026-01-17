@@ -1,4 +1,4 @@
-# ascurl 模块源码分析
+# ascurl 模块
 
 ## 概述
 - ascurl 是 Metamod 插件，提供基于 libcurl 的 HTTP 功能给 AngelScript（CEngineFuncs 扩展），支持同步/异步请求、表单、上传、回调、响应读取，以及 HMAC/MD5/base64 工具函数。入口在 `ascurl/meta_api.cpp`，由 Meta_Attach 初始化并注册脚本 API。
