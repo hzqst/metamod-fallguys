@@ -204,7 +204,9 @@ C_DLLEXPORT bool ASEXT_UnregisterScriptBuilderDefineCallback(fnScriptBuilderDefi
 	auto it = std::remove_if(g_ScriptBuilderDefineCallbacks.begin(), g_ScriptBuilderDefineCallbacks.end(), [callback](fnScriptBuilderDefineCallback cb) {
 		return cb == callback;
 	});
-	return it == g_ScriptBuilderDefineCallbacks.end() ? false : true;
+	bool found = it != g_ScriptBuilderDefineCallbacks.end();
+	g_ScriptBuilderDefineCallbacks.erase(it, g_ScriptBuilderDefineCallbacks.end());
+	return found;
 }
 
 C_DLLEXPORT void *ASEXT_RegisterHook(const char *docs, int stopMode, int type, int flags, const char *domain, const char *func, const char *args)

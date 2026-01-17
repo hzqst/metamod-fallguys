@@ -38,4 +38,4 @@
 - **版本与平台敏感**：签名扫描/符号名高度依赖游戏版本与平台（Windows/Linux），`Meta_Attach` 中对 Sven Co-op 5.15/5.16 采用不同路径。
 - **调用约定差异**：`SC_SERVER_DECL/SC_SERVER_DUMMYARG` 宏用于适配平台调用约定，不可随意更改。
 - **函数指针判空**：`ASEXT_CallHook` / `ASEXT_CallCASBaseCallable` 为运行时设置的函数指针，调用前需要判空（README 中示例也是如此）。
-- **潜在问题**：`ASEXT_UnregisterScriptBuilderDefineCallback` 只做了 `remove_if` 没有 `erase`，实际不会从列表移除；`g_ASHooks` 使用 `new` 创建但未集中释放；结构体字段大量为未知/占位，改动需谨慎。
+- **潜在问题**：`g_ASHooks` 使用 `new` 创建但未集中释放；结构体字段大量为未知/占位，改动需谨慎。
