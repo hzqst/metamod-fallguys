@@ -1,10 +1,11 @@
-#temporary files
-*~
-.vs/*
-output
-intermediate
-install/*
-build-cmake/*
-build/addons/metamod/dlls/*
-thirdparty/build/*
-thirdparty/install/*
+.vs
+settings.local.json
+/output
+/intermediate
+/install
+/Debug
+/Release
+/build-cmake
+/build/addons/metamod/dlls
+/thirdparty/build
+/thirdparty/install
