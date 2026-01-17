@@ -2429,9 +2429,10 @@ bool CPhysicsManager::PM_ShouldCollide(int entindex)
 
 void CPhysicsManager::PM_StartMove()
 {
-	std::remove_if(pmove->physents, pmove->physents + pmove->numphysent, [this](const physent_t& ps) {
+	auto new_end = std::remove_if(pmove->physents, pmove->physents + pmove->numphysent, [this](const physent_t& ps) {
 		return !PM_ShouldCollide(ps.info);
 	});
+	pmove->numphysent = static_cast<int>(new_end - pmove->physents);
 }
 
 void CPhysicsManager::PM_EndMove()
@@ -3439,6 +3440,63 @@ bool CPhysicsManager::UnsetEntityPMSemiClipToAll(edict_t* ent)
 	}
 
 	obj->UnsetPMSemiClipToAll();
+
+	return true;
+}
+
+bool CPhysicsManager::SetEntitySemiRenderEffects(edict_t* ent, edict_t* player, int rendermode, int renderamt, color24 rendercolor, int renderfx)
+{
+	if (ent->free)
+		return false;
+
+	if (!player || player->free)
+		return false;
+
+	auto obj = GetGameObject(ent);
+
+	if (!obj)
+	{
+		obj = new CGameObject(ent, g_engfuncs.pfnIndexOfEdict(ent));
+
+		AddGameObject(obj);
+	}
+
+	obj->SetSemiRenderEffects(player, rendermode, renderamt, rendercolor, renderfx);
+
+	return true;
+}
+
+bool CPhysicsManager::UnsetEntitySemiRenderEffects(edict_t* ent, edict_t* player)
+{
+	if (ent->free)
+		return false;
+
+	if (!player || player->free)
+		return false;
+
+	auto obj = GetGameObject(ent);
+
+	if (!obj)
+	{
+		return false;
+	}
+
+	return obj->UnsetSemiRenderEffects(player);
+}
+
+bool CPhysicsManager::UnsetEntitySemiRenderEffectsToAll(edict_t* ent)
+{
+	if (ent->free)
+		return false;
+
+	auto obj = GetGameObject(ent);
+
+	if (!obj)
+	{
+		return false;
+	}
+
+	obj->UnsetSemiRenderEffectsToAll();
 
 	return true;
 }
@@ -5682,6 +5740,16 @@ bool CGameObject::AddToFullPack(struct entity_state_s *state, int entindex, edic
 	if (IsSemiClipToEntity(host) || IsPMSemiClipToEntity(host))
 	{
 		state->solid = SOLID_NOT;
+	}
+
+	// SemiRenderEffects: override render* fields for specific player
+	auto semiRenderEffects = FindSemiRenderEffects(host);
+	if (semiRenderEffects)
+	{
+		state->rendermode = semiRenderEffects->rendermode;
+		state->renderamt = semiRenderEffects->renderamt;
+		state->rendercolor = semiRenderEffects->rendercolor;
+		state->renderfx = semiRenderEffects->renderfx;
 	}
 
 	if (GetLevelOfDetailFlags() != 0)

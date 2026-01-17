@@ -265,6 +265,21 @@ bool SC_SERVER_DECL CASEntityFuncs__UnsetEntityPMSemiClipToAll(void* pthis, SC_S
 	return gPhysicsManager.UnsetEntityPMSemiClipToAll(ent);
 }
 
+bool SC_SERVER_DECL CASEntityFuncs__SetEntitySemiRenderEffects(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, edict_t* player, int rendermode, int renderamt, color24 rendercolor, int renderfx)
+{
+	return gPhysicsManager.SetEntitySemiRenderEffects(ent, player, rendermode, renderamt, rendercolor, renderfx);
+}
+
+bool SC_SERVER_DECL CASEntityFuncs__UnsetEntitySemiRenderEffects(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, edict_t* player)
+{
+	return gPhysicsManager.UnsetEntitySemiRenderEffects(ent, player);
+}
+
+bool SC_SERVER_DECL CASEntityFuncs__UnsetEntitySemiRenderEffectsToAll(void* pthis, SC_SERVER_DUMMYARG edict_t* ent)
+{
+	return gPhysicsManager.UnsetEntitySemiRenderEffectsToAll(ent);
+}
+
 edict_t *SC_SERVER_DECL CASEntityFuncs__GetCurrentSuperPusher(void* pthis, SC_SERVER_DUMMYARG Vector* vecPushDirection)
 {
 	return GetCurrentSuperPusher(vecPushDirection);
@@ -738,6 +753,18 @@ void RegisterAngelScriptMethods(void)
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Disable SemiClip for entity", "CEntityFuncs", "bool UnsetEntitySemiClipToAll(edict_t@ ent)",
 			(void*)CASEntityFuncs__UnsetEntitySemiClipToAll, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Set per-player render effects for entity", "CEntityFuncs", "bool SetEntitySemiRenderEffects(edict_t@ ent, edict_t@ player, int rendermode, int renderamt, color24 rendercolor, int renderfx)",
+			(void*)CASEntityFuncs__SetEntitySemiRenderEffects, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Unset per-player render effects for entity", "CEntityFuncs", "bool UnsetEntitySemiRenderEffects(edict_t@ ent, edict_t@ player)",
+			(void*)CASEntityFuncs__UnsetEntitySemiRenderEffects, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Unset all per-player render effects for entity", "CEntityFuncs", "bool UnsetEntitySemiRenderEffectsToAll(edict_t@ ent)",
+			(void*)CASEntityFuncs__UnsetEntitySemiRenderEffectsToAll, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
 			"Enable follow for the entity", "CEntityFuncs", "bool SetEntityFollow(edict_t@ ent, edict_t@ follow, int flags, const Vector& in origin_offset, const Vector& in angles_offset )",

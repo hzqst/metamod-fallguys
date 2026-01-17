@@ -1086,6 +1086,16 @@ public :
 	float m_cached_frame;
 };
 
+// SemiRenderEffects: per-player render overrides for AddToFullPack
+struct SemiRenderEffectsEntry
+{
+	EHANDLE target;      // target player, using EHANDLE to avoid dangling pointer
+	int rendermode;
+	int renderamt;
+	color24 rendercolor;
+	int renderfx;
+};
+
 ATTRIBUTE_ALIGNED16(class)
 CGameObject
 {
@@ -1127,6 +1137,7 @@ public:
 		m_follow_ent = NULL;
 		m_follow_angles_offet = g_vecZero;
 		m_follow_origin_offet = g_vecZero;
+		m_semi_render_effects = nullptr;
 	}
 
 	virtual ~CGameObject()
@@ -1521,6 +1532,87 @@ public:
 		return true;
 	}
 
+	// SemiRenderEffects: per-player render overrides
+	void SetSemiRenderEffects(edict_t* player, int rendermode, int renderamt, color24 rendercolor, int renderfx)
+	{
+		if (!m_semi_render_effects)
+		{
+			m_semi_render_effects = std::make_unique<std::vector<SemiRenderEffectsEntry>>();
+		}
+
+		// Check if entry already exists for this player
+		auto itor = std::find_if(m_semi_render_effects->begin(), m_semi_render_effects->end(), [player](const SemiRenderEffectsEntry& entry) {
+			return entry.target.Get() == player;
+		});
+
+		if (itor != m_semi_render_effects->end())
+		{
+			// Update existing entry
+			itor->rendermode = rendermode;
+			itor->renderamt = renderamt;
+			itor->rendercolor = rendercolor;
+			itor->renderfx = renderfx;
+		}
+		else
+		{
+			// Add new entry
+			SemiRenderEffectsEntry entry;
+			entry.target = player;
+			entry.rendermode = rendermode;
+			entry.renderamt = renderamt;
+			entry.rendercolor = rendercolor;
+			entry.renderfx = renderfx;
+			m_semi_render_effects->emplace_back(entry);
+		}
+	}
+
+	bool UnsetSemiRenderEffects(edict_t* player)
+	{
+		if (!m_semi_render_effects)
+		{
+			return false;
+		}
+
+		auto itor = std::find_if(m_semi_render_effects->begin(), m_semi_render_effects->end(), [player](const SemiRenderEffectsEntry& entry) {
+			return entry.target.Get() == player;
+		});
+
+		if (itor != m_semi_render_effects->end())
+		{
+			m_semi_render_effects->erase(itor);
+			return true;
+		}
+
+		return false;
+	}
+
+	void UnsetSemiRenderEffectsToAll()
+	{
+		if (m_semi_render_effects)
+		{
+			m_semi_render_effects->clear();
+		}
+	}
+
+	const SemiRenderEffectsEntry* FindSemiRenderEffects(edict_t* player) const
+	{
+		if (!m_semi_render_effects)
+		{
+			return nullptr;
+		}
+
+		auto itor = std::find_if(m_semi_render_effects->begin(), m_semi_render_effects->end(), [player](const SemiRenderEffectsEntry& entry) {
+			return entry.target.Get() == player;
+		});
+
+		if (itor != m_semi_render_effects->end())
+		{
+			return &(*itor);
+		}
+
+		return nullptr;
+	}
+
 	void SetOriginalSolid(int original_solid)
 	{
 		m_original_solid = original_solid;
@@ -1595,6 +1687,9 @@ private:
 	//int m_player_semi_clip_mask;
 	std::vector<EHANDLE> m_semiclip_to_entities;
 	std::vector<EHANDLE> m_pm_semiclip_to_entities;
+
+	// SemiRenderEffects: sparse storage, nullptr when not used
+	std::unique_ptr<std::vector<SemiRenderEffectsEntry>> m_semi_render_effects;
 
 	int m_original_solid;
 
@@ -1697,6 +1792,10 @@ public:
 	bool UnsetEntityPMSemiClipToEntity(edict_t* ent, edict_t* targetEntity);
 	bool UnsetEntitySemiClipToAll(edict_t* ent);
 	bool UnsetEntityPMSemiClipToAll(edict_t* ent);
+
+	bool SetEntitySemiRenderEffects(edict_t* ent, edict_t* player, int rendermode, int renderamt, color24 rendercolor, int renderfx);
+	bool UnsetEntitySemiRenderEffects(edict_t* ent, edict_t* player);
+	bool UnsetEntitySemiRenderEffectsToAll(edict_t* ent);
 
 	bool SetEntitySuperPusher(edict_t* ent, bool enable);
 	bool SetEntityFollow(edict_t* ent, edict_t* follow, int flags, const Vector &origin_offset, const Vector &angles_offset);
