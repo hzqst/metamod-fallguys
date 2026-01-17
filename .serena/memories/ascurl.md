@@ -54,3 +54,46 @@
 - `ASCURL_DestroyHTTPRequest` 在 AS 回调中仅标记，回调结束后再释放，避免回调期间释放对象。
 - `GetResponse` 对 stringstream 仅 `clear()` 状态，未清空 buffer；重复读取可能返回相同内容。
 - `read_stream_callback` 固定返回 `size*nmemb`，未使用实际读取字节数，异常短读场景需注意。
+
+## AngelScript-level API 文档
+
+### 预定义与目录
+- 预定义宏：`METAMOD_PLUGIN_ASCURL`（脚本可用于条件编译）。
+- 插件虚拟目录（读写权限来自 `asext` 目录系统）：
+  - 只读：`maps/`、`models/`、`models/player/`、`sound/`、`sprites/`
+  - 读写：`maps/soundcache/`
+
+### CEngineFuncs 方法
+```
+int  CreateHTTPRequest(const string& in url, bool async, int method, int conn_timeout_ms, int timeout_ms)
+bool SetHTTPRequestPostField(int request_id, const string& in post_fields)
+bool SetHTTPRequestPostFieldEx(int request_id, const string& in post_fields, int sizeof_post_fields)
+bool AppendHTTPRequestHeader(int request_id, const string& in header)
+bool AppendHTTPRequestFormString(int request_id, const string& in form, const string& in content)
+bool AppendHTTPRequestFormBlob(int request_id, const string& in form, const BLOB& in blob)
+bool SetHTTPRequestUploadBlob(int request_id, const BLOB& in blob)
+
+funcdef void HTTPResponseCallback(int request_id)
+bool SetHTTPRequestCallback(int request_id, HTTPResponseCallback @callback)
+
+bool SendHTTPRequest(int request_id)
+bool GetHTTPResponse(int request_id, int& out out_response, string& out out_header, string& out out_body)
+bool DestroyHTTPRequest(int request_id)
+
+bool hmac_sha1(const string& in password, const string& in message, string& out outhash)
+bool hmac_md5(const string& in password, const string& in message, string& out outhash)
+bool md5(const string& in data, string& out outhash)
+bool base64_encode(const string& in hash, string& out outstr)
+```
+
+### 参数与约定
+- `method`：`ASCURL_METHOD_GET = 0`、`ASCURL_METHOD_POST = 1`、`ASCURL_METHOD_PUT = 2`。
+- `async = true`：请求加入 curl multi，完成时触发 `HTTPResponseCallback`（在服务器帧内）。
+- `async = false`：`SendHTTPRequest` 直接执行并阻塞，之后可立即 `GetHTTPResponse`。
+- `SetHTTPRequestPostFieldEx` 用于包含 `\0` 的二进制 payload 或明确长度的 post body。
+- `AppendHTTPRequestForm*` 使用 multipart form；`SetHTTPRequestUploadBlob` 走上传流。
+
+### 使用建议
+- 异步流程：`Create -> (设置参数) -> SetHTTPRequestCallback -> Send -> 回调中 GetHTTPResponse -> Destroy`。
+- 回调中调用 `DestroyHTTPRequest` 是安全的（实现会延迟释放到回调结束）。
+- `hmac_*`/`md5` 返回二进制字符串；如需可读编码可配合 `base64_encode` 或在脚本层转换为 hex。
