@@ -262,6 +262,27 @@ g_EntityFuncs.UnsetEntityPMSemiClipToAll(pEntity.edict());
 
 ```
 
+### SemiRenderEffects
+
+SemiRenderEffects allows you to override the render properties (rendermode, renderamt, rendercolor, renderfx) of an entity for specific players only. This is useful for creating per-player visual effects without affecting how other players see the entity.
+
+```angelscript
+
+//Make "pEntity" appear transparent (rendermode=kRenderTransTexture, renderamt=128) only for "pPlayer".
+//Other players will see the entity with its original render settings.
+g_EntityFuncs.SetEntitySemiRenderEffects(pEntity.edict(), pPlayer.edict(), kRenderTransTexture, 128, color24(255, 255, 255), kRenderFxNone);
+
+//Make "pEntity" appear red (rendercolor=255,0,0) and glowing only for "pPlayer".
+g_EntityFuncs.SetEntitySemiRenderEffects(pEntity.edict(), pPlayer.edict(), kRenderTransAdd, 30, color24(255, 0, 0), kRenderFxGlowShell);
+
+//Remove the custom render effects for "pPlayer". The entity will now appear normal to this player.
+g_EntityFuncs.UnsetEntitySemiRenderEffects(pEntity.edict(), pPlayer.edict());
+
+//Remove all custom render effects for all players. The entity will appear normal to everyone.
+g_EntityFuncs.UnsetEntitySemiRenderEffectsToAll(pEntity.edict());
+
+```
+
 ### Create a physic object
 
 Physic objects run physic simulation (gravity, movement, collision) in Bullet Engine instead of GoldSrc hull clipping.
