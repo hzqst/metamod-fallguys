@@ -266,7 +266,7 @@ bool SC_SERVER_DECL CASEntityFuncs__UnsetEntityPMSemiClipToAll(void* pthis, SC_S
 	return gPhysicsManager.UnsetEntityPMSemiClipToAll(ent);
 }
 
-bool SC_SERVER_DECL CASEntityFuncs__SetEntitySemiRenderEffects(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, edict_t* player, int rendermode, int renderamt, color24 rendercolor, int renderfx)
+bool SC_SERVER_DECL CASEntityFuncs__SetEntitySemiRenderEffects(void* pthis, SC_SERVER_DUMMYARG edict_t* ent, edict_t* player, int rendermode, int renderamt, const color24& rendercolor, int renderfx)
 {
 	return gPhysicsManager.SetEntitySemiRenderEffects(ent, player, rendermode, renderamt, rendercolor, renderfx);
 }
@@ -762,7 +762,7 @@ void RegisterAngelScriptMethods(void)
 			(void*)CASEntityFuncs__UnsetEntitySemiClipToAll, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Set per-player render effects for entity", "CEntityFuncs", "bool SetEntitySemiRenderEffects(edict_t@ ent, edict_t@ player, int rendermode, int renderamt, color24 rendercolor, int renderfx)",
+			"Set per-player render effects for entity", "CEntityFuncs", "bool SetEntitySemiRenderEffects(edict_t@ ent, edict_t@ player, int rendermode, int renderamt, const color24@ in rendercolor, int renderfx)",
 			(void*)CASEntityFuncs__SetEntitySemiRenderEffects, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
