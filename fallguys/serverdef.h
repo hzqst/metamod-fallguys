@@ -10,3 +10,7 @@ PRIVATE_FUNCTION_EXTERN(CPlayerMove_PlayStepSound);
 typedef void( *fnPM_PlaySoundFX_SERVER)(int playerindex, vec3_t *origin, int type, const char *sound, float vol, float att, int flags, int pitch);
 void PM_PlaySoundFX_SERVER(int playerindex, vec3_t *origin, int type, const char *sound, float vol, float att, int flags, int pitch);
 PRIVATE_FUNCTION_EXTERN(PM_PlaySoundFX_SERVER);
+
+//void __cdecl RegisterSCScriptColor24(CASDocumentation *a1)
+typedef void(__cdecl* fnRegisterSCScriptColor24)(CASDocumentation* pthis);
+PRIVATE_FUNCTION_EXTERN(RegisterSCScriptColor24);
