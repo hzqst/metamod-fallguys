@@ -1,7 +1,7 @@
 # 游戏 DLL 私有函数/私有变量引入机制（fallguys / asext）
 
 ## 概述
-本仓库通过一套“声明/定义函数指针 + 运行时签名扫描/符号查找填充”的宏体系，把游戏 `server.dll/server.so` 与 `hw.dll/hw.so` 内的私有函数、私有全局变量地址引入到插件中，并在需要时进一步做 inline hook。
+本仓库通过一套“声明/定义函数指针 + 运行时签名扫描/符号查找填充”的宏体系，把游戏 `server.dll/server.so` 与 `hw.dll/hw.so` 内的私有函数、私有全局变量地址引入到插件中，并在需要时进一步做 inline hook、或者直接调用。
 
 ## 职责
 - 用 `signatures.h` 为不同平台/版本准备 `*_Signature`（以及 Linux 下可选的 `*_Symbol`）。
