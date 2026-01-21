@@ -424,6 +424,12 @@ void RegisterAngelScriptMethods(void)
 
 	ASEXT_RegisterDocInitCallback([](CASDocumentation *pASDoc) {
 
+		/* Register color24 type from server.dll */
+		if (g_pfn_RegisterSCScriptColor24)
+		{
+			g_pfn_RegisterSCScriptColor24(pASDoc);
+		}
+
 		/* SoundEngine_SoundInfo */
 
 		REGISTER_PLAIN_VALUE_OBJECT(SoundEngine_SoundInfo);

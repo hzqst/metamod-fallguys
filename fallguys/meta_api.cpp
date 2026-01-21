@@ -340,6 +340,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, PM_PlaySoundFX_SERVER, -1);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CPlayerMove_PlayStepSound, -1);
 
+	FILL_FROM_SIGNATURE(server, RegisterSCScriptColor24);
+
 	FILL_FROM_SIGNATURED_CALLER_FROM_START(engine, build_number, 0);
 
 	FILL_FROM_SIGNATURE(engine, SV_Physics);
@@ -375,6 +377,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CPlayerMove_PlayStepSound, -1);
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, PM_PlaySoundFX_SERVER, -1);
+
+		FILL_FROM_SIGNATURE(server, RegisterSCScriptColor24);
 	}
 	else
 	{
@@ -382,6 +386,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 		FILL_FROM_SYMBOL(server, CPlayerMove_PlayStepSound);
 		FILL_FROM_SYMBOL(server, PM_PlaySoundFX_SERVER);
+
+		FILL_FROM_SYMBOL(server, RegisterSCScriptColor24);
 	}
 
 	FILL_FROM_SYMBOL_NO_CHECK(engine, build_number);
