@@ -270,10 +270,11 @@ SemiRenderEffects allows you to override the render properties (rendermode, rend
 
 //Make "pEntity" appear transparent (rendermode=kRenderTransTexture, renderamt=128) only for "pPlayer".
 //Other players will see the entity with its original render settings.
-g_EntityFuncs.SetEntitySemiRenderEffects(pEntity.edict(), pPlayer.edict(), kRenderTransTexture, 128, color24(255, 255, 255), kRenderFxNone);
+color24 clrRed = color24(255, 0, 0);
+g_EntityFuncs.SetEntitySemiRenderEffects(pEntity.edict(), pPlayer.edict(), kRenderTransTexture, 128, clrRed, kRenderFxNone);
 
 //Make "pEntity" appear red (rendercolor=255,0,0) and glowing only for "pPlayer".
-g_EntityFuncs.SetEntitySemiRenderEffects(pEntity.edict(), pPlayer.edict(), kRenderTransAdd, 30, color24(255, 0, 0), kRenderFxGlowShell);
+g_EntityFuncs.SetEntitySemiRenderEffects(pEntity.edict(), pPlayer.edict(), kRenderTransAdd, 30, clrRed, kRenderFxGlowShell);
 
 //Remove the custom render effects for "pPlayer". The entity will now appear normal to this player.
 g_EntityFuncs.UnsetEntitySemiRenderEffects(pEntity.edict(), pPlayer.edict());
