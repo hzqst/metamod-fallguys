@@ -398,34 +398,23 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		{
 			FILL_FROM_SIGNATURED_TY_CALLER_FROM_START(engine, build_number, i686, 0);
 
-			LOG_MESSAGE(PLID, "build_number found at %p!", g_pfn_build_number);
-
-			LOG_MESSAGE(PLID, "Current engine build_number = %d!", g_pfn_build_number());
-
 			FILL_FROM_SIGNATURED_TY_CALLER_FROM_END(engine, SV_Physics, i686, -1);
-			LOG_MESSAGE(PLID, "SV_Physics found at %p!", g_pfn_SV_Physics);
 
 			FILL_FROM_SIGNATURED_TY_CALLER_FROM_START(engine, SV_PushEntity, i686, 0);
-			LOG_MESSAGE(PLID, "SV_PushEntity found at %p!", g_pfn_SV_PushEntity);
 
 			FILL_FROM_SIGNATURED_TY_CALLER_FROM_END(engine, SV_PushMove, i686, -1);
-			LOG_MESSAGE(PLID, "SV_PushMove found at %p!", g_pfn_SV_PushMove);
 
 			FILL_FROM_SIGNATURED_TY_CALLER_FROM_END(engine, SV_PushRotate, i686, -9);
-			LOG_MESSAGE(PLID, "SV_PushRotate found at %p!", g_pfn_SV_PushRotate);
 
 			FILL_FROM_SIGNATURED_TY_CALLER_FROM_START(engine, SV_WriteMovevarsToClient, i686, 3);
-			LOG_MESSAGE(PLID, "SV_WriteMovevarsToClient found at %p!", g_pfn_SV_WriteMovevarsToClient);
 
 			if (g_pfn_build_number() >= 10152)
 			{
 				FILL_FROM_SIGNATURED_TY_CALLER_FROM_END(engine, SV_SingleClipMoveToEntity_10152, i686, -1);
-				LOG_MESSAGE(PLID, "SV_SingleClipMoveToEntity_10152 found at %p!", g_pfn_SV_SingleClipMoveToEntity_10152);
 			}
 			else
 			{
 				FILL_FROM_SIGNATURED_TY_CALLER_FROM_END(engine, SV_SingleClipMoveToEntity, i686, -1);
-				LOG_MESSAGE(PLID, "SV_SingleClipMoveToEntity found at %p!", g_pfn_SV_SingleClipMoveToEntity);
 			}
 
 			auto gotplt_prolog = (char*)LOCATE_FROM_SIGNATURE(engine, gotplt_prolog_Signature);
@@ -439,7 +428,6 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 			auto pic_chunk_call = gotplt_prolog + 8;
 			auto add_addr = pic_chunk_call + 5;
 			auto got_plt = add_addr + *(int*)(add_addr + 2);
-			LOG_MESSAGE(PLID, "got_plt found at %p!", got_plt);
 
 			void* sv = NULL;
 
@@ -500,7 +488,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 					return FALSE;
 				}
 
-				LOG_MESSAGE(PLID, "sv found at %p!", sv);
+				
 
 				sv_models = (decltype(sv_models))((char*)sv + offset_sv_models);
 
@@ -510,7 +498,6 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 					return FALSE;
 				}
 
-				LOG_MESSAGE(PLID, "sv_models found at %p!", sv_models);
 			}
 
 			if (1)
@@ -574,7 +561,6 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 					LOG_ERROR(PLID, "movevars not found in engine dll!");
 					return FALSE;
 				}
-				LOG_MESSAGE(PLID, "movevars found at %p!", pmovevars);
 			}
 
 			if (1)
@@ -617,7 +603,6 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 					LOG_ERROR(PLID, "sv_areanodes not found in engine dll!");
 					return FALSE;
 				}
-				LOG_MESSAGE(PLID, "sv_areanodes found at %p!", sv_areanodes);
 			}
 
 			if (1)
@@ -682,14 +667,12 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 					LOG_ERROR(PLID, "g_groupmask not found in engine dll!");
 					return FALSE;
 				}
-				LOG_MESSAGE(PLID, "g_groupmask found at %p!", pg_groupmask);
 
 				if (!pg_groupop)
 				{
 					LOG_ERROR(PLID, "g_groupop not found in engine dll!");
 					return FALSE;
 				}
-				LOG_MESSAGE(PLID, "g_groupop found at %p!", pg_groupop);
 			}
 		}
 		else
@@ -733,10 +716,31 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 
 #endif
 
+	//Print all private variables and functions here
+	LOG_MESSAGE(PLID, "PM_PlaySoundFX_SERVER found at %p!", g_pfn_PM_PlaySoundFX_SERVER);
+	LOG_MESSAGE(PLID, "CPlayerMove_PlayStepSound found at %p!", g_pfn_CPlayerMove_PlayStepSound);
+	LOG_MESSAGE(PLID, "RegisterSCScriptColor24 found at %p!", g_pfn_RegisterSCScriptColor24);
 
-#ifndef _WIN32//for debugging
-	//sleep(15);
-#endif
+	LOG_MESSAGE(PLID, "build_number found at %p!", g_pfn_build_number);
+	LOG_MESSAGE(PLID, "SV_Physics found at %p!", g_pfn_SV_Physics);
+	LOG_MESSAGE(PLID, "SV_PushEntity found at %p!", g_pfn_SV_PushEntity);
+	LOG_MESSAGE(PLID, "SV_PushMove found at %p!", g_pfn_SV_PushMove);
+	LOG_MESSAGE(PLID, "SV_PushRotate found at %p!", g_pfn_SV_PushRotate);
+	LOG_MESSAGE(PLID, "SV_WriteMovevarsToClient found at %p!", g_pfn_SV_WriteMovevarsToClient);
+	if (g_pfn_build_number() >= 10152)
+	{
+		LOG_MESSAGE(PLID, "SV_SingleClipMoveToEntity_10152 found at %p!", g_pfn_SV_SingleClipMoveToEntity_10152);
+	}
+	else
+	{
+		LOG_MESSAGE(PLID, "SV_SingleClipMoveToEntity found at %p!", g_pfn_SV_SingleClipMoveToEntity);
+	}
+	LOG_MESSAGE(PLID, "sv_models found at %p!", sv_models);
+	LOG_MESSAGE(PLID, "host_frametime found at %p!", host_frametime);
+	LOG_MESSAGE(PLID, "pmovevars found at %p!", pmovevars);
+	LOG_MESSAGE(PLID, "sv_areanodes found at %p!", sv_areanodes);
+	LOG_MESSAGE(PLID, "pg_groupop found at %p!", pg_groupop);
+	LOG_MESSAGE(PLID, "pg_groupmask found at %p!", pg_groupmask);
 
 	LoadFMOD();
 	InstallEngineHooks();
