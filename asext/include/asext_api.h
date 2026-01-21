@@ -425,17 +425,19 @@ extern fnASEXT_CScriptBuilder_DefineWord ASEXT_CScriptBuilder_DefineWord;
 
 #define SC_SERVER_DECL __fastcall
 #define SC_SERVER_DUMMYARG_NOCOMMA , int dummy
-#define SC_SERVER_DUMMYARG int dummy, 
-#define SC_SERVER_PASS_DUMMYARG dummy, 
+#define SC_SERVER_DUMMYARG int dummy,
+#define SC_SERVER_PASS_DUMMYARG dummy,
 #define SC_SERVER_PASS_DUMMYARG_NOCOMMA dummy
+#define SC_SERVER_CDECL __cdecl
 
 #else
 
-#define SC_SERVER_DECL 
+#define SC_SERVER_DECL
 #define SC_SERVER_DUMMYARG_NOCOMMA
 #define SC_SERVER_DUMMYARG
 #define SC_SERVER_PASS_DUMMYARG
 #define SC_SERVER_PASS_DUMMYARG_NOCOMMA
+#define SC_SERVER_CDECL
 
 #endif
 

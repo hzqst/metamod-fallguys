@@ -12,5 +12,5 @@ void PM_PlaySoundFX_SERVER(int playerindex, vec3_t *origin, int type, const char
 PRIVATE_FUNCTION_EXTERN(PM_PlaySoundFX_SERVER);
 
 //void __cdecl RegisterSCScriptColor24(CASDocumentation *a1)
-typedef void(__cdecl* fnRegisterSCScriptColor24)(CASDocumentation* pthis);
+typedef void(SC_SERVER_CDECL *fnRegisterSCScriptColor24)(CASDocumentation* pthis);
 PRIVATE_FUNCTION_EXTERN(RegisterSCScriptColor24);
