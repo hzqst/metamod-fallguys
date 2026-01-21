@@ -762,7 +762,7 @@ void RegisterAngelScriptMethods(void)
 			(void*)CASEntityFuncs__UnsetEntitySemiClipToAll, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
-			"Set per-player render effects for entity", "CEntityFuncs", "bool SetEntitySemiRenderEffects(edict_t@ ent, edict_t@ player, int rendermode, int renderamt, const color24@ in rendercolor, int renderfx)",
+			"Set per-player render effects for entity", "CEntityFuncs", "bool SetEntitySemiRenderEffects(edict_t@ ent, edict_t@ player, int rendermode, int renderamt, const color24& in rendercolor, int renderfx)",
 			(void*)CASEntityFuncs__SetEntitySemiRenderEffects, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
