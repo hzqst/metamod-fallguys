@@ -14,6 +14,7 @@
 
 PRIVATE_FUNCTION_DEFINE(CPlayerMove_PlayStepSound);
 PRIVATE_FUNCTION_DEFINE(PM_PlaySoundFX_SERVER);
+PRIVATE_FUNCTION_DEFINE(RegisterSCScriptColor24);
 
 void SC_SERVER_DECL CASEngineFuncs__SetPhysicSimRate(void* pthis, SC_SERVER_DUMMYARG float rate)
 {
