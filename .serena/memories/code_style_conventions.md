@@ -1,11 +1,6 @@
 # Code Style and Conventions
 
 ## File Headers
-- Files typically include vim/vi editor settings in comments:
-  ```cpp
-  // vi: set ts=4 sw=4 :
-  // vim: set tw=75 :
-  ```
 - Copyright headers with GNU GPL license information
 - Author attribution and modification history
 
