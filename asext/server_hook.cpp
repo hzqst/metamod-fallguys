@@ -8,6 +8,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <stdint.h>
 
 #include "asext.h"
 
