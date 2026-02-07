@@ -431,7 +431,7 @@ typedef bool(*fnASEXT_CScriptDictionary_CIterator_operator_NE)(CScriptDictionary
 
 typedef bool(*fnASEXT_CScriptDictionary_CIterator_GetValue)(CScriptDictionary_CIterator *it, void *data, int typeId);
 
-typedef const char *(*fnASEXT_CScriptDictionary_CIterator_GetKey)(CScriptDictionary_CIterator *it);
+typedef const CString *(*fnASEXT_CScriptDictionary_CIterator_GetKey)(CScriptDictionary_CIterator *it);
 
 typedef void(*fnASEXT_CScriptDictionary_CIterator_operator_PP)(CScriptDictionary_CIterator *it);
 
@@ -491,6 +491,10 @@ public:
 	bool empty() const
 	{
 		return m_len == 0;
+	}
+	size_t size() const
+	{
+		return m_len;
 	}
 	void assign(const char *src, size_t len)
 	{

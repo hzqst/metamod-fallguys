@@ -366,23 +366,23 @@ C_DLLEXPORT void ASEXT_CScriptDictionary_DeleteAll(CScriptDictionary* pScriptDic
 	g_pfn_CScriptDictionary_DeleteAll(pScriptDictionary SC_SERVER_PASS_DUMMYARG2);
 }
 
-C_DLLEXPORT void ASEXT_CScriptDictionary_begin(CScriptDictionary *pDict, CScriptDictionary_CIterator *itor)
+C_DLLEXPORT void ASEXT_CScriptDictionary_begin(CScriptDictionary * pScriptDictionary, CScriptDictionary_CIterator * it)
 {
 	SC_SERVER_DUMMYVAR;
 #ifdef _WIN32
-	g_pfn_CScriptDictionary_begin(pDict, SC_SERVER_PASS_DUMMYARG itor);
+	g_pfn_CScriptDictionary_begin(pScriptDictionary, SC_SERVER_PASS_DUMMYARG it);
 #else
-	g_pfn_CScriptDictionary_begin(itor, pDict);
+	g_pfn_CScriptDictionary_begin(it, pScriptDictionary);
 #endif
 }
 
-C_DLLEXPORT void ASEXT_CScriptDictionary_end(CScriptDictionary *pDict, CScriptDictionary_CIterator *itor)
+C_DLLEXPORT void ASEXT_CScriptDictionary_end(CScriptDictionary * pScriptDictionary, CScriptDictionary_CIterator *it)
 {
 	SC_SERVER_DUMMYVAR;
 #ifdef _WIN32
-	g_pfn_CScriptDictionary_end(pDict, SC_SERVER_PASS_DUMMYARG itor);
+	g_pfn_CScriptDictionary_end(pScriptDictionary, SC_SERVER_PASS_DUMMYARG it);
 #else
-	g_pfn_CScriptDictionary_end(itor, pDict);
+	g_pfn_CScriptDictionary_end(it, pScriptDictionary);
 #endif
 }
 
@@ -398,12 +398,11 @@ C_DLLEXPORT bool ASEXT_CScriptDictionary_CIterator_GetValue(CScriptDictionary_CI
 	return g_pfn_CScriptDictionary_CIterator_GetValue(it, SC_SERVER_PASS_DUMMYARG data, typeId);
 }
 
-C_DLLEXPORT const char *ASEXT_CScriptDictionary_CIterator_GetKey(CScriptDictionary_CIterator *it)
+C_DLLEXPORT const CString *ASEXT_CScriptDictionary_CIterator_GetKey(CScriptDictionary_CIterator *it)
 {
 	SC_SERVER_DUMMYVAR;
-	// GetKey returns void* (actually const std::string&), we cast to const char* for the C_str
-	void *pStdString = g_pfn_CScriptDictionary_CIterator_GetKey(it SC_SERVER_PASS_DUMMYARG2);
-	return *(const char **)((uintptr_t)pStdString + 20);
+
+	return g_pfn_CScriptDictionary_CIterator_GetKey(it SC_SERVER_PASS_DUMMYARG2);
 }
 
 C_DLLEXPORT void ASEXT_CScriptDictionary_CIterator_operator_PP(CScriptDictionary_CIterator *it)

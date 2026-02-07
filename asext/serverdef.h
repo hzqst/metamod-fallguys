@@ -45,6 +45,10 @@ public:
 	{
 		return m_len == 0;
 	}
+	size_t size() const
+	{
+		return m_len;
+	}
 
 	int unk1;//0
 	int unk2;//4
@@ -353,8 +357,7 @@ typedef void (*fnCScriptDictionary_end)(CScriptDictionary_CIterator* itor, CScri
 PRIVATE_FUNCTION_EXTERN(CScriptDictionary_begin);
 PRIVATE_FUNCTION_EXTERN(CScriptDictionary_end);
 
-// GetKey returns void* (actually std::string&, but we avoid std::string& for ABI safety)
-typedef void* (SC_SERVER_DECL *fnCScriptDictionary_CIterator_GetKey)(CScriptDictionary_CIterator* pthis SC_SERVER_DUMMYARG_NOCOMMA);
+typedef const CString* (SC_SERVER_DECL *fnCScriptDictionary_CIterator_GetKey)(CScriptDictionary_CIterator* pthis SC_SERVER_DUMMYARG_NOCOMMA);
 PRIVATE_FUNCTION_EXTERN(CScriptDictionary_CIterator_GetKey);
 
 typedef bool (SC_SERVER_DECL *fnCScriptDictionary_CIterator_operator_NE)(CScriptDictionary_CIterator* pthis, SC_SERVER_DUMMYARG CScriptDictionary_CIterator* other);

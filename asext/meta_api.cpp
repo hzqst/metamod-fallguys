@@ -70,7 +70,7 @@ static META_FUNCTIONS gMetaFunctionTable = {
 plugin_info_t Plugin_info = {
 	META_INTERFACE_VERSION,	// ifvers
 	"AngelScriptExt",	// name
-	"2.1",	// version
+	"2.2",	// version
 	"2026",	// date
 	"hzqst",	// author
 	"https://github.com/hzqst/metamod-fallguys",	// url

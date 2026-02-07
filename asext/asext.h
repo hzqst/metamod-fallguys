@@ -121,7 +121,7 @@ C_DLLEXPORT bool ASEXT_CScriptDictionary_CIterator_operator_NE(CScriptDictionary
 
 C_DLLEXPORT bool ASEXT_CScriptDictionary_CIterator_GetValue(CScriptDictionary_CIterator *it, void *data, int typeId);
 
-C_DLLEXPORT const char *ASEXT_CScriptDictionary_CIterator_GetKey(CScriptDictionary_CIterator *it);
+C_DLLEXPORT const CString *ASEXT_CScriptDictionary_CIterator_GetKey(CScriptDictionary_CIterator *it);
 
 C_DLLEXPORT void ASEXT_CScriptDictionary_CIterator_operator_PP(CScriptDictionary_CIterator *it);
 
