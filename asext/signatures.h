@@ -44,13 +44,13 @@
 #define CScriptDictionary_DeleteAll_Signature "\x51\x53\x55\x8B\xE9\x8B\x45\x14\x8D\x5D\x14\x56\x8B\x30\x3B\xF0\x74\x2A\x57\x8B\x46\x38"
 
 // CScriptDictionary iterator functions: each signature matches a unique byte pattern inside
-// CASEntityFuncs::InitializeEntity, located via FILL_FROM_SIGNATURED_CALLER_FROM_START.
-#define CScriptDictionary_begin_Signature "\x8B\x40\x30\xFF\xD0\x89\x45\x2A\x8B\x2A\x8D\x45\x2A\x50"
+// CASEntityFuncs::InitializeEntity, located via FILL_FROM_SIGNATURED_CALLER_FROM_END with offset -1.
+#define CScriptDictionary_begin_Signature "\x8B\x40\x30\xFF\xD0\x89\x45\x2A\x8B\x2A\x8D\x45\x2A\x50\xE8"
 #define CScriptDictionary_end_Signature "\x8D\x45\x2A\x8B\x2A\x50\xE8\x2A\x2A\x2A\x2A\x50\x8D\x4D\x2A\xE8\x2A\x2A\x2A\x2A\x84\xC0\x0F\x84"
 #define CScriptDictionary_CIterator_operator_NE_Signature "\x50\x8D\x4D\x2A\xE8\x2A\x2A\x2A\x2A\x84\xC0\x0F\x84"
 #define CScriptDictionary_CIterator_GetValue_Signature "\xFF\x75\x2A\x8D\x45\x2A\x50\x8D\x4D\x2A\xE8\x2A\x2A\x2A\x2A\x84\xC0\x74"
 #define CScriptDictionary_CIterator_GetKey_Signature "\x84\xC0\x74\x2A\x8D\x4D\x2A\xE8\x2A\x2A\x2A\x2A\x8B\x40\x14"
-#define CScriptDictionary_CIterator_operator_PP_Signature "\x8B\x75\x2A\x83\xC4\x10\x8D\x4D\x2A"
+#define CScriptDictionary_CIterator_operator_PP_Signature "\x8B\x75\x2A\x83\xC4\x10\x8D\x4D\x2A\xE8"
 
 #else
 
@@ -150,18 +150,19 @@
 #define CScriptDictionary_DeleteAll_Signature "\x56\x53\x83\xEC\x14\x8B\x74\x24\x20\x8B\x5E\x18\x85\xDB"
 #define CScriptDictionary_DeleteAll_Symbol "_ZN17CScriptDictionary9DeleteAllEv"
 
-// CScriptDictionary iterator functions: located from CASEntityFuncs::InitializeEntity via caller-based signatures
-#define CScriptDictionary_begin_Signature "\xFF\x50\x30\x89\x45\x2A\x8D\x7D\x2A"
+// CScriptDictionary iterator functions: located from CASEntityFuncs::InitializeEntity via FILL_FROM_SIGNATURED_CALLER_FROM_END.
+// Each signature ends with \xE8 (call opcode) and uses offset -1 to position the cursor right at the E8 byte.
+#define CScriptDictionary_begin_Signature "\xFF\x50\x30\x89\x45\x2A\x8D\x7D\x2A\x8B\x55\x2A\x89\x54\x24\x2A\x89\x3C\x24\xE8"
 #define CScriptDictionary_begin_Symbol "_ZNK17CScriptDictionary5beginEv"
-#define CScriptDictionary_end_Signature "\x8B\x55\x2A\x89\x14\x24\x89\xF3\xE8\x2A\x2A\x2A\x2A\x83\xEC\x04"
+#define CScriptDictionary_end_Signature "\x85\xFF\x0F\x84\x2A\x2A\x2A\x2A\x8B\x55\x2A\x89\x14\x24\x89\xF3\xE8"
 #define CScriptDictionary_end_Symbol "_ZNK17CScriptDictionary3endEv"
-#define CScriptDictionary_CIterator_GetKey_Signature "\x89\x3C\x24\x84\xC0\x75\x2A\x89\xF3"
+#define CScriptDictionary_CIterator_GetKey_Signature "\x89\x3C\x24\x84\xC0\x75\x2A\x89\xF3\xE8"
 #define CScriptDictionary_CIterator_GetKey_Symbol "_ZNK17CScriptDictionary9CIterator6GetKeyEv"
 #define CScriptDictionary_CIterator_operator_NE_Signature "\x83\xEC\x04\x8B\x4D\x2A\x89\x4C\x24\x04\x89\x3C\x24\xE8"
 #define CScriptDictionary_CIterator_operator_NE_Symbol "_ZNK17CScriptDictionary9CIteratorneERKS0_"
-#define CScriptDictionary_CIterator_GetValue_Signature "\x0F\x84\x2A\x2A\x2A\x2A\x8B\x45\x2A\x89\x44\x24\x08\x8B\x55\x2A\x89\x54\x24\x04\x89\x3C\x24"
+#define CScriptDictionary_CIterator_GetValue_Signature "\x0F\x84\x2A\x2A\x2A\x2A\x8B\x45\x2A\x89\x44\x24\x08\x8B\x55\x2A\x89\x54\x24\x04\x89\x3C\x24\xE8"
 #define CScriptDictionary_CIterator_GetValue_Symbol "_ZNK17CScriptDictionary9CIterator8GetValueEPvi"
-#define CScriptDictionary_CIterator_operator_PP_Signature "\x8B\x4D\x2A\x89\x4C\x24\x04\x8B\x45\x2A\x89\x04\x24\xE8\x2A\x2A\x2A\x2A\x89\x3C\x24\x89\xF3"
+#define CScriptDictionary_CIterator_operator_PP_Signature "\x8B\x4D\x2A\x89\x4C\x24\x04\x8B\x45\x2A\x89\x04\x24\xE8\x2A\x2A\x2A\x2A\x89\x3C\x24\x89\xF3\xE8"
 #define CScriptDictionary_CIterator_operator_PP_Symbol "_ZN17CScriptDictionary9CIteratorppEv"
 
 #endif
