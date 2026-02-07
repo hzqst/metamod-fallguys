@@ -139,3 +139,8 @@ C_DLLEXPORT void* ASEXT_GetCurrentContext();
 	Can only be called in ScriptBuilder_DefineCallback
 */
 C_DLLEXPORT void ASEXT_CScriptBuilder_DefineWord(CScriptBuilder* pthis, const char* word);
+
+/*
+	Must be called inside DocInitCallback
+*/
+C_DLLEXPORT void ASEXT_SetDefaultNamespace(CASDocumentation* pASDoc, const char* ns);

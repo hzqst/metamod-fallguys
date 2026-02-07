@@ -23,6 +23,7 @@ PRIVATE_FUNCTION_DEFINE(CASDocumentation_RegisterObjectBehaviour);
 PRIVATE_FUNCTION_DEFINE(CASDocumentation_RegisterFuncDef);
 PRIVATE_FUNCTION_DEFINE(CASDocumentation_RegisterEnum);
 PRIVATE_FUNCTION_DEFINE(CASDocumentation_RegisterEnumValue);
+PRIVATE_FUNCTION_DEFINE(CASDocumentation_SetDefaultNamespace);
 PRIVATE_FUNCTION_DEFINE(CASDirectoryList_CreateDirectory);
 PRIVATE_FUNCTION_DEFINE(CASFunction_Create);
 PRIVATE_FUNCTION_DEFINE(CASBaseCallable_Call);
@@ -132,6 +133,12 @@ C_DLLEXPORT void ASEXT_RegisterEnumValue(CASDocumentation* pthis, const char* do
 {
 	SC_SERVER_DUMMYVAR;
 	g_call_original_CASDocumentation_RegisterEnumValue(pthis, SC_SERVER_PASS_DUMMYARG docs, enums, name, value);
+}
+
+C_DLLEXPORT void ASEXT_SetDefaultNamespace(CASDocumentation* pthis, const char* ns)
+{
+	SC_SERVER_DUMMYVAR;
+	g_call_original_CASDocumentation_SetDefaultNamespace(pthis, SC_SERVER_PASS_DUMMYARG ns);
 }
 
 int SC_SERVER_DECL NewCASDocumentation_RegisterObjectType(CASDocumentation *pthis, SC_SERVER_DUMMYARG const char *docs, const char *name, int size, unsigned int flags)

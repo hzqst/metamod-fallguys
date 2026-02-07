@@ -266,6 +266,9 @@ PRIVATE_FUNCTION_EXTERN(CASDocumentation_RegisterEnum);
 typedef void (SC_SERVER_DECL* fnCASDocumentation_RegisterEnumValue)(CASDocumentation* pthis, SC_SERVER_DUMMYARG const char* docs, const char* enums, const char* name, int value);
 PRIVATE_FUNCTION_EXTERN(CASDocumentation_RegisterEnumValue);
 
+typedef void (SC_SERVER_DECL* fnCASDocumentation_SetDefaultNamespace)(CASDocumentation* pthis, SC_SERVER_DUMMYARG const char* ns);
+PRIVATE_FUNCTION_EXTERN(CASDocumentation_SetDefaultNamespace);
+
 typedef void (SC_SERVER_DECL *fnCASDirectoryList_CreateDirectory)(CASDirectoryList *pthis, SC_SERVER_DUMMYARG const char *path, unsigned char flags, unsigned char access_control, unsigned char permanent, unsigned char unk);
 PRIVATE_FUNCTION_EXTERN(CASDirectoryList_CreateDirectory);
 void SC_SERVER_DECL NewCASDirectoryList_CreateDirectory(CASDirectoryList* pthis, SC_SERVER_DUMMYARG const char *path, unsigned char flags, unsigned char access_control, unsigned char permanent, unsigned char unk);
