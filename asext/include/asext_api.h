@@ -1,5 +1,7 @@
 #pragma once
 
+#include <angelscript.h>
+
 const int StopMode_ON_HANDLED = 0;
 const int StopMode_MODULE_HANDLED = 1;
 const int StopMode_CALL_ALL = 2;
@@ -10,6 +12,7 @@ const int ASFlag_Plugin = 2;
 const int ASFileAccessControl_Read = 1;
 const int ASFileAccessControl_Write = 2;
 
+#if 0
 enum asECallConvTypes
 {
 	asCALL_CDECL = 0,
@@ -99,6 +102,7 @@ enum asETypeIdFlags
 	asTYPEID_TEMPLATE = 0x10000000,
 	asTYPEID_MASK_SEQNBR = 0x03FFFFFF
 };
+#endif
 
 class CASDocumentation
 {
@@ -314,26 +318,26 @@ extern fnASEXT_RegisterFuncDef ASEXT_RegisterFuncDef;
 /*
 	Must be called inside DocInitCallback
 */
-typedef void(*fnASEXT_RegisterEnum)(CASDocumentation* pASDoc, const char* docs, const char* enums, int enumtype);
+typedef void(*fnASEXT_RegisterEnum)(CASDocumentation *pASDoc, const char* docs, const char* enums, int enumtype);
 
 extern fnASEXT_RegisterEnum ASEXT_RegisterEnum;
 
 /*
 	Must be called inside DocInitCallback
 */
-typedef void(*fnASEXT_RegisterEnumValue)(CASDocumentation* pASDoc, const char* docs, const char* enums, const char* name, int value);
+typedef void(*fnASEXT_RegisterEnumValue)(CASDocumentation *pASDoc, const char* docs, const char* enums, const char* name, int value);
 
 extern fnASEXT_RegisterEnumValue ASEXT_RegisterEnumValue;
 
 /*
 	Must be called inside DocInitCallback
 */
-typedef void(*fnASEXT_SetDefaultNamespace)(CASDocumentation* pASDoc, const char* ns);
+typedef void(*fnASEXT_SetDefaultNamespace)(CASDocumentation *pASDoc, const char* ns);
 
 extern fnASEXT_SetDefaultNamespace ASEXT_SetDefaultNamespace;
 
 
-typedef void(*fnASEXT_CreateDirectory)(void *pASDir, const char *path, unsigned char flags, unsigned char access_control, unsigned char permanent, unsigned char unk);
+typedef void(*fnASEXT_CreateDirectory)(CASDirectoryList *pASDirList, const char *path, unsigned char flags, unsigned char access_control, unsigned char permanent, unsigned char unk);
 extern fnASEXT_CreateDirectory ASEXT_CreateDirectory;
 
 typedef void(*fnASEXT_CStringAssign)(void *pthis, const char *src, size_t len);

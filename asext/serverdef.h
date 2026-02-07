@@ -2,7 +2,35 @@
 
 #include "signatures.h"
 
-//AngelScript const
+//AngelScript internal
+#if 0
+class asSFuncPtr
+{
+public:
+	asSFuncPtr()
+	{
+		pfn = NULL;
+		unk1 = 0;
+		unk2 = 0;
+		unk3 = 0;
+		unk4 = 0;
+		unk5 = 0;
+		unk6 = 1;
+		unk7 = 0;
+		flag = 3;
+	}
+
+	void* pfn;//+0
+	int unk1;//+4
+	int unk2;//+8
+	int unk3;//+C
+	int unk4;//+0x10
+	int unk5;//+0x14
+	int unk6;//+0x18
+	int unk7;//+0x1C
+	unsigned char flag;//+0x20  // 1 = generic, 2 = global func, 3 = method
+};
+#endif
 
 class CASHookRegistration
 {
@@ -175,33 +203,6 @@ public:
 	int unk5;//16
 	int unk6;//20
 	CASModule *curModule;//24
-};
-
-class asSFuncPtr
-{
-public:
-	asSFuncPtr()
-	{
-		pfn = NULL;
-		unk1 = 0;
-		unk2 = 0;
-		unk3 = 0;
-		unk4 = 0;
-		unk5 = 0;
-		unk6 = 1;
-		unk7 = 0;
-		flag = 3;
-	}
-
-	void *pfn;//+0
-	int unk1;//+4
-	int unk2;//+8
-	int unk3;//+C
-	int unk4;//+0x10
-	int unk5;//+0x14
-	int unk6;//+0x18
-	int unk7;//+0x1C
-	unsigned char flag;//+0x20  // 1 = generic, 2 = global func, 3 = method
 };
 
 class CScriptBuilder;

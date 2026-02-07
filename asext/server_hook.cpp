@@ -73,7 +73,7 @@ C_DLLEXPORT void ASEXT_RegisterObjectMethod(CASDocumentation *pthis, const char 
 	SC_SERVER_DUMMYVAR;
 
 	asSFuncPtr reg;
-	reg.pfn = pfn;
+	reg.CopyMethodPtr(pfn, sizeof(pfn));
 	reg.flag = 3;//3 = method
 
 	g_call_original_CASDocumentation_RegisterObjectMethod(pthis, SC_SERVER_PASS_DUMMYARG docs, name, func, &reg, type);
@@ -90,7 +90,7 @@ C_DLLEXPORT void ASEXT_RegisterObjectBehaviour(CASDocumentation *pthis, const ch
 	SC_SERVER_DUMMYVAR;
 
 	asSFuncPtr reg;
-	reg.pfn = pfn;
+	reg.CopyMethodPtr(pfn, sizeof(pfn));
 	reg.flag = 2;//2 = global func
 
 	g_call_original_CASDocumentation_RegisterObjectBehaviour(pthis, SC_SERVER_PASS_DUMMYARG docs, name, behaviour, func, &reg, type, 0);
@@ -150,6 +150,9 @@ C_DLLEXPORT void ASEXT_SetDefaultNamespace(CASDocumentation* pthis, const char* 
 
 int SC_SERVER_DECL NewCASDocumentation_RegisterObjectType(CASDocumentation *pthis, SC_SERVER_DUMMYARG const char *docs, const char *name, int size, unsigned int flags)
 {
+	/*
+		Called from CASServerRegistration::RegisterInterfaces -> RegisterSCScriptSurvivalMode -> RegisterSCScriptSurvivalMode, where most of SCScript registrations have been done before.
+	*/
 	if (name && docs && !strcmp(name, "CSurvivalMode") && !strcmp(docs, "Survival Mode handler") && flags == 0x40001u)
 	{
 		for (size_t i = 0; i < g_ASDocInitCallbacks.size(); ++i)
@@ -159,13 +162,16 @@ int SC_SERVER_DECL NewCASDocumentation_RegisterObjectType(CASDocumentation *pthi
 
 		g_ASDocInitCallbacks.clear();
 		g_ASDocInit = true;
-	} 
+	}
 
 	return g_call_original_CASDocumentation_RegisterObjectType(pthis, SC_SERVER_PASS_DUMMYARG docs, name, size, flags);
 }
 
 void SC_SERVER_DECL NewCASDirectoryList_CreateDirectory(CASDirectoryList *pthis, SC_SERVER_DUMMYARG const char *path, unsigned char flags, unsigned char access_control, unsigned char permanent, unsigned char unk)
 {
+	/*
+		Called from CASServerManager::SetupFileSystem -> CASDirectoryList::CreateDirectory(a2, "scripts/plugins/store", 2u, 3u, 1u, 0);
+	*/
 	if (!strcmp(path, "scripts/plugins/store") && flags == ASFlag_Plugin && access_control == (ASFileAccessControl_Read | ASFileAccessControl_Write) && permanent == 1)
 	{
 		for (size_t i = 0; i < g_ASDirInitCallbacks.size(); ++i)
@@ -180,10 +186,10 @@ void SC_SERVER_DECL NewCASDirectoryList_CreateDirectory(CASDirectoryList *pthis,
 	g_call_original_CASDirectoryList_CreateDirectory(pthis, SC_SERVER_PASS_DUMMYARG path, flags, access_control, permanent, unk);
 }
 
-C_DLLEXPORT void ASEXT_CreateDirectory(void *pthis, const char *path, unsigned char flags, unsigned char access_control, unsigned char permanent, unsigned char unk)
+C_DLLEXPORT void ASEXT_CreateDirectory(CASDirectoryList* pthis, const char *path, unsigned char flags, unsigned char access_control, unsigned char permanent, unsigned char unk)
 {
 	SC_SERVER_DUMMYVAR;
-	g_call_original_CASDirectoryList_CreateDirectory((CASDirectoryList *)pthis, SC_SERVER_PASS_DUMMYARG path, flags, access_control, permanent, unk);
+	g_call_original_CASDirectoryList_CreateDirectory(pthis, SC_SERVER_PASS_DUMMYARG path, flags, access_control, permanent, unk);
 }
 
 C_DLLEXPORT bool ASEXT_RegisterDocInitCallback(fnASDocInitCallback callback)
@@ -240,20 +246,33 @@ C_DLLEXPORT void *ASEXT_RegisterHook(const char *docs, int stopMode, int type, i
 	return hook;
 }
 
-C_DLLEXPORT void ASEXT_CStringAssign(void *pthis, const char *src, size_t len)
+C_DLLEXPORT void ASEXT_CStringAssign(CString *pthis, const char *src, size_t len)
 {
 	SC_SERVER_DUMMYVAR;
 
-	g_pfn_CString_Assign((CString *)pthis, SC_SERVER_PASS_DUMMYARG src, len);
+	g_pfn_CString_Assign(pthis, SC_SERVER_PASS_DUMMYARG src, len);
 }
 
-C_DLLEXPORT void ASEXT_CStringdtor(void *pthis)
+C_DLLEXPORT void ASEXT_CString_Assign(CString* pthis, const char* src, size_t len)
 {
 	SC_SERVER_DUMMYVAR;
 
-	g_pfn_CString_dtor((CString *)pthis SC_SERVER_PASS_DUMMYARG2);
+	g_pfn_CString_Assign(pthis, SC_SERVER_PASS_DUMMYARG src, len);
 }
 
+C_DLLEXPORT void ASEXT_CStringdtor(CString *pthis)
+{
+	SC_SERVER_DUMMYVAR;
+
+	g_pfn_CString_dtor(pthis SC_SERVER_PASS_DUMMYARG2);
+}
+
+C_DLLEXPORT void ASEXT_CString_dtor(CString* pthis)
+{
+	SC_SERVER_DUMMYVAR;
+
+	g_pfn_CString_dtor(pthis SC_SERVER_PASS_DUMMYARG2);
+}
 C_DLLEXPORT CASFunction *ASEXT_CreateCASFunction(aslScriptFunction *aslfn, CASModule *asmodule, int unk)
 {
 	return g_pfn_CASFunction_Create(aslfn, asmodule, unk);

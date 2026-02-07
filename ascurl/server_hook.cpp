@@ -136,16 +136,16 @@ void RegisterAngelScriptMethods()
 
 	});
 
-	ASEXT_RegisterDirInitCallback([](CASDirectoryList *pASDir) {
+	ASEXT_RegisterDirInitCallback([](CASDirectoryList * pASDirList) {
 
-		ASEXT_CreateDirectory(pASDir, "maps", ASFlag_Plugin, ASFileAccessControl_Read, true, 0);
-		ASEXT_CreateDirectory(pASDir, "maps/soundcache", ASFlag_Plugin, ASFileAccessControl_Read | ASFileAccessControl_Write, true, 0);
+		ASEXT_CreateDirectory(pASDirList, "maps", ASFlag_Plugin, ASFileAccessControl_Read, true, 0);
+		ASEXT_CreateDirectory(pASDirList, "maps/soundcache", ASFlag_Plugin, ASFileAccessControl_Read | ASFileAccessControl_Write, true, 0);
 
-		ASEXT_CreateDirectory(pASDir, "models", ASFlag_Plugin, ASFileAccessControl_Read, true, 0);
-		ASEXT_CreateDirectory(pASDir, "models/player", ASFlag_Plugin, ASFileAccessControl_Read, true, 0);
+		ASEXT_CreateDirectory(pASDirList, "models", ASFlag_Plugin, ASFileAccessControl_Read, true, 0);
+		ASEXT_CreateDirectory(pASDirList, "models/player", ASFlag_Plugin, ASFileAccessControl_Read, true, 0);
 
-		ASEXT_CreateDirectory(pASDir, "sound", ASFlag_Plugin, ASFileAccessControl_Read, true, 0);
-		ASEXT_CreateDirectory(pASDir, "sprites", ASFlag_Plugin, ASFileAccessControl_Read, true, 0);
+		ASEXT_CreateDirectory(pASDirList, "sound", ASFlag_Plugin, ASFileAccessControl_Read, true, 0);
+		ASEXT_CreateDirectory(pASDirList, "sprites", ASFlag_Plugin, ASFileAccessControl_Read, true, 0);
 
 	});
 	ASEXT_RegisterDocInitCallback([](CASDocumentation *pASDoc) {

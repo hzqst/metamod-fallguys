@@ -455,7 +455,17 @@ struct asSFuncPtr
 		for( size_t n = 0; n < size; n++ )
 			ptr.dummy[n] = reinterpret_cast<const char *>(mthdPtr)[n];
 	}
-
+#if _WIN32
+	union
+	{
+		// The largest known method point is 20 bytes (MSVC 64bit),
+		// but with 8byte alignment this becomes 24 bytes. So we need
+		// to be able to store at least that much.
+		char dummy[32];
+		struct { asMETHOD_t   mthd; char dummy[32 - sizeof(asMETHOD_t)]; } m;
+		struct { asFUNCTION_t func; char dummy[32 - sizeof(asFUNCTION_t)]; } f;
+	} ptr;
+#else
 	union
 	{
 		// The largest known method point is 20 bytes (MSVC 64bit),
@@ -465,6 +475,7 @@ struct asSFuncPtr
 		struct {asMETHOD_t   mthd; char dummy[25-sizeof(asMETHOD_t)];} m;
 		struct {asFUNCTION_t func; char dummy[25-sizeof(asFUNCTION_t)];} f;
 	} ptr;
+#endif
 	asBYTE flag; // 1 = generic, 2 = global func, 3 = method
 };
 

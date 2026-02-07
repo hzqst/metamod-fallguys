@@ -1,5 +1,7 @@
 #pragma once
 
+#include <angelscript.h>
+
 const int StopMode_ON_HANDLED = 0;
 const int StopMode_MODULE_HANDLED = 1;
 const int StopMode_CALL_ALL = 2;
@@ -85,11 +87,15 @@ C_DLLEXPORT void ASEXT_RegisterGlobalProperty(CASDocumentation *pASDoc, const ch
 C_DLLEXPORT void ASEXT_RegisterFuncDef(CASDocumentation *pASDoc, const char *docs, const char *funcdef);
 
 /* Create directory in the virtual file system */
-C_DLLEXPORT void ASEXT_CreateDirectory(void *pASDir, const char *path, unsigned char flags, unsigned char access_control, unsigned char permanent, unsigned char unk);
+C_DLLEXPORT void ASEXT_CreateDirectory(CASDirectoryList *pASDirList, const char *path, unsigned char flags, unsigned char access_control, unsigned char permanent, unsigned char unk);
 
-C_DLLEXPORT void ASEXT_CStringAssign(void *pthis, const char *src, size_t len);
+C_DLLEXPORT void ASEXT_CStringAssign(CString *pthis, const char *src, size_t len);
 
-C_DLLEXPORT void ASEXT_CStringdtor(void *pthis);
+C_DLLEXPORT void ASEXT_CString_Assign(CString* pthis, const char* src, size_t len);//Same as ASEXT_CStringAssign, but with better naming
+
+C_DLLEXPORT void ASEXT_CStringdtor(CString* pthis);
+
+C_DLLEXPORT void ASEXT_CString_dtor(CString* pthis);//Same as ASEXT_CStringdtor, but with better naming
 
 C_DLLEXPORT CASFunction *ASEXT_CreateCASFunction(aslScriptFunction *aslfn, CASModule *asmodule, int unk);
 
