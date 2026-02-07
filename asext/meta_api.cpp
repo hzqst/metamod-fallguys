@@ -251,7 +251,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		// CScriptDictionary iterator functions: located from CASEntityFuncs::InitializeEntity
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CScriptDictionary_begin, 10);
 		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptDictionary_end, 8);
-		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CScriptDictionary_CIterator_operator_NE, 1);
+		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CScriptDictionary_CIterator_operator_NE, -1);
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CScriptDictionary_CIterator_GetValue, 3);
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CScriptDictionary_CIterator_GetKey, 0);
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CScriptDictionary_CIterator_operator_PP, 0);
