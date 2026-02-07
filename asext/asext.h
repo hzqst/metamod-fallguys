@@ -18,6 +18,7 @@ class CASDocumentation;
 class CASDirectoryList;
 class CScriptArray;
 class CScriptDictionary;
+class CScriptDictionary_CIterator;
 class CScriptBuilder;
 class CString;
 
@@ -111,6 +112,18 @@ C_DLLEXPORT unsigned int ASEXT_CScriptDictionary_GetSize(CScriptDictionary* pScr
 C_DLLEXPORT void ASEXT_CScriptDictionary_Delete(CScriptDictionary* pScriptDictionary, const CString* key);
 
 C_DLLEXPORT void ASEXT_CScriptDictionary_DeleteAll(CScriptDictionary* pScriptDictionary);
+
+C_DLLEXPORT void ASEXT_CScriptDictionary_CIterator_begin(CScriptDictionary *pDict, CScriptDictionary_CIterator *itor);
+
+C_DLLEXPORT void ASEXT_CScriptDictionary_CIterator_end(CScriptDictionary *pDict, CScriptDictionary_CIterator *itor);
+
+C_DLLEXPORT bool ASEXT_CScriptDictionary_CIterator_operator_NE(CScriptDictionary_CIterator *a1, CScriptDictionary_CIterator *a2);
+
+C_DLLEXPORT bool ASEXT_CScriptDictionary_CIterator_GetValue(CScriptDictionary_CIterator *it, void *data, int typeId);
+
+C_DLLEXPORT const char *ASEXT_CScriptDictionary_CIterator_GetKey(CScriptDictionary_CIterator *it);
+
+C_DLLEXPORT void ASEXT_CScriptDictionary_CIterator_operator_PP(CScriptDictionary_CIterator *it);
 
 /*
 	Must be registered before call hook

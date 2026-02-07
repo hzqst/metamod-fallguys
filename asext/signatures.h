@@ -43,6 +43,10 @@
 #define CScriptDictionary_Delete_Signature "\x55\x8B\xEC\x6A\xFF\x68\x2A\x2A\x2A\x2A\x64\xA1\x00\x00\x00\x00\x50\x51\x53\x56\x57\xA1\x2A\x2A\x2A\x2A\x33\xC5\x50\x8D\x45\xF4\x64\xA3\x00\x00\x00\x00\x8B\xF9\xFF\x75\x08"
 #define CScriptDictionary_DeleteAll_Signature "\x51\x53\x55\x8B\xE9\x8B\x45\x14\x8D\x5D\x14\x56\x8B\x30\x3B\xF0\x74\x2A\x57\x8B\x46\x38"
 
+#define CScriptDictionary_CIterator_begin_Signature ""
+#define CScriptDictionary_CIterator_end_Signature ""
+#define CScriptDictionary_CIterator_GetKey_Signature ""
+
 #else
 
 //XXXX_Symbol is for server.so / hw.so game version 5.15, while XXXXXX_Signature is for game version 5.16+
@@ -140,5 +144,12 @@
 
 #define CScriptDictionary_DeleteAll_Signature "\x56\x53\x83\xEC\x14\x8B\x74\x24\x20\x8B\x5E\x18\x85\xDB"
 #define CScriptDictionary_DeleteAll_Symbol "_ZN17CScriptDictionary9DeleteAllEv"
+
+#define CScriptDictionary_CIterator_begin_Signature ""
+#define CScriptDictionary_CIterator_begin_Symbol ""
+#define CScriptDictionary_CIterator_end_Signature ""
+#define CScriptDictionary_CIterator_end_Symbol ""
+#define CScriptDictionary_CIterator_GetKey_Signature ""
+#define CScriptDictionary_CIterator_GetKey_Symbol ""
 
 #endif

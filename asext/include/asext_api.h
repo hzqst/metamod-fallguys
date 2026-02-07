@@ -422,6 +422,30 @@ extern fnASEXT_CScriptDictionary_Delete ASEXT_CScriptDictionary_Delete;
 
 extern fnASEXT_CScriptDictionary_DeleteAll ASEXT_CScriptDictionary_DeleteAll;
 
+typedef void(*fnASEXT_CScriptDictionary_CIterator_begin)(CScriptDictionary *pDict, CScriptDictionary_CIterator *itor);
+
+typedef void(*fnASEXT_CScriptDictionary_CIterator_end)(CScriptDictionary *pDict, CScriptDictionary_CIterator *itor);
+
+typedef bool(*fnASEXT_CScriptDictionary_CIterator_operator_NE)(CScriptDictionary_CIterator *a1, CScriptDictionary_CIterator *a2);
+
+typedef bool(*fnASEXT_CScriptDictionary_CIterator_GetValue)(CScriptDictionary_CIterator *it, void *data, int typeId);
+
+typedef const char *(*fnASEXT_CScriptDictionary_CIterator_GetKey)(CScriptDictionary_CIterator *it);
+
+typedef void(*fnASEXT_CScriptDictionary_CIterator_operator_PP)(CScriptDictionary_CIterator *it);
+
+extern fnASEXT_CScriptDictionary_CIterator_begin ASEXT_CScriptDictionary_CIterator_begin;
+
+extern fnASEXT_CScriptDictionary_CIterator_end ASEXT_CScriptDictionary_CIterator_end;
+
+extern fnASEXT_CScriptDictionary_CIterator_operator_NE ASEXT_CScriptDictionary_CIterator_operator_NE;
+
+extern fnASEXT_CScriptDictionary_CIterator_GetValue ASEXT_CScriptDictionary_CIterator_GetValue;
+
+extern fnASEXT_CScriptDictionary_CIterator_GetKey ASEXT_CScriptDictionary_CIterator_GetKey;
+
+extern fnASEXT_CScriptDictionary_CIterator_operator_PP ASEXT_CScriptDictionary_CIterator_operator_PP;
+
 typedef void*(*fnASEXT_GetCurrentContext)();
 extern fnASEXT_GetCurrentContext ASEXT_GetCurrentContext;
 
@@ -556,6 +580,13 @@ public:
 
 };
 
+class CScriptDictionary_CIterator
+{
+public:
+	void *cur;
+	void *next;
+};
+
 #define IMPORT_ASEXT_API(asext) IMPORT_FUNCTION_DLSYM(asext, ASEXT_CallHook);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CallCASBaseCallable);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterDocInitCallback);\
@@ -592,6 +623,12 @@ IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_IsEmpty);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_GetSize);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_Delete);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_DeleteAll);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_CIterator_begin);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_CIterator_end);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_CIterator_operator_NE);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_CIterator_GetValue);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_CIterator_GetKey);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_CIterator_operator_PP);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_GetCurrentContext);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptBuilder_DefineWord);\
 
@@ -630,6 +667,12 @@ IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_IsEmpty);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_GetSize);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_Delete);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_DeleteAll);\
+IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_CIterator_begin);\
+IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_CIterator_end);\
+IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_CIterator_operator_NE);\
+IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_CIterator_GetValue);\
+IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_CIterator_GetKey);\
+IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_CIterator_operator_PP);\
 IMPORT_FUNCTION_DEFINE(ASEXT_GetCurrentContext);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CScriptBuilder_DefineWord);\
 IMPORT_FUNCTION_POINTER_DEFINE(ASEXT_CallHook);\

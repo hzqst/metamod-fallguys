@@ -40,5 +40,8 @@
     <ClInclude Include="asext.h">
       <Filter>Header</Filter>
     </ClInclude>
+    <ClInclude Include="include\asext_api.h">
+      <Filter>Header</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

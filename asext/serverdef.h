@@ -339,4 +339,22 @@ PRIVATE_FUNCTION_EXTERN(CScriptDictionary_Delete);
 typedef void (SC_SERVER_DECL *fnCScriptDictionary_DeleteAll)(CScriptDictionary* pthis SC_SERVER_DUMMYARG_NOCOMMA);
 PRIVATE_FUNCTION_EXTERN(CScriptDictionary_DeleteAll);
 
+// CScriptDictionary::CIterator functions
+// begin/end have different parameter order between Windows and Linux due to hidden struct return ABI difference:
+// Windows (MSVC): this first, then hidden return ptr
+// Linux (Itanium ABI): hidden return ptr first, then this
+#ifdef _WIN32
+typedef void (SC_SERVER_DECL *fnCScriptDictionary_CIterator_begin)(CScriptDictionary* pthis, SC_SERVER_DUMMYARG CScriptDictionary_CIterator* itor);
+typedef void (SC_SERVER_DECL *fnCScriptDictionary_CIterator_end)(CScriptDictionary* pthis, SC_SERVER_DUMMYARG CScriptDictionary_CIterator* itor);
+#else
+typedef void (*fnCScriptDictionary_CIterator_begin)(CScriptDictionary_CIterator* itor, CScriptDictionary* pthis);
+typedef void (*fnCScriptDictionary_CIterator_end)(CScriptDictionary_CIterator* itor, CScriptDictionary* pthis);
+#endif
+PRIVATE_FUNCTION_EXTERN(CScriptDictionary_CIterator_begin);
+PRIVATE_FUNCTION_EXTERN(CScriptDictionary_CIterator_end);
+
+// GetKey returns void* (actually std::string&, but we avoid std::string& for ABI safety)
+typedef void* (SC_SERVER_DECL *fnCScriptDictionary_CIterator_GetKey)(CScriptDictionary_CIterator* pthis SC_SERVER_DUMMYARG_NOCOMMA);
+PRIVATE_FUNCTION_EXTERN(CScriptDictionary_CIterator_GetKey);
+
 extern CASServerManager **g_pServerManager;

@@ -103,6 +103,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="asext.h" />
+    <ClInclude Include="include\asext_api.h" />
     <ClInclude Include="signatures.h" />
     <ClInclude Include="serverdef.h" />
   </ItemGroup>
