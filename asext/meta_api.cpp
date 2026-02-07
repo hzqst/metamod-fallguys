@@ -248,6 +248,14 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		FILL_FROM_SIGNATURE(server, CScriptDictionary_Delete);
 		FILL_FROM_SIGNATURE(server, CScriptDictionary_DeleteAll);
 
+		// CScriptDictionary iterator functions: located from CASEntityFuncs::InitializeEntity
+		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CScriptDictionary_begin, 10);
+		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptDictionary_end, 8);
+		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CScriptDictionary_CIterator_operator_NE, 1);
+		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CScriptDictionary_CIterator_GetValue, 3);
+		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CScriptDictionary_CIterator_GetKey, 0);
+		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CScriptDictionary_CIterator_operator_PP, 0);
+
 		char pattern_CASHook_VCall[] = "\x83\xEC\x2A\xE8\x2A\x2A\x2A\x2A\x81\x2A\x2A\x2A\x2A\x2A\x8B\x2A\x24\x2A\x8B\x2A\x2A\x2A\x2A\x00\x85\x2A\x74\x2A\x0F\x2A\x2A\x06";
 		auto CASHook_VCall = (char *)LOCATE_FROM_SIGNATURE(server, pattern_CASHook_VCall);
 		if (!CASHook_VCall)
@@ -302,6 +310,12 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		FILL_FROM_SYMBOL(server, CScriptDictionary_GetSize);
 		FILL_FROM_SYMBOL(server, CScriptDictionary_Delete);
 		FILL_FROM_SYMBOL(server, CScriptDictionary_DeleteAll);
+		FILL_FROM_SYMBOL(server, CScriptDictionary_begin);
+		FILL_FROM_SYMBOL(server, CScriptDictionary_end);
+		FILL_FROM_SYMBOL(server, CScriptDictionary_CIterator_GetKey);
+		FILL_FROM_SYMBOL(server, CScriptDictionary_CIterator_operator_NE);
+		FILL_FROM_SYMBOL(server, CScriptDictionary_CIterator_GetValue);
+		FILL_FROM_SYMBOL(server, CScriptDictionary_CIterator_operator_PP);
 
 		VAR_FROM_SYMBOL(server, g_pServerManager);
 	}
