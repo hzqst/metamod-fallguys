@@ -22,6 +22,7 @@ endif()
 # 添加包含目录
 include_directories(
     ${CMAKE_SOURCE_DIR}/asext/include
+    ${CMAKE_SOURCE_DIR}/thirdparty/angelscript-sdk/angelscript/include
     ${CMAKE_SOURCE_DIR}/thirdparty/fmod
     ${BULLET3_INCLUDE_DIR}
     ${CAPSTONE_INCLUDE_DIR}

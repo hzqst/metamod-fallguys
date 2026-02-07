@@ -55,7 +55,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;ASCURL_EXPORTS;_WINDOWS;_USRDLL;PLATFORM_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)\hlsdk\common;$(SolutionDir)\hlsdk\dlls;$(SolutionDir)\hlsdk\pm_shared;$(SolutionDir)\hlsdk\engine;$(SolutionDir)metamod;$(SolutionDir)asext\include;$(SolutionDir)thirdparty\curl\include\curl;$(SolutionDir)thirdparty\openssl\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\hlsdk\common;$(SolutionDir)\hlsdk\dlls;$(SolutionDir)\hlsdk\pm_shared;$(SolutionDir)\hlsdk\engine;$(SolutionDir)metamod;$(SolutionDir)asext\include;$(SolutionDir)\thirdparty\angelscript-sdk\angelscript\include;$(SolutionDir)thirdparty\curl\include\curl;$(SolutionDir)thirdparty\openssl\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
@@ -78,7 +78,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;ASCURL_EXPORTS;_WINDOWS;_USRDLL;PLATFORM_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\hlsdk\common;$(SolutionDir)\hlsdk\dlls;$(SolutionDir)\hlsdk\pm_shared;$(SolutionDir)\hlsdk\engine;$(SolutionDir)metamod;$(SolutionDir)asext\include;$(SolutionDir)thirdparty\curl\include\curl;$(SolutionDir)thirdparty\openssl\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\hlsdk\common;$(SolutionDir)\hlsdk\dlls;$(SolutionDir)\hlsdk\pm_shared;$(SolutionDir)\hlsdk\engine;$(SolutionDir)metamod;$(SolutionDir)asext\include;$(SolutionDir)\thirdparty\angelscript-sdk\angelscript\include$(SolutionDir)thirdparty\curl\include\curl;$(SolutionDir)thirdparty\openssl\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <IntrinsicFunctions>true</IntrinsicFunctions>
     </ClCompile>

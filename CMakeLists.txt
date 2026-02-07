@@ -53,6 +53,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/hlsdk/pm_shared
     ${CMAKE_SOURCE_DIR}/hlsdk/engine
     ${CMAKE_SOURCE_DIR}/metamod
+    ${CMAKE_SOURCE_DIR}/thirdparty/angelscript-sdk/angelscript/include
 )
 
 # 平台特定设置

@@ -1,6 +1,7 @@
 MODNAME = fallguys
 SRCFILES = dllapi.cpp engine_api.cpp engine_hook.cpp fallguys.cpp h_export.cpp meta_api.cpp physics.cpp soundengine.cpp server_hook.cpp
 INCLUDEDIRS+=-I$(SDKSRC)/../asext/include
+INCLUDEDIRS+=-I$(SDKSRC)/../thirdparty/angelscript-sdk/angelscript/include
 INCLUDEDIRS+=-I$(SDKSRC)/../thirdparty/fmod
 INCLUDEDIRS+=-I$(SDKSRC)/../thirdparty/install/bullet3/$(OBJDIR_LINUX)/include/bullet
 INCLUDEDIRS+=-I$(SDKSRC)/../thirdparty/install/capstone/$(OBJDIR_LINUX)/include

@@ -18,6 +18,7 @@ endif()
 # 添加包含目录
 include_directories(
     ${CMAKE_SOURCE_DIR}/asext/include
+    ${CMAKE_SOURCE_DIR}/thirdparty/angelscript-sdk/angelscript/include
 )
 
 # 如果需要 Bullet3
