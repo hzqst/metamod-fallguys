@@ -1,6 +1,7 @@
 #pragma once
 
 #include <angelscript.h>
+#include "sc_std_string.h"
 
 const int StopMode_ON_HANDLED = 0;
 const int StopMode_MODULE_HANDLED = 1;
@@ -346,7 +347,7 @@ typedef void(*fnASEXT_SetDefaultNamespace)(CASDocumentation *pASDoc, const char*
 
 extern fnASEXT_SetDefaultNamespace ASEXT_SetDefaultNamespace;
 
-typedef asITypeInfo*(*fnASEXT_CASBaseManager_GetTypeInfoByName)(CASServerManager* pthis, const CString *name);
+typedef asITypeInfo*(*fnASEXT_CASBaseManager_GetTypeInfoByName)(CASServerManager* pthis, const sc_stdstring*name);
 
 extern fnASEXT_CASBaseManager_GetTypeInfoByName ASEXT_CASBaseManager_GetTypeInfoByName;
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <angelscript.h>
+#include "sc_std_string.h"
 
 const int StopMode_ON_HANDLED = 0;
 const int StopMode_MODULE_HANDLED = 1;
@@ -164,4 +165,7 @@ C_DLLEXPORT void ASEXT_CScriptBuilder_DefineWord(CScriptBuilder* pthis, const ch
 */
 C_DLLEXPORT void ASEXT_SetDefaultNamespace(CASDocumentation* pASDoc, const char* ns);
 
-C_DLLEXPORT asITypeInfo* ASEXT_CASBaseManager_GetTypeInfoByName(CASServerManager* pthis, const CString *name);
+/*
+	Can be used to get asITypeInfo * of "string" or whatever
+*/
+C_DLLEXPORT asITypeInfo* ASEXT_CASBaseManager_GetTypeInfoByName(CASServerManager* pthis, const sc_stdstring *name);
