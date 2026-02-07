@@ -44,6 +44,12 @@ PRIVATE_FUNCTION_DEFINE(CScriptDictionary_IsEmpty);
 PRIVATE_FUNCTION_DEFINE(CScriptDictionary_GetSize);
 PRIVATE_FUNCTION_DEFINE(CScriptDictionary_Delete);
 PRIVATE_FUNCTION_DEFINE(CScriptDictionary_DeleteAll);
+PRIVATE_FUNCTION_DEFINE(CScriptDictionary_begin);
+PRIVATE_FUNCTION_DEFINE(CScriptDictionary_end);
+PRIVATE_FUNCTION_DEFINE(CScriptDictionary_CIterator_GetKey);
+PRIVATE_FUNCTION_DEFINE(CScriptDictionary_CIterator_operator_NE);
+PRIVATE_FUNCTION_DEFINE(CScriptDictionary_CIterator_GetValue);
+PRIVATE_FUNCTION_DEFINE(CScriptDictionary_CIterator_operator_PP);
 
 CASServerManager **g_pServerManager = NULL;
 
@@ -359,45 +365,48 @@ C_DLLEXPORT void ASEXT_CScriptDictionary_DeleteAll(CScriptDictionary* pScriptDic
 	g_pfn_CScriptDictionary_DeleteAll(pScriptDictionary SC_SERVER_PASS_DUMMYARG2);
 }
 
-C_DLLEXPORT void ASEXT_CScriptDictionary_CIterator_begin(CScriptDictionary *pDict, CScriptDictionary_CIterator *itor)
+C_DLLEXPORT void ASEXT_CScriptDictionary_begin(CScriptDictionary *pDict, CScriptDictionary_CIterator *itor)
 {
 	SC_SERVER_DUMMYVAR;
 #ifdef _WIN32
-	g_pfn_CScriptDictionary_CIterator_begin(pDict, SC_SERVER_PASS_DUMMYARG itor);
+	g_pfn_CScriptDictionary_begin(pDict, SC_SERVER_PASS_DUMMYARG itor);
 #else
-	g_pfn_CScriptDictionary_CIterator_begin(itor, pDict);
+	g_pfn_CScriptDictionary_begin(itor, pDict);
 #endif
 }
 
-C_DLLEXPORT void ASEXT_CScriptDictionary_CIterator_end(CScriptDictionary *pDict, CScriptDictionary_CIterator *itor)
+C_DLLEXPORT void ASEXT_CScriptDictionary_end(CScriptDictionary *pDict, CScriptDictionary_CIterator *itor)
 {
 	SC_SERVER_DUMMYVAR;
 #ifdef _WIN32
-	g_pfn_CScriptDictionary_CIterator_end(pDict, SC_SERVER_PASS_DUMMYARG itor);
+	g_pfn_CScriptDictionary_end(pDict, SC_SERVER_PASS_DUMMYARG itor);
 #else
-	g_pfn_CScriptDictionary_CIterator_end(itor, pDict);
+	g_pfn_CScriptDictionary_end(itor, pDict);
 #endif
 }
 
 C_DLLEXPORT bool ASEXT_CScriptDictionary_CIterator_operator_NE(CScriptDictionary_CIterator *a1, CScriptDictionary_CIterator *a2)
 {
-	return false;
+	SC_SERVER_DUMMYVAR;
+	return g_pfn_CScriptDictionary_CIterator_operator_NE(a1, SC_SERVER_PASS_DUMMYARG a2);
 }
 
 C_DLLEXPORT bool ASEXT_CScriptDictionary_CIterator_GetValue(CScriptDictionary_CIterator *it, void *data, int typeId)
 {
-	return false;
+	SC_SERVER_DUMMYVAR;
+	return g_pfn_CScriptDictionary_CIterator_GetValue(it, SC_SERVER_PASS_DUMMYARG data, typeId);
 }
 
 C_DLLEXPORT const char *ASEXT_CScriptDictionary_CIterator_GetKey(CScriptDictionary_CIterator *it)
 {
 	SC_SERVER_DUMMYVAR;
-	// GetKey returns void* (actually std::string&), we cast to const char* for the C_str
+	// GetKey returns void* (actually const std::string&), we cast to const char* for the C_str
 	void *pStdString = g_pfn_CScriptDictionary_CIterator_GetKey(it SC_SERVER_PASS_DUMMYARG2);
-	return (const char *)pStdString;
+	return *(const char **)((uintptr_t)pStdString + 20);
 }
 
 C_DLLEXPORT void ASEXT_CScriptDictionary_CIterator_operator_PP(CScriptDictionary_CIterator *it)
 {
-
+	SC_SERVER_DUMMYVAR;
+	g_pfn_CScriptDictionary_CIterator_operator_PP(it SC_SERVER_PASS_DUMMYARG2);
 }

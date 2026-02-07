@@ -113,9 +113,9 @@ C_DLLEXPORT void ASEXT_CScriptDictionary_Delete(CScriptDictionary* pScriptDictio
 
 C_DLLEXPORT void ASEXT_CScriptDictionary_DeleteAll(CScriptDictionary* pScriptDictionary);
 
-C_DLLEXPORT void ASEXT_CScriptDictionary_CIterator_begin(CScriptDictionary *pDict, CScriptDictionary_CIterator *itor);
+C_DLLEXPORT void ASEXT_CScriptDictionary_begin(CScriptDictionary *pDict, CScriptDictionary_CIterator *itor);
 
-C_DLLEXPORT void ASEXT_CScriptDictionary_CIterator_end(CScriptDictionary *pDict, CScriptDictionary_CIterator *itor);
+C_DLLEXPORT void ASEXT_CScriptDictionary_end(CScriptDictionary *pDict, CScriptDictionary_CIterator *itor);
 
 C_DLLEXPORT bool ASEXT_CScriptDictionary_CIterator_operator_NE(CScriptDictionary_CIterator *a1, CScriptDictionary_CIterator *a2);
 

@@ -344,17 +344,26 @@ PRIVATE_FUNCTION_EXTERN(CScriptDictionary_DeleteAll);
 // Windows (MSVC): this first, then hidden return ptr
 // Linux (Itanium ABI): hidden return ptr first, then this
 #ifdef _WIN32
-typedef void (SC_SERVER_DECL *fnCScriptDictionary_CIterator_begin)(CScriptDictionary* pthis, SC_SERVER_DUMMYARG CScriptDictionary_CIterator* itor);
-typedef void (SC_SERVER_DECL *fnCScriptDictionary_CIterator_end)(CScriptDictionary* pthis, SC_SERVER_DUMMYARG CScriptDictionary_CIterator* itor);
+typedef void (SC_SERVER_DECL *fnCScriptDictionary_begin)(CScriptDictionary* pthis, SC_SERVER_DUMMYARG CScriptDictionary_CIterator* itor);
+typedef void (SC_SERVER_DECL *fnCScriptDictionary_end)(CScriptDictionary* pthis, SC_SERVER_DUMMYARG CScriptDictionary_CIterator* itor);
 #else
-typedef void (*fnCScriptDictionary_CIterator_begin)(CScriptDictionary_CIterator* itor, CScriptDictionary* pthis);
-typedef void (*fnCScriptDictionary_CIterator_end)(CScriptDictionary_CIterator* itor, CScriptDictionary* pthis);
+typedef void (*fnCScriptDictionary_begin)(CScriptDictionary_CIterator* itor, CScriptDictionary* pthis);
+typedef void (*fnCScriptDictionary_end)(CScriptDictionary_CIterator* itor, CScriptDictionary* pthis);
 #endif
-PRIVATE_FUNCTION_EXTERN(CScriptDictionary_CIterator_begin);
-PRIVATE_FUNCTION_EXTERN(CScriptDictionary_CIterator_end);
+PRIVATE_FUNCTION_EXTERN(CScriptDictionary_begin);
+PRIVATE_FUNCTION_EXTERN(CScriptDictionary_end);
 
 // GetKey returns void* (actually std::string&, but we avoid std::string& for ABI safety)
 typedef void* (SC_SERVER_DECL *fnCScriptDictionary_CIterator_GetKey)(CScriptDictionary_CIterator* pthis SC_SERVER_DUMMYARG_NOCOMMA);
 PRIVATE_FUNCTION_EXTERN(CScriptDictionary_CIterator_GetKey);
+
+typedef bool (SC_SERVER_DECL *fnCScriptDictionary_CIterator_operator_NE)(CScriptDictionary_CIterator* pthis, SC_SERVER_DUMMYARG CScriptDictionary_CIterator* other);
+PRIVATE_FUNCTION_EXTERN(CScriptDictionary_CIterator_operator_NE);
+
+typedef bool (SC_SERVER_DECL *fnCScriptDictionary_CIterator_GetValue)(CScriptDictionary_CIterator* pthis, SC_SERVER_DUMMYARG void* data, int typeId);
+PRIVATE_FUNCTION_EXTERN(CScriptDictionary_CIterator_GetValue);
+
+typedef void (SC_SERVER_DECL *fnCScriptDictionary_CIterator_operator_PP)(CScriptDictionary_CIterator* pthis SC_SERVER_DUMMYARG_NOCOMMA);
+PRIVATE_FUNCTION_EXTERN(CScriptDictionary_CIterator_operator_PP);
 
 extern CASServerManager **g_pServerManager;
