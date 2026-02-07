@@ -73,7 +73,7 @@ C_DLLEXPORT void ASEXT_RegisterObjectMethod(CASDocumentation *pthis, const char 
 	SC_SERVER_DUMMYVAR;
 
 	asSFuncPtr reg;
-	reg.CopyMethodPtr(pfn, sizeof(pfn));
+	reg.CopyMethodPtr(&pfn, sizeof(pfn));
 	reg.flag = 3;//3 = method
 
 	g_call_original_CASDocumentation_RegisterObjectMethod(pthis, SC_SERVER_PASS_DUMMYARG docs, name, func, &reg, type);
@@ -90,7 +90,7 @@ C_DLLEXPORT void ASEXT_RegisterObjectBehaviour(CASDocumentation *pthis, const ch
 	SC_SERVER_DUMMYVAR;
 
 	asSFuncPtr reg;
-	reg.CopyMethodPtr(pfn, sizeof(pfn));
+	reg.CopyMethodPtr(&pfn, sizeof(pfn));
 	reg.flag = 2;//2 = global func
 
 	g_call_original_CASDocumentation_RegisterObjectBehaviour(pthis, SC_SERVER_PASS_DUMMYARG docs, name, behaviour, func, &reg, type, 0);

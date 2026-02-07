@@ -478,6 +478,11 @@ struct asSFuncPtr
 #endif
 	asBYTE flag; // 1 = generic, 2 = global func, 3 = method
 };
+#if _WIN32
+static_assert(offsetof(asSFuncPtr, flag) == 32, "Invalid flag offset");
+#else
+static_assert(offsetof(asSFuncPtr, flag) == 28, "Invalid flag offset");
+#endif
 
 #if defined(__BORLANDC__)
 // A bug in BCC (QC #85374) makes it impossible to distinguish const/non-const method overloads

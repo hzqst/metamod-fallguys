@@ -340,11 +340,11 @@ extern fnASEXT_SetDefaultNamespace ASEXT_SetDefaultNamespace;
 typedef void(*fnASEXT_CreateDirectory)(CASDirectoryList *pASDirList, const char *path, unsigned char flags, unsigned char access_control, unsigned char permanent, unsigned char unk);
 extern fnASEXT_CreateDirectory ASEXT_CreateDirectory;
 
-typedef void(*fnASEXT_CStringAssign)(void *pthis, const char *src, size_t len);
+typedef void(*fnASEXT_CStringAssign)(CString *pthis, const char *src, size_t len);
 
 extern fnASEXT_CStringAssign ASEXT_CStringAssign;
 
-typedef void(*fnASEXT_CStringdtor)(void *pthis);
+typedef void(*fnASEXT_CStringdtor)(CString *pthis);
 
 extern fnASEXT_CStringdtor ASEXT_CStringdtor;
 
