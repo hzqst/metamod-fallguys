@@ -216,6 +216,7 @@ public:
 class CString;
 class CScriptBuilder;
 class CScriptDictionary;
+class CScriptDictionary_CIterator;
 
 typedef void(*fnASDocInitCallback)(CASDocumentation *pASDoc);
 typedef void(*fnASDirInitCallback)(CASDirectoryList *pASDir);
