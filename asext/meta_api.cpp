@@ -357,6 +357,12 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	LOG_MESSAGE(PLID, "CScriptDictionary_GetSize found at %p", g_pfn_CScriptDictionary_GetSize);
 	LOG_MESSAGE(PLID, "CScriptDictionary_Delete found at %p", g_pfn_CScriptDictionary_Delete);
 	LOG_MESSAGE(PLID, "CScriptDictionary_DeleteAll found at %p", g_pfn_CScriptDictionary_DeleteAll);
+	LOG_MESSAGE(PLID, "CScriptDictionary_begin found at %p", g_pfn_CScriptDictionary_begin);
+	LOG_MESSAGE(PLID, "CScriptDictionary_end found at %p", g_pfn_CScriptDictionary_end);
+	LOG_MESSAGE(PLID, "CScriptDictionary_CIterator_GetKey found at %p", g_pfn_CScriptDictionary_CIterator_GetKey);
+	LOG_MESSAGE(PLID, "CScriptDictionary_CIterator_operator_NE found at %p", g_pfn_CScriptDictionary_CIterator_operator_NE);
+	LOG_MESSAGE(PLID, "CScriptDictionary_CIterator_GetValue found at %p", g_pfn_CScriptDictionary_CIterator_GetValue);
+	LOG_MESSAGE(PLID, "CScriptDictionary_CIterator_operator_PP found at %p", g_pfn_CScriptDictionary_CIterator_operator_PP);
 	LOG_MESSAGE(PLID, "g_pServerManager found at %p!", g_pServerManager);
 
 	INSTALL_INLINEHOOK(CASDocumentation_RegisterObjectType);
