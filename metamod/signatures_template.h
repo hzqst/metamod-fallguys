@@ -70,6 +70,9 @@ if (!g_pfn_##name)\
 	return FALSE;\
 }
 
+/*
+	Purpose: Find addr with signature and considering addr+offset as an instrucion of E8 call, the call target will be returned by pfnGetNextCallAddr and will be populated to g_pfn_XXXXX and g_call_original_XXXXX.
+*/
 #define FILL_FROM_SIGNATURED_CALLER_FROM_START(dll, name, offset) auto Caller_of_##name = (char *)LOCATE_FROM_SIGNATURE(dll, name##_Signature);\
 if (!Caller_of_##name)\
 {\
@@ -83,6 +86,9 @@ if (!gpMetaUtilFuncs->pfnIsAddressInModuleRange((void *)g_pfn_##name, dll##Base)
 	return FALSE; \
 }
 
+/*
+	Same as FILL_FROM_SIGNATURED_CALLER_FROM_START, but you can append "ty" to end of signature name, in order to use an alternative version of signature.
+*/
 #define FILL_FROM_SIGNATURED_TY_CALLER_FROM_START(dll, name, ty, offset) auto Caller_of_##name = (char *)LOCATE_FROM_SIGNATURE(dll, name##_Signature_##ty);\
 if (!Caller_of_##name)\
 {\
@@ -95,7 +101,9 @@ if (!gpMetaUtilFuncs->pfnIsAddressInModuleRange((void *)g_pfn_##name, dll##Base)
 	LOG_ERROR(PLID, "Failed to locate " #name " from " #dll " dll !"); \
 	return FALSE; \
 }
-
+/*
+	Purpose: Find addr with signature and considering addr+len(sig)+offset as an instrucion of E8 call, the call target will be returned by pfnGetNextCallAddr and will be populated to g_pfn_XXXXX and g_call_original_XXXXX.
+*/
 #define FILL_FROM_SIGNATURED_CALLER_FROM_END(dll, name, offset) auto Caller_of_##name = (char *)LOCATE_FROM_SIGNATURE(dll, name##_Signature);\
 if (!Caller_of_##name)\
 {\
@@ -109,6 +117,9 @@ if (!gpMetaUtilFuncs->pfnIsAddressInModuleRange((void *)g_pfn_##name, dll##Base)
 	return FALSE; \
 }
 
+/*
+	Same as FILL_FROM_SIGNATURED_CALLER_FROM_END, but you can append "ty" to end of signature name, in order to use an alternative version of signature.
+*/
 #define FILL_FROM_SIGNATURED_TY_CALLER_FROM_END(dll, name, ty, offset) auto Caller_of_##name = (char *)LOCATE_FROM_SIGNATURE(dll, name##_Signature_##ty);\
 if (!Caller_of_##name)\
 {\

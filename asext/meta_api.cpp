@@ -200,6 +200,14 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	FILL_FROM_SIGNATURE(server, CScriptDictionary_Delete);
 	FILL_FROM_SIGNATURE(server, CScriptDictionary_DeleteAll);
 
+	// CScriptDictionary iterator functions: located from CASEntityFuncs::InitializeEntity
+	FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptDictionary_begin, 14);
+	FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptDictionary_end, 6);
+	FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptDictionary_CIterator_operator_NE, 4);
+	FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptDictionary_CIterator_GetValue, 10);
+	FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptDictionary_CIterator_GetKey, 7);
+	FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptDictionary_CIterator_operator_PP, 9);
+
 	VAR_FROM_SIGNATURE_FROM_START(server, g_pServerManager, 5);
 
 #else

@@ -43,12 +43,14 @@
 #define CScriptDictionary_Delete_Signature "\x55\x8B\xEC\x6A\xFF\x68\x2A\x2A\x2A\x2A\x64\xA1\x00\x00\x00\x00\x50\x51\x53\x56\x57\xA1\x2A\x2A\x2A\x2A\x33\xC5\x50\x8D\x45\xF4\x64\xA3\x00\x00\x00\x00\x8B\xF9\xFF\x75\x08"
 #define CScriptDictionary_DeleteAll_Signature "\x51\x53\x55\x8B\xE9\x8B\x45\x14\x8D\x5D\x14\x56\x8B\x30\x3B\xF0\x74\x2A\x57\x8B\x46\x38"
 
-#define CScriptDictionary_begin_Signature ""
-#define CScriptDictionary_end_Signature ""
-#define CScriptDictionary_CIterator_GetKey_Signature ""
-#define CScriptDictionary_CIterator_operator_NE_Signature ""
-#define CScriptDictionary_CIterator_GetValue_Signature ""
-#define CScriptDictionary_CIterator_operator_PP_Signature ""
+// CScriptDictionary iterator functions: each signature matches a unique byte pattern inside
+// CASEntityFuncs::InitializeEntity, located via FILL_FROM_SIGNATURED_CALLER_FROM_START.
+#define CScriptDictionary_begin_Signature "\x8B\x40\x30\xFF\xD0\x89\x45\x2A\x8B\x2A\x8D\x45\x2A\x50"
+#define CScriptDictionary_end_Signature "\x8D\x45\x2A\x8B\x2A\x50\xE8\x2A\x2A\x2A\x2A\x50\x8D\x4D\x2A\xE8\x2A\x2A\x2A\x2A\x84\xC0\x0F\x84"
+#define CScriptDictionary_CIterator_operator_NE_Signature "\x50\x8D\x4D\x2A\xE8\x2A\x2A\x2A\x2A\x84\xC0\x0F\x84"
+#define CScriptDictionary_CIterator_GetValue_Signature "\xFF\x75\x2A\x8D\x45\x2A\x50\x8D\x4D\x2A\xE8\x2A\x2A\x2A\x2A\x84\xC0\x74"
+#define CScriptDictionary_CIterator_GetKey_Signature "\x84\xC0\x74\x2A\x8D\x4D\x2A\xE8\x2A\x2A\x2A\x2A\x8B\x40\x14"
+#define CScriptDictionary_CIterator_operator_PP_Signature "\x8B\x75\x2A\x83\xC4\x10\x8D\x4D\x2A"
 
 #else
 

@@ -41,6 +41,10 @@ mcp__ida-pro-mcp__find_bytes("83 EC 2C A1 ?? ?? ?? ?? 33 C4")
 
 **Critical**: Always verify signature uniqueness using `find_bytes`. If the pattern matches multiple functions, the signature is too generic and must be made more specific.
 
+**Wildcard rules** (`\x2A` = any byte, shown as `??` in IDA format):
+- **Always wildcard**: absolute addresses, GOT offsets, relative call/jump offsets (`E8`/`E9` operands), variable stack offsets (`[ebp-XX]`)
+- **Keep literal**: opcodes, vtable offsets (e.g. `FF 90 B4 00 00 00`), characteristic constants, struct member offsets, string instruction prefixes
+
 **Tip**: Use `scripts/signature_converter.py` to convert between formats:
 ```bash
 # Convert C string to IDA format
@@ -132,11 +136,86 @@ else
 ```
 
 **Fill macros**:
-- `FILL_FROM_SIGNATURE(module, name)` - Scan by signature
-- `FILL_FROM_SYMBOL(module, name)` - Lookup by symbol
-- `FILL_FROM_SIGNATURED_CALLER_FROM_END(module, name, offset)` - Scan caller signature
+- `FILL_FROM_SIGNATURE(module, name)` - Direct signature scan on target function
+- `FILL_FROM_SYMBOL(module, name)` - Lookup by symbol name (Linux only)
+- `FILL_FROM_SIGNATURED_CALLER_FROM_START(module, name, offset)` - Locate via caller signature + offset from **start** of match
+- `FILL_FROM_SIGNATURED_CALLER_FROM_END(module, name, offset)` - Locate via caller signature + offset from **end** of match
+- `FILL_FROM_SIGNATURED_TY_CALLER_FROM_START(module, name, ty, offset)` - Same as above, uses `name_Signature_ty`
+- `FILL_FROM_SIGNATURED_TY_CALLER_FROM_END(module, name, ty, offset)` - Same as above, uses `name_Signature_ty`
 
 **Module options**: `server` (server.dll/so), `engine` (hw.dll/so)
+
+### Step 5b: Caller-Based Signature Approach (for short/inlined functions)
+
+When the target function is too short or simple to produce a unique signature (e.g. small methods, trivial wrappers, iterator operators), use a **caller-based** approach: find a unique byte pattern inside a known caller of the target, and use an offset to reach the `E8` (call) instruction.
+
+#### When to Use
+
+- Target function body is very short (< 15 bytes)
+- Target function signature is not unique across the binary
+- Multiple short related functions can all be located from a single well-known caller
+
+#### How It Works
+
+1. `LOCATE_FROM_SIGNATURE` finds the byte pattern (stored in `name_Signature`) inside the caller function
+2. An offset is added to reach the `E8` call instruction:
+   - **FROM_START**: `effective_addr = signature_match + offset`
+   - **FROM_END**: `effective_addr = signature_match + strlen(signature) + offset`
+3. `pfnGetNextCallAddr(effective_addr, 1)` reads the `E8` relative call at that address and returns the call target
+
+**Critical**: `pfnGetNextCallAddr(addr, 1)` checks **exactly one byte position**. If the byte at `addr` is not `E8` (relative call) or `FF 15` (indirect call), it returns `NULL`. The offset **must** point exactly at the `E8` byte.
+
+#### IDA Pro Workflow
+
+```bash
+# 1. Find the caller function
+mcp__ida-pro-mcp__lookup_funcs("CallerFunction")
+
+# 2. Disassemble to see all call instructions
+mcp__ida-pro-mcp__disasm("0xCallerAddr")
+
+# 3. Identify the call to target, note its address (the E8 byte)
+#    e.g. 0x102dd875: E8 XX XX XX XX  ; call TargetFunction
+
+# 4. Get raw bytes around the call instruction
+mcp__ida-pro-mcp__get_bytes([{"addr": "0x102dd865", "size": 30}])
+
+# 5. Craft a unique byte pattern near the E8, wildcard variable parts
+#    Pattern: 8B 40 30 FF D0 89 45 ?? 8B ?? 8D 45 ?? 50
+#    The E8 is at offset 14 from the pattern start
+
+# 6. Verify uniqueness - MUST be exactly 1 match
+mcp__ida-pro-mcp__find_bytes(["8B 40 30 FF D0 89 45 ?? 8B ?? 8D 45 ?? 50"])
+
+# 7. Calculate offset = E8_address - signature_match_address
+#    e.g. 0x102dd875 - 0x102dd867 = 14
+```
+
+#### Signature Design Guidelines
+
+- **Offset must be < 15** for robustness. If the E8 is far from the unique pattern, choose a different pattern closer to the call.
+- **Wildcard** (`\x2A`) stack offsets (e.g. `[ebp-XXh]`), register choices, and relative call addresses — these vary between builds.
+- **Keep literal** opcodes, vtable offsets, constant values, and structural patterns (e.g. `FF D0` = indirect call, `0F 84` = jz near).
+- When multiple target functions share one caller, create **individual** unique signatures near each call site. Don't reuse one signature with large offsets.
+- Distinguish similar patterns by including **context after the call** (e.g. `0F 84` vs `0F 85` for jz vs jnz).
+
+#### Example: Locating iterator functions from a caller
+
+Six CScriptDictionary iterator functions (begin, end, operator!=, GetValue, GetKey, operator++) are all called within `CASEntityFuncs::InitializeEntity`. Each is too short for a direct signature, so each gets a unique byte pattern near its call site:
+
+```cpp
+// signatures.h - each pattern is unique within the binary
+#define CScriptDictionary_begin_Signature      "\x8B\x40\x30\xFF\xD0\x89\x45\x2A\x8B\x2A\x8D\x45\x2A\x50"
+#define CScriptDictionary_end_Signature        "\x8D\x45\x2A\x8B\x2A\x50\xE8\x2A\x2A\x2A\x2A\x50\x8D\x4D\x2A\xE8\x2A\x2A\x2A\x2A\x84\xC0\x0F\x84"
+#define CScriptDictionary_CIterator_operator_NE_Signature "\x50\x8D\x4D\x2A\xE8\x2A\x2A\x2A\x2A\x84\xC0\x0F\x84"
+```
+
+```cpp
+// meta_api.cpp - offset points exactly at the E8 byte
+FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptDictionary_begin, 14);
+FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptDictionary_end, 6);
+FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CScriptDictionary_CIterator_operator_NE, 4);
+```
 
 ### Step 6: Call Function in Business Code
 
@@ -164,13 +243,13 @@ ASEXT_RegisterDocInitCallback([](CASDocumentation *pASDoc) {
 - [ ] Analyze function with IDA Pro (decompile, disasm, bytes)
 - [ ] Verify signature uniqueness in IDA Pro
 - [ ] Define calling convention macro (if new) in `asext/include/asext_api.h`
-- [ ] Define function typedef in `fallguys/serverdef.h`
-- [ ] Add Windows signature in `fallguys/signatures.h`
-- [ ] Add Linux signature and symbol in `fallguys/signatures.h`
-- [ ] Add `PRIVATE_FUNCTION_DEFINE` in `fallguys/server_hook.cpp`
-- [ ] Add Windows `FILL_FROM_SIGNATURE` in `fallguys/meta_api.cpp`
-- [ ] Add Linux 5.16 `FILL_FROM_SIGNATURE` in `fallguys/meta_api.cpp`
-- [ ] Add Linux 5.15 `FILL_FROM_SYMBOL` in `fallguys/meta_api.cpp`
+- [ ] Define function typedef in `serverdef.h`
+- [ ] Add Windows signature in `signatures.h` (direct or caller-based)
+- [ ] Add Linux signature and symbol in `signatures.h`
+- [ ] Add `PRIVATE_FUNCTION_DEFINE` in `server_hook.cpp`
+- [ ] Add Windows fill macro in `meta_api.cpp` (`FILL_FROM_SIGNATURE` or `FILL_FROM_SIGNATURED_CALLER_FROM_START/END`)
+- [ ] Add Linux 5.16 fill macro in `meta_api.cpp`
+- [ ] Add Linux 5.15 `FILL_FROM_SYMBOL` in `meta_api.cpp`
 - [ ] Call function with null check in business code
 - [ ] Compile and test (Windows and Linux)
 - [ ] Verify function found in logs
@@ -178,10 +257,10 @@ ASEXT_RegisterDocInitCallback([](CASDocumentation *pASDoc) {
 ## Key Files
 
 - `asext/include/asext_api.h` - Calling convention macros
-- `fallguys/serverdef.h` - Function type definitions
-- `fallguys/signatures.h` - Signatures and symbols
-- `fallguys/server_hook.cpp` - Function pointer definitions
-- `fallguys/meta_api.cpp` - Function pointer filling
+- `serverdef.h` - Function type definitions
+- `signatures.h` - Signatures and symbols
+- `server_hook.cpp` - Function pointer definitions
+- `meta_api.cpp` - Function pointer filling
 - `metamod/signatures_template.h` - Macro definitions
 
 ## References
