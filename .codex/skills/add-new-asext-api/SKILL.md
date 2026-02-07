@@ -1,9 +1,9 @@
 ---
-name: create-new-asext-api
+name: add-new-asext-api
 description: Add a new exported API function to the asext module, wrapping a private server.dll/server.so function for use by external plugins. Use when you need to expose CASDocumentation, CASDirectoryList, or other AngelScript-related private functions through the ASEXT_* API layer.
 ---
 
-# Create New ASEXT API
+# Add New ASEXT API
 
 ## Overview
 
@@ -13,7 +13,7 @@ This skill covers the end-to-end process of adding a new exported API function t
 
 **Prerequisite knowledge**: Familiarity with the [add-private-function-with-signatures](../add-private-function-with-signatures/SKILL.md) skill for IDA analysis and signature creation basics.
 
-## Files to Modify (8 files)
+## Files to Modify (6 files)
 
 | # | File | Purpose |
 |---|------|---------|
@@ -28,54 +28,21 @@ See [asext-file-map.md](references/asext-file-map.md) for detailed file roles an
 
 ## Workflow
 
-### Step 1: Analyze the Target Function in IDA Pro
+### Step 1: Analyze Target Function and Create Signatures
 
-Open the target binary (server.dll or server.so) in IDA Pro and locate the function.
+Use the [add-private-function-with-signatures](../add-private-function-with-signatures/SKILL.md) skill for the full IDA Pro workflow: decompile, extract bytes, craft signature with wildcards, and verify uniqueness.
 
-```
-# Find by name
-mcp__ida-pro-mcp__lookup_funcs("ClassName::MethodName")
-
-# Decompile to understand parameters, return type, and calling convention
-mcp__ida-pro-mcp__decompile("0xAddress")
-
-# Get raw bytes for signature creation
-mcp__ida-pro-mcp__get_bytes({"addr": "0xAddress", "size": <function_size>})
-```
-
-**Key observations to record**:
+**Key observations to record** during IDA analysis:
 - **Return type** (void, int, etc.)
 - **Calling convention** (Windows: `__thiscall`/`__fastcall`/`__cdecl`; Linux: `__cdecl`)
 - **Parameter list** (types and count)
 - **Struct offsets** used inside the function (may differ between Windows and Linux)
-- **Function size** in bytes
 
 **Repeat for both platforms** (server.dll AND server.so) if both IDA databases are available.
 
-### Step 2: Create Signature and Verify Uniqueness
+**For Linux 5.15**: Also record the C++ mangled symbol name (e.g. `_ZN16CASDocumentation19SetDefaultNamespaceEPKc`). If the binary is stripped (no symbols), only a signature is needed.
 
-From the raw bytes, create a signature with appropriate wildcards:
-
-**Wildcard rules** (`\x2A`):
-- Always wildcard: absolute addresses, GOT offsets, variable stack offsets
-- Keep specific: opcodes, characteristic constants, struct offsets, vtable offsets
-
-**Verify uniqueness** (CRITICAL):
-```
-# Convert signature to IDA search format (replace \x2A with ??)
-mcp__ida-pro-mcp__find_bytes("56 8B F1 57 8B 7C 24 ?? 57 8B 4E 24 8B 01 FF 90 B4 00 00 00")
-# Must return EXACTLY ONE match
-```
-
-**For Linux 5.15**: Also record the C++ mangled symbol name:
-```
-# Example: CASDocumentation::SetDefaultNamespace(const char*)
-# Mangled: _ZN16CASDocumentation19SetDefaultNamespaceEPKc
-```
-
-If the binary is stripped (no symbols), only a signature is needed.
-
-### Step 3: Define Function Type in `asext/serverdef.h`
+### Step 2: Define Function Type in `asext/serverdef.h`
 
 Add the typedef and extern declaration alongside existing `CASDocumentation_*` functions:
 
@@ -98,7 +65,7 @@ ReturnType SC_SERVER_DECL NewClassName_MethodName(
     ClassName *pthis, SC_SERVER_DUMMYARG ParamType1 param1, ParamType2 param2);
 ```
 
-### Step 4: Add Signatures in `asext/signatures.h`
+### Step 3: Add Signatures in `asext/signatures.h`
 
 The file has two sections separated by `#ifdef _WIN32` / `#else`.
 
@@ -117,9 +84,9 @@ The file has two sections separated by `#ifdef _WIN32` / `#else`.
 
 **If signature is unknown for a platform**, use empty string `""` as placeholder — the corresponding `FILL_FROM_*` call must be omitted from meta_api.cpp until the signature is provided.
 
-### Step 5: Define Function Pointer in `asext/server_hook.cpp`
+### Step 4: Define Function Pointer in `asext/server_hook.cpp`
 
-**5a. Add PRIVATE_FUNCTION_DEFINE** at the top of the file (with other defines):
+**4a. Add PRIVATE_FUNCTION_DEFINE** at the top of the file (with other defines):
 
 ```cpp
 PRIVATE_FUNCTION_DEFINE(ClassName_MethodName);
@@ -131,7 +98,7 @@ fnClassName_MethodName g_pfn_ClassName_MethodName = NULL;
 fnClassName_MethodName g_call_original_ClassName_MethodName = NULL;
 ```
 
-**5b. Add the ASEXT_* wrapper function** (the exported API that external plugins call):
+**4b. Add the ASEXT_* wrapper function** (the exported API that external plugins call):
 
 ```cpp
 C_DLLEXPORT void ASEXT_MethodName(ClassName* pthis, ParamType1 param1)
@@ -145,11 +112,11 @@ C_DLLEXPORT void ASEXT_MethodName(ClassName* pthis, ParamType1 param1)
 
 **Important**: The wrapper uses `g_call_original_*` (not `g_pfn_*`) to call through the original function pointer. For non-hooked functions, both point to the same address.
 
-### Step 6: Fill Function Pointer in `asext/meta_api.cpp`
+### Step 5: Fill Function Pointer in `asext/meta_api.cpp`
 
 There are **three code paths** in `Meta_Attach` that must be updated:
 
-**6a. Windows branch** (`#ifdef _WIN32`, ~line 162+):
+**5a. Windows branch** (`#ifdef _WIN32`, ~line 162+):
 
 ```cpp
 FILL_FROM_SIGNATURE(server, ClassName_MethodName);
@@ -160,7 +127,7 @@ Or if using a caller-based signature:
 FILL_FROM_SIGNATURED_CALLER_FROM_END(server, ClassName_MethodName, <offset>);
 ```
 
-**6b. Linux 5.16+ branch** (`if (CreateInterface("SCServerDLL003", nullptr))`, ~line 206+):
+**5b. Linux 5.16+ branch** (`if (CreateInterface("SCServerDLL003", nullptr))`, ~line 206+):
 
 ```cpp
 FILL_FROM_SIGNATURE(server, ClassName_MethodName);
@@ -171,13 +138,13 @@ Or with caller-based:
 FILL_FROM_SIGNATURED_CALLER_FROM_START(server, ClassName_MethodName, <offset>);
 ```
 
-**6c. Linux 5.15 branch** (`else`, ~line 262+):
+**5c. Linux 5.15 branch** (`else`, ~line 262+):
 
 ```cpp
 FILL_FROM_SYMBOL(server, ClassName_MethodName);
 ```
 
-**6d. Add LOG_MESSAGE** (after `#endif`, ~line 300+):
+**5d. Add LOG_MESSAGE** (after `#endif`, ~line 300+):
 
 ```cpp
 LOG_MESSAGE(PLID, "ClassName_MethodName found at %p", g_pfn_ClassName_MethodName);
@@ -185,16 +152,9 @@ LOG_MESSAGE(PLID, "ClassName_MethodName found at %p", g_pfn_ClassName_MethodName
 
 **Placement in each block**: Insert after the last function of the same class group to maintain ordering.
 
-**FILL_FROM macro selection guide**:
+For the full list of `FILL_FROM_*` macros and the caller-based signature approach, see [add-private-function-with-signatures](../add-private-function-with-signatures/SKILL.md) Step 5 and Step 5b.
 
-| Macro | When to Use |
-|-------|-------------|
-| `FILL_FROM_SIGNATURE(mod, name)` | Direct function body signature (most common for small unique functions) |
-| `FILL_FROM_SIGNATURED_CALLER_FROM_END(mod, name, offset)` | Caller-site signature, scan backwards from end of match |
-| `FILL_FROM_SIGNATURED_CALLER_FROM_START(mod, name, offset)` | Caller-site signature, scan forwards from start of match |
-| `FILL_FROM_SYMBOL(mod, name)` | Linux 5.15 only — lookup by exported C++ mangled symbol |
-
-### Step 7: Add Declaration in `asext/asext.h`
+### Step 6: Add Declaration in `asext/asext.h`
 
 Add the `C_DLLEXPORT` declaration for the wrapper function:
 
@@ -207,11 +167,11 @@ C_DLLEXPORT void ASEXT_MethodName(ClassName* pthis, ParamType1 param1);
 
 **Placement**: At the end of the file, or grouped with related functions.
 
-### Step 8: Add to Import API in `asext/include/asext_api.h`
+### Step 7: Add to Import API in `asext/include/asext_api.h`
 
 This file is used by **external plugins** to dynamically import asext functions. Three locations must be updated:
 
-**8a. Add typedef + extern** (alongside existing ASEXT_* declarations):
+**7a. Add typedef + extern** (alongside existing ASEXT_* declarations):
 
 ```cpp
 /*
@@ -222,13 +182,13 @@ typedef void(*fnASEXT_MethodName)(ClassName* pASDoc, ParamType1 param1);
 extern fnASEXT_MethodName ASEXT_MethodName;
 ```
 
-**8b. Add to `IMPORT_ASEXT_API` macro** (the DLSYM import block):
+**7b. Add to `IMPORT_ASEXT_API` macro** (the DLSYM import block):
 
 ```cpp
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_MethodName);\
 ```
 
-**8c. Add to `IMPORT_ASEXT_API_DEFINE` macro** (the definition block):
+**7c. Add to `IMPORT_ASEXT_API_DEFINE` macro** (the definition block):
 
 ```cpp
 IMPORT_FUNCTION_DEFINE(ASEXT_MethodName);\
