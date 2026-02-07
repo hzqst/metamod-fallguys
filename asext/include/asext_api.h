@@ -208,13 +208,23 @@ class asIScriptEngine;
 class CASServerManager
 {
 public:
+	asIScriptEngine* GetScriptEngine() const
+	{
+		return scriptEngine;
+	}
+	CASModule* GetCurrentASModule() const
+	{
+		return curModule;
+	}
+
+public:
 	int unk1;//0
 	int unk2;//4
 	int unk3;//8
-	asIScriptEngine *scriptEngine;//12
+	asIScriptEngine* scriptEngine;//12
 	int unk5;//16
 	int unk6;//20
-	CASModule *curModule;//24
+	CASModule* curModule;//24
 };
 
 class CString;
@@ -335,6 +345,10 @@ extern fnASEXT_RegisterEnumValue ASEXT_RegisterEnumValue;
 typedef void(*fnASEXT_SetDefaultNamespace)(CASDocumentation *pASDoc, const char* ns);
 
 extern fnASEXT_SetDefaultNamespace ASEXT_SetDefaultNamespace;
+
+typedef asITypeInfo*(*fnASEXT_CASBaseManager_GetTypeInfoByName)(CASServerManager* pthis, const CString *name);
+
+extern fnASEXT_CASBaseManager_GetTypeInfoByName ASEXT_CASBaseManager_GetTypeInfoByName;
 
 
 typedef void(*fnASEXT_CreateDirectory)(CASDirectoryList *pASDirList, const char *path, unsigned char flags, unsigned char access_control, unsigned char permanent, unsigned char unk);
@@ -640,6 +654,7 @@ IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_CIterator_GetKey);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptDictionary_CIterator_operator_PP);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_GetCurrentContext);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_CScriptBuilder_DefineWord);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_CASBaseManager_GetTypeInfoByName);\
 
 
 #define IMPORT_ASEXT_API_DEFINE() IMPORT_FUNCTION_DEFINE(ASEXT_RegisterDocInitCallback);\
@@ -684,6 +699,7 @@ IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_CIterator_GetKey);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CScriptDictionary_CIterator_operator_PP);\
 IMPORT_FUNCTION_DEFINE(ASEXT_GetCurrentContext);\
 IMPORT_FUNCTION_DEFINE(ASEXT_CScriptBuilder_DefineWord);\
+IMPORT_FUNCTION_DEFINE(ASEXT_CASBaseManager_GetTypeInfoByName);\
 IMPORT_FUNCTION_POINTER_DEFINE(ASEXT_CallHook);\
 IMPORT_FUNCTION_POINTER_DEFINE(ASEXT_CallCASBaseCallable);\
 

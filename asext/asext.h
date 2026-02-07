@@ -163,3 +163,5 @@ C_DLLEXPORT void ASEXT_CScriptBuilder_DefineWord(CScriptBuilder* pthis, const ch
 	Must be called inside DocInitCallback
 */
 C_DLLEXPORT void ASEXT_SetDefaultNamespace(CASDocumentation* pASDoc, const char* ns);
+
+C_DLLEXPORT asITypeInfo* ASEXT_CASBaseManager_GetTypeInfoByName(CASServerManager* pthis, const CString *name);

@@ -196,10 +196,20 @@ public:
 class CASServerManager
 {
 public:
+	asIScriptEngine* GetScriptEngine() const
+	{
+		return scriptEngine;
+	}
+	CASModule* GetCurrentASModule() const
+	{
+		return curModule;
+	}
+
+public:
 	int unk1;//0
 	int unk2;//4
 	int unk3;//8
-	void *scriptManager;//12
+	asIScriptEngine *scriptEngine;//12
 	int unk5;//16
 	int unk6;//20
 	CASModule *curModule;//24
@@ -369,5 +379,8 @@ PRIVATE_FUNCTION_EXTERN(CScriptDictionary_CIterator_GetValue);
 
 typedef void (SC_SERVER_DECL *fnCScriptDictionary_CIterator_operator_PP)(CScriptDictionary_CIterator* pthis SC_SERVER_DUMMYARG_NOCOMMA);
 PRIVATE_FUNCTION_EXTERN(CScriptDictionary_CIterator_operator_PP);
+
+typedef asITypeInfo* (SC_SERVER_DECL *fnCASBaseManager_GetTypeInfoByName)(CASServerManager* pthis, SC_SERVER_DUMMYARG const CString *name);
+PRIVATE_FUNCTION_EXTERN(CASBaseManager_GetTypeInfoByName);
 
 extern CASServerManager **g_pServerManager;
