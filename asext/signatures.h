@@ -154,7 +154,7 @@
 // Each signature ends with \xE8 (call opcode) and uses offset -1 to position the cursor right at the E8 byte.
 #define CScriptDictionary_begin_Signature "\xFF\x50\x30\x89\x45\x2A\x8D\x7D\x2A\x8B\x55\x2A\x89\x54\x24\x2A\x89\x3C\x24\xE8"
 #define CScriptDictionary_begin_Symbol "_ZNK17CScriptDictionary5beginEv"
-#define CScriptDictionary_end_Signature "\x85\xFF\x0F\x84\x2A\x2A\x2A\x2A\x8B\x55\x2A\x89\x14\x24\x89\xF3\xE8"
+#define CScriptDictionary_end_Signature "\x89\xF3\xE8\x2A\x2A\x2A\x2A\x8B\x45\x2A\x89\x44\x24\x2A\x8B\x55\x2A\x89\x14\x24\x89\xF3\xE8"
 #define CScriptDictionary_end_Symbol "_ZNK17CScriptDictionary3endEv"
 #define CScriptDictionary_CIterator_GetKey_Signature "\x89\x3C\x24\x84\xC0\x75\x2A\x89\xF3\xE8"
 #define CScriptDictionary_CIterator_GetKey_Symbol "_ZNK17CScriptDictionary9CIterator6GetKeyEv"
