@@ -1,7 +1,7 @@
-# fallguys 项目
+# fallguys project
 project(fallguys)
 
-# 定义基础源文件
+# Define core source files
 set(FALLGUYS_SOURCES
     dllapi.cpp
     engine_api.cpp
@@ -14,12 +14,12 @@ set(FALLGUYS_SOURCES
     soundengine.cpp
 )
 
-# Windows 特定源文件
+# Windows-specific source files
 if(WIN32)
     list(APPEND FALLGUYS_SOURCES dllmain.cpp)
 endif()
 
-# 添加包含目录
+# Add include directories
 include_directories(
     ${CMAKE_SOURCE_DIR}/asext/include
     ${CMAKE_SOURCE_DIR}/thirdparty/angelscript-sdk/angelscript/include
@@ -28,32 +28,32 @@ include_directories(
     ${CAPSTONE_INCLUDE_DIR}
 )
 
-# 创建动态库
+# Create shared library
 add_library(fallguys SHARED ${FALLGUYS_SOURCES})
 
-# 设置目标属性
+# Set target properties
 set_target_properties(fallguys PROPERTIES
     PREFIX ""
     OUTPUT_NAME "fallguys"
 )
 
-# Windows 特定设置
+# Windows-specific settings
 if(WIN32)
     target_compile_definitions(fallguys PRIVATE FALLGUYS_EXPORTS)
 endif()
 
-# 链接库
+# Link libraries
 target_link_libraries(fallguys
     ${BULLET3_LIBRARIES}
 )
 
-# Linux 特定链接
+# Linux-specific linking
 if(UNIX)
     target_link_libraries(fallguys
         dl
         m
     )
-    # 静态链接 libgcc 和 libstdc++ 以提高兼容性
+    # Statically link libgcc and libstdc++ for better compatibility
     set_target_properties(metamod PROPERTIES
         LINK_FLAGS "-static-libgcc -static-libstdc++"
     )

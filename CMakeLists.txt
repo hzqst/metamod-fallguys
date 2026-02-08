@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 project(metamod-fallguys)
 
-# 设置 C++ 标准
+# Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -11,7 +11,7 @@ if(METAMOD_64BIT)
     add_definitions(-DMETAMOD_64BIT)
 endif()
 
-# 设置平台名称
+# Set platform target name
 if(WIN32)
     if(METAMOD_64BIT)
         set(PLATFORM_TARGET "x64")
@@ -38,15 +38,15 @@ else()
     endif()
 endif()
 
-# 设置输出目录
+# Set output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/output/${PLATFORM_TARGET}/$<CONFIG>)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/output/${PLATFORM_TARGET}/$<CONFIG>)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/output/${PLATFORM_TARGET}/$<CONFIG>)
 
-# 注意：CMAKE_BINARY_DIR 是 CMake 内置变量，不应该被覆盖
-# 使用 CMAKE_CURRENT_BINARY_DIR 或其他变量名
+# Note: CMAKE_BINARY_DIR is a built-in CMake variable and should not be overridden
+# Use CMAKE_CURRENT_BINARY_DIR or another variable name
 
-# 全局包含目录
+# Global include directories
 include_directories(
     ${CMAKE_SOURCE_DIR}/hlsdk/common
     ${CMAKE_SOURCE_DIR}/hlsdk/dlls
@@ -56,7 +56,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/thirdparty/angelscript-sdk/angelscript/include
 )
 
-# 平台特定设置
+# Platform-specific settings
 if(WIN32)
     add_definitions(-DWIN32 -D_WINDOWS -D_USRDLL -D_CRT_SECURE_NO_WARNINGS)
 
@@ -64,20 +64,20 @@ if(WIN32)
         add_definitions(-D_WIN64)
     endif()
     
-    # Windows 下的编译选项 - 支持多配置生成器
-    # 使用生成器表达式来设置运行时库
+    # Windows compile options - support multi-config generators
+    # Use generator expressions to set the runtime library
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     
-    # 设置调试信息
+    # Set debug definitions
     add_compile_definitions($<$<CONFIG:Debug>:_DEBUG>)
     add_compile_definitions($<$<CONFIG:Release>:NDEBUG>)
     
-    # 注意：根据项目文件，字符集设置为 NotSet，所以不添加 UNICODE 定义
+    # Note: According to the project file, the character set is NotSet, so do not add UNICODE definitions
     
 elseif(UNIX)
     add_definitions(-DPLATFORM_POSIX -DLINUX -D_LINUX)
     
-    # Linux 下的编译选项
+    # Linux compile options
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -fPIC")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32 -fPIC")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -m32")
@@ -92,9 +92,9 @@ elseif(UNIX)
     endif()
 endif()
 
-# 查找第三方库
+# Find third-party libraries
 if(WIN32)
-    # Windows 下的第三方库路径
+    # Third-party library paths for Windows
     set(CAPSTONE_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/thirdparty/install/capstone/${PLATFORM_TARGET}/Release/include)
     set(CAPSTONE_LIBRARIES ${CMAKE_SOURCE_DIR}/thirdparty/install/capstone/${PLATFORM_TARGET}/Release/lib/capstone.lib)
     
@@ -110,7 +110,7 @@ if(WIN32)
         ${CMAKE_SOURCE_DIR}/thirdparty/install/bullet3/${PLATFORM_TARGET}/Release/lib/LinearMath.lib
     )
 else()
-    # Linux 下的第三方库路径
+    # Third-party library paths for Linux
     set(CAPSTONE_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/thirdparty/install/capstone/${OBJDIR_LINUX}/include)
     set(CAPSTONE_LIBRARIES ${CMAKE_SOURCE_DIR}/thirdparty/install/capstone/${OBJDIR_LINUX}/lib/libcapstone.a)
     message("${CAPSTONE_INCLUDE_DIR}")
@@ -131,7 +131,7 @@ else()
     set(PROCMAP_LIBRARIES ${CMAKE_SOURCE_DIR}/thirdparty/install/procmap/${OBJDIR_LINUX}/lib/libprocmap.a)
 endif()
 
-# 添加子项目
+# Add subprojects
 add_subdirectory(metamod)
 add_subdirectory(asext)
 add_subdirectory(fallguys)
@@ -139,12 +139,12 @@ add_subdirectory(ascurl)
 add_subdirectory(asqcvar)
 add_subdirectory(asusermsg)
 
-# 设置项目依赖关系
+# Set project dependencies
 add_dependencies(fallguys asext)
 add_dependencies(ascurl asext)
 add_dependencies(asqcvar asext)
 
-# 安装目标
+# Install targets
 install(TARGETS metamod asext fallguys ascurl asqcvar asusermsg
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
