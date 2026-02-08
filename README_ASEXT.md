@@ -170,31 +170,27 @@ asITypeInfo* ASEXT_CASBaseManager_GetTypeInfoByName(CASServerManager* pthis, con
 ### Dictionary Iteration Usage
 
 ```cpp
-if ( !CScriptDictionary_IsEmpty(pScriptDictionary) )
-{
-    std_string typeName{};       // Don't forget to include "std_string.h" from "asext/include"
-    typeName.assign("string");
-
-    asITypeInfo* pStringTypeInfo = ASEXT_CASBaseManager_GetTypeInfoByName(ASEXT_GetServerManager(), &typeName);
-
-    CScriptDictionary_CIterator it{}, itend{};
-    ASEXT_CScriptDictionary_CIterator_begin(pScriptDictionary, &it);
-    ASEXT_CScriptDictionary_CIterator_end(pScriptDictionary, &itend);
-
-    for (; ASEXT_CScriptDictionary_CIterator_operator_NE(&it, &itend);
-           ASEXT_CScriptDictionary_CIterator_operator_PP(&it))
+    if ( !ASEXT_CScriptDictionary_IsEmpty(pScriptDictionary) )
     {
+      std_string typeName{};
+      typeName.assign("string");
+
+      asITypeInfo* pStringTypeInfo = ASEXT_CASBaseManager_GetTypeInfoByName(ASEXT_GetServerManager(), &typeName);
+
+      CScriptDictionary_CIterator it{}, itend{};
+      ASEXT_CScriptDictionary_begin(pScriptDictionary, &it)
+      ASEXT_CScriptDictionary_end(pScriptDictionary, &itend);
+      for(; ASEXT_CScriptDictionary_CIterator_operator_NE(it, itend); ASEXT_CScriptDictionary_CIterator_operator_PP(&it) ) // Counter part of "it = begin; it != end; it++"
+      {
         CString value{};
         value.assign("", 0);
-
-        if ( ASEXT_CScriptDictionary_CIterator_GetValue(&it, &value, pStringTypeInfo->GetTypeId()) )
+        if ( ASEXT_CScriptDictionary_CIterator_GetValue(it, &value, pStringTypeInfo->GetTypeId() ) )
         {
-            const char *key = ASEXT_CScriptDictionary_CIterator_GetKey(&it);
-
-            // You have "key" as C string, and "value" as angelscript string now.
+            const CString*key = ASEXT_CScriptDictionary_CIterator_GetKey(it);
+            
+            //You have both "key" and "value" as angelscript strings now.
         }
-
         value.dtor();
+      }
     }
-}
 ```
