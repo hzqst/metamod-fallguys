@@ -380,7 +380,7 @@ PRIVATE_FUNCTION_EXTERN(CScriptDictionary_CIterator_GetValue);
 typedef void (SC_SERVER_DECL *fnCScriptDictionary_CIterator_operator_PP)(CScriptDictionary_CIterator* pthis SC_SERVER_DUMMYARG_NOCOMMA);
 PRIVATE_FUNCTION_EXTERN(CScriptDictionary_CIterator_operator_PP);
 
-typedef asITypeInfo* (SC_SERVER_DECL *fnCASBaseManager_GetTypeInfoByName)(CASServerManager* pthis, SC_SERVER_DUMMYARG const sc_stdstring*name);
+typedef asITypeInfo* (SC_SERVER_DECL *fnCASBaseManager_GetTypeInfoByName)(CASServerManager* pthis, SC_SERVER_DUMMYARG const std_string*name);
 PRIVATE_FUNCTION_EXTERN(CASBaseManager_GetTypeInfoByName);
 
 extern CASServerManager **g_pServerManager;

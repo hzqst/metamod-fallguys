@@ -347,10 +347,12 @@ typedef void(*fnASEXT_SetDefaultNamespace)(CASDocumentation *pASDoc, const char*
 
 extern fnASEXT_SetDefaultNamespace ASEXT_SetDefaultNamespace;
 
-typedef asITypeInfo*(*fnASEXT_CASBaseManager_GetTypeInfoByName)(CASServerManager* pthis, const sc_stdstring*name);
+/*
+	Can be used to get asITypeInfo* for "string" or whatever
+*/
+typedef asITypeInfo*(*fnASEXT_CASBaseManager_GetTypeInfoByName)(CASServerManager* pthis, const std_string*name);
 
 extern fnASEXT_CASBaseManager_GetTypeInfoByName ASEXT_CASBaseManager_GetTypeInfoByName;
-
 
 typedef void(*fnASEXT_CreateDirectory)(CASDirectoryList *pASDirList, const char *path, unsigned char flags, unsigned char access_control, unsigned char permanent, unsigned char unk);
 extern fnASEXT_CreateDirectory ASEXT_CreateDirectory;

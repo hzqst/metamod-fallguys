@@ -149,7 +149,7 @@ C_DLLEXPORT void ASEXT_SetDefaultNamespace(CASDocumentation* pthis, const char* 
 	g_call_original_CASDocumentation_SetDefaultNamespace(pthis, SC_SERVER_PASS_DUMMYARG ns);
 }
 
-C_DLLEXPORT asITypeInfo* ASEXT_CASBaseManager_GetTypeInfoByName(CASServerManager* pthis, const sc_stdstring*name)
+C_DLLEXPORT asITypeInfo* ASEXT_CASBaseManager_GetTypeInfoByName(CASServerManager* pthis, const std_string*name)
 {
 	SC_SERVER_DUMMYVAR;
 	return g_call_original_CASBaseManager_GetTypeInfoByName(pthis, SC_SERVER_PASS_DUMMYARG name);

@@ -166,6 +166,6 @@ C_DLLEXPORT void ASEXT_CScriptBuilder_DefineWord(CScriptBuilder* pthis, const ch
 C_DLLEXPORT void ASEXT_SetDefaultNamespace(CASDocumentation* pASDoc, const char* ns);
 
 /*
-	Can be used to get asITypeInfo * of "string" or whatever
+	Can be used to get asITypeInfo * for "string" or whatever
 */
-C_DLLEXPORT asITypeInfo* ASEXT_CASBaseManager_GetTypeInfoByName(CASServerManager* pthis, const sc_stdstring *name);
+C_DLLEXPORT asITypeInfo* ASEXT_CASBaseManager_GetTypeInfoByName(CASServerManager* pthis, const std_string *name);
