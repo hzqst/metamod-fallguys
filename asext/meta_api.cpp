@@ -177,6 +177,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterEnum, -7);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterEnumValue, -7);
 	FILL_FROM_SIGNATURE(server, CASDocumentation_SetDefaultNamespace);
+	FILL_FROM_SIGNATURE(server, CASBaseManager_GetTypeInfoByName);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDirectoryList_CreateDirectory, -1);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASFunction_Create, -1);
 	FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASBaseCallable_Call, -1);
@@ -230,6 +231,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterEnum, -13);
 		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDocumentation_RegisterEnumValue, 7);
 		FILL_FROM_SIGNATURE(server, CASDocumentation_SetDefaultNamespace);
+		FILL_FROM_SIGNATURE(server, CASBaseManager_GetTypeInfoByName);
 		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDirectoryList_CreateDirectory, 0);
 		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASFunction_Create, 0);
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASBaseCallable_Call, -8);
@@ -293,6 +295,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		FILL_FROM_SYMBOL(server, CASDocumentation_RegisterEnum);
 		FILL_FROM_SYMBOL(server, CASDocumentation_RegisterEnumValue);
 		FILL_FROM_SYMBOL(server, CASDocumentation_SetDefaultNamespace);
+		FILL_FROM_SYMBOL(server, CASBaseManager_GetTypeInfoByName);
 		FILL_FROM_SYMBOL(server, CASDirectoryList_CreateDirectory);
 		FILL_FROM_SYMBOL(server, CASFunction_Create);
 		FILL_FROM_SYMBOL(server, CASBaseCallable_Call);
