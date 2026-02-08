@@ -2184,10 +2184,10 @@ bool CPhysicsManager::AddToFullPack(struct entity_state_s *state, int entindex, 
 	auto hostObj = GetGameObject(host);
 	auto entObj = GetGameObject(ent);
 
-	int hostIndex = hostObj->GetEntIndex();
-	
 	if (hostObj && entObj)
 	{
+		int hostIndex = hostObj->GetEntIndex();
+
 		if (entObj->GetSemiVisibleMask() != 0)
 		{
 			if ((entObj->GetSemiVisibleMask() & (1 << (hostIndex - 1))) == 0)
