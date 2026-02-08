@@ -87,8 +87,7 @@ void NewPlayerPostThink_Post(edict_t *pEntity)
 }
 ```
 
-
-//Now you can register hook from AngelScript map script or plugin :
+Now you can register hook from AngelScript map script or plugin :
 
 ```angelscript
 
@@ -110,5 +109,92 @@ void RegisterAngelScriptMethods(void)
 		ASEXT_CScriptBuilder_DefineWord(pScriptBuilder, "METAMOD_PLUGIN_FALLGUYS");
 
 	});
+}
+```
+
+## Build Configuration (v20260208d)
+
+Starting from v20260208d, asext requires the `angelscript.h`. Add the following include directory to your CMake configuration:
+
+```cmake
+include_directories(
+    ${CMAKE_SOURCE_DIR}/hlsdk/common
+    ${CMAKE_SOURCE_DIR}/hlsdk/dlls
+    ${CMAKE_SOURCE_DIR}/hlsdk/pm_shared
+    ${CMAKE_SOURCE_DIR}/hlsdk/engine
+    ${CMAKE_SOURCE_DIR}/metamod
+    ${CMAKE_SOURCE_DIR}/thirdparty/angelscript-sdk/angelscript/include # Mandatory for asext
+)
+```
+
+Alternatively, you can copy `/thirdparty/angelscript-sdk/angelscript/include/angelscript.h` into your project (not recommended).
+
+## Set default namespace in AngelScript
+
+```cpp
+void ASEXT_SetDefaultNamespace(CASDocumentation* pthis, const char* ns);
+```
+
+Use this to register global properties (or other symbols) under a custom namespace.
+
+### Namespace Usage
+
+```cpp
+ASEXT_SetDefaultNamespace(pASDoc, "MyNameSpace");
+
+ASEXT_RegisterGlobalProperty(pASDoc, "zzz", "xxx", &whatever);
+
+ASEXT_SetDefaultNamespace(pASDoc, "");
+```
+
+## Iterate AngelScript `dictionary`
+
+The following APIs allow iterating over entries in an AngelScript `dictionary` object from C++:
+
+```cpp
+void ASEXT_CScriptDictionary_CIterator_begin(CScriptDictionary *pScriptDictionary, CScriptDictionary_CIterator *it);
+
+void ASEXT_CScriptDictionary_CIterator_end(CScriptDictionary *pScriptDictionary, CScriptDictionary_CIterator *it);
+
+bool ASEXT_CScriptDictionary_CIterator_operator_NE(CScriptDictionary_CIterator *a1, CScriptDictionary_CIterator *a2);
+
+bool ASEXT_CScriptDictionary_CIterator_GetValue(CScriptDictionary_CIterator *it, void *data, int typeId);
+
+const char *ASEXT_CScriptDictionary_CIterator_GetKey(CScriptDictionary_CIterator *it);
+
+void ASEXT_CScriptDictionary_CIterator_operator_PP(CScriptDictionary_CIterator *it);
+
+asITypeInfo* ASEXT_CASBaseManager_GetTypeInfoByName(CASServerManager* pthis, const sc_stdstring *name);
+```
+
+### Dictionary Iteration Usage
+
+```cpp
+if ( !CScriptDictionary_IsEmpty(pScriptDictionary) )
+{
+    std_string typeName{};       // Don't forget to include "std_string.h" from "asext/include"
+    typeName.assign("string");
+
+    asITypeInfo* pStringTypeInfo = ASEXT_CASBaseManager_GetTypeInfoByName(ASEXT_GetServerManager(), &typeName);
+
+    CScriptDictionary_CIterator it{}, itend{};
+    ASEXT_CScriptDictionary_CIterator_begin(pScriptDictionary, &it);
+    ASEXT_CScriptDictionary_CIterator_end(pScriptDictionary, &itend);
+
+    for (; ASEXT_CScriptDictionary_CIterator_operator_NE(&it, &itend);
+           ASEXT_CScriptDictionary_CIterator_operator_PP(&it))
+    {
+        CString value{};
+        value.assign("", 0);
+
+        if ( ASEXT_CScriptDictionary_CIterator_GetValue(&it, &value, pStringTypeInfo->GetTypeId()) )
+        {
+            const char *key = ASEXT_CScriptDictionary_CIterator_GetKey(&it);
+
+            // You have "key" as C string, and "value" as angelscript string now.
+        }
+
+        value.dtor();
+    }
 }
 ```
