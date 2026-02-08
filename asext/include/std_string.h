@@ -118,11 +118,11 @@ public:
 	}
 
 private:
-	char* _M_p;              // +0x00  指向字符数据（SSO 时指向自身 _M_local_buf）
-	size_t _M_string_length;  // +0x04  字符串长度（不含 \0）
+	char* _M_p;              // +0x00  pointer to char data (points to _M_local_buf itself when using SSO)
+	size_t _M_string_length;  // +0x04  string length (excluding \0)
 	union {                   // +0x08
-		char   _M_local_buf[16];      // SSO 缓冲区（可存 ≤15 字符 + \0）
-		size_t _M_allocated_capacity;  // 堆分配时的容量
+		char   _M_local_buf[16];      // SSO buffer (can store <=15 chars + \0)
+		size_t _M_allocated_capacity;  // heap-allocated capacity
 	};
 };  // sizeof = 24
 

@@ -1,7 +1,7 @@
-# metamod 项目
+# metamod project
 project(metamod)
 
-# 定义源文件
+# Define source files
 set(METAMOD_SOURCES
     api_hook.cpp
     api_info.cpp
@@ -37,7 +37,7 @@ set(METAMOD_SOURCES
     vdate.cpp
 )
 
-# 平台特定的源文件
+# Platform-specific source files
 if(WIN32)
     list(APPEND METAMOD_SOURCES
         osdep_detect_gamedll_win32.cpp
@@ -50,53 +50,53 @@ else()
     )
 endif()
 
-# 添加包含目录
+# Add include directories
 include_directories(
     CDetour
     ${CAPSTONE_INCLUDE_DIR}
 )
 
-# Linux 特定的包含目录
+# Linux-specific include directories
 if(UNIX)
     include_directories(${PROCMAP_INCLUDE_DIR})
 endif()
 
-# 添加预处理器定义
+# Add preprocessor definitions
 add_definitions(-D__METAMOD_BUILD__)
 
-# 创建动态库
+# Create shared library
 add_library(metamod SHARED ${METAMOD_SOURCES})
 
-# 设置目标属性
+# Set target properties
 set_target_properties(metamod PROPERTIES
     PREFIX ""
     OUTPUT_NAME "metamod"
 )
 
-# Windows 特定设置
+# Windows-specific settings
 if(WIN32)
-    # 添加模块定义文件
+    # Add module definition file
     set_target_properties(metamod PROPERTIES
         LINK_FLAGS "/DEF:\"${CMAKE_CURRENT_SOURCE_DIR}/metamod.def\""
     )
     
-    # 添加资源文件
+    # Add resource file
     target_sources(metamod PRIVATE res_meta.rc)
 endif()
 
-# 链接库
+# Link libraries
 target_link_libraries(metamod
     ${CAPSTONE_LIBRARIES}
 )
 
-# Linux 特定链接
+# Linux-specific linking
 if(UNIX)
     target_link_libraries(metamod
         ${PROCMAP_LIBRARIES}
         dl
         m
     )
-    # 静态链接 libgcc 和 libstdc++ 以提高兼容性
+    # Statically link libgcc and libstdc++ for better compatibility
     set_target_properties(metamod PROPERTIES
         LINK_FLAGS "-static-libgcc -static-libstdc++"
     )
