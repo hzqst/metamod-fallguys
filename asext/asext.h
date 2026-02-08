@@ -1,7 +1,7 @@
 #pragma once
 
 #include <angelscript.h>
-#include "sc_std_string.h"
+#include "std_string.h"
 
 const int StopMode_ON_HANDLED = 0;
 const int StopMode_MODULE_HANDLED = 1;
