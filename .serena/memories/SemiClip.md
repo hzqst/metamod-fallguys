@@ -32,4 +32,11 @@
 - `bool SetEntitySemiClipToEntity(edict_t@ ent, edict_t@ targetEntity)`
 - `bool UnsetEntitySemiClipToEntity(edict_t@ ent, edict_t@ targetEntity)`
 - `bool UnsetEntitySemiClipToAll(edict_t@ ent)`
-- 备注：`PMSemiClip` 相关函数在 C++ 中存在，但当前未在 `server_hook.cpp` 注册为 AS 接口。
+- `bool SetEntityPMSemiClip(edict_t@ ent, int player_mask)`
+- `bool SetEntityPMSemiClipToPlayer(edict_t@ ent, int entindex)`
+- `bool UnsetEntityPMSemiClipToPlayer(edict_t@ ent, int entindex)`
+- `bool SetEntityPMSemiClipToEntityIndex(edict_t@ ent, int entindex)`
+- `bool UnsetEntityPMSemiClipToEntityIndex(edict_t@ ent, int entindex)`
+- `bool SetEntityPMSemiClipToEntity(edict_t@ ent, edict_t@ targetEntity)`
+- `bool UnsetEntityPMSemiClipToEntity(edict_t@ ent, edict_t@ targetEntity)`
+- `bool UnsetEntityPMSemiClipToAll(edict_t@ ent)`

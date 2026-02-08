@@ -762,6 +762,38 @@ void RegisterAngelScriptMethods(void)
 			(void*)CASEntityFuncs__UnsetEntitySemiClipToAll, 3);
 
 		ASEXT_RegisterObjectMethod(pASDoc,
+			"Enable PMSemiClip for entity", "CEntityFuncs", "bool SetEntityPMSemiClip(edict_t@ ent, int player_mask)",
+			(void *)CASEntityFuncs__SetEntityPMSemiClip, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Enable PMSemiClip for entity", "CEntityFuncs", "bool SetEntityPMSemiClipToPlayer(edict_t@ ent, int entindex)",
+			(void *)CASEntityFuncs__SetEntityPMSemiClipToPlayer, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Disable PMSemiClip for entity", "CEntityFuncs", "bool UnsetEntityPMSemiClipToPlayer(edict_t@ ent, int entindex)",
+			(void *)CASEntityFuncs__UnsetEntityPMSemiClipToPlayer, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Enable PMSemiClip for entity", "CEntityFuncs", "bool SetEntityPMSemiClipToEntityIndex(edict_t@ ent, int entindex)",
+			(void*)CASEntityFuncs__SetEntityPMSemiClipToEntityIndex, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Disable PMSemiClip for entity", "CEntityFuncs", "bool UnsetEntityPMSemiClipToEntityIndex(edict_t@ ent, int entindex)",
+			(void*)CASEntityFuncs__UnsetEntityPMSemiClipToEntityIndex, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Enable PMSemiClip for entity", "CEntityFuncs", "bool SetEntityPMSemiClipToEntity(edict_t@ ent, edict_t@ targetEntity)",
+			(void *)CASEntityFuncs__SetEntityPMSemiClipToEntity, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Disable PMSemiClip for entity", "CEntityFuncs", "bool UnsetEntityPMSemiClipToEntity(edict_t@ ent, edict_t@ targetEntity)",
+			(void *)CASEntityFuncs__UnsetEntityPMSemiClipToEntity, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
+			"Disable PMSemiClip for entity", "CEntityFuncs", "bool UnsetEntityPMSemiClipToAll(edict_t@ ent)",
+			(void*)CASEntityFuncs__UnsetEntityPMSemiClipToAll, 3);
+
+		ASEXT_RegisterObjectMethod(pASDoc,
 			"Set per-player render effects for entity", "CEntityFuncs", "bool SetEntitySemiRenderEffects(edict_t@ ent, edict_t@ player, int rendermode, int renderamt, const color24& in rendercolor, int renderfx)",
 			(void*)CASEntityFuncs__SetEntitySemiRenderEffects, 3);
 
