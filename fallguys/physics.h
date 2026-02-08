@@ -1651,8 +1651,6 @@ public:
 
 	void ApplyLevelOfDetail(float distance, int *body, int *modelindex, float *scale);
 
-	bool AddToFullPack(struct entity_state_s *state, int entindex, edict_t *ent, edict_t *host, int hostflags, int player);
-
 private:
 	edict_t *m_ent;
 	int m_entindex;

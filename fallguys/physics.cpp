@@ -2181,13 +2181,56 @@ bool CPhysicsManager::SetAbsBox(edict_t *ent)
 
 bool CPhysicsManager::AddToFullPack(struct entity_state_s *state, int entindex, edict_t *ent, edict_t *host, int hostflags, int player)
 {
-	auto obj = GetGameObject(ent);
+	auto hostObj = GetGameObject(host);
+	auto entObj = GetGameObject(ent);
 
-	if (obj)
+	int hostIndex = hostObj->GetEntIndex();
+	
+	if (hostObj && entObj)
 	{
-		if (!obj->AddToFullPack(state, entindex, ent, host, hostflags, player))
+		if (entObj->GetSemiVisibleMask() != 0)
 		{
-			return false;
+			if ((entObj->GetSemiVisibleMask() & (1 << (hostIndex - 1))) == 0)
+			{
+				return false;
+			}
+		}
+
+		// SemiRenderEffects: override render* fields for specific player
+		auto semiRenderEffects = entObj->FindSemiRenderEffects(host);
+		if (semiRenderEffects)
+		{
+			state->rendermode = semiRenderEffects->rendermode;
+			state->renderamt = semiRenderEffects->renderamt;
+			state->rendercolor = semiRenderEffects->rendercolor;
+			state->renderfx = semiRenderEffects->renderfx;
+		}
+
+		if (entObj->IsSemiClipToEntity(host) || 
+			entObj->IsPMSemiClipToEntity(host) ||
+			hostObj->IsSemiClipToEntity(ent) ||
+			hostObj->IsPMSemiClipToEntity(ent)
+			)
+		{
+			state->solid = SOLID_NOT;
+		}
+
+		if (entObj->GetLevelOfDetailFlags() != 0)
+		{
+			auto viewEnt = GetClientViewEntity(host);
+
+			if (viewEnt)
+			{
+				float distance = (ent->v.origin - viewEnt->v.origin).Length();
+
+				entObj->ApplyLevelOfDetail(distance, &state->body, &state->modelindex, &state->scale);
+			}
+		}
+
+		if ((entObj->GetFollowFlags() & FollowEnt_UseMoveTypeFollow) && entObj->GetFollowEnt())
+		{
+			state->aiment = ENTINDEX( entObj->GetFollowEnt() );
+			state->movetype = MOVETYPE_FOLLOW;
 		}
 	}
 
@@ -2399,25 +2442,18 @@ bool CPhysicsManager::ShouldCollide(edict_t *pentTouched, edict_t *pentOther)
 {
 	auto gameObjTouched = GetGameObject(pentTouched);
 
-	if (gameObjTouched && gameObjTouched->IsSemiClipToEntity(pentOther))
+	if (gameObjTouched)
 	{
-		return false;
-	}
-
-	return true;
-}
-
-bool CPhysicsManager::PM_ShouldCollide(int entindex)
-{
-	if (entindex > 0)
-	{
-		auto gameObj = GetGameObject(entindex);
-
-		if (gameObj)
+		if (gameObjTouched->IsSemiClipToEntity(pentOther))
 		{
-			int playerIndex = pmove->player_index + 1;
+			return false;
+		}
 
-			if (gameObj->IsSemiClipToEntity(playerIndex) || gameObj->IsPMSemiClipToEntity(playerIndex))
+		auto hostObj = GetGameObject(pentOther);
+
+		if (hostObj)
+		{
+			if (hostObj->IsSemiClipToEntity(pentTouched))
 			{
 				return false;
 			}
@@ -2427,9 +2463,44 @@ bool CPhysicsManager::PM_ShouldCollide(int entindex)
 	return true;
 }
 
-void CPhysicsManager::PM_StartMove()
+bool CPhysicsManager::PM_ShouldCollide(int entindex)
 {
-	auto new_end = std::remove_if(pmove->physents, pmove->physents + pmove->numphysent, [this](const physent_t& ps) {
+	int playerIndex = pmove->player_index + 1;
+
+	if (entindex > 0)
+	{
+		auto gameObj = GetGameObject(entindex);
+
+		if (gameObj)
+		{
+			if (gameObj->IsSemiClipToEntity(playerIndex) ||
+				gameObj->IsPMSemiClipToEntity(playerIndex))
+			{
+				return false;
+			}
+
+			auto hostObj = GetGameObject(playerIndex);
+
+			if (hostObj)
+			{
+				if (hostObj->IsSemiClipToEntity(entindex) ||
+					hostObj->IsPMSemiClipToEntity(entindex))
+				{
+					return false;
+				}
+			}
+		}
+	}
+
+	return true;
+}
+
+/*
+	Purpose: Remove entry "ps" from pmove->physents Array
+*/
+
+void CPhysicsManager::PM_StartMove()
+{	auto new_end = std::remove_if(pmove->physents, pmove->physents + pmove->numphysent, [this](const physent_t& ps) {
 		return !PM_ShouldCollide(ps.info);
 	});
 	pmove->numphysent = static_cast<int>(new_end - pmove->physents);
@@ -5656,7 +5727,6 @@ void CGameObject::ApplyEntityFollow()
 	}
 }
 
-
 void CGameObject::ApplyLevelOfDetail(float distance, int *body, int *modelindex, float *scale)
 {
 	if (m_lod_distance3 > 0 && distance > m_lod_distance3)
@@ -5723,54 +5793,6 @@ void CGameObject::ApplyLevelOfDetail(float distance, int *body, int *modelindex,
 			*scale = m_lod_scale0;
 		}
 	}
-}
-
-bool CGameObject::AddToFullPack(struct entity_state_s *state, int entindex, edict_t *ent, edict_t *host, int hostflags, int player)
-{
-	if (GetSemiVisibleMask() != 0)
-	{
-		int hostindex = g_engfuncs.pfnIndexOfEdict(host);
-
-		if ((GetSemiVisibleMask() & (1 << (hostindex - 1))) == 0)
-		{
-			return false;
-		}
-	}
-
-	if (IsSemiClipToEntity(host) || IsPMSemiClipToEntity(host))
-	{
-		state->solid = SOLID_NOT;
-	}
-
-	// SemiRenderEffects: override render* fields for specific player
-	auto semiRenderEffects = FindSemiRenderEffects(host);
-	if (semiRenderEffects)
-	{
-		state->rendermode = semiRenderEffects->rendermode;
-		state->renderamt = semiRenderEffects->renderamt;
-		state->rendercolor = semiRenderEffects->rendercolor;
-		state->renderfx = semiRenderEffects->renderfx;
-	}
-
-	if (GetLevelOfDetailFlags() != 0)
-	{
-		auto viewent = GetClientViewEntity(host);
-
-		if (viewent)
-		{
-			float distance = (ent->v.origin - viewent->v.origin).Length();
-
-			ApplyLevelOfDetail(distance, &state->body, &state->modelindex, &state->scale);
-		}
-	}
-
-	if ((m_follow_flags & FollowEnt_UseMoveTypeFollow) && m_follow_ent)
-	{
-		state->aiment = ENTINDEX(m_follow_ent);
-		state->movetype = MOVETYPE_FOLLOW;
-	}
-
-	return true;
 }
 
 edict_t* CPhysicsManager::GetCurrentImpactEntity(Vector *vecImpactPoint, Vector *vecImpactDirection, float *flImpactImpulse)
