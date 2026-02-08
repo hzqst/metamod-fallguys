@@ -18,7 +18,9 @@ jobs:
       - uses: hzqst/checkout@v2.3.4
       
       - name: Install build environment
-        run: sudo apt-get install make build-essential gcc gcc-multilib g++-multilib
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y make build-essential gcc gcc-multilib g++-multilib
       
       - name: Build all
         working-directory: ${{env.GITHUB_WORKSPACE}}
