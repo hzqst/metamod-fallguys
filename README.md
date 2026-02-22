@@ -28,7 +28,7 @@ This metamod is based on [Bots-United's metamod-p](https://github.com/Bots-Unite
 
 * This is required by map `Fall Guys in Sven Co-op`
 
-[Documentation](README_FALLGUYS.md)
+[Documentation](docs/README_FALLGUYS.md)
 
 ### asext.dll (asext.so)
 
@@ -36,7 +36,7 @@ This plugin provides ability of registering third-party hooks or methods in Sven
 
 * This is required by map `Fall Guys in Sven Co-op`
 
-[Documentation](README_ASEXT.md)
+[Documentation](docs/README_ASEXT.md)
 
 ### ascurl.dll (ascurl.so)
 
@@ -44,7 +44,7 @@ This plugin provides ability of using libcurl to send HTTP request in angelscrip
 
 * This is not required if you just gonna play `Fall Guys in Sven Co-op`
 
-[Documentation](README_ASCURL.md)
+[Documentation](docs/README_ASCURL.md)
 
 ### asqcvar.dll (asqcvar.so)
 
@@ -52,7 +52,7 @@ This plugin provides ability of retreiving cvars from client. mainly for server 
 
 * This is not required if you just gonna play `Fall Guys in Sven Co-op`
 
-[Documentation](README_ASQCVAR.md)
+[Documentation](docs/README_ASQCVAR.md)
 
 ### asusermsg.dll (asusermsg.so)
 
@@ -60,7 +60,7 @@ This plugin provides ability of hooking UserMsg. mainly for server ops and devel
 
 * This is not required if you just gonna play `Fall Guys in Sven Co-op`
 
-[Documentation](README_ASUSERMSG.md)
+[Documentation](docs/README_ASUSERMSG.md)
 
 # Installation
 
