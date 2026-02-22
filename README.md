@@ -66,6 +66,8 @@ This plugin provides ability of hooking UserMsg. mainly for server ops and devel
 
 # Installation
 
+tutorial video: https://www.youtube.com/watch?v=r2NRp5TZmUM
+
 1. Download latest build (-windows or -linux depending on your OS) from [GitHub Release](https://github.com/hzqst/metamod-fallguys/releases), then unzip it.
 
 2. Copy everything from the previously unarchived `build` directory into `\steamapps\common\Sven Co-op\svencoop` 
