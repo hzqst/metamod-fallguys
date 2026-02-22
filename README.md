@@ -22,6 +22,8 @@ This metamod is based on [Bots-United's metamod-p](https://github.com/Bots-Unite
 
 [Fall Guys in Sven Co-op](https://github.com/hzqst/sven-fallguys)
 
+[Physics vehicle demo in Sven Co-op](https://github.com/hzqst/sven-vehicle)
+
 # Plugins
 
 ### fallguys.dll (fallguys.so)
@@ -73,33 +75,31 @@ This plugin provides ability of hooking UserMsg. mainly for server ops and devel
 * The directory hierarchy should be something like this :
 
 ```
--- Sven Co-op (Sven Co-op Dedicated Server)
----- svencoop
------- addons
--------- metamod
----------- dlls
------------- asqcvar.dll (asqcvar.so)
------------- ascurl.dll (ascurl.so)
------------- asusermsg.dll (asusermsg.so)
------------- asext.dll (asext.so)
------------- fallguys.dll (fallguys.so)
----------- plugins.ini
----- svencoop_addons
----- svencoop_downloads
----- svencoop.exe (or svends.exe / svends_run.sh / svencoop.sh)
+Sven Co-op/ (or Sven Co-op Dedicated Server/)
+|-- svencoop/
+|   `-- addons/
+|       `-- metamod/
+|           |-- dlls/
+|           |   |-- asqcvar.dll (asqcvar.so)
+|           |   |-- ascurl.dll (ascurl.so)
+|           |   |-- asusermsg.dll (asusermsg.so)
+|           |   |-- asext.dll (asext.so)
+|           |   `-- fallguys.dll (fallguys.so)
+|           `-- plugins.ini
+|-- svencoop_addons/
+|-- svencoop_downloads/
+`-- svencoop.exe (or svends.exe / svends_run.sh / svencoop.sh)
 ```
 
-3. If you had installed metamod and metamod-plugins (which was loaded by metamod) from other sources such as [Bots-United's metamod-p](https://github.com/Bots-United/metamod-p) or [jkivilin's metamod-p](https://github.com/jkivilin/metamod-p), you will have to add those metamod-plugins back to `plugins.ini` which might be overwritten in step (1).
+3. If you had installed metamod and metamod plugins from other sources such as [Bots-United's metamod-p](https://github.com/Bots-United/metamod-p) or [jkivilin's metamod-p](https://github.com/jkivilin/metamod-p), you will have to add those metamod plugins back to `plugins.ini` which might have been overwritten in the step (1).
 
 4. You should either 
 
-* Use `-dll addons/metamod/dlls/metamod.dll`(Windows) or `-dll addons/metamod/dlls/metamod.so` (linux) as launch parameter to launch the game (launch the dedicated server)
+* Add `-dll addons/metamod/dlls/metamod.dll` (Windows) or `-dll addons/metamod/dlls/metamod.so` (linux) to launch parameter.
 
 or
 
-* Edit `Sven Co-op/svencoop/liblist.gam`
-
-and change
+* Edit `Sven Co-op/svencoop/liblist.gam`, and change:
 
 ```
 gamedll "dlls/server.dll"
@@ -112,6 +112,8 @@ to
 gamedll "addons/metamod/dlls/metamod.dll"
 gamedll_linux "addons/metamod/dlls/metamod.so"
 ```
+
+to make metamod work.
 
 The edited `liblist.gam` should be something like this ![](/img/1.png)
 
