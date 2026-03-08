@@ -49,6 +49,11 @@ C_DLLEXPORT bool ASEXT_UnregisterScriptBuilderDefineCallback(fnScriptBuilderDefi
 /*
 	Must be called inside DocInitCallback
 */
+C_DLLEXPORT void ASEXT_RegisterGlobalFunction(CASDocumentation *pASDoc, const char *docs, const char *func, void *pfn, int type);
+
+/*
+	Must be called inside DocInitCallback
+*/
 C_DLLEXPORT void ASEXT_RegisterObjectMethod(CASDocumentation *pASDoc, const char *docs, const char *name, const char *func, void *pfn, int type);
 
 /*

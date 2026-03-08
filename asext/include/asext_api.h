@@ -177,6 +177,13 @@ extern fnASEXT_UnregisterScriptBuilderDefineCallback ASEXT_UnregisterScriptBuild
 /*
 	Must be called inside DocInitCallback
 */
+typedef void(*fnASEXT_RegisterGlobalFunction)(CASDocumentation *pASDoc, const char *docs, const char *func, void *pfn, int type);
+
+extern fnASEXT_RegisterGlobalFunction ASEXT_RegisterGlobalFunction;
+
+/*
+	Must be called inside DocInitCallback
+*/
 typedef void(*fnASEXT_RegisterObjectMethod)(CASDocumentation *pASDoc, const char *docs, const char *name, const char *func, void *pfn, int type);
 
 extern fnASEXT_RegisterObjectMethod ASEXT_RegisterObjectMethod;
@@ -527,6 +534,7 @@ IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterDocInitCallback);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterDirInitCallback);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterScriptBuilderDefineCallback);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_UnregisterScriptBuilderDefineCallback);\
+IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterGlobalFunction);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectMethod);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectMethodEx);\
 IMPORT_FUNCTION_DLSYM(asext, ASEXT_RegisterObjectBehaviour);\
@@ -572,6 +580,7 @@ IMPORT_FUNCTION_DLSYM(asext, ASEXT_CASBaseManager_GetTypeInfoByName);\
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterDirInitCallback);\
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterScriptBuilderDefineCallback);\
 IMPORT_FUNCTION_DEFINE(ASEXT_UnregisterScriptBuilderDefineCallback);\
+IMPORT_FUNCTION_DEFINE(ASEXT_RegisterGlobalFunction);\
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectMethod);\
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectMethodEx);\
 IMPORT_FUNCTION_DEFINE(ASEXT_RegisterObjectBehaviour);\

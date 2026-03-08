@@ -264,6 +264,10 @@ PRIVATE_FUNCTION_EXTERN(CASDocumentation_RegisterObjectProperty);
 typedef int (SC_SERVER_DECL *fnCASDocumentation_RegisterGlobalProperty)(CASDocumentation *pthis, SC_SERVER_DUMMYARG const char *docs, const char *name, void *ptr);
 PRIVATE_FUNCTION_EXTERN(CASDocumentation_RegisterGlobalProperty);
 
+//CASDocumentation::RegisterGlobalFunction __fastcall in Windows
+typedef int (SC_SERVER_DECL *fnCASDocumentation_RegisterGlobalFunction)(CASDocumentation *pthis, SC_SERVER_DUMMYARG const char *docs, const char *func, asSFuncPtr *reg, int type);
+PRIVATE_FUNCTION_EXTERN(CASDocumentation_RegisterGlobalFunction);
+
 //CASDocumentation::RegisterObjectMethod __fastcall in Windows
 typedef int (SC_SERVER_DECL *fnCASDocumentation_RegisterObjectMethod)(CASDocumentation *pthis, SC_SERVER_DUMMYARG const char *docs, const char *objectname, const char *func, asSFuncPtr *reg, int a5);
 PRIVATE_FUNCTION_EXTERN(CASDocumentation_RegisterObjectMethod);

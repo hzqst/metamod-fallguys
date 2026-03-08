@@ -337,6 +337,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 	LOG_MESSAGE(PLID, "CASDocumentation_RegisterObjectType found at %p", g_pfn_CASDocumentation_RegisterObjectType);
 	LOG_MESSAGE(PLID, "CASDocumentation_RegisterObjectProperty found at %p", g_pfn_CASDocumentation_RegisterObjectProperty);
 	LOG_MESSAGE(PLID, "CASDocumentation_RegisterGlobalProperty found at %p", g_pfn_CASDocumentation_RegisterGlobalProperty);
+	LOG_MESSAGE(PLID, "CASDocumentation_RegisterGlobalFunction found at %p", g_pfn_CASDocumentation_RegisterGlobalFunction);
 	LOG_MESSAGE(PLID, "CASDocumentation_RegisterObjectMethod found at %p", g_pfn_CASDocumentation_RegisterObjectMethod);
 	LOG_MESSAGE(PLID, "CASDocumentation_RegisterObjectBehaviour found at %p", g_pfn_CASDocumentation_RegisterObjectBehaviour);
 	LOG_MESSAGE(PLID, "CASDocumentation_RegisterFuncDef found at %p", g_pfn_CASDocumentation_RegisterFuncDef);
