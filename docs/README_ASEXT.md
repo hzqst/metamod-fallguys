@@ -147,6 +147,45 @@ ASEXT_RegisterGlobalProperty(pASDoc, "zzz", "xxx", &whatever);
 ASEXT_SetDefaultNamespace(pASDoc, "");
 ```
 
+## Register your own global functions in AngelScript engine
+
+```cpp
+void ASEXT_RegisterGlobalFunction(CASDocumentation *pASDoc, const char *docs, const char *func, void *pfn, int type);
+```
+
+This API must be called inside `ASEXT_RegisterDocInitCallback`.
+
+For a normal global C/C++ function, define it with `SC_SERVER_CDECL` and pass `0` as the AngelScript calling convention type.
+
+### Global Function Usage
+
+```cpp
+int SC_SERVER_CDECL MyPlugin_GetBuildNumber()
+{
+	return 20260308;
+}
+
+// Must be registered before AS initialization, Meta_Attach is okay
+ASEXT_RegisterDocInitCallback([](void *pASDoc) {
+	ASEXT_SetDefaultNamespace(pASDoc, "MyPlugin");
+
+	ASEXT_RegisterGlobalFunction(
+		pASDoc,
+		"Returns the plugin build number",
+		"int GetBuildNumber()",
+		(void *)MyPlugin_GetBuildNumber,
+		0);
+
+	ASEXT_SetDefaultNamespace(pASDoc, "");
+});
+```
+
+You can then call it from AngelScript:
+
+```angelscript
+int build = MyPlugin::GetBuildNumber();
+```
+
 ## Iterate AngelScript `dictionary`
 
 The following APIs allow iterating over entries in an AngelScript `dictionary` object from C++:
