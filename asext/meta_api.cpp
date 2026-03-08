@@ -226,6 +226,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectType, -1);
 		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDocumentation_RegisterObjectProperty, 0);
 		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDocumentation_RegisterGlobalProperty, 9);
+		FILL_FROM_SIGNATURE(server, CASDocumentation_RegisterGlobalFunction);
 		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDocumentation_RegisterObjectMethod, 0);
 		FILL_FROM_SIGNATURED_CALLER_FROM_END(server, CASDocumentation_RegisterObjectBehaviour, -1);
 		FILL_FROM_SIGNATURED_CALLER_FROM_START(server, CASDocumentation_RegisterFuncDef, 0);
@@ -290,6 +291,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME /* now */,
 		FILL_FROM_SYMBOL(server, CASDocumentation_RegisterObjectType);
 		FILL_FROM_SYMBOL(server, CASDocumentation_RegisterObjectProperty);
 		FILL_FROM_SYMBOL(server, CASDocumentation_RegisterGlobalProperty);
+		FILL_FROM_SYMBOL(server, CASDocumentation_RegisterGlobalFunction);
 		FILL_FROM_SYMBOL(server, CASDocumentation_RegisterObjectMethod);
 		FILL_FROM_SYMBOL(server, CASDocumentation_RegisterObjectBehaviour);
 		FILL_FROM_SYMBOL(server, CASDocumentation_RegisterFuncDef);
