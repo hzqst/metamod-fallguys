@@ -9,3 +9,5 @@ settings.local.json
 /build/addons/metamod/dlls
 /thirdparty/build
 /thirdparty/install
+tools/global.props
+tools/steam_appid.txt
