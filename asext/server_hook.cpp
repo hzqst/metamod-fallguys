@@ -133,7 +133,7 @@ C_DLLEXPORT void ASEXT_RegisterGlobalFunction(CASDocumentation *pthis, const cha
 	reg.CopyMethodPtr(&pfn, sizeof(pfn));
 	reg.flag = 2;
 
-	g_call_original_CASDocumentation_RegisterGlobalFunction(pthis, SC_SERVER_PASS_DUMMYARG docs, func, &reg, type);
+	g_call_original_CASDocumentation_RegisterGlobalFunction(pthis, SC_SERVER_PASS_DUMMYARG docs, func, &reg, type, 0);
 }
 
 C_DLLEXPORT void ASEXT_RegisterFuncDef(CASDocumentation *pthis, const char *docs, const char *funcdef)
