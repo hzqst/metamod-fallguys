@@ -19,5 +19,6 @@ cmake --build "%SolutionDir%build-cmake\x86\Release" --config Release --target i
 
 md "%SolutionDir%build\addons\metamod\dlls\"
 copy "%SolutionDir%install\x86\Release\bin\*.dll" "%SolutionDir%build\addons\metamod\dlls\"
+copy "%SolutionDir%install\x86\Release\bin\*.pdb" "%SolutionDir%build\addons\metamod\dlls\"
 
-endlocal 
+endlocal

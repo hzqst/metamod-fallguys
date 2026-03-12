@@ -19,5 +19,6 @@ cmake --build "%SolutionDir%build-cmake\x86\Debug" --config Debug --target insta
 
 md "%SolutionDir%build\addons\metamod\dlls\"
 copy "%SolutionDir%install\x86\Debug\bin\*.dll" "%SolutionDir%build\addons\metamod\dlls\"
+copy "%SolutionDir%install\x86\Debug\bin\*.pdb" "%SolutionDir%build\addons\metamod\dlls\"
 
 endlocal

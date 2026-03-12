@@ -167,3 +167,16 @@ install(TARGETS metamod asext fallguys ascurl asqcvar asusermsg
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
 )
+
+if(MSVC)
+    install(FILES
+        $<TARGET_PDB_FILE:metamod>
+        $<TARGET_PDB_FILE:asext>
+        $<TARGET_PDB_FILE:fallguys>
+        $<TARGET_PDB_FILE:ascurl>
+        $<TARGET_PDB_FILE:asqcvar>
+        $<TARGET_PDB_FILE:asusermsg>
+        DESTINATION bin
+        OPTIONAL
+    )
+endif()

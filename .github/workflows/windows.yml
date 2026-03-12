@@ -42,7 +42,7 @@ jobs:
         working-directory: ${{env.GITHUB_WORKSPACE}}
         shell: pwsh
         run: |
-          $pdbDirectory = Join-Path $env:GITHUB_WORKSPACE 'build-cmake\x86\Release\output\x86\Release'
+          $pdbDirectory = Join-Path $env:GITHUB_WORKSPACE 'build\addons\metamod\dlls'
           $expectedPdbs = @(
             'metamod.pdb',
             'asext.pdb',
@@ -63,48 +63,20 @@ jobs:
             throw "Missing Release PDBs: $($missingPdbs -join ', ')"
           }
 
-      - name: Prepare build with PDBs
-        working-directory: ${{env.GITHUB_WORKSPACE}}
-        shell: pwsh
-        run: |
-          $sourceBuildDirectory = Join-Path $env:GITHUB_WORKSPACE 'build'
-          $pdbDirectory = Join-Path $env:GITHUB_WORKSPACE 'build-cmake\x86\Release\output\x86\Release'
-          $stagingDirectory = Join-Path $env:GITHUB_WORKSPACE 'build-with-pdb'
-          $stagingDllDirectory = Join-Path $stagingDirectory 'addons\metamod\dlls'
-          $expectedPdbs = @(
-            'metamod.pdb',
-            'asext.pdb',
-            'fallguys.pdb',
-            'ascurl.pdb',
-            'asqcvar.pdb',
-            'asusermsg.pdb'
-          )
-
-          if (Test-Path $stagingDirectory) {
-            Remove-Item $stagingDirectory -Recurse -Force
-          }
-
-          New-Item -ItemType Directory -Path $stagingDirectory | Out-Null
-          Copy-Item -Path (Join-Path $sourceBuildDirectory '*') -Destination $stagingDirectory -Recurse -Force
-
-          foreach ($pdb in $expectedPdbs) {
-            Copy-Item -Path (Join-Path $pdbDirectory $pdb) -Destination (Join-Path $stagingDllDirectory $pdb) -Force
-          }
-
       - name: Archive the build directory 
         uses: thedoctor0/zip-release@main
         with:
           type: 'zip'
           filename: 'metamod-fallguys-windows-x86.zip'
           path: 'build'
-          exclusions: '.placeholder'
+          exclusions: '.placeholder,*.pdb,**/*.pdb'
 
       - name: Archive the build directory with PDBs
         uses: thedoctor0/zip-release@main
         with:
           type: 'zip'
           filename: 'metamod-fallguys-windows-x86-with-pdb.zip'
-          path: 'build-with-pdb'
+          path: 'build'
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
