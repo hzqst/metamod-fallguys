@@ -38,6 +38,59 @@ jobs:
         run: del "build\addons\metamod\dlls\.placeholder"
         shell: cmd
 
+      - name: Verify Release PDBs
+        working-directory: ${{env.GITHUB_WORKSPACE}}
+        shell: pwsh
+        run: |
+          $pdbDirectory = Join-Path $env:GITHUB_WORKSPACE 'build-cmake\x86\Release\output\x86\Release'
+          $expectedPdbs = @(
+            'metamod.pdb',
+            'asext.pdb',
+            'fallguys.pdb',
+            'ascurl.pdb',
+            'asqcvar.pdb',
+            'asusermsg.pdb'
+          )
+
+          $missingPdbs = @()
+          foreach ($pdb in $expectedPdbs) {
+            if (-not (Test-Path (Join-Path $pdbDirectory $pdb))) {
+              $missingPdbs += $pdb
+            }
+          }
+
+          if ($missingPdbs.Count -gt 0) {
+            throw "Missing Release PDBs: $($missingPdbs -join ', ')"
+          }
+
+      - name: Prepare build with PDBs
+        working-directory: ${{env.GITHUB_WORKSPACE}}
+        shell: pwsh
+        run: |
+          $sourceBuildDirectory = Join-Path $env:GITHUB_WORKSPACE 'build'
+          $pdbDirectory = Join-Path $env:GITHUB_WORKSPACE 'build-cmake\x86\Release\output\x86\Release'
+          $stagingDirectory = Join-Path $env:GITHUB_WORKSPACE 'build-with-pdb'
+          $stagingDllDirectory = Join-Path $stagingDirectory 'addons\metamod\dlls'
+          $expectedPdbs = @(
+            'metamod.pdb',
+            'asext.pdb',
+            'fallguys.pdb',
+            'ascurl.pdb',
+            'asqcvar.pdb',
+            'asusermsg.pdb'
+          )
+
+          if (Test-Path $stagingDirectory) {
+            Remove-Item $stagingDirectory -Recurse -Force
+          }
+
+          New-Item -ItemType Directory -Path $stagingDirectory | Out-Null
+          Copy-Item -Path (Join-Path $sourceBuildDirectory '*') -Destination $stagingDirectory -Recurse -Force
+
+          foreach ($pdb in $expectedPdbs) {
+            Copy-Item -Path (Join-Path $pdbDirectory $pdb) -Destination (Join-Path $stagingDllDirectory $pdb) -Force
+          }
+
       - name: Archive the build directory 
         uses: thedoctor0/zip-release@main
         with:
@@ -46,6 +99,13 @@ jobs:
           path: 'build'
           exclusions: '.placeholder'
 
+      - name: Archive the build directory with PDBs
+        uses: thedoctor0/zip-release@main
+        with:
+          type: 'zip'
+          filename: 'metamod-fallguys-windows-x86-with-pdb.zip'
+          path: 'build-with-pdb'
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
@@ -53,3 +113,4 @@ jobs:
           name: metamod-fallguys-${{ github.ref }}
           files: |
             metamod-fallguys-windows-x86.zip
+            metamod-fallguys-windows-x86-with-pdb.zip
