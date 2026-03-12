@@ -69,7 +69,8 @@ jobs:
           type: 'zip'
           filename: 'metamod-fallguys-windows-x86.zip'
           path: 'build'
-          exclusions: '.placeholder,*.pdb,**/*.pdb'
+          exclusions: '.placeholder'
+          recursive_exclusions: '*.pdb'
 
       - name: Archive the build directory with PDBs
         uses: thedoctor0/zip-release@main
