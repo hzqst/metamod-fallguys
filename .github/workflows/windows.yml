@@ -38,13 +38,45 @@ jobs:
         run: del "build\addons\metamod\dlls\.placeholder"
         shell: cmd
 
+      - name: Verify Release PDBs
+        working-directory: ${{env.GITHUB_WORKSPACE}}
+        shell: pwsh
+        run: |
+          $pdbDirectory = Join-Path $env:GITHUB_WORKSPACE 'build\addons\metamod\dlls'
+          $expectedPdbs = @(
+            'metamod.pdb',
+            'asext.pdb',
+            'fallguys.pdb',
+            'ascurl.pdb',
+            'asqcvar.pdb',
+            'asusermsg.pdb'
+          )
+
+          $missingPdbs = @()
+          foreach ($pdb in $expectedPdbs) {
+            if (-not (Test-Path (Join-Path $pdbDirectory $pdb))) {
+              $missingPdbs += $pdb
+            }
+          }
+
+          if ($missingPdbs.Count -gt 0) {
+            throw "Missing Release PDBs: $($missingPdbs -join ', ')"
+          }
+
       - name: Archive the build directory 
         uses: thedoctor0/zip-release@main
         with:
           type: 'zip'
           filename: 'metamod-fallguys-windows-x86.zip'
           path: 'build'
-          exclusions: '.placeholder'
+          exclusions: '.placeholder,*.pdb,**/*.pdb'
+
+      - name: Archive the build directory with PDBs
+        uses: thedoctor0/zip-release@main
+        with:
+          type: 'zip'
+          filename: 'metamod-fallguys-windows-x86-with-pdb.zip'
+          path: 'build'
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -53,3 +85,4 @@ jobs:
           name: metamod-fallguys-${{ github.ref }}
           files: |
             metamod-fallguys-windows-x86.zip
+            metamod-fallguys-windows-x86-with-pdb.zip

@@ -11,6 +11,13 @@ if(METAMOD_64BIT)
     add_definitions(-DMETAMOD_64BIT)
 endif()
 
+function(append_flag_once variable flag)
+    string(FIND " ${${variable}} " " ${flag} " flag_index)
+    if(flag_index EQUAL -1)
+        set(${variable} "${${variable}} ${flag}" PARENT_SCOPE)
+    endif()
+endfunction()
+
 # Set platform target name
 if(WIN32)
     if(METAMOD_64BIT)
@@ -71,6 +78,12 @@ if(WIN32)
     # Set debug definitions
     add_compile_definitions($<$<CONFIG:Debug>:_DEBUG>)
     add_compile_definitions($<$<CONFIG:Release>:NDEBUG>)
+
+    # Keep optimized Release builds debuggable by generating PDBs.
+    append_flag_once(CMAKE_C_FLAGS_RELEASE "/Zi")
+    append_flag_once(CMAKE_CXX_FLAGS_RELEASE "/Zi")
+    append_flag_once(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/DEBUG")
+    append_flag_once(CMAKE_MODULE_LINKER_FLAGS_RELEASE "/DEBUG")
     
     # Note: According to the project file, the character set is NotSet, so do not add UNICODE definitions
     
@@ -85,10 +98,14 @@ elseif(UNIX)
     
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         add_definitions(-D_DEBUG)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+        append_flag_once(CMAKE_C_FLAGS_DEBUG "-g")
+        append_flag_once(CMAKE_CXX_FLAGS_DEBUG "-g")
     else()
         add_definitions(-DNDEBUG)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
+        append_flag_once(CMAKE_C_FLAGS_RELEASE "-O2")
+        append_flag_once(CMAKE_C_FLAGS_RELEASE "-g")
+        append_flag_once(CMAKE_CXX_FLAGS_RELEASE "-O2")
+        append_flag_once(CMAKE_CXX_FLAGS_RELEASE "-g")
     endif()
 endif()
 
@@ -150,3 +167,16 @@ install(TARGETS metamod asext fallguys ascurl asqcvar asusermsg
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
 )
+
+if(MSVC)
+    install(FILES
+        $<TARGET_PDB_FILE:metamod>
+        $<TARGET_PDB_FILE:asext>
+        $<TARGET_PDB_FILE:fallguys>
+        $<TARGET_PDB_FILE:ascurl>
+        $<TARGET_PDB_FILE:asqcvar>
+        $<TARGET_PDB_FILE:asusermsg>
+        DESTINATION bin
+        OPTIONAL
+    )
+endif()

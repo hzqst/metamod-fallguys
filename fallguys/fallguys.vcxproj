@@ -57,12 +57,14 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;FALLGUYS_EXPORTS;_WINDOWS;_USRDLL;PLATFORM_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)hlsdk\common;$(SolutionDir)hlsdk\dlls;$(SolutionDir)hlsdk\pm_shared;$(SolutionDir)hlsdk\engine;$(SolutionDir)metamod;$(SolutionDir)asext\include;$(SolutionDir)\thirdparty\angelscript-sdk\angelscript\include;$(SolutionDir)thirdparty\fmod;$(Bullet3IncludeDirectory);$(CapstoneIncludeDirectory)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDataBaseFile>$(OutDir)$(TargetName).pdb</ProgramDataBaseFile>
       <AdditionalDependencies>$(Bullet3LibraryFiles);%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(Bullet3LibrariesDirectory)</AdditionalLibraryDirectories>
     </Link>
