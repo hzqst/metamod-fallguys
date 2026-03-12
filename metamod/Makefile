@@ -180,6 +180,7 @@ endif
 
 # debugging; halt on warnings
 CCDEBUG+= -ggdb3
+RELEASE_DEBUG_INFO+= -g
 
 
 #############################################################################
@@ -206,7 +207,7 @@ ifeq "$(OPT)" "opt-fast"
 else	#other
 ifeq "$(OPT)" "opt"
 	ODEF = -DOPT_TYPE="\"optimized\""
-	CFLAGS := $(CCOPT) $(CFLAGS) $(ODEF)
+	CFLAGS := $(CCOPT) $(RELEASE_DEBUG_INFO) $(CFLAGS) $(ODEF)
 	OBJDIR_LINUX = $(OBJDIR_LINUX_OPT)
 	OBJDIR_WIN = $(OBJDIR_WIN_OPT)
 else	# debug
