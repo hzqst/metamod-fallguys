@@ -76,7 +76,18 @@ C_DLLEXPORT void ASEXT_RegisterObjectMethod(CASDocumentation *pthis, const char 
 
 	asSFuncPtr reg;
 	reg.CopyMethodPtr(&pfn, sizeof(pfn));
-	reg.flag = 3;//3 = method
+
+	switch( type )
+	{
+		case asCALL_CDECL:
+		case asCALL_CDECL_OBJFIRST:
+		case asCALL_CDECL_OBJLAST:
+			reg.flag = 2;//2 = global function
+		break;
+		default:
+			reg.flag = 3;//3 = method
+		break;
+	}
 
 	g_call_original_CASDocumentation_RegisterObjectMethod(pthis, SC_SERVER_PASS_DUMMYARG docs, name, func, &reg, type);
 }
