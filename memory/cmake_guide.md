@@ -1,3 +1,9 @@
+---
+title: cmake_guide
+type: note
+permalink: metamod-fallguys/cmake-guide
+---
+
 # CMake Build Guide
 
 This project now supports building with CMake on both Windows and Linux.

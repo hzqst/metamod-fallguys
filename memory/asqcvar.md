@@ -1,3 +1,9 @@
+---
+title: asqcvar
+type: note
+permalink: metamod-fallguys/asqcvar
+---
+
 # asqcvar
 
 ## 概述

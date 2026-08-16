@@ -1,3 +1,9 @@
+---
+title: fallguys
+type: note
+permalink: metamod-fallguys/fallguys
+---
+
 # fallguys 模块
 
 ## 概述

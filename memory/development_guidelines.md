@@ -1,3 +1,9 @@
+---
+title: development_guidelines
+type: note
+permalink: metamod-fallguys/development-guidelines
+---
+
 # Development Guidelines
 
 ## Design Patterns and Principles

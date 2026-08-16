@@ -1,3 +1,9 @@
+---
+title: SemiClip
+type: note
+permalink: metamod-fallguys/semi-clip
+---
+
 # SemiClip（fallguys）
 
 ## 概述

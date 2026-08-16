@@ -1,3 +1,9 @@
+---
+title: SemiRenderEffects
+type: note
+permalink: metamod-fallguys/semi-render-effects
+---
+
 # fallguys: SemiRenderEffects
 
 ## 概述

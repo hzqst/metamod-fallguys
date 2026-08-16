@@ -1,3 +1,9 @@
+---
+title: asusermsg
+type: note
+permalink: metamod-fallguys/asusermsg
+---
+
 # asusermsg
 
 ## 概述

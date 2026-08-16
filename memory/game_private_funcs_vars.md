@@ -1,3 +1,9 @@
+---
+title: game_private_funcs_vars
+type: note
+permalink: metamod-fallguys/game-private-funcs-vars
+---
+
 # 游戏 DLL 私有函数/私有变量引入机制（fallguys / asext）
 
 ## 概述

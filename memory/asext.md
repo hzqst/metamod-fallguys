@@ -1,3 +1,9 @@
+---
+title: asext
+type: note
+permalink: metamod-fallguys/asext
+---
+
 # asext 模块
 
 ## 概述

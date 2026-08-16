@@ -1,3 +1,9 @@
+---
+title: code_style_conventions
+type: note
+permalink: metamod-fallguys/code-style-conventions
+---
+
 # Code Style and Conventions
 
 ## File Headers

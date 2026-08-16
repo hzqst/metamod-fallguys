@@ -1,3 +1,9 @@
+---
+title: tech_stack
+type: note
+permalink: metamod-fallguys/tech-stack
+---
+
 # Tech Stack
 
 ## Programming Language

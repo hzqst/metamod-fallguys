@@ -1,3 +1,9 @@
+---
+title: project_structure
+type: note
+permalink: metamod-fallguys/project-structure
+---
+
 # Project Structure
 
 ## Root Directory Layout

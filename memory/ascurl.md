@@ -1,3 +1,9 @@
+---
+title: ascurl
+type: note
+permalink: metamod-fallguys/ascurl
+---
+
 # ascurl 模块
 
 ## 概述

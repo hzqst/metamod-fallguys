@@ -1,3 +1,9 @@
+---
+title: suggested_commands
+type: note
+permalink: metamod-fallguys/suggested-commands
+---
+
 # Suggested Commands
 
 ## Build Commands

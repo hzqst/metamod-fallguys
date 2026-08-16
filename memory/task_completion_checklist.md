@@ -1,3 +1,9 @@
+---
+title: task_completion_checklist
+type: note
+permalink: metamod-fallguys/task-completion-checklist
+---
+
 # Task Completion Checklist
 
 ## When a Task is Completed

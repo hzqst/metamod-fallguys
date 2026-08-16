@@ -1,3 +1,9 @@
+---
+title: SemiVisible
+type: note
+permalink: metamod-fallguys/semi-visible
+---
+
 # fallguys: Semi-Visible
 
 ## 概述
