@@ -33,3 +33,7 @@ The following content was already organized into Basic Memory notes during onboa
 
 - Read Basic Memory notes first, then locate single files/symbols; avoid reading the whole repository at once.
 - For symbol/binary-related directories, prioritize on-demand targeted lookup and avoid full scans.
+
+## Explore SKILLs
+
+- project-level SKILLs should be explored from `.claude/skills` even when we are using Codex.
