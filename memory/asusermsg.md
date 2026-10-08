@@ -30,8 +30,7 @@ permalink: metamod-fallguys/asusermsg
 - asusermsg/dllapi.cpp
 - asusermsg/meta_api.cpp
 - asusermsg/CMakeLists.txt
-- asusermsg/Config.mak
-- asusermsg/Makefile
+- asusermsg/CMakeLists.txt (CMake is the only build system)
 
 ## 架构
 核心对象：`CUserMsgHookManager`（全局实例 `g_UserMsgHookManager`）。

@@ -24,7 +24,7 @@ permalink: metamod-fallguys/fallguys
 - **服务器 Hook 层**：`fallguys/server_hook.cpp` + `fallguys/serverdef.h`（CPlayerMove/PM_PlaySoundFX 等 + AS 注册）。
 - **物理系统核心**：`fallguys/physics.h/.cpp`（`CPhysicsManager` 及大量结构体/参数类型）。
 - **声音引擎**：`fallguys/soundengine.h/.cpp`（FMOD 动态加载与 SoundInfo 查询）。
-- **配置/构建**：`fallguys/CMakeLists.txt`、`fallguys/Config.mak`、`fallguys/signatures.h`。
+- **配置/构建**：`fallguys/CMakeLists.txt`（CMake 是唯一构建系统）、`fallguys/signatures.h`。
 
 ## 核心实现与 workflow
 1. **加载与初始化**（`Meta_Query`/`Meta_Attach`）：

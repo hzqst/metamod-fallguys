@@ -23,7 +23,7 @@ permalink: metamod-fallguys/tech-stack
   - Multi-threaded static runtime library
 - **Linux**: i386 (32-bit) and amd64 (64-bit)
   - GCC with -m32 flag for 32-bit builds
-  - Older glibc (2.24) for portability
+  - No glibc pinning: the former thirdparty/glibc_224/force_link_glibc_2.24.h mechanism was removed (it never actually worked); Linux builds follow the build host glibc
 
 ## Third-Party Libraries
 - **capstone**: Disassembly framework

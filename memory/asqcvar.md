@@ -26,8 +26,7 @@ permalink: metamod-fallguys/asqcvar
 - asqcvar/meta_api.cpp
 - asqcvar/engine_api.cpp
 - asqcvar/CMakeLists.txt
-- asqcvar/Config.mak
-- asqcvar/Makefile
+- asqcvar/CMakeLists.txt (CMake is the only build system)
 
 ## 架构
 核心链路分两条：

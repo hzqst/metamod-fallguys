@@ -20,7 +20,7 @@ The project includes:
 ## Key Features
 - Compatible with third-party plugins like amxmodx
 - Designed specifically for Sven Co-op (compatibility with other games not guaranteed)
-- Portable Linux binaries using older glibc version
+- CMake-only build system (legacy Makefile/.sln/.vcxproj removed, issue #42)
 - Fallback solution for GiveFnptrsToDll issues with newer Visual Studio versions
 - Enhanced mutil API set
 
