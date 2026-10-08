@@ -1,0 +1,20 @@
+# Normalize text files to LF inside the repository.
+* text=auto
+
+# Shell scripts must also keep LF in the working tree.  With the CRLF that a
+# default Windows checkout produces, `sh script.sh` (WSL, Cygwin, ...) breaks:
+# the trailing CR corrupts paths and variable values.
+*.sh text eol=lf
+
+# Windows batch files are CRLF by convention.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary assets must never be line-ending mangled.
+*.png binary
+*.ico binary
+*.jpg binary
+*.dll binary
+*.pdb binary
+*.lib binary
+*.zip binary

@@ -28,19 +28,14 @@ jobs:
           cd scripts
           sudo chmod +777 *.sh
           ./build-all-opt.linux_i386.sh
-          
-      - name: Remove placeholder
-        working-directory: ${{env.GITHUB_WORKSPACE}}
-        run: rm -f build/addons/metamod/dlls/.placeholder
 
-      - name: Archive the build directory 
+      - name: Archive the build directory
         uses: thedoctor0/zip-release@main
         with:
           type: 'zip'
           filename: 'metamod-fallguys-ubuntu-i386.zip'
           path: 'build'
-          exclusions: '.placeholder'
-    
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')

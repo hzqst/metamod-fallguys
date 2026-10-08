@@ -1,5 +1,7 @@
 .vs
 settings.local.json
+
+# CMake / native build output
 /output
 /intermediate
 /install
@@ -9,6 +11,22 @@ settings.local.json
 /build/addons/metamod/dlls
 /thirdparty/build
 /thirdparty/install
+
+# Legacy per-module object directories (kept ignored so a stray native build
+# can never re-introduce them into the repository)
+opt.*/
+debug.*/
+msgs/
+
+# Compiled objects and libraries are never committed; only CMake produces them.
+*.o
+*.obj
+*.so
+*.a
+*.lib
+*.pdb
+*.exp
+
 tools/global.props
 tools/steam_appid.txt
 

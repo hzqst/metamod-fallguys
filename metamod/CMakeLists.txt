@@ -73,13 +73,23 @@ set_target_properties(metamod PROPERTIES
     OUTPUT_NAME "metamod"
 )
 
+# Match metamod/Config.mak: the OPT (release) i386 build uses the regparm(3)
+# calling convention for internal functions (see comp_dep.h DLLINTERNAL).
+if(UNIX AND NOT METAMOD_64BIT AND NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(metamod PRIVATE __INTERNALS_USE_REGPARAMS__)
+endif()
+
 # Windows-specific settings
 if(WIN32)
+    # Match metamod.vcxproj / metamod/Config.mak: on i386 use the regparm(3)
+    # calling convention for internal functions (see comp_dep.h DLLINTERNAL).
+    target_compile_definitions(metamod PRIVATE __INTERNALS_USE_REGPARAMS__)
+
     # Add module definition file
     set_target_properties(metamod PROPERTIES
         LINK_FLAGS "/DEF:\"${CMAKE_CURRENT_SOURCE_DIR}/metamod.def\""
     )
-    
+
     # Add resource file
     target_sources(metamod PRIVATE res_meta.rc)
 endif()

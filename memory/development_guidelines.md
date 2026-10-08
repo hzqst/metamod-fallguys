@@ -152,7 +152,12 @@ permalink: metamod-fallguys/development-guidelines
 - Plugins share the same address space
 
 ### Build System Notes
-- CMake is the preferred build system
-- Visual Studio projects are maintained for convenience
-- Makefiles exist for legacy support
-- Third-party libraries must be built first
+- CMake is the ONLY build system; the legacy Makefile / .sln / .vcxproj were
+  removed (issue #42)
+- Third-party libraries must be built first (procmap, capstone, bullet3)
+- CMake mirrors the old make build flags on purpose: `-fno-exceptions
+  -fno-rtti -fvisibility=hidden -march=i686 -mtune=generic -msse -msse2`,
+  `-include thirdparty/glibc_224/force_link_glibc_2.24.h`, and (metamod, i386)
+  `-D__INTERNALS_USE_REGPARAMS__`. Keep them in sync when touching flags
+- `scripts/*.sh` must stay LF (enforced by `.gitattributes`); CRLF breaks
+  `sh script.sh` under WSL with a corrupt trailing `\r`

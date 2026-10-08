@@ -30,11 +30,12 @@ metamod-fallguys/
 ├── output/                 # Final output binaries
 ├── Debug/                  # Debug build artifacts
 ├── Release/                # Release build artifacts
-├── CMakeLists.txt          # Root CMake configuration
-├── metamod.sln             # Visual Studio solution
-├── Makefile                # GNU Make configuration
-├── Config.mak              # Make configuration
+├── CMakeLists.txt          # Root CMake configuration (only build system)
+├── .gitattributes          # LF enforcement for *.sh (WSL compatibility)
 └── README*.md              # Documentation files
+```
+Note: `metamod.sln`, `Makefile`, `Config.mak` and `*.vcxproj` were removed
+(issue #42) in favour of CMake.
 ```
 
 ## Core Components
@@ -46,7 +47,7 @@ Core metamod library that loads and manages plugins.
 - **Plugin management**: `mlist.cpp`, `mplugin.cpp`
 - **Engine hooks**: `engine_api.cpp`, `dllapi.cpp`
 - **Platform abstraction**: `osdep.cpp`, `osdep_p.cpp`
-- **Build**: CMakeLists.txt, Makefile, metamod.vcxproj
+- **Build**: CMakeLists.txt only (Makefile/vcxproj removed)
 
 ### fallguys/
 Plugin for Fall Guys in Sven Co-op map.

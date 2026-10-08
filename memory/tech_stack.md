@@ -11,9 +11,11 @@ permalink: metamod-fallguys/tech-stack
 - C for some components
 
 ## Build Systems
-- **CMake** (minimum version 3.15)
-- **Visual Studio** solution files (.sln, .vcxproj)
-- **GNU Make** (Makefile)
+- **CMake** (minimum version 3.15) — the ONLY supported build system
+- The legacy GNU Make (`Makefile`/`Config.mak`) and Visual Studio
+  (`metamod.sln`/`*.vcxproj`) build systems were removed (issue #42); do not
+  reintroduce them. `build-cmake/`, `install/` and `build/addons/.../dlls` are
+  build output and are gitignored.
 
 ## Supported Platforms
 - **Windows**: x86 (32-bit) and x64 (64-bit)

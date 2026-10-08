@@ -96,4 +96,9 @@ Make sure the following third-party libraries are placed correctly:
 2. Windows uses the static runtime library (`/MT` or `/MTd`)
 3. All project outputs have no prefix (for example, output is `metamod.dll` instead of `libmetamod.dll`)
 4. The metamod project on Windows requires the `metamod.def` file
-5. Some Linux targets may require linker scripts (such as `i386pe.merge`)
+5. The old GNU Make linker script `i386pe.merge` was removed together with the
+   Makefile (issue #42); CMake handles the Mingw/MSVC link purely via the
+   `/DEF:` (metamod.def) option.
+6. CMake is the only supported build system now; the real entry points are
+   `scripts/build-all-*.sh` / `scripts/build-all-*.bat`, and the per-platform
+   sub-scripts they call.
