@@ -24,7 +24,7 @@ The following content was already organized into Basic Memory notes during onboa
 ## "Source file" entry points when notes are insufficient (query/read on demand)
 
 - Project docs/plugin docs: `README.md`, `README.txt`, `README_FALLGUYS.md`, `README_ASEXT.md`, `README_ASCURL.md`, `README_ASQCVAR.md`, `README_ASUSERMSG.md`, `README_CMAKE.md`
-- Build and configuration entry points: `CMakeLists.txt`, `Makefile`, `Config.mak`, `metamod.sln`, `scripts/`
+- Build and configuration entry points: `CMakeLists.txt`, `scripts/` (CMake is the only supported build system; the legacy `Makefile`/`metamod.sln`/`*.vcxproj` were removed in favour of it)
 - Main module source code: `metamod/`, `fallguys/`, `asext/`, `ascurl/`, `asqcvar/`, `asusermsg/`
 - Tools and CI: `tools/`, `.github/workflows/`
 - Large directories (avoid full reads): `thirdparty/`, `build/`, `build-cmake/`, `intermediate/`, `output/`, `install/`, `Release/`, `Debug/`, `.vs/`

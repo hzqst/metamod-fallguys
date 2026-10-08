@@ -26,19 +26,13 @@ Output files will be in: `build/addons/metamod/dlls/`
 - `fallguys.dll`
 - `asusermsg.dll`
 
-### Windows (Alternative Methods)
+### Windows (build only the project, deps already built)
 ```batch
-# Using Visual Studio solution
-# Open metamod.sln in Visual Studio and build
-
-# Using CMake directly
 cd scripts
 build-metamod-cmake-x86-Release.bat
-
-# Using MSVC command line
-cd scripts
-build-metamod-msvc-x86-Release.bat
 ```
+Note: the `metamod.sln` / `*.vcxproj` (MSBuild) and GNU Make paths were removed
+(issue #42); CMake is the only build system.
 
 ### Linux (Primary Method)
 ```bash
@@ -56,16 +50,13 @@ Output files will be in: `build/addons/metamod/dlls/`
 - `fallguys.so`
 - `asusermsg.so`
 
-### Linux (Alternative Methods)
+### Linux (build only the project, deps already built)
 ```bash
-# Using CMake directly
 cd scripts
 ./build-metamod-cmake-opt.linux_i386.sh
-
-# Using Make directly
-cd scripts
-./build-metamod-make-opt.linux_i386.sh
 ```
+Note: the GNU Make path (`build-metamod-make-*.sh`) was removed (issue #42);
+CMake is the only build system.
 
 ## Debug Builds
 

@@ -9,9 +9,6 @@ on:
       - "v*"
 
 env:
-  # Path to the solution file relative to the root of the project.
-  SOLUTION_FILE_PATH: .
-
   # Configuration type to build.
   # You can convert this to a build matrix if you need coverage of multiple configuration types.
   # https://docs.github.com/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
@@ -31,11 +28,6 @@ jobs:
         run: |
           cd scripts
           build-all-x86-Release.bat
-        shell: cmd
-
-      - name: Remove placeholder
-        working-directory: ${{env.GITHUB_WORKSPACE}}
-        run: del "build\addons\metamod\dlls\.placeholder"
         shell: cmd
 
       - name: Verify Release PDBs
@@ -69,7 +61,6 @@ jobs:
           type: 'zip'
           filename: 'metamod-fallguys-windows-x86.zip'
           path: 'build'
-          exclusions: '.placeholder'
           recursive_exclusions: '*.pdb'
 
       - name: Archive the build directory with PDBs
