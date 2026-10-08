@@ -1,4 +1,4 @@
-# CLAUDE.md
+# AGENTS.md
 
 This file guides how to perform Agent Coding in this repository using progressive disclosure.
 
