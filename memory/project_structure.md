@@ -22,7 +22,7 @@ metamod-fallguys/
 ├── hlsdk/                  # Half-Life SDK (submodule)
 ├── thirdparty/             # Third-party libraries
 ├── scripts/                # Build scripts
-├── tools/                  # Dev tools (getents.sh, stlfilter only; MSVC helper tools removed)
+                             # (tools/ removed: stlfilter/getents.sh were orphaned by the Makefile drop)
 ├── build/                  # Build output directory
 ├── build-cmake/            # CMake build directory
 ├── install/                # Installation staging

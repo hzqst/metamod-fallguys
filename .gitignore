@@ -27,8 +27,6 @@ msgs/
 *.pdb
 *.exp
 
-tools/steam_appid.txt
-
 # Basic Memory runtime data (notes under memory/ are tracked)
 memory/*.db*
 memory/config.json

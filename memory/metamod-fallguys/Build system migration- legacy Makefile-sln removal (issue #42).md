@@ -90,7 +90,10 @@ Also removed in the same cleanup: the MSVC debug helper chain
 tools (`tools/vswhere.exe`, `tools/SteamAppsLocation.exe`,
 `tools/global_template.props`, `tools/global_common.props`, `tools/steam_api.dll`),
 all of which existed only to configure MSVC properties / launch the deleted
-`metamod.sln`. `tools/` now holds only `getents.sh` and `stlfilter`.
+`metamod.sln`. The whole `tools/` directory was then removed too:
+`tools/stlfilter` was only ever invoked by the deleted `metamod/Makefile`
+(`$(STLOBJ): FILTER= 2>&1 | ../tools/stlfilter`), and `tools/getents.sh` had no
+remaining user.
 
 ## Repository hygiene added
 
