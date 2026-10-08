@@ -27,7 +27,6 @@ msgs/
 *.pdb
 *.exp
 
-tools/global.props
 tools/steam_appid.txt
 
 # Basic Memory runtime data (notes under memory/ are tracked)

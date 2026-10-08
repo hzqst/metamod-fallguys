@@ -152,12 +152,8 @@ permalink: metamod-fallguys/development-guidelines
 - Plugins share the same address space
 
 ### Build System Notes
-- CMake is the ONLY build system; the legacy Makefile / .sln / .vcxproj were
-  removed (issue #42)
+- CMake is the ONLY build system; the legacy Makefile / .sln / .vcxproj were removed (issue #42)
 - Third-party libraries must be built first (procmap, capstone, bullet3)
-- CMake mirrors the old make build flags on purpose: `-fno-exceptions
-  -fno-rtti -fvisibility=hidden -march=i686 -mtune=generic -msse -msse2`,
-  `-include thirdparty/glibc_224/force_link_glibc_2.24.h`, and (metamod, i386)
-  `-D__INTERNALS_USE_REGPARAMS__`. Keep them in sync when touching flags
-- `scripts/*.sh` must stay LF (enforced by `.gitattributes`); CRLF breaks
-  `sh script.sh` under WSL with a corrupt trailing `\r`
+- CMake keeps the old make flags that matter: -fno-exceptions -fno-rtti -fvisibility=hidden -march=i686 -mtune=generic -msse -msse2, and for metamod on i386 -D__INTERNALS_USE_REGPARAMS__
+- There is NO glibc pinning any more: thirdparty/glibc_224/force_link_glibc_2.24.h and the LINK_AGAINST_OLDER_GLIBC / OLDER_GLIBC_PATH plumbing were removed (they never actually worked)
+- scripts/*.sh must stay LF (enforced by .gitattributes); CRLF breaks sh script.sh under WSL with a corrupt trailing CR

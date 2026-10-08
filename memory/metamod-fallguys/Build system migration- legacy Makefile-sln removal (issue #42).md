@@ -62,22 +62,35 @@ silently differ:
 
 - `-fno-exceptions -fno-rtti -fvisibility=hidden`
 - `-march=i686 -mtune=generic -msse -msse2`
-- `-include thirdparty/glibc_224/force_link_glibc_2.24.h`
+- (the glibc pin `-include thirdparty/glibc_224/...` was later REMOVED entirely, see below)
 - metamod + i386 + non-Debug: `-D__INTERNALS_USE_REGPARAMS__`
 
 `-fvisibility=hidden` is safe because exported entry points use
 `__attribute__((visibility("default")))` via `DLLEXPORT` (`metamod/osdep.h`).
 
-## Known leftover (pre-existing, NOT introduced by CMake)
 
-Despite `force_link_glibc_2.24.h`, **both** the old Make build and the CMake
-build still emit symbols above 2.24 (e.g. `arc4random@2.36`,
-`__isoc23_sscanf@2.38`, `__libc_single_threaded@2.32`) that come from the
-statically linked capstone/bullet3/procmap archives built on a newer glibc.
-The forced-2.24 portability claim in `README.md` is therefore not actually met.
-Fixing it requires rebuilding the three third-party deps with the same pinning
-(`procmap_fork/CMakeLists.txt` does not even implement
-`LINK_AGAINST_OLDER_GLIBC`).
+## glibc pinning removed (follow-up)
+
+`force_link_glibc_2.24.h` never worked: both the old Make build and the CMake
+build still emitted symbols above 2.24 (`arc4random@2.36`, `__isoc23_sscanf@2.38`,
+`__libc_single_threaded@2.32`) coming from the statically linked
+capstone/bullet3/procmap archives built on a newer glibc. Rather than fixing it,
+the whole mechanism was deleted:
+
+- `thirdparty/glibc_224/force_link_glibc_2.24.h`
+- the `-include` option in the root CMakeLists
+- `-DLINK_AGAINST_OLDER_GLIBC=TRUE -DOLDER_GLIBC_PATH=...` from all
+  `scripts/build-*.sh`
+- the README bullet advertising 2.24 portability
+
+Linux builds now follow the build host glibc.
+
+Also removed in the same cleanup: the MSVC debug helper chain
+(`scripts/debug-helper-AIO.bat`, `scripts/debug-SvenCoop.bat`) and its orphaned
+tools (`tools/vswhere.exe`, `tools/SteamAppsLocation.exe`,
+`tools/global_template.props`, `tools/global_common.props`, `tools/steam_api.dll`),
+all of which existed only to configure MSVC properties / launch the deleted
+`metamod.sln`. `tools/` now holds only `getents.sh` and `stlfilter`.
 
 ## Repository hygiene added
 

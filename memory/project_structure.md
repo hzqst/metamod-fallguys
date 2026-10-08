@@ -22,7 +22,7 @@ metamod-fallguys/
 ├── hlsdk/                  # Half-Life SDK (submodule)
 ├── thirdparty/             # Third-party libraries
 ├── scripts/                # Build scripts
-├── tools/                  # Development tools
+├── tools/                  # Dev tools (getents.sh, stlfilter only; MSVC helper tools removed)
 ├── build/                  # Build output directory
 ├── build-cmake/            # CMake build directory
 ├── install/                # Installation staging
@@ -95,7 +95,7 @@ Build automation scripts.
 - `build-all-*.bat/sh`: Complete build scripts
 - `build-bullet3-*.bat/sh`: Bullet3 library builds
 - `build-capstone-*.bat/sh`: Capstone library builds
-- `build-metamod-*.bat/sh`: Metamod builds (CMake/Make/MSVC)
+- `build-metamod-cmake-*.bat/sh`: Metamod builds (CMake only; Make/MSVC scripts removed)
 
 ## Build Output Structure
 ```

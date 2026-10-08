@@ -90,18 +90,8 @@ if(WIN32)
 elseif(UNIX)
     add_definitions(-DPLATFORM_POSIX -DLINUX -D_LINUX)
 
-    # Force an older glibc (2.24, the one Sven Co-op ships with) so the produced
-    # .so files stay portable across newer distributions.  This must be applied
-    # when compiling owned objects (the headers emit .symver directives); older
-    # CMake that cannot rely on the LINK_AGAINST_OLDER_GLIBC option of the
-    # third-party builds can be pointed at it explicitly.  Kept in sync with
-    # metamod/Config.mak (GLIBCHEADER).
-    set(OLDER_GLIBC_HEADER "${CMAKE_SOURCE_DIR}/thirdparty/glibc_224/force_link_glibc_2.24.h")
-
-    # Linux compile options.  The set below mirrors metamod/Config.mak + the
-    # metamod/Makefile OPT=opt path so a CMake build stays equivalent to the
-    # legacy make build: same exception/rtti handling, same visibility, same
-    # i386 tuning, and the same glibc symbol pinning.
+    # Linux compile options: same exception/rtti handling, same visibility and
+    # the same i386 tuning as the former GNU Make OPT=opt path.
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -fPIC")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32 -fPIC")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -m32")
@@ -112,13 +102,6 @@ elseif(UNIX)
     # osdep.h (DLLEXPORT).
     add_compile_options(-fno-exceptions -fno-rtti -fvisibility=hidden)
     add_compile_options(-march=i686 -mtune=generic -msse -msse2)
-
-    # Pin glibc symbol versions (parity with -include $(GLIBCHEADER) in
-    # metamod/Config.mak).  Applied after the third-party sub-builds, which
-    # handle the same option themselves.
-    if(EXISTS "${OLDER_GLIBC_HEADER}")
-        add_compile_options(-include "${OLDER_GLIBC_HEADER}")
-    endif()
 
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         add_definitions(-D_DEBUG)
