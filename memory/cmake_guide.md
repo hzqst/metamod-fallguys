@@ -6,99 +6,31 @@ permalink: metamod-fallguys/cmake-guide
 
 # CMake Build Guide
 
-This project now supports building with CMake on both Windows and Linux.
+Requirements: CMake 3.21+, Git, MSVC Win32 or Linux GCC i386 multilib.
 
-## Prerequisites
-
-### Windows
-- Visual Studio 2017 or later
-- CMake 3.10 or later
-- Third-party libraries (such as capstone and bullet3) must be prebuilt and placed under the `thirdparty/` directory
-
-### Linux
-- GCC with 32-bit build support
-- CMake 3.10 or later
-- Third-party libraries must be prebuilt and placed under the `thirdparty/install/` directory
-
-## Build Steps
-
-### Windows
-
-1. Use the provided batch file:
-```bash
-# Debug build
-build.bat Debug
-
-# Release build
-build.bat Release
+```sh
+git submodule update --init --recursive
+cmake -S . -B build-cmake/native -A Win32
+cmake --build build-cmake/native --config Release --parallel 6
+cmake --install build-cmake/native --config Release --prefix build
 ```
 
-2. Or run CMake manually:
-```bash
-mkdir build
-cd build
-cmake .. -G "Visual Studio 15 2017" -A Win32
-cmake --build . --config Release
-```
+Linux omits -A Win32 and sets -DCMAKE_BUILD_TYPE=Release; Debug is also supported.
+Windows uses /MT (/MTd in Debug), Linux uses -m32 and PIC. Release includes debug symbols.
+Installed components retain their DLL/SO names under addons/metamod/dlls; Windows PDBs
+are installed alongside them. Metamod's definition file is src/metamod.def.
 
-### Linux
+Each component is a standalone CMake project. Plugins depend on Metamod public headers;
+ascurl, asqcvar, asusermsg and fallguys consume ASExt public headers and load ASExt at runtime.
+The Metamod::SDK and ASExt::SDK interface targets do not build dependency DLLs/SOs.
 
-1. Use the provided script:
-```bash
-# Add execute permission
-chmod +x build.sh
+Source overrides: METAMOD_SOURCE_PATH, ASEXT_SOURCE_PATH, ANGELSCRIPT_SOURCE_PATH,
+BULLET3_SOURCE_PATH, CAPSTONE_SOURCE_PATH, PROCMAP_SOURCE_PATH. Explicit CMake variables
+override environment defaults; missing overrides fetch fixed commits. Invalid supplied
+paths fail. Metamod first reuses initialized private Capstone/procmap submodules.
+The aggregate injects initialized shared trees. Vendor libraries compile in the native
+build tree, with shared target guards; no prebuilt thirdparty/install is required.
 
-# Debug build
-./build.sh Debug
-
-# Release build
-./build.sh Release
-```
-
-2. Or run CMake manually:
-```bash
-mkdir build
-cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j$(nproc)
-```
-
-## Output Files
-
-Compiled binaries are output to `output/<platform>/<configuration>/`:
-- Windows: `output/Win32/Release/` or `output/Win32/Debug/`
-- Linux: `output/i686/Release/` or `output/i686/Debug/`
-
-## Project Dependencies
-
-- `fallguys`, `ascurl`, and `asqcvar` depend on `asext`
-- `metamod` is standalone
-- `asusermsg` is standalone
-
-## Third-Party Library Layout
-
-Make sure the following third-party libraries are placed correctly:
-
-### Windows
-- Capstone: `thirdparty/capstone/`
-- Bullet3: `thirdparty/bullet3/`
-- FMOD: `thirdparty/fmod/`
-- cURL: `thirdparty/curl/`
-- OpenSSL: `thirdparty/openssl/`
-
-### Linux
-- All libraries should be under `thirdparty/install/<library_name>/linux-i386/`
-- Each library should include `include/` and `lib/` subdirectories
-
-## Notes
-
-1. Linux builds default to 32-bit (`-m32`)
-2. Windows uses the static runtime library (`/MT` or `/MTd`)
-3. All project outputs have no prefix (for example, output is `metamod.dll` instead of `libmetamod.dll`)
-4. The metamod project on Windows requires the `metamod.def` file
-5. The old GNU Make linker script `i386pe.merge` was removed together with the
-   Makefile (issue #42); CMake handles the Mingw/MSVC link purely via the
-   `/DEF:` (metamod.def) option.
-6. CMake is the only supported build system now; the real entry points are
-   `scripts/build-all-*.sh` / `scripts/build-all-*.bat`, and the per-platform
-   sub-scripts they call.
+For formatting install clang-format==23.1.3, configure FORMAT_VALIDATION_ONLY=ON,
+then build format-check or format. No native compiler is needed. Generated .clang-format
+is ignored; vendor trees are excluded. Normal native builds do not install Python tooling.

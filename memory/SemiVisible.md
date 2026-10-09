@@ -11,12 +11,12 @@ permalink: metamod-fallguys/semi-visible
 - 该功能只影响 **网络可见性**，不修改模型渲染参数，也不改变碰撞/物理；与 `SemiClip`（半碰撞）是独立的功能。
 
 ## 核心实现
-- 入口 API：`CPhysicsManager::SetEntitySemiVisible(edict_t* ent, int player_mask)`（`fallguys/physics.cpp`）
+- 入口 API：`CPhysicsManager::SetEntitySemiVisible(edict_t* ent, int player_mask)`（`fallguys/src/physics.cpp`）
   - 若 `ent->free` 则返回 false。
   - 通过 `GetGameObject(ent)` 获取 `CGameObject`，不存在就创建并 `AddGameObject`。
   - 调用 `CGameObject::SetSemiVisibleMask(player_mask)` 保存掩码。
-- 数据存储：`CGameObject` 里维护 `m_semi_vis_mask`（`fallguys/physics.h`）。
-- 生效点：`CGameObject::AddToFullPack(...)`（`fallguys/physics.cpp`）
+- 数据存储：`CGameObject` 里维护 `m_semi_vis_mask`（`fallguys/src/physics.h`）。
+- 生效点：`CGameObject::AddToFullPack(...)`（`fallguys/src/physics.cpp`）
   - 若 `GetSemiVisibleMask() != 0`：
     - 取 `hostindex = g_engfuncs.pfnIndexOfEdict(host)`。
     - 使用位判断：`mask & (1 << (hostindex - 1))`。
@@ -36,4 +36,4 @@ permalink: metamod-fallguys/semi-visible
 - `CEntityFuncs::SetEntitySemiVisible(edict_t@ ent, int player_mask) -> bool`
   - 直接调用 `CPhysicsManager::SetEntitySemiVisible`。
 
-相关注册位置：`fallguys/server_hook.cpp`（`ASEXT_RegisterObjectMethod`）。
+相关注册位置：`fallguys/src/server_hook.cpp`（`ASEXT_RegisterObjectMethod`）。

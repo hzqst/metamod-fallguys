@@ -6,126 +6,23 @@ permalink: metamod-fallguys/suggested-commands
 
 # Suggested Commands
 
-## Build Commands
-
-### Windows (Primary Method)
-```batch
-cd scripts
-build-all-x86-Release.bat
-```
-This script will:
-1. Build bullet3 library (`build-bullet3-x86-Release.bat`)
-2. Build capstone library (`build-capstone-x86-Release.bat`)
-3. Build metamod and all plugins using CMake (`build-metamod-cmake-x86-Release.bat`)
-
-Output files will be in: `build/addons/metamod/dlls/`
-- `metamod.dll`
-- `asext.dll`
-- `ascurl.dll`
-- `asqcvar.dll`
-- `fallguys.dll`
-- `asusermsg.dll`
-
-### Windows (build only the project, deps already built)
-```batch
-cd scripts
-build-metamod-cmake-x86-Release.bat
-```
-Note: the `metamod.sln` / `*.vcxproj` (MSBuild) and GNU Make paths were removed
-(issue #42); CMake is the only build system.
-
-### Linux (Primary Method)
-```bash
-cd scripts
-chmod +x *.sh
-./build-all-opt.linux_i386.sh
-```
-This script will build all dependencies and plugins.
-
-Output files will be in: `build/addons/metamod/dlls/`
-- `metamod.so`
-- `asext.so`
-- `ascurl.so`
-- `asqcvar.so`
-- `fallguys.so`
-- `asusermsg.so`
-
-### Linux (build only the project, deps already built)
-```bash
-cd scripts
-./build-metamod-cmake-opt.linux_i386.sh
-```
-Note: the GNU Make path (`build-metamod-make-*.sh`) was removed (issue #42);
-CMake is the only build system.
-
-## Debug Builds
-
-### Windows Debug
-```batch
-cd scripts
-build-bullet3-x86-Debug.bat
-build-capstone-x86-Debug.bat
-build-metamod-cmake-x86-Debug.bat
-```
-
-### Linux Debug
-```bash
-cd scripts
-./build-bullet3-dbg.linux_i386.sh
-./build-capstone-dbg.linux_i386.sh
-./build-metamod-cmake-dbg.linux_i386.sh
-```
-
-## Git Commands
-```bash
-# Clone with submodules
+```sh
 git clone --recursive https://github.com/hzqst/metamod-fallguys
-
-# Update submodules
 git submodule update --init --recursive
-
-# Check status
-git status
-
-# View commit history
-git log --oneline
-
-# View changes
-git diff
+git submodule status --recursive
+cmake -S . -B build-cmake/native -A Win32
+cmake --build build-cmake/native --config Release --parallel 6
+cmake --install build-cmake/native --config Release --prefix build
 ```
 
-## Windows System Commands
-```cmd
-# List files
-dir
+Linux: omit -A Win32 and add -DCMAKE_BUILD_TYPE=Release; install gcc-multilib/g++-multilib.
+Debug: use --config Debug on Windows or -DCMAKE_BUILD_TYPE=Debug on Linux.
+Legacy scripts/build-*.bat/sh are unified build compatibility entry points.
 
-# Change directory
-cd <path>
+Standalone plugin: cmake -S <plugin> -B <build> -DMETAMOD_SOURCE_PATH=<metamod-clone>
+-DASEXT_SOURCE_PATH=<asext-clone>, or omit overrides for pinned FetchContent.
+Native outputs install under addons/metamod/dlls. Only Windows Win32/Linux i386 are supported.
 
-# Create directory
-mkdir <dirname>
-
-# Remove directory
-rmdir /s /q <dirname>
-
-# Copy files
-copy <source> <dest>
-xcopy /s /e <source> <dest>
-
-# Find files
-where <filename>
-
-# Search in files (using findstr)
-findstr /s /i "pattern" *.cpp
-
-# View file content
-type <filename>
-more <filename>
-```
-
-## Project-Specific Notes
-- Always build from the `scripts/` directory
-- Third-party libraries must be built before metamod and plugins
-- The build system supports both x86 (32-bit) and x64 (64-bit) on Windows
-- Linux builds are 32-bit by default (i386)
-- Output binaries are placed in `build/addons/metamod/dlls/`
+Formatting: install clang-format==23.1.3; configure -DFORMAT_VALIDATION_ONLY=ON;
+build format-check or format. Component-prefixed targets also exist in the aggregate.
+Commit component changes in their own repositories before updating aggregate gitlinks.

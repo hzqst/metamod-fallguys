@@ -11,10 +11,10 @@ permalink: metamod-fallguys/code-style-conventions
 - Author attribution and modification history
 
 ## Indentation and Formatting
-- **Tab size**: 4 spaces (ts=4)
-- **Shift width**: 4 spaces (sw=4)
-- **Text width**: 75 characters (tw=75)
-- Use **tabs** for indentation (not spaces)
+- Shared FormatValidation pins clang-format 23.1.3 and uses four spaces, no tabs.
+- ColumnLimit is 0; include sorting is disabled to preserve existing include order.
+- Run `format-check` or `format` after configuring `FORMAT_VALIDATION_ONLY=ON`.
+- Generated `.clang-format` files are ignored; HLSDK and vendor sources are excluded.
 
 ## Naming Conventions
 - **Types/Structs**: lowercase with underscores, suffix `_t` or `_s`

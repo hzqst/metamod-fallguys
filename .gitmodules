@@ -1,12 +1,27 @@
-[submodule "glibc_version_header"]
-	path = glibc_version_header
-	url = https://github.com/hzqst/glibc_version_header
 [submodule "thirdparty/bullet3_fork"]
 	path = thirdparty/bullet3_fork
 	url = https://github.com/hzqst/bullet3
-[submodule "thirdparty/capstone_fork"]
-	path = thirdparty/capstone_fork
-	url = https://github.com/hzqst/capstone
-[submodule "thirdparty/procmap_fork"]
-	path = thirdparty/procmap_fork
-	url = https://github.com/hzqst/procmap
+[submodule "metamod"]
+	path = metamod
+	url = https://github.com/metamod-fallguys/metamod.git
+[submodule "asext"]
+	path = asext
+	url = https://github.com/metamod-fallguys/asext.git
+[submodule "ascurl"]
+	path = ascurl
+	url = https://github.com/metamod-fallguys/ascurl.git
+[submodule "asqcvar"]
+	path = asqcvar
+	url = https://github.com/metamod-fallguys/asqcvar.git
+[submodule "asusermsg"]
+	path = asusermsg
+	url = https://github.com/metamod-fallguys/asusermsg.git
+[submodule "fallguys"]
+	path = fallguys
+	url = https://github.com/metamod-fallguys/fallguys.git
+[submodule "thirdparty/angelscript-sdk"]
+	path = thirdparty/angelscript-sdk
+	url = https://github.com/metamod-fallguys/angelscript-sdk.git
+[submodule "thirdparty/FormatValidation"]
+	path = thirdparty/FormatValidation
+	url = https://github.com/MetaHookSv/FormatValidation.git

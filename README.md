@@ -123,36 +123,64 @@ The edited `liblist.gam` should be something like this ![](/img/1.png)
 
 * Other third-party plugins ( e.g [amxmodx](https://github.com/alliedmodders/amxmodx) ) are still binary-compatible with [metamod-fallguys](https://github.com/hzqst/metamod-fallguys/tree/main/metamod). You don't have to re-compile them. Just put them in the `plugins.ini`.
 
-# Build Requirements (Windows)
+# Build
 
-1. [Visual Studio 2017 / 2019 / 2022, with vc141 / vc142 / vc143 toolset](https://visualstudio.microsoft.com/)
+The six components are independent repositories under the
+[metamod-fallguys organization](https://github.com/metamod-fallguys), tracked here as
+submodules. Public headers are in `include/`, implementation in `src/`. Metamod owns
+HLSDK under `metamod/include/HLSDK/` and its private Capstone/procmap submodules.
 
-2. [CMake](https://cmake.org/download/)
+Requirements: CMake 3.21+, Git, and Windows MSVC Win32 or Linux i386 GCC multilib.
 
-3. [Git for Windows](https://gitforwindows.org/)
+```sh
+git clone --recursive https://github.com/hzqst/metamod-fallguys
+cd metamod-fallguys
+git submodule update --init --recursive
+cmake -S . -B build-cmake/native -A Win32
+cmake --build build-cmake/native --config Release --parallel 6
+cmake --install build-cmake/native --config Release --prefix build
+```
 
-# Build Instruction (Windows)
+On Linux omit `-A Win32` and use `-DCMAKE_BUILD_TYPE=Release`; install `gcc-multilib`
+and `g++-multilib`. Both platforms also support Debug. Installation preserves
+`build/addons/metamod/dlls/`, including Windows PDBs and the default plugin list.
+The existing `scripts/build-*.bat` and `scripts/build-*.sh` names remain compatibility
+entry points to this unified build, independent of the caller's working directory.
+Dependencies are compiled within the same CMake tree; no `thirdparty/install` is needed.
 
-1. `git clone --recursive https://github.com/hzqst/metamod-fallguys`, then `cd metamod-fallguys/scripts/`
+## Standalone components and dependencies
 
-2. Run `build-all-x86-Release.bat`
+Each component can be cloned and built directly; see its own README. Plugins accept
+`METAMOD_SOURCE_PATH` and `ASEXT_SOURCE_PATH` for local component clones. Additional
+source overrides are `ANGELSCRIPT_SOURCE_PATH`, `BULLET3_SOURCE_PATH`,
+`CAPSTONE_SOURCE_PATH`, and `PROCMAP_SOURCE_PATH`. Explicit CMake paths override
+environment defaults. Empty paths fetch fixed commits, preserving the customized
+AngelScript ABI. Invalid explicit paths fail; dependency source trees are read-only.
 
-3. `metamod.dll`, `asext.dll`, `ascurl.dll`, `asqcvar.dll` and `fallguys.dll` will be generated under `build/addons/metamod/dlls` if no error(s) occours.
+The aggregate injects its initialized local dependency trees and reuses vendor targets.
+`MMFG_BUILD_METAMOD`, `MMFG_BUILD_ASEXT`, `MMFG_BUILD_ASCURL`, `MMFG_BUILD_ASQCVAR`,
+`MMFG_BUILD_ASUSERMSG`, and `MMFG_BUILD_FALLGUYS` may disable native components.
+SDK consumption does not compile dependency plugins; their runtime loading stays unchanged.
 
-# Build Requirements (Linux)
+## Formatting
 
-1. GNU C++ Build environment. Install with `sudo apt-get install make build-essential gcc gcc-multilib g++-multilib` if missing.
+```sh
+python -m pip install clang-format==23.1.3
+cmake -S . -B build-cmake/format -DFORMAT_VALIDATION_ONLY=ON
+cmake --build build-cmake/format --target format-check
+cmake --build build-cmake/format --target format
+```
 
-2. CMake. Install with `sudo apt-get install cmake` if missing.
+Formatting works without a native compiler. The aggregate targets cover all six
+components, including disabled native components; `<component>-format-check` and
+`<component>-format` select one. Normal native builds do not install or execute formatting.
+The shared FormatValidation commit is fixed at `13c9fabe058e1f887ad1b03bb6884de911192c6a`;
+`FORMAT_VALIDATION_SOURCE_PATH` can override its local path. Generated `.clang-format`
+files are ignored; HLSDK and vendor sources are excluded.
 
-3. Git client. Install with `sudo apt-get install git` if missing.
+## Updating components
 
-# Build Instruction (Linux)
-
-1. Run `git clone --recursive https://github.com/hzqst/metamod-fallguys`, then `cd metamod-fallguys/scripts/`
-
-2. Run `sudo chmod +777 *.sh`
-
-3. Run `./build-all-opt.linux_i386.sh`
-
-4. `metamod.so`, `asext.so`, `ascurl.so`, `asqcvar.so` and `fallguys.so` will be generated under `build/addons/metamod/dlls` if no error(s) occours.
+Commit and publish changes in the component repository first, then commit the corresponding
+gitlink in this repository. FetchContent dependency revisions are full commit IDs; update
+them deliberately when changing a shared interface. The original aggregate history remains
+available; component histories retain their relevant commits and contributors.
