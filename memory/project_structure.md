@@ -15,8 +15,9 @@ of independent repositories in the metamod-fallguys organization.
   thirdparty/procmap_fork are private nested submodules. Plugin SDK excludes src/.
 - ASExt: include/asext_api.h and include/std_string.h are its existing public interface.
 - ASCurl: thirdparty/curl and thirdparty/openssl retain header trees.
-- FallGuys: thirdparty/fmod retains headers; Bullet is compiled from the shared fork.
-- Aggregate thirdparty/: bullet3_fork, angelscript-sdk and FormatValidation submodules.
+- FallGuys: thirdparty/fmod retains headers; thirdparty/bullet3_fork is a nested
+  submodule, so Bullet is FallGuys-owned and compiled from its own fork.
+- Aggregate thirdparty/: angelscript-sdk and FormatValidation submodules.
 - scripts/: legacy names wrap unified CMake builds. docs/ contains component navigation;
   usage lives in each component's USAGE.md. memory/ remains project knowledge.
 - Installed payload: addons/metamod/dlls/{metamod,asext,ascurl,asqcvar,asusermsg,fallguys}.dll

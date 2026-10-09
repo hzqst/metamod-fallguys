@@ -25,11 +25,12 @@ ascurl, asqcvar, asusermsg and fallguys consume ASExt public headers and load AS
 The Metamod::SDK and ASExt::SDK interface targets do not build dependency DLLs/SOs.
 
 Source overrides: METAMOD_SOURCE_PATH, ASEXT_SOURCE_PATH, ANGELSCRIPT_SOURCE_PATH,
-BULLET3_SOURCE_PATH, CAPSTONE_SOURCE_PATH, PROCMAP_SOURCE_PATH. Explicit CMake variables
-override environment defaults; missing overrides fetch fixed commits. Invalid supplied
-paths fail. Metamod first reuses initialized private Capstone/procmap submodules.
-The aggregate injects initialized shared trees. Vendor libraries compile in the native
-build tree, with shared target guards; no prebuilt thirdparty/install is required.
+CAPSTONE_SOURCE_PATH, PROCMAP_SOURCE_PATH; FallGuys adds BULLET3_SOURCE_PATH. Explicit
+CMake variables override environment defaults; missing overrides fetch fixed commits.
+Invalid supplied paths fail. Metamod and FallGuys first reuse their initialized nested
+submodules (Capstone/procmap, bullet3_fork). The aggregate injects initialized shared
+trees. Vendor libraries compile in the native build tree, with shared target guards;
+no prebuilt thirdparty/install is required.
 
 For formatting install clang-format==23.1.3, configure FORMAT_VALIDATION_ONLY=ON,
 then build format-check or format. No native compiler is needed. Generated .clang-format
