@@ -258,3 +258,17 @@ Commit and publish changes in the component repository first, then commit the co
 gitlink in this repository. FetchContent dependency revisions are full commit IDs; update
 them deliberately when changing a shared interface. The original aggregate history remains
 available; component histories retain their relevant commits and contributors.
+
+## Releases
+
+Pushing a `v*` tag runs the `release` workflow: `windows` and `ubuntu` build in parallel and
+upload their archives as artifacts, then `notes` generates bilingual release notes with the
+Claude CLI (override with the `RELEASE_NOTES_PROVIDER` variable; `codex` is also supported),
+and `publish` validates the exact asset set and the tag target before making the release
+public. The release is created as a draft and only un-drafted once every check passes.
+
+The `notes` job needs the `release` environment and the `RELEASE_NOTES_API_KEY`,
+`RELEASE_NOTES_BASE_URL` (an HTTPS endpoint without credentials, query or fragment) and
+`RELEASE_NOTES_MODEL` settings; without them note generation fails closed and no release is
+published. The release scripts are covered by `python -B -m unittest discover -s scripts/tests
+-p 'test_release*.py'`, which the build workflows run on every change.
