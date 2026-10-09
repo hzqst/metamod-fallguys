@@ -24,11 +24,33 @@ This metamod is based on [Bots-United's metamod-p](https://github.com/Bots-Unite
 
 # Plugins
 
+All plugins below are loaded by this metamod. They are installed into
+`Sven Co-op/svencoop/addons/metamod/dlls/` and enabled in `plugins.ini`.
+
 ### fallguys.dll (fallguys.so)
+
+Server-side feature expansions for the map `Fall Guys in Sven Co-op`, exposed to
+AngelScript through `g_EngineFuncs` / `g_EntityFuncs` / `g_Hooks`.
 
 * This is required by map `Fall Guys in Sven Co-op`
 
-[Documentation](docs/README_FALLGUYS.md)
+Features :
+
+* GroupMask / GroupOperation manipulation (`g_EngineFuncs.SetGroupTrace`)
+* Set brush entity as **Super Pusher**, pushing players and monsters backward on impact
+* Custom footsteps, replace the sound played for any movement type per map
+* Server-side Level of Detail : an entity's `modelindex` / `scale` / `body` is switched per player by distance
+* Semi-Visible : an entity is visible only to the specified player(s)
+* SemiClip and PlayerMove-only SemiClip : disable collision / phys-interaction, or only player movement, per player
+* SemiRenderEffects : override `rendermode` / `renderamt` / `rendercolor` / `renderfx` for the specified player(s)
+* Create physic objects, simulation runs in Bullet engine instead of GoldSrc hull clipping
+* Entity follow, similar to `trigger_setorigin` but without extra entity and the latency it brings
+* Query the player currently running player-move code, the player's view entity, and information from a sound file
+* Hooks : `AddToFullPack`, `PlayerPostThink_Post`, `PlayerTouchTrigger`, `PlayerTouchPlayer`, `PlayerTouchImpact`
+
+Use macro `METAMOD_PLUGIN_FALLGUYS` to detect its availability.
+
+[Documentation](https://github.com/metamod-fallguys/fallguys)
 
 ### asext.dll (asext.so)
 
@@ -36,7 +58,26 @@ This plugin provides ability of registering third-party hooks or methods in Sven
 
 * This is required by map `Fall Guys in Sven Co-op`
 
-[Documentation](docs/README_ASEXT.md)
+It locates the private AngelScript implementation in `server.dll` / `server.so` by
+signature scanning and symbol resolution, then exports the registration and hooking
+capability through `asext_api.h`.
+
+Features :
+
+* Register object methods (`ASEXT_RegisterObjectMethod`) and global functions (`ASEXT_RegisterGlobalFunction`) into the AngelScript engine
+* Register AngelScript hooks (`ASEXT_RegisterHook`) and call them from C++ (`ASEXT_CallHook`)
+* Set the default namespace (`ASEXT_SetDefaultNamespace`) while registering symbols
+* Define words to the AngelScript script builder (`ASEXT_CScriptBuilder_DefineWord`), which is how the `METAMOD_PLUGIN_*` macros are exposed
+* Iterate an AngelScript `dictionary` (`ASEXT_CScriptDictionary_*`) and fetch a type info by name
+* Registrations must happen before AngelScript initialization ; `Meta_Attach` is early enough
+
+```cpp
+IMPORT_ASEXT_API_DEFINE();
+LOAD_PLUGIN(PLID, "addons/metamod/dlls/asext.dll", PLUG_LOADTIME::PT_ANYTIME, &asextHandle);
+IMPORT_ASEXT_API(asext);
+```
+
+[Documentation](https://github.com/metamod-fallguys/asext)
 
 ### ascurl.dll (ascurl.so)
 
@@ -44,7 +85,17 @@ This plugin provides ability of using libcurl to send HTTP request in angelscrip
 
 * This is not required if you just gonna play `Fall Guys in Sven Co-op`
 
-[Documentation](docs/README_ASCURL.md)
+Features :
+
+* Create / send / destroy an HTTP request (`CreateHTTPRequest`, `SendHTTPRequest`, `DestroyHTTPRequest`) with `GET` / `POST` / `PUT`
+* Synchronous and asynchronous mode, with separate connect timeout and transfer timeout
+* Set post fields, append request headers, append multipart form string / blob, upload a blob
+* Asynchronous callback (`SetHTTPRequestCallback`) and response code / header / body retrieval (`GetHTTPResponse`)
+* Hashing and encoding helpers : `hmac_sha1`, `hmac_md5`, `md5`, `base64_encode`
+
+Use macro `METAMOD_PLUGIN_ASCURL` to detect its availability.
+
+[Documentation](https://github.com/metamod-fallguys/ascurl)
 
 ### asqcvar.dll (asqcvar.so)
 
@@ -52,7 +103,15 @@ This plugin provides ability of retreiving cvars from client. mainly for server 
 
 * This is not required if you just gonna play `Fall Guys in Sven Co-op`
 
-[Documentation](docs/README_ASQCVAR.md)
+Features :
+
+* Send a querycvar request to a client (network message `svc_sendcvarvalue2`)
+* Register an asynchronous callback for the response (`g_EngineFuncs.SetQueryCvar2Callback`)
+* Hooks : `Hooks::Player::QueryCvar`, `Hooks::Player::QueryCvar2`
+
+Use macro `METAMOD_PLUGIN_ASQCVAR` to detect its availability.
+
+[Documentation](https://github.com/metamod-fallguys/asqcvar)
 
 ### asusermsg.dll (asusermsg.so)
 
@@ -60,7 +119,16 @@ This plugin provides ability of hooking UserMsg. mainly for server ops and devel
 
 * This is not required if you just gonna play `Fall Guys in Sven Co-op`
 
-[Documentation](docs/README_ASUSERMSG.md)
+Features :
+
+* Register a UserMsg hook (`g_EngineFuncs.RegisterUserMsgHook`) by message id or name
+* Inspect the current message in the hook : argument count, argument type and argument value (`GetUserMsgArgCount`, `GetUserMsgArgType`, `GetUserMsgArgInteger`, `GetUserMsgArgString`)
+* Block the original message (`BlockCurrentUserMsg`) and resend your own message through `NetworkMessage`
+* Enable / disable all UserMsg hooks (`EnableUserMsgHookGlobal`), which also prevents recursive calls
+
+Use macro `METAMOD_PLUGIN_ASUSERMSG` to detect its availability.
+
+[Documentation](https://github.com/metamod-fallguys/asusermsg)
 
 # Installation
 
