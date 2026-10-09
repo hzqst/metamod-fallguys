@@ -136,14 +136,19 @@ Requirements: CMake 3.21+, Git, and Windows MSVC Win32 or Linux i386 GCC multili
 git clone --recursive https://github.com/hzqst/metamod-fallguys
 cd metamod-fallguys
 git submodule update --init --recursive
-cmake -S . -B build-cmake/native -A Win32
-cmake --build build-cmake/native --config Release --parallel 6
-cmake --install build-cmake/native --config Release --prefix build
+cmake -S . -B build/x86/Release -A Win32
+cmake --build build/x86/Release --config Release --parallel 6
+cmake --install build/x86/Release --config Release
 ```
 
 On Linux omit `-A Win32` and use `-DCMAKE_BUILD_TYPE=Release`; install `gcc-multilib`
-and `g++-multilib`. Both platforms also support Debug. Installation preserves
-`build/addons/metamod/dlls/`, including Windows PDBs and the default plugin list.
+and `g++-multilib`. For Debug use `build/x86/Debug` and `--config Debug` on Windows,
+or `-DCMAKE_BUILD_TYPE=Debug` on Linux. Configure a separate tree for each configuration.
+Installation places the complete `addons/` payload under `install/x86/<Config>/`,
+including Windows PDBs and the default plugin list. Copy that directory's contents
+into the game's `svencoop/` directory. An explicit `CMAKE_INSTALL_PREFIX` or
+`cmake --install --prefix` overrides the default; existing trees retain their cached prefix.
+Release archives retain their existing `build/addons/` layout for installation.
 The existing `scripts/build-*.bat` and `scripts/build-*.sh` names remain compatibility
 entry points to this unified build, independent of the caller's working directory.
 Dependencies are compiled within the same CMake tree; no `thirdparty/install` is needed.

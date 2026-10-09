@@ -10,9 +10,9 @@ Requirements: CMake 3.21+, Git, MSVC Win32 or Linux GCC i386 multilib.
 
 ```sh
 git submodule update --init --recursive
-cmake -S . -B build-cmake/native -A Win32
-cmake --build build-cmake/native --config Release --parallel 6
-cmake --install build-cmake/native --config Release --prefix build
+cmake -S . -B build/x86/Release -A Win32
+cmake --build build/x86/Release --config Release --parallel 6
+cmake --install build/x86/Release --config Release
 ```
 
 Linux omits -A Win32 and sets -DCMAKE_BUILD_TYPE=Release; Debug is also supported.
@@ -35,3 +35,7 @@ no prebuilt thirdparty/install is required.
 For formatting install clang-format==23.1.3, configure FORMAT_VALIDATION_ONLY=ON,
 then build format-check or format. No native compiler is needed. Generated .clang-format
 is ignored; vendor trees are excluded. Normal native builds do not install Python tooling.
+
+## Default build and install layout
+
+Use separate `build/x86/Debug` and `build/x86/Release` trees. Single-config generators use `CMAKE_BUILD_TYPE`; multi-config generators derive Debug/Release from the tree leaf, falling back to Release for legacy paths. The default install prefix is `<top-level-source>/install/x86/<Config>`, containing the full `addons/metamod/` payload (DLL/SO, Windows PDBs, and aggregate plugins.ini). Explicit prefixes and existing cached prefixes are preserved. SDK imports and nested component builds do not change the caller's prefix. Aggregate and component CI use this layout; release ZIPs retain `build/addons/` via temporary staging. Shared layout helpers are provided by Metamod; standalone plugin pins must reference the revision providing them.
