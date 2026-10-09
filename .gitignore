@@ -9,6 +9,7 @@ settings.local.json
 /Debug
 /Release
 /build-cmake
+/build/x86/
 /build/addons/metamod/dlls
 /thirdparty/build
 /thirdparty/install

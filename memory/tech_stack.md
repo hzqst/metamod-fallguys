@@ -14,7 +14,7 @@ permalink: metamod-fallguys/tech-stack
 - **CMake** (minimum version 3.21) — the ONLY supported build system
 - The legacy GNU Make (`Makefile`/`Config.mak`) and Visual Studio
   (`metamod.sln`/`*.vcxproj`) build systems were removed (issue #42); do not
-  reintroduce them. `build-cmake/`, `install/` and `build/addons/.../dlls` are
+  reintroduce them. `build/x86/`, `build-cmake/`, `install/` and legacy `build/addons/.../dlls` are
   build output and are gitignored.
 
 ## Supported Platforms

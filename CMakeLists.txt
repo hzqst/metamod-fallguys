@@ -14,6 +14,8 @@ project(metamod-fallguys LANGUAGES C CXX)
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Build configuration" FORCE)
 endif()
+include(metamod/cmake/Build.cmake)
+mmfg_configure_install_layout()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Explicit overrides win; otherwise inject one local tree per dependency.

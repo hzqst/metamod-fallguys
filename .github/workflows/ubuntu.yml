@@ -32,16 +32,21 @@ jobs:
       - name: Build all
         working-directory: ${{env.GITHUB_WORKSPACE}}
         run: |
-          cmake -S . -B build-cmake/native -DCMAKE_BUILD_TYPE=${{ matrix.config }}
-          cmake --build build-cmake/native --parallel 6
-          cmake --install build-cmake/native --prefix build
+          cmake -S . -B build/x86/${{ matrix.config }} -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+          cmake --build build/x86/${{ matrix.config }} --parallel 6
+          cmake --install build/x86/${{ matrix.config }}
 
-      - name: Archive the build directory
+      - name: Stage release payload
+        if: matrix.config == 'Release'
+        run: cmake -E copy_directory install/x86/Release/addons "${{ runner.temp }}/mmfg-release/build/addons"
+
+      - name: Archive the install payload
         if: matrix.config == 'Release'
         uses: thedoctor0/zip-release@main
         with:
           type: 'zip'
-          filename: 'metamod-fallguys-ubuntu-i386.zip'
+          filename: '${{ github.workspace }}/metamod-fallguys-ubuntu-i386.zip'
+          directory: '${{ runner.temp }}/mmfg-release'
           path: 'build'
 
       - name: Create Release
