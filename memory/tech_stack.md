@@ -27,7 +27,7 @@ permalink: metamod-fallguys/tech-stack
 
 ## Third-Party Libraries
 - **capstone**: Disassembly framework
-- **bullet3**: Physics library (Bullet3Dynamics, BulletCollision, LinearMath, etc.)
+- **bullet3**: Physics library (Bullet3Dynamics, BulletCollision, LinearMath, etc.); owned by FallGuys as its nested thirdparty/bullet3_fork submodule
 - **libcurl**: HTTP client library (used in ascurl plugin)
 - **procmap**: Process memory mapping (Linux only)
 

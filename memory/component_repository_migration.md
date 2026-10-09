@@ -18,8 +18,9 @@ Six root component directories are gitlinks to their matching repositories under
 metamod-fallguys organization. Public headers are in include/, private implementation
 in src/. Metamod owns include/HLSDK/ and nested thirdparty/capstone_fork/procmap_fork.
 ASExt owns include/asext_api.h and include/std_string.h. ASCurl retains curl/OpenSSL
-vendor trees and FallGuys retains FMOD headers. The aggregate shares Bullet,
-the customized AngelScript SDK, and FormatValidation submodules.
+vendor trees and FallGuys retains FMOD headers and owns Bullet as a nested
+thirdparty/bullet3_fork submodule. The aggregate shares the customized AngelScript
+SDK and FormatValidation submodules.
 
 Histories were filtered only in temporary clones; the original aggregate history was
 not rewritten. Layout commits were checked against original Git blobs before formatting.

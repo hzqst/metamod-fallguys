@@ -1,6 +1,3 @@
-[submodule "thirdparty/bullet3_fork"]
-	path = thirdparty/bullet3_fork
-	url = https://github.com/hzqst/bullet3
 [submodule "metamod"]
 	path = metamod
 	url = https://github.com/metamod-fallguys/metamod.git

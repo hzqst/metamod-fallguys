@@ -152,8 +152,9 @@ Dependencies are compiled within the same CMake tree; no `thirdparty/install` is
 
 Each component can be cloned and built directly; see its own README. Plugins accept
 `METAMOD_SOURCE_PATH` and `ASEXT_SOURCE_PATH` for local component clones. Additional
-source overrides are `ANGELSCRIPT_SOURCE_PATH`, `BULLET3_SOURCE_PATH`,
-`CAPSTONE_SOURCE_PATH`, and `PROCMAP_SOURCE_PATH`. Explicit CMake paths override
+source overrides are `ANGELSCRIPT_SOURCE_PATH`, `CAPSTONE_SOURCE_PATH`, and
+`PROCMAP_SOURCE_PATH`. FallGuys additionally accepts `BULLET3_SOURCE_PATH`, defaulting
+to its nested `thirdparty/bullet3_fork` submodule. Explicit CMake paths override
 environment defaults. Empty paths fetch fixed commits, preserving the customized
 AngelScript ABI. Invalid explicit paths fail; dependency source trees are read-only.
 
