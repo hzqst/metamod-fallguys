@@ -7,25 +7,25 @@ permalink: metamod-fallguys/ascurl
 # ascurl 模块
 
 ## 概述
-- ascurl 是 Metamod 插件，提供基于 libcurl 的 HTTP 功能给 AngelScript（CEngineFuncs 扩展），支持同步/异步请求、表单、上传、回调、响应读取，以及 HMAC/MD5/base64 工具函数。入口在 `ascurl/meta_api.cpp`，由 Meta_Attach 初始化并注册脚本 API。
+- ascurl 是 Metamod 插件，提供基于 libcurl 的 HTTP 功能给 AngelScript（CEngineFuncs 扩展），支持同步/异步请求、表单、上传、回调、响应读取，以及 HMAC/MD5/base64 工具函数。入口在 `ascurl/src/meta_api.cpp`，由 Meta_Attach 初始化并注册脚本 API。
 
 ## 职责
-- 在 Metamod 生命周期内初始化/销毁 curl 环境与请求对象（`ascurl/ascurl.cpp`、`ascurl/dllapi.cpp`）。
-- 将 HTTP API 与加密/编码工具暴露给 AngelScript（`ascurl/server_hook.cpp`）。
-- 每帧驱动异步请求并触发 AS 回调（`ascurl/dllapi.cpp`、`ascurl/ascurl.cpp`）。
+- 在 Metamod 生命周期内初始化/销毁 curl 环境与请求对象（`ascurl/src/ascurl.cpp`、`ascurl/src/dllapi.cpp`）。
+- 将 HTTP API 与加密/编码工具暴露给 AngelScript（`ascurl/src/server_hook.cpp`）。
+- 每帧驱动异步请求并触发 AS 回调（`ascurl/src/dllapi.cpp`、`ascurl/src/ascurl.cpp`）。
 
 ## 架构
-- 插件入口（`ascurl/meta_api.cpp`）
+- 插件入口（`ascurl/src/meta_api.cpp`）
   - `Meta_Query/Meta_Attach/Meta_Detach` 处理 Metamod 接口。
   - `Meta_Attach` 加载 `asext` 插件并导入 API，调用 `ASCURL_Init` 与 `RegisterAngelScriptMethods`。
-- 请求管理（`ascurl/ascurl.cpp`）
+- 请求管理（`ascurl/src/ascurl.cpp`）
   - 全局 `m_requests` map + 自增 `m_request_index`。
   - `CBaseHTTPRequest` 持有 curl easy handle、headers、form、流式缓冲、AS 回调。
   - `CAsyncHTTPRequest` 使用 curl multi；`CSyncHTTPRequest` 直接 `curl_easy_perform`。
-- 帧驱动（`ascurl/dllapi.cpp`）
+- 帧驱动（`ascurl/src/dllapi.cpp`）
   - `NewStartFrame` 调用 `ASCURL_Frame` 驱动 async。
   - `NewGameShutdown` 调用 `ASCURL_Shutdown` 清理。
-- 脚本绑定（`ascurl/server_hook.cpp`）
+- 脚本绑定（`ascurl/src/server_hook.cpp`）
   - `CASEngineFuncs__*` 包装函数在 AS 与 C++ 间做类型转换。
   - `RegisterAngelScriptMethods` 注册 CEngineFuncs 方法、回调类型、脚本宏、目录访问权限。
 
@@ -47,7 +47,7 @@ permalink: metamod-fallguys/ascurl
   - `ASCURL_Shutdown` 删除所有请求并清理 multi handle。
 
 ## 依赖
-- libcurl 动态链接（`ascurl/signatures.h`）：Windows `libcurl.dll`，Linux `libcurl.so.4`。
+- libcurl 动态链接（`ascurl/src/signatures.h`）：Windows `libcurl.dll`，Linux `libcurl.so.4`。
 - AngelScript 扩展 `asext`（`asext_api.h`）提供 AS 绑定与回调支持。
 - 加密：
   - Windows: BCrypt (`bcrypt.lib`)。

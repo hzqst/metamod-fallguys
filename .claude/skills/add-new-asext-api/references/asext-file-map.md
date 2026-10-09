@@ -2,7 +2,7 @@
 
 Detailed guide to every file involved when adding a new ASEXT API function, including exact insertion points and surrounding context.
 
-## 1. `asext/serverdef.h` — Private Function Types
+## 1. `asext/src/serverdef.h` — Private Function Types
 
 **Role**: Declares the function pointer type (`typedef`) and the extern globals (`PRIVATE_FUNCTION_EXTERN`).
 
@@ -37,7 +37,7 @@ extern hook_t *g_phook_Foo;
 
 ---
 
-## 2. `asext/signatures.h` — Platform Signatures
+## 2. `asext/src/signatures.h` — Platform Signatures
 
 **Role**: Defines byte-pattern signatures (Windows + Linux 5.16+) and mangled symbol names (Linux 5.15).
 
@@ -63,7 +63,7 @@ extern hook_t *g_phook_Foo;
 
 ---
 
-## 3. `asext/server_hook.cpp` — Function Pointers + Wrappers
+## 3. `asext/src/server_hook.cpp` — Function Pointers + Wrappers
 
 **Role**: Defines the actual global function pointer storage and the `ASEXT_*` wrapper functions.
 
@@ -100,7 +100,7 @@ C_DLLEXPORT void ASEXT_SetDefaultNamespace(CASDocumentation* pthis, const char* 
 
 ---
 
-## 4. `asext/meta_api.cpp` — Runtime Filling
+## 4. `asext/src/meta_api.cpp` — Runtime Filling
 
 **Role**: At plugin load time (`Meta_Attach`), scans the server binary to locate function addresses.
 
@@ -130,7 +130,7 @@ LOG_MESSAGE(PLID, "ClassName_MethodName found at %p", g_pfn_ClassName_MethodName
 
 ---
 
-## 5. `asext/asext.h` — Internal Export Header
+## 5. `asext/src/asext.h` — Internal Export Header
 
 **Role**: Declares `C_DLLEXPORT` functions for the asext shared library. Used within asext itself and by the build system.
 
@@ -202,20 +202,20 @@ asext/include/asext_api.h  ← typedef + extern + IMPORT macros
     │
     ▼ (dynamic import at runtime via IMPORT_ASEXT_API)
     │
-asext/asext.h              ← C_DLLEXPORT declarations
+asext/src/asext.h              ← C_DLLEXPORT declarations
     │
     ▼
-asext/server_hook.cpp      ← ASEXT_* wrapper + PRIVATE_FUNCTION_DEFINE
+asext/src/server_hook.cpp      ← ASEXT_* wrapper + PRIVATE_FUNCTION_DEFINE
     │
     ▼ (calls g_call_original_*)
     │
-asext/meta_api.cpp         ← FILL_FROM_SIGNATURE/SYMBOL (runtime)
+asext/src/meta_api.cpp         ← FILL_FROM_SIGNATURE/SYMBOL (runtime)
     │
     ▼ (reads signatures from)
     │
-asext/signatures.h         ← byte patterns + mangled symbols
+asext/src/signatures.h         ← byte patterns + mangled symbols
     │
     ▼ (types defined in)
     │
-asext/serverdef.h          ← typedef + PRIVATE_FUNCTION_EXTERN
+asext/src/serverdef.h          ← typedef + PRIVATE_FUNCTION_EXTERN
 ```

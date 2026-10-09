@@ -8,7 +8,7 @@ permalink: metamod-fallguys/asext
 
 ## 概述
 - asext 是 `metamod-fallguys` 的 AngelScript 扩展插件（动态库）。它通过签名扫描/符号解析定位 server.dll/server.so 中的 AngelScript 私有实现，并将注册与 hook 能力导出给其他插件使用。
-- 对外 API 头文件是 `asext/include/asext_api.h`（动态加载宏 + 轻量类型/枚举），内部导出声明在 `asext/asext.h`；示例用法在 `README_ASEXT.md`。
+- 对外 API 头文件是 `asext/include/asext_api.h`（动态加载宏 + 轻量类型/枚举），内部导出声明在 `asext/src/asext.h`；示例用法在 `README_ASEXT.md`。
 
 ## 职责
 - 在 `Meta_Attach` 中定位 AngelScript 相关私有函数/全局对象，建立调用入口。
@@ -16,9 +16,9 @@ permalink: metamod-fallguys/asext
 - 向其他模块暴露注册对象方法/行为/枚举/函数定义、hook 注册与触发、以及若干核心对象的薄封装（CString、CScriptDictionary、CScriptAny/Array、CASFunction 等）。
 
 ## 架构
-- 插件入口与 Metamod 集成：`asext/meta_api.cpp`（`Meta_Query`/`Meta_Attach`/`Meta_Detach`）、`asext/dllapi.cpp`（`GetEntityAPI2`/`GetEntityAPI2_Post`/`GetNewDLLFunctions`）、`asext/engine_api.cpp`、`asext/h_export.cpp`、`asext/dllmain.cpp`。
-- Hook 与私有接口层：`asext/server_hook.cpp` + `asext/serverdef.h` + `asext/signatures.h`，依赖 `metamod/signatures_template.h` 中的签名扫描/内联 hook 宏。
-- 对外 API 层：`asext/asext.h`（导出函数声明） + `asext/include/asext_api.h`（供外部插件动态导入）。
+- 插件入口与 Metamod 集成：`asext/src/meta_api.cpp`（`Meta_Query`/`Meta_Attach`/`Meta_Detach`）、`asext/src/dllapi.cpp`（`GetEntityAPI2`/`GetEntityAPI2_Post`/`GetNewDLLFunctions`）、`asext/src/engine_api.cpp`、`asext/src/h_export.cpp`、`asext/src/dllmain.cpp`。
+- Hook 与私有接口层：`asext/src/server_hook.cpp` + `asext/src/serverdef.h` + `asext/src/signatures.h`，依赖 `metamod/include/signatures_template.h` 中的签名扫描/内联 hook 宏。
+- 对外 API 层：`asext/src/asext.h`（导出函数声明） + `asext/include/asext_api.h`（供外部插件动态导入）。
 
 ## 核心实现（含 workflow）
 1. **插件加载**：Metamod 调用 `Meta_Query` 校验接口版本并缓存 `gpMetaUtilFuncs`；`Meta_Attach` 复制函数表并获取 server 模块句柄/基址/代码段范围。随后通过签名扫描或符号解析定位 AngelScript 私有函数指针，并输出日志。
@@ -35,8 +35,8 @@ permalink: metamod-fallguys/asext
 
 ## 依赖
 - **Metamod/HL SDK**：`meta_api.h`/`dllapi.h`/`extdll.h`、`enginefuncs_t`、`DLL_FUNCTIONS` 等。
-- **签名扫描与 Hook**：`metamod/signatures_template.h` 提供 `FILL_FROM_SIGNATURE*`、`VAR_FROM_SIGNATURE*`、`INSTALL_INLINEHOOK` 等宏；`asext/signatures.h` 定义 Windows/Linux 的签名或符号名。
-- **AngelScript 私有结构**：`asext/serverdef.h` 与 `asext/include/asext_api.h` 中包含大量占位/未知字段，用于偏移访问与调用约定适配。
+- **签名扫描与 Hook**：`metamod/include/signatures_template.h` 提供 `FILL_FROM_SIGNATURE*`、`VAR_FROM_SIGNATURE*`、`INSTALL_INLINEHOOK` 等宏；`asext/src/signatures.h` 定义 Windows/Linux 的签名或符号名。
+- **AngelScript 私有结构**：`asext/src/serverdef.h` 与 `asext/include/asext_api.h` 中包含大量占位/未知字段，用于偏移访问与调用约定适配。
 - **外部插件接入**：`README_ASEXT.md` 示范使用 `LOAD_PLUGIN` + `IMPORT_ASEXT_API` 宏导入 asext API。
 
 ## 注意事项

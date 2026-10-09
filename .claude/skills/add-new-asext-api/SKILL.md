@@ -17,11 +17,11 @@ This skill covers the end-to-end process of adding a new exported API function t
 
 | # | File | Purpose |
 |---|------|---------|
-| 1 | `asext/serverdef.h` | Function typedef + `PRIVATE_FUNCTION_EXTERN` |
-| 2 | `asext/signatures.h` | Windows signature, Linux signature + symbol |
-| 3 | `asext/server_hook.cpp` | `PRIVATE_FUNCTION_DEFINE` + `ASEXT_*` wrapper |
-| 4 | `asext/meta_api.cpp` | `FILL_FROM_*` calls (3 code paths) + `LOG_MESSAGE` |
-| 5 | `asext/asext.h` | `C_DLLEXPORT` declaration (internal header) |
+| 1 | `asext/src/serverdef.h` | Function typedef + `PRIVATE_FUNCTION_EXTERN` |
+| 2 | `asext/src/signatures.h` | Windows signature, Linux signature + symbol |
+| 3 | `asext/src/server_hook.cpp` | `PRIVATE_FUNCTION_DEFINE` + `ASEXT_*` wrapper |
+| 4 | `asext/src/meta_api.cpp` | `FILL_FROM_*` calls (3 code paths) + `LOG_MESSAGE` |
+| 5 | `asext/src/asext.h` | `C_DLLEXPORT` declaration (internal header) |
 | 6 | `asext/include/asext_api.h` | typedef + extern + `IMPORT_ASEXT_API` + `IMPORT_ASEXT_API_DEFINE` macros |
 
 See [asext-file-map.md](references/asext-file-map.md) for detailed file roles and layout.
@@ -42,7 +42,7 @@ Use the [add-private-function-with-signatures](../add-private-function-with-sign
 
 **For Linux 5.15**: Also record the C++ mangled symbol name (e.g. `_ZN16CASDocumentation19SetDefaultNamespaceEPKc`). If the binary is stripped (no symbols), only a signature is needed.
 
-### Step 2: Define Function Type in `asext/serverdef.h`
+### Step 2: Define Function Type in `asext/src/serverdef.h`
 
 Add the typedef and extern declaration alongside existing `CASDocumentation_*` functions:
 
@@ -65,7 +65,7 @@ ReturnType SC_SERVER_DECL NewClassName_MethodName(
     ClassName *pthis, SC_SERVER_DUMMYARG ParamType1 param1, ParamType2 param2);
 ```
 
-### Step 3: Add Signatures in `asext/signatures.h`
+### Step 3: Add Signatures in `asext/src/signatures.h`
 
 The file has two sections separated by `#ifdef _WIN32` / `#else`.
 
@@ -84,7 +84,7 @@ The file has two sections separated by `#ifdef _WIN32` / `#else`.
 
 **If signature is unknown for a platform**, use empty string `""` as placeholder — the corresponding `FILL_FROM_*` call must be omitted from meta_api.cpp until the signature is provided.
 
-### Step 4: Define Function Pointer in `asext/server_hook.cpp`
+### Step 4: Define Function Pointer in `asext/src/server_hook.cpp`
 
 **4a. Add PRIVATE_FUNCTION_DEFINE** at the top of the file (with other defines):
 
@@ -112,7 +112,7 @@ C_DLLEXPORT void ASEXT_MethodName(ClassName* pthis, ParamType1 param1)
 
 **Important**: The wrapper uses `g_call_original_*` (not `g_pfn_*`) to call through the original function pointer. For non-hooked functions, both point to the same address.
 
-### Step 5: Fill Function Pointer in `asext/meta_api.cpp`
+### Step 5: Fill Function Pointer in `asext/src/meta_api.cpp`
 
 There are **three code paths** in `Meta_Attach` that must be updated:
 
@@ -154,7 +154,7 @@ LOG_MESSAGE(PLID, "ClassName_MethodName found at %p", g_pfn_ClassName_MethodName
 
 For the full list of `FILL_FROM_*` macros and the caller-based signature approach, see [add-private-function-with-signatures](../add-private-function-with-signatures/SKILL.md) Step 5 and Step 5b.
 
-### Step 6: Add Declaration in `asext/asext.h`
+### Step 6: Add Declaration in `asext/src/asext.h`
 
 Add the `C_DLLEXPORT` declaration for the wrapper function:
 
@@ -285,16 +285,16 @@ IMPORT_FUNCTION_DEFINE(ASEXT_SetDefaultNamespace);\
 - [ ] **IDA Analysis**: Decompile target function on both Windows and Linux
 - [ ] **Signature Creation**: Create signatures from function bytes
 - [ ] **Signature Verification**: Verify uniqueness with `find_bytes` in IDA (one match only)
-- [ ] `asext/serverdef.h`: Add `typedef` + `PRIVATE_FUNCTION_EXTERN`
-- [ ] `asext/signatures.h`: Add Windows signature (line 5–45 `#ifdef _WIN32` block)
-- [ ] `asext/signatures.h`: Add Linux signature + symbol (line 46+ `#else` block)
-- [ ] `asext/server_hook.cpp`: Add `PRIVATE_FUNCTION_DEFINE`
-- [ ] `asext/server_hook.cpp`: Add `ASEXT_*` wrapper function with `C_DLLEXPORT`
-- [ ] `asext/meta_api.cpp`: Add `FILL_FROM_SIGNATURE` in Windows branch
-- [ ] `asext/meta_api.cpp`: Add `FILL_FROM_SIGNATURE` in Linux 5.16+ branch
-- [ ] `asext/meta_api.cpp`: Add `FILL_FROM_SYMBOL` in Linux 5.15 branch
-- [ ] `asext/meta_api.cpp`: Add `LOG_MESSAGE` after `#endif`
-- [ ] `asext/asext.h`: Add `C_DLLEXPORT` declaration
+- [ ] `asext/src/serverdef.h`: Add `typedef` + `PRIVATE_FUNCTION_EXTERN`
+- [ ] `asext/src/signatures.h`: Add Windows signature (line 5–45 `#ifdef _WIN32` block)
+- [ ] `asext/src/signatures.h`: Add Linux signature + symbol (line 46+ `#else` block)
+- [ ] `asext/src/server_hook.cpp`: Add `PRIVATE_FUNCTION_DEFINE`
+- [ ] `asext/src/server_hook.cpp`: Add `ASEXT_*` wrapper function with `C_DLLEXPORT`
+- [ ] `asext/src/meta_api.cpp`: Add `FILL_FROM_SIGNATURE` in Windows branch
+- [ ] `asext/src/meta_api.cpp`: Add `FILL_FROM_SIGNATURE` in Linux 5.16+ branch
+- [ ] `asext/src/meta_api.cpp`: Add `FILL_FROM_SYMBOL` in Linux 5.15 branch
+- [ ] `asext/src/meta_api.cpp`: Add `LOG_MESSAGE` after `#endif`
+- [ ] `asext/src/asext.h`: Add `C_DLLEXPORT` declaration
 - [ ] `asext/include/asext_api.h`: Add `typedef` + `extern` declaration
 - [ ] `asext/include/asext_api.h`: Add to `IMPORT_ASEXT_API` macro
 - [ ] `asext/include/asext_api.h`: Add to `IMPORT_ASEXT_API_DEFINE` macro

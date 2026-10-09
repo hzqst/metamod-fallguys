@@ -19,12 +19,12 @@ permalink: metamod-fallguys/asqcvar
 
 ## 涉及文件 (不要带行号)
 - README_ASQCVAR.md
-- asqcvar/asqcvar.h
-- asqcvar/asqcvar.cpp
-- asqcvar/server_hook.cpp
-- asqcvar/dllapi.cpp
-- asqcvar/meta_api.cpp
-- asqcvar/engine_api.cpp
+- asqcvar/src/asqcvar.h
+- asqcvar/src/asqcvar.cpp
+- asqcvar/src/server_hook.cpp
+- asqcvar/src/dllapi.cpp
+- asqcvar/src/meta_api.cpp
+- asqcvar/src/engine_api.cpp
 - asqcvar/CMakeLists.txt
 - asqcvar/CMakeLists.txt (CMake is the only build system)
 

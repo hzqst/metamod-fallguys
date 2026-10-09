@@ -23,12 +23,12 @@ permalink: metamod-fallguys/asusermsg
 
 ## 涉及文件 (不要带行号)
 - README_ASUSERMSG.md
-- asusermsg/asusermsg.h
-- asusermsg/asusermsg.cpp
-- asusermsg/server_hook.cpp
-- asusermsg/engine_api.cpp
-- asusermsg/dllapi.cpp
-- asusermsg/meta_api.cpp
+- asusermsg/src/asusermsg.h
+- asusermsg/src/asusermsg.cpp
+- asusermsg/src/server_hook.cpp
+- asusermsg/src/engine_api.cpp
+- asusermsg/src/dllapi.cpp
+- asusermsg/src/meta_api.cpp
 - asusermsg/CMakeLists.txt
 - asusermsg/CMakeLists.txt (CMake is the only build system)
 

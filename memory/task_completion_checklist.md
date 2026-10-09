@@ -10,7 +10,7 @@ permalink: metamod-fallguys/task-completion-checklist
 
 ### 1. Code Quality Checks
 - [ ] Ensure code follows project style conventions (see `code_style_conventions.md`)
-- [ ] Check indentation (tabs, not spaces)
+- [ ] Run the component or aggregate `format-check` target
 - [ ] Verify naming conventions are followed
 - [ ] Add appropriate comments and documentation
 - [ ] Include proper copyright headers if creating new files
@@ -68,14 +68,13 @@ cd scripts
 - Git commands work through Git for Windows
 
 ## Linting and Formatting
-**Note**: This project does not use automated linting or formatting tools.
-- Follow the style conventions manually
-- Use vim/Visual Studio formatting settings
-- Refer to existing code as examples
+Use shared FormatValidation and clang-format 23.1.3. Configure
+`FORMAT_VALIDATION_ONLY=ON` and build `format-check`; `format` applies corrections.
+Normal native builds do not run formatting. Generated `.clang-format` is ignored.
 
 ## Common Pitfalls to Avoid
-- Don't use spaces for indentation (use tabs)
+- Don't change the pinned format configuration locally; use the shared tooling
 - Don't forget platform-specific preprocessor directives
 - Don't break compatibility with third-party plugins
-- Don't modify Half-Life SDK files (hlsdk/ is a submodule)
+- Preserve imported SDK contents under `metamod/include/HLSDK/`
 - Don't commit build artifacts (they're in .gitignore)

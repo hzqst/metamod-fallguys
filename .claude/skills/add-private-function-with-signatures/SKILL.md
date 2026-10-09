@@ -59,7 +59,7 @@ python scripts/signature_converter.py all "83EC2C"
 
 ### Step 2: Define Function Type
 
-Edit `fallguys/serverdef.h`:
+Edit `fallguys/src/serverdef.h`:
 
 ```cpp
 // Function signature from IDA: ReturnType __callingconv FunctionName(params)
@@ -76,7 +76,7 @@ For new calling conventions, see [calling-conventions.md](references/calling-con
 
 ### Step 3: Add Function Signatures
 
-Edit `fallguys/signatures.h`:
+Edit `fallguys/src/signatures.h`:
 
 **Windows signature**:
 ```cpp
@@ -95,7 +95,7 @@ See [signature-patterns.md](references/signature-patterns.md) for signature crea
 
 ### Step 4: Define Global Function Pointer
 
-Edit `fallguys/server_hook.cpp` (or relevant .cpp file):
+Edit `fallguys/src/server_hook.cpp` (or relevant .cpp file):
 
 ```cpp
 PRIVATE_FUNCTION_DEFINE(ExistingFunction1);
@@ -111,7 +111,7 @@ fnFunctionName g_call_original_FunctionName;
 
 ### Step 5: Fill Function Pointer in Meta_Attach
 
-Edit `fallguys/meta_api.cpp`:
+Edit `fallguys/src/meta_api.cpp`:
 
 **Windows branch**:
 ```cpp
@@ -261,7 +261,7 @@ ASEXT_RegisterDocInitCallback([](CASDocumentation *pASDoc) {
 - `signatures.h` - Signatures and symbols
 - `server_hook.cpp` - Function pointer definitions
 - `meta_api.cpp` - Function pointer filling
-- `metamod/signatures_template.h` - Macro definitions
+- `metamod/include/signatures_template.h` - Macro definitions
 
 ## References
 

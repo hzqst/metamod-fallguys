@@ -18,13 +18,13 @@ permalink: metamod-fallguys/fallguys
 - **兼容与特例**：处理 Sven Co-op 5.15/5.16、Fall Guys S1/S2/S3 的兼容差异。
 
 ## 架构
-- **入口与生命周期**：`fallguys/meta_api.cpp`（`Meta_Query`/`Meta_Attach`/`Meta_Detach`）。
-- **Metamod DLL 接口**：`fallguys/dllapi.cpp`（`GetEntityAPI2`/`GetEntityAPI2_Post`/`GetNewDLLFunctions` 与大量 `New*` Hook 入口）。
-- **引擎 Hook 层**：`fallguys/engine_hook.cpp` + `fallguys/enginedef.h`（SV_*、movevars、areanodes、groupmask 等）。
-- **服务器 Hook 层**：`fallguys/server_hook.cpp` + `fallguys/serverdef.h`（CPlayerMove/PM_PlaySoundFX 等 + AS 注册）。
-- **物理系统核心**：`fallguys/physics.h/.cpp`（`CPhysicsManager` 及大量结构体/参数类型）。
-- **声音引擎**：`fallguys/soundengine.h/.cpp`（FMOD 动态加载与 SoundInfo 查询）。
-- **配置/构建**：`fallguys/CMakeLists.txt`（CMake 是唯一构建系统）、`fallguys/signatures.h`。
+- **入口与生命周期**：`fallguys/src/meta_api.cpp`（`Meta_Query`/`Meta_Attach`/`Meta_Detach`）。
+- **Metamod DLL 接口**：`fallguys/src/dllapi.cpp`（`GetEntityAPI2`/`GetEntityAPI2_Post`/`GetNewDLLFunctions` 与大量 `New*` Hook 入口）。
+- **引擎 Hook 层**：`fallguys/src/engine_hook.cpp` + `fallguys/src/enginedef.h`（SV_*、movevars、areanodes、groupmask 等）。
+- **服务器 Hook 层**：`fallguys/src/server_hook.cpp` + `fallguys/src/serverdef.h`（CPlayerMove/PM_PlaySoundFX 等 + AS 注册）。
+- **物理系统核心**：`fallguys/src/physics.h/.cpp`（`CPhysicsManager` 及大量结构体/参数类型）。
+- **声音引擎**：`fallguys/src/soundengine.h/.cpp`（FMOD 动态加载与 SoundInfo 查询）。
+- **配置/构建**：`fallguys/CMakeLists.txt`（CMake 是唯一构建系统）、`fallguys/src/signatures.h`。
 
 ## 核心实现与 workflow
 1. **加载与初始化**（`Meta_Query`/`Meta_Attach`）：
@@ -69,7 +69,7 @@ permalink: metamod-fallguys/fallguys
 - **Bullet3**：物理系统核心（`CPhysicsManager`）。
 - **FMOD Ex**：声音信息查询（动态加载 `fmodex`）。
 - **Capstone/反汇编**：Linux 分支通过 `gpMetaUtilFuncs->pfnDisasm*` 解析 GOT/PLT 寻址。
-- **签名扫描**：`metamod/signatures_template.h` + `fallguys/signatures.h`。
+- **签名扫描**：`metamod/include/signatures_template.h` + `fallguys/src/signatures.h`。
 
 ## 注意事项
 - **版本/平台敏感**：大量签名扫描与符号依赖游戏版本、平台与引擎类型（`build_number`、`SCServerDLL003` 等）。

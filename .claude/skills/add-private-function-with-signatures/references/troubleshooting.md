@@ -16,7 +16,7 @@ This document provides solutions to common problems encountered when adding priv
 
 **Full error**:
 ```
-fallguys/serverdef.h:123:45: error: expected ')' before '*' token
+fallguys/src/serverdef.h:123:45: error: expected ')' before '*' token
 typedef void(__cdecl* fnFunctionName)(...);
                      ^
 ```
@@ -78,7 +78,7 @@ warning: 'FunctionName_Signature' macro redefined
 **Cause**: Signature defined multiple times or in wrong location.
 
 **Solution**:
-1. Check `fallguys/signatures.h` for duplicates
+1. Check `fallguys/src/signatures.h` for duplicates
 2. Ensure signature is inside platform-specific `#ifdef`:
    ```cpp
    #ifdef _WIN32
@@ -113,7 +113,7 @@ PRIVATE_FUNCTION_EXTERN(FunctionName);
 PRIVATE_FUNCTION_DEFINE(FunctionName);
 ```
 
-**Location**: Add to `fallguys/server_hook.cpp` alongside other definitions:
+**Location**: Add to `fallguys/src/server_hook.cpp` alongside other definitions:
 ```cpp
 PRIVATE_FUNCTION_DEFINE(CPlayerMove_PlayStepSound);
 PRIVATE_FUNCTION_DEFINE(PM_PlaySoundFX_SERVER);
@@ -504,7 +504,7 @@ fnTestFunction g_call_original_TestFunction = nullptr;
 
 Use compiler `-E` flag to check preprocessor output:
 ```bash
-g++ -E fallguys/serverdef.h | grep TestFunction
+g++ -E fallguys/src/serverdef.h | grep TestFunction
 ```
 
 ## Prevention Checklist
@@ -560,5 +560,5 @@ nm -D server.so | grep FunctionName
 grep -r "SC_SERVER_" asext/include/
 
 # View preprocessor expansion
-g++ -E fallguys/serverdef.h | grep -A5 FunctionName
+g++ -E fallguys/src/serverdef.h | grep -A5 FunctionName
 ```

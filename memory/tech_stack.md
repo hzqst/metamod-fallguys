@@ -11,17 +11,17 @@ permalink: metamod-fallguys/tech-stack
 - C for some components
 
 ## Build Systems
-- **CMake** (minimum version 3.15) — the ONLY supported build system
+- **CMake** (minimum version 3.21) — the ONLY supported build system
 - The legacy GNU Make (`Makefile`/`Config.mak`) and Visual Studio
   (`metamod.sln`/`*.vcxproj`) build systems were removed (issue #42); do not
   reintroduce them. `build-cmake/`, `install/` and `build/addons/.../dlls` are
   build output and are gitignored.
 
 ## Supported Platforms
-- **Windows**: x86 (32-bit) and x64 (64-bit)
+- **Windows**: Win32/x86 (32-bit)
   - Visual Studio 2017/2019/2022 with vc141/vc142/vc143 toolset
   - Multi-threaded static runtime library
-- **Linux**: i386 (32-bit) and amd64 (64-bit)
+- **Linux**: i386 (32-bit)
   - GCC with -m32 flag for 32-bit builds
   - No glibc pinning: the former thirdparty/glibc_224/force_link_glibc_2.24.h mechanism was removed (it never actually worked); Linux builds follow the build host glibc
 
@@ -33,7 +33,7 @@ permalink: metamod-fallguys/tech-stack
 
 ## SDK Dependencies
 - **Half-Life SDK** (hlsdk): Provides engine interfaces, common headers, and game DLL APIs
-  - Located in `hlsdk/` directory
+  - Owned by Metamod in `metamod/include/HLSDK/`
   - Includes: common, dlls, pm_shared, engine headers
 
 ## Compiler Flags
