@@ -38,7 +38,7 @@ The following content was already organized into Basic Memory notes during onboa
 
 ## Progressive disclosure key points
 
-- Read Basic Memory notes first, then locate single files/symbols; avoid reading the whole repository at once.
+- Read basic-memory notes or search with context-engine first, then locate single files/symbols; avoid reading the whole repository at once.
 - For symbol/binary-related directories, prioritize on-demand targeted lookup and avoid full scans.
 
 ## Explore SKILLs
