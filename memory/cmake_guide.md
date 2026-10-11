@@ -32,6 +32,11 @@ submodules (Capstone/procmap, bullet3_fork). The aggregate injects initialized s
 trees. Vendor libraries compile in the native build tree, with shared target guards;
 no prebuilt thirdparty/install is required.
 
+Visual Studio filters: each component calls Metamod's `mmfg_assign_source_groups(<target>)`
+(metamod/cmake/Build.cmake) after its last `target_sources`, so late platform sources are
+grouped too. Filters mirror the directory under the owning tree (component, build tree as
+Generated/, or a `*_SOURCE_PATH` dependency); component pins must reference metamod 55f3fc9+.
+
 For formatting install clang-format==23.1.3, configure FORMAT_VALIDATION_ONLY=ON,
 then build format-check or format. No native compiler is needed. Generated .clang-format
 is ignored; vendor trees are excluded. Normal native builds do not install Python tooling.
