@@ -22,6 +22,8 @@ This metamod is based on [Bots-United's metamod-p](https://github.com/Bots-Unite
 
 [Physics vehicle demo in Sven Co-op](https://github.com/hzqst/sven-vehicle)
 
+[AngelScript plugin template (astemplate)](https://github.com/metamod-fallguys/astemplate)
+
 # Plugins
 
 All plugins below are loaded by this metamod. They are installed into
