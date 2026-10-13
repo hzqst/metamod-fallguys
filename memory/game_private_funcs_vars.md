@@ -7,26 +7,31 @@ permalink: metamod-fallguys/game-private-funcs-vars
 # 游戏 DLL 私有函数/私有变量引入机制（fallguys / asext）
 
 ## 概述
-本仓库通过一套“声明/定义函数指针 + 运行时签名扫描/符号查找填充”的宏体系，把游戏 `server.dll/server.so` 与 `hw.dll/hw.so` 内的私有函数、私有全局变量地址引入到插件中，并在需要时进一步做 inline hook、或者直接调用。
+本仓库通过一套“声明/定义函数指针 + 运行时从 gamedata 解析地址”的宏体系，把游戏 `server.dll/server.so` 与 `hw.dll/hw.so` 内的私有函数、私有全局变量地址引入到插件中，并在需要时进一步做 inline hook、或者直接调用。
+自 issue #55（2026-10）起，asext/fallguys **只**通过 metamod 托管的 GoldSrc_VibeSignatures gamedata 定位私有符号；手写签名、Linux 5.15 符号分支、手写 GOT/PLT 解析均已删除（详见 [[gamedata]]）。
 
 ## 职责
-- 用 `signatures.h` 为不同平台/版本准备 `*_Signature`（以及 Linux 下可选的 `*_Symbol`）。
+- 用 `gamesymbols.h`（原 `signatures.h`，git mv 而来）为每个符号 `Xxx` 定义 `Xxx_GameSymbol`（gamedata 中的 `symbolName`）。
 - 用 `serverdef.h`（以及 fallguys 的 `enginedef.h`）声明私有函数指针类型 `fnXxx`，并用 `PRIVATE_FUNCTION_EXTERN(Xxx)` 暴露全局指针。
 - 在某个 `.cpp`（通常是 `server_hook.cpp`）里用 `PRIVATE_FUNCTION_DEFINE(Xxx)` 落地定义 `g_pfn_Xxx / g_call_original_Xxx`。
-- 在 `meta_api.cpp` 的 `Meta_Attach` 中通过 `FILL_FROM_SIGNATURE* / FILL_FROM_SYMBOL* / VAR_FROM_SIGNATURE*` 在运行时填充函数指针与变量地址；失败则拒绝加载插件。
+- 在 `meta_api.cpp` 的 `Meta_Attach` 中通过 `FILL_FROM_GAMEDATA / VAR_FROM_GAMEDATA` 在运行时填充函数指针与变量地址；任一失败即 `LOG_ERROR` 并 `return FALSE` 拒绝加载插件。
 - （可选）通过 `INSTALL_INLINEHOOK(Xxx)` 把 `g_pfn_Xxx` 替换为 `NewXxx`，并把 trampoline 写回到 `g_call_original_Xxx` 供后续调用原函数。
 
 ## 涉及文件 (不要带行号)
 - metamod/include/signatures_template.h
-- fallguys/src/signatures.h
+- metamod/include/gamesymbol.h
+- metamod/include/mutil.h
+- fallguys/src/gamesymbols.h
 - fallguys/src/serverdef.h
 - fallguys/src/enginedef.h
 - fallguys/src/meta_api.cpp
 - fallguys/src/server_hook.cpp
-- asext/src/signatures.h
+- fallguys/scripts/manifests/fallguys.json
+- asext/src/gamesymbols.h
 - asext/src/serverdef.h
 - asext/src/meta_api.cpp
 - asext/src/server_hook.cpp
+- asext/scripts/manifests/asext.json
 
 ## 架构
 1) “函数指针”这条线：`PRIVATE_FUNCTION_EXTERN/DEFINE`
@@ -37,57 +42,45 @@ permalink: metamod-fallguys/game-private-funcs-vars
   - 必须先有 `typedef ... (*fnName)(...)`，宏通过 `fn##name` 拼出类型名。
   - 变量名固定为 `g_pfn_Name`（当前地址）与 `g_call_original_Name`（未 hook 时与 `g_pfn_` 相同；hook 后变为 trampoline）。
 
-2) “签名/符号来源”这条线：`signatures.h`
-- 插件各自的 `signatures.h` 都 `#include <signatures_template.h>`（实际文件为 `metamod/include/signatures_template.h`），并根据平台提供：
-  - Windows：大量 `#define Xxx_Signature "..."`。
-  - Linux：既可能提供 `Xxx_Signature`，也可能提供 `Xxx_Symbol`（用于 `dlsym/GetProcAddress` 风格的符号定位）。
-- 这些宏名（`Xxx_Signature` / `Xxx_Symbol`）是 `FILL_* / VAR_*` 宏通过 `name##_Signature`/`name##_Symbol` 拼接引用的。
+2) “符号名来源”这条线：`gamesymbols.h`
+- 每个符号定义 `#define Xxx_GameSymbol "<symbolName>"`，宏通过 `name##_GameSymbol` 拼接引用。
+- C++ 函数的 symbolName 是去修饰后的签名，**Windows/Linux 写法不同**（`unsigned int` vs `unsigned long`，`std::string` vs `std::__cxx11::basic_string<...>`），用 `#ifdef _WIN32` 分流；个别 Linux 符号上游以 mangled 名发布（如 `_ZN11CPlayerMove13PlayStepSoundEifb`）。
+- 本地变量名与上游名不同时只改宏值：`pmovevars_GameSymbol "movevars"`、`pg_groupop_GameSymbol "g_groupop"`、`g_pServerManager_GameSymbol "CASServerManager::GetInstance()::pInstance"`。
+- 同一 symbolName 可被两个本地别名引用：`SV_SingleClipMoveToEntity` 与 `SV_SingleClipMoveToEntity_10152` 都对应 `"SV_SingleClipMoveToEntity"`（8948/10257 各自发布的是该版本的实现），由 `g_pfn_build_number() >= 10152` 选择用哪个函数指针类型。
+- 每个 `_GameSymbol` 必须同时出现在插件 manifest（`scripts/manifests/<plugin>.json` 的 `symbols` 或 `platformSymbols`）中，否则构建期不会把它保留进裁剪后的 gamedata。
 
-3) “运行时填充”这条线：`FILL_FROM_SIGNATURE* / VAR_FROM_SIGNATURE*`
-- 这些宏同样在 `metamod/include/signatures_template.h`。
-- 关键点：宏参数 `dll` 不是字符串，而是 token（例如 `engine`/`server`），宏内部会拼接出 `engineCodeBase/engineCodeSize/engineHandle/engineBase` 这类局部变量名。
-  - 因此 `meta_api.cpp` 里必须按约定命名局部变量：`auto engineHandle/engineBase/engineCodeBase/engineCodeSize`、`auto serverHandle/...`。
-- 常用宏语义：
-  - `FILL_FROM_SIGNATURE(dll, name)`：在 `dllCodeBase~dllCodeBase+dllCodeSize` 内用 `pfnSearchPattern` 找到 `name##_Signature`，把结果写入 `g_pfn_name/g_call_original_name`，并做空指针检查。
-  - `FILL_FROM_SYMBOL(dll, name)`：用 `pfnGetProcAddress(dllHandle, name##_Symbol)` 填充函数指针，并做空指针检查。
-  - `FILL_FROM_SIGNATURED_CALLER_FROM_START/END(dll, name, offset)`：先定位“caller”处的签名，再用 `pfnGetNextCallAddr(...)` 解析 call 指令目标得到真实函数地址；并用 `pfnIsAddressInModuleRange(..., dllBase)` 校验地址归属。
-  - `FILL_FROM_SIGNATURE_FROM_FUNCTION(dll, name, fromfunc, fromsize)`：把搜索范围限制在某函数附近（减少扫描范围，或避免全局歧义）。
-- “变量地址”使用 `VAR_FROM_*` 宏：
-  - `VAR_FROM_SIGNATURE_FROM_START/END(dll, name, offset)`：定位到 `name##_Signature` 后，从匹配地址 +/- offset 处按 `decltype(name)` 取出（解引用）真实地址。
-  - `VAR_FROM_SYMBOL(dll, name)`：直接按符号拿变量地址。
+3) “运行时填充”这条线：`FILL_FROM_GAMEDATA / VAR_FROM_GAMEDATA`
+- 宏在 `metamod/include/signatures_template.h`，核心是 `RESOLVE_FROM_GAMEDATA(dll, name, kind, out)`：调用 `gpMetaUtilFuncs->pfnResolveGameSymbol(dll##Base, name##_GameSymbol, kind, &addr)`，失败时 `LOG_ERROR(... pfnGetGameSymbolStatusString(status))` 并 `return FALSE`。
+- `dll` 是 token（`engine`/`server`），宏内部拼 `engineBase/serverBase`，因此 `meta_api.cpp` 仍须按约定命名局部变量 `engineBase`、`serverBase`（不再需要 `*CodeBase/*CodeSize`）。
+- `FILL_FROM_GAMEDATA(dll, name)`：kind=FUNCTION，写入 `g_pfn_name` 并同步 `g_call_original_name`。
+- `VAR_FROM_GAMEDATA(dll, name)`：kind=GLOBAL，`name = (decltype(name))addr`。GLOBAL 解析结果是**变量本身的地址**（`gv_rva`），不是读出来的指针：`g_pServerManager` 是 `CASServerManager**`（= `&pInstance`）、`sv_models` 是数组地址、`host_frametime` 是 `double*`。
+- 旧的 `FILL_FROM_SIGNATURE* / VAR_FROM_SIGNATURE* / FILL_FROM_SYMBOL` 宏仍保留在公共头里供仓库外插件使用，本仓库插件不再使用。
 
-4) fallguys 插件的落地方式（例）
-- 声明：
-  - `fallguys/src/serverdef.h`：声明 server 私有函数类型与 `PRIVATE_FUNCTION_EXTERN(...)`（如 `CPlayerMove_PlayStepSound`、`PM_PlaySoundFX_SERVER`、`RegisterSCScriptColor24`）。
-  - `fallguys/src/enginedef.h`：声明 engine 私有函数（如 `build_number`、`SV_Physics`、`SV_Push*`、`SV_SingleClipMoveToEntity*` 等）以及一批 engine 私有全局变量指针（如 `sv_models`、`host_frametime`、`pmovevars`、`sv_areanodes`、`pg_groupop/pg_groupmask`）。
-- 定义：`fallguys/src/server_hook.cpp` 用 `PRIVATE_FUNCTION_DEFINE(...)` 落地 `g_pfn_*/g_call_original_*`。
-- 填充时机：`fallguys/src/meta_api.cpp` 的 `Meta_Attach` 中，在拿到 `engine*`/`server*` 模块信息后批量调用 `FILL_FROM_SIGNATURE*` 与 `VAR_FROM_SIGNATURE*`。
-  - Windows 下 `CPlayerMove_PlayStepSound/PM_PlaySoundFX_SERVER` 使用 `FILL_FROM_SIGNATURED_CALLER_FROM_END(server, ..., -1)`（caller->callee 解析）。
-  - Linux 下会根据是否能 `CreateInterface("SCServerDLL003")` 区分 5.16（用签名）与 5.15（用符号），并针对 `i686` 等 engine 类型使用 `FILL_FROM_SIGNATURED_TY_CALLER_*`。
+4) fallguys 插件的落地方式
+- server：`PM_PlaySoundFX_SERVER`、`CPlayerMove_PlayStepSound`、`RegisterSCScriptColor24`。
+- engine 函数：`build_number`、`SV_Physics`、`SV_PushEntity`、`SV_PushMove`、`SV_PushRotate`、`SV_WriteMovevarsToClient`、`SV_SingleClipMoveToEntity(_10152)`。
+- engine 变量：`sv_models`、`host_frametime`、`pmovevars`、`sv_areanodes`、`pg_groupop`、`pg_groupmask`。
+- `Meta_Query` 要求 metamod 接口 ≥ 5:17（需要 `pfnResolveGameSymbol`）。
 
-5) asext 插件的落地方式（例）
-- 声明：`asext/src/serverdef.h` 定义大量 AngelScript 相关的 server 私有类/函数指针 typedef，并用 `PRIVATE_FUNCTION_EXTERN(...)` 暴露（如 `CASHook_*`、`CASDocumentation_*`、`CScriptBuilder_DefineWord`、`CScriptDictionary_*` 等）；同时声明私有变量 `extern CASServerManager **g_pServerManager;`。
-- 定义：`asext/src/server_hook.cpp` 用 `PRIVATE_FUNCTION_DEFINE(...)` 落地所有函数指针，并定义 `CASServerManager **g_pServerManager = NULL;`。
-- 填充时机：`asext/src/meta_api.cpp` 的 `Meta_Attach`：
-  - Windows 下主要走 `FILL_FROM_SIGNATURE` + 一些 `FILL_FROM_SIGNATURED_CALLER_*`。
-  - Linux 下同样区分 5.16（签名）与 5.15（符号）。
-  - `g_pServerManager` 通过 `VAR_FROM_SIGNATURE_FROM_START(server, g_pServerManager, 5)` 或 `VAR_FROM_SYMBOL(server, g_pServerManager)` 填充。
+5) asext 插件的落地方式
+- 39 个 server 函数（`CASHook_*`、`CString_*`、`asGetActiveContext`、`CASDocumentation_*`、`CASBaseManager_GetTypeInfoByName`、`CScriptDictionary_*` 等）+ `VAR_FROM_GAMEDATA(server, g_pServerManager)`。
+- `Meta_Query` 用 strcmp 严格比较接口版本，asext 随 metamod 一起以 5:17 构建。
 
 ## 依赖
-- `gpMetaUtilFuncs` 提供的能力：
-  - `pfnSearchPattern`（签名扫描）
-  - `pfnGetProcAddress`（符号查找）
-  - `pfnGetNextCallAddr`（从 call site 解析 callee）
-  - `pfnIsAddressInModuleRange`（地址归属校验）
-  - `pfnGet*Handle/Base/CodeBase/CodeSize`（模块信息）
-- 平台/版本差异：`signatures.h` 内的 `#ifdef _WIN32` + Linux 下按 Sven Co-op 版本/engine type 分流。
+- metamod mutil：`pfnResolveGameSymbol`、`pfnGetGameSymbolStatusString`（接口 5:17 末尾追加）。
+- metamod 在 `meta_load_gamedll()` 之后、`Plugins->load()` 之前加载 `<gamedir>/addons/metamod/gamedata/**/index.json`。
 
 ## 注意事项
-- 强命名耦合：`PRIVATE_FUNCTION_*` 要求类型名是 `fn<name>`，签名宏名是 `<name>_Signature`/`<name>_Symbol`；`FILL_*` 的 `dll` token 必须对应 `meta_api.cpp` 中的 `engine*/server*` 局部变量命名。
+- 强命名耦合：`PRIVATE_FUNCTION_*` 要求类型名是 `fn<name>`，gamedata 宏要求 `<name>_GameSymbol`；`dll` token 必须对应 `meta_api.cpp` 中的 `engineBase/serverBase`。
 - hook 语义：未安装 hook 时，`g_call_original_*` 通常与 `g_pfn_*` 相同；安装 hook 后 `INSTALL_INLINEHOOK` 会把 trampoline 写回 `g_call_original_*`，调用原函数应走 `g_call_original_*`。
-- 指令级宏（CALLER 系列）对 `offset` 很敏感：同一函数在不同版本/平台偏移可能不同，需要维护 `signatures.h`（必要时用 `_TY_`/版本分流）。
-- 变量获取是“定位 + 解引用”：`VAR_FROM_SIGNATURE_FROM_*` 最终是从匹配地址附近读出一个指针/地址，offset 错误会直接读错地址导致崩溃。
+- 新增私有符号：在上游 GoldSrc_VibeSignatures 确认已发布 → 加 manifest 条目（两平台名字不同就放 `platformSymbols`）→ 加 `_GameSymbol` 宏 → 加 `FILL/VAR_FROM_GAMEDATA`。symbolName 未命中不会回退到 artifact 名，插件直接拒绝加载。
+- 游戏版本不在 gamedata 覆盖范围（目前 svencoop-8948 / svencoop-10257）时，按模块 CRC-64 查不到 → `module was not found in the gamedata`，插件拒绝加载。
 
 ## 调用方（可选）
 - `fallguys/src/meta_api.cpp`、`asext/src/meta_api.cpp`：负责在 `Meta_Attach` 阶段填充所有私有函数/变量。
 - `fallguys/src/server_hook.cpp`、`asext/src/server_hook.cpp`：定义私有函数指针、安装 inline hook，并在业务逻辑中使用 `g_pfn_* / g_call_original_*`。
+
+## Relations
+- relates_to [[gamedata]]
+- relates_to [[PrivateSymbols]]
+- relates_to [[gamedata-signature-parity]]
