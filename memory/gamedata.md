@@ -60,6 +60,7 @@ tags:
   - 退出码 0xC0000409 是迁移前就存在的问题（旧版 DLL 同样出现）。
 - CTest：Windows 8/8，WSL Ubuntu 24.04 i386（带 ASan/UBSan）15/15。
 - Python：`python -B -m unittest discover -s metamod/scripts/tests` 14 个用例通过。
+- CI：metamod 组件的 `build.yml` 以 `MMFG_METAMOD_BUILD_TESTS=ON` 配置，并在 Windows/Ubuntu × Debug/Release 上跑 CTest 和上面的 Python 测试（Debug 本地也验证过：Windows 8/8，Linux 15/15）。
 - Linux 运行时没有真机验证：WSL 缺少 32 位依赖（libcurl/SDL2/GL/steam_api），无法 dlopen 真实的 `.so`。
 
 ## 新增符号步骤
