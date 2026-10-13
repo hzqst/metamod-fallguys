@@ -13,11 +13,19 @@ tags:
 # PrivateSymbols — asext / fallguys 用到的引擎私有符号清单
 
 ## 概述
-本笔记汇总 `asext` 与 `fallguys` 两个插件实际引入的全部**游戏引擎私有符号**（`server.dll/server.so` 与 `hw.dll/hw.so` 内的私有函数与私有全局变量），给出每个符号的名字、目标模块、各平台定位方式（Windows 签名 / Linux 5.16 签名 / Linux 5.15 符号）以及是否安装 inline hook。
+本笔记汇总 `asext` 与 `fallguys` 两个插件实际引入的全部**游戏引擎私有符号**（`server.dll/server.so` 与 `hw.dll/hw.so` 内的私有函数与私有全局变量）。
 
-> 本笔记是**清单**；引入机制（`PRIVATE_FUNCTION_EXTERN/DEFINE`、`FILL_FROM_SIGNATURE*`、`VAR_FROM_SIGNATURE*` 的宏语义与命名耦合）见 [game-private-funcs-vars](memory://metamod-fallguys/game-private-funcs-vars)。
+> **现状（issue #55，2026-10）**：所有符号已改为通过 metamod 托管的 GoldSrc_VibeSignatures gamedata 解析（`FILL_FROM_GAMEDATA` / `VAR_FROM_GAMEDATA`，按模块 CRC-64 + `symbolName` 查表），覆盖 svencoop-8948 / svencoop-10257 的 Windows 与 Linux。下文各表中的 “Windows / Linux 5.16 / Linux 5.15” 定位方式列是**迁移前的历史记录**，对应代码已删除；当前每个符号的 symbolName 以 `asext/src/gamesymbols.h`、`fallguys/src/gamesymbols.h` 与各插件 `scripts/manifests/*.json` 为准。迁移前签名与 gamedata 的逐项比对结论见 [[gamedata-signature-parity]]，机制见 [[gamedata]]。
 
-统计（私有，不含 FMOD 等外部 DLL）：函数 **51** 个（asext 40 / fallguys server 3 / fallguys engine 8），变量 **7** 个（asext 1 / fallguys engine 6），合计 **58**。
+> 本笔记是**清单**；引入机制（`PRIVATE_FUNCTION_EXTERN/DEFINE`、`FILL_FROM_GAMEDATA`、`VAR_FROM_GAMEDATA` 的宏语义与命名耦合）见 [game-private-funcs-vars](memory://metamod-fallguys/game-private-funcs-vars)。
+
+统计（私有，不含 FMOD 等外部 DLL）：函数 **51** 个（asext 40 / fallguys server 3 / fallguys engine 8），变量 **7** 个（asext 1 / fallguys engine 6），合计 **58**。gamedata manifest 中实际为 asext 40 个 symbolName（39 函数 + `g_pServerManager`）、fallguys 16 个（`SV_SingleClipMoveToEntity` 与 `_10152` 共用同一 symbolName）。
+
+symbolName 与本地名不一致的条目：
+- `g_pServerManager` → `CASServerManager::GetInstance()::pInstance`
+- `pmovevars` → `movevars`；`pg_groupop` → `g_groupop`；`pg_groupmask` → `g_groupmask`
+- `SV_SingleClipMoveToEntity_10152` → `SV_SingleClipMoveToEntity`
+- C++ 成员函数用去修饰签名，Windows/Linux 写法不同（`unsigned int`/`unsigned long`，`std::string`/`std::__cxx11::basic_string<...>`）；Linux `CPlayerMove_PlayStepSound` 上游发布为 mangled 名 `_ZN11CPlayerMove13PlayStepSoundEifb`。
 
 ## 涉及文件
 - `asext/src/serverdef.h`、`asext/src/signatures.h`、`asext/src/meta_api.cpp`、`asext/src/server_hook.cpp`
@@ -177,13 +185,16 @@ tags:
 ---
 
 ## 三、引擎侧辅助签名常量（非符号本身，仅用于定位）
-| 常量 | 模块 | 用途 |
+## 三、引擎侧辅助签名常量（已随 issue #55 删除，仅作历史记录）
+| 常量 | 模块 | 原用途 |
 | --- | --- | --- |
 | `gotplt_prolog_Signature` | engine (Linux) | 定位 `__x86_get_pc_thunk_`，推导 GOT/PLT 基址 |
 | `sv_model_Signature` | engine (Linux) | 定位 `sv_models` 引用指令 |
 | `offset_sv_models` (=0x276148) | engine (Linux) | 由 `sv` 基址到 `sv_models` 的偏移 |
 | `PF_SetGroupMask_Signature` | engine (Linux) | 定位 `PF_SetGroupMask`，进而取 `g_groupmask`/`g_groupop` |
 | `pattern_CASHook_VCall` | server (Linux, asext 内联字符串) | 定位 `CASHook::VCall`，解析 `g_pServerManager` |
+
+fallguys 因此不再依赖 Capstone（`DisasmCallback_FindGotPltTarget` 一并删除）。
 
 ## 四、未启用 / 已注释的候选私有符号
 | 符号 | 位置 | 现状 |
@@ -193,12 +204,12 @@ tags:
 | `CASBLOB_ReadData` / `CASBLOB_WriteData` | `asext/src/serverdef.h` | 仅在 asext 声明，见 §1.9。 |
 
 ## 五、注意事项
-- **Windows 与 Linux 的 ABI 差异**：`SC_SERVER_DECL`（Win=`__fastcall`，Linux=空）与 `SC_SERVER_DUMMYARG` 系列宏用于适配；`begin`/`end` 等带隐藏结构体返回值的成员函数在两端参数顺序不同，改动签名必须同步两端。
-- **版本分流**：Linux 通过 `CreateInterface("SCServerDLL003")` 区分 5.16（签名）与 5.15（符号）；engine 私有函数按 `pfnGetEngineType()`（`i686`/`hw.so`）走 `Ty` 系列签名。
-- **caller 偏移极度敏感**：`CallStart/CallEnd(N)` 的 `N` 与游戏版本强绑定，维护 `signatures.h` 时需逐版本/平台核对。
-- **变量获取是“定位 + 解引用”**：`VarStart/VarEnd(N)` 的 `N` 错位会直接读到错误地址导致崩溃。
-- **失败即拒绝加载**：`FILL_FROM_SIGNATURE`/`FILL_FROM_SYMBOL`/`VAR_FROM_*` 均带判空，任一符号定位失败 `Meta_Attach` 返回 `FALSE`（`build_number` 为可空例外，用 `FILL_FROM_SYMBOL_NO_CHECK`）。
+- **Windows 与 Linux 的 ABI 差异**：`SC_SERVER_DECL`（Win=`__fastcall`，Linux=空）与 `SC_SERVER_DUMMYARG` 系列宏用于适配；`begin`/`end` 等带隐藏结构体返回值的成员函数在两端参数顺序不同，改动 typedef 必须同步两端。
+- **版本覆盖**：只支持 gamedata 已发布的游戏版本（目前 svencoop-8948 / svencoop-10257）；其它版本按模块 CRC-64 查不到 → 插件拒绝加载，不再有 5.15 符号回退或签名回退。
+- **GLOBAL 语义**：`VAR_FROM_GAMEDATA` 得到的是变量本身的地址（`gv_rva`），不再“定位 + 解引用”；变量声明的指针层级保持与迁移前一致。
+- **失败即拒绝加载**：`FILL_FROM_GAMEDATA`/`VAR_FROM_GAMEDATA` 任一失败都 `LOG_ERROR(... status string)` 并让 `Meta_Attach` 返回 `FALSE`（`build_number` 也不再例外）。
 - **hook 语义**：未 hook 时 `g_call_original_X == g_pfn_X`；`INSTALL_INLINEHOOK` 后 `g_call_original_X` 变为 trampoline，调用原函数应走 `g_call_original_X`。
+- **迁移前的已知错误**（迁移已一并修复，详见 [[gamedata-signature-parity]]）：Windows `CScriptAny_Release` 实际指向 `CScriptArray::Release`；Windows `pg_groupop/pg_groupmask` 偏移错位；Linux 10257 `CString_dtor`、`CScriptDictionary_GetSize`、`SV_SingleClipMoveToEntity_10152`、`pmovevars` 定位错误；Linux 5.15 分支从未填充 `asGetActiveContext`。
 
 ## 关联文档
 - [game-private-funcs-vars](memory://metamod-fallguys/game-private-funcs-vars) — 引入机制与宏语义（配套阅读）

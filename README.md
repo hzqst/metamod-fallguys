@@ -58,9 +58,9 @@ This plugin provides ability of registering third-party hooks or methods in Sven
 
 * This is required by map `Fall Guys in Sven Co-op`
 
-It locates the private AngelScript implementation in `server.dll` / `server.so` by
-signature scanning and symbol resolution, then exports the registration and hooking
-capability through `asext_api.h`.
+It locates the private AngelScript implementation in `server.dll` / `server.so` through
+the gamedata catalog hosted by metamod (see [Game data](#game-data)), then exports the
+registration and hooking capability through `asext_api.h`.
 
 Features :
 
@@ -153,6 +153,9 @@ Sven Co-op/ (or Sven Co-op Dedicated Server/)
 |           |   |-- asusermsg.dll (asusermsg.so)
 |           |   |-- asext.dll (asext.so)
 |           |   `-- fallguys.dll (fallguys.so)
+|           |-- gamedata/
+|           |   |-- asext/
+|           |   `-- fallguys/
 |           `-- plugins.ini
 |-- svencoop_addons/
 |-- svencoop_downloads/
@@ -198,7 +201,7 @@ The six components are independent repositories under the
 submodules. Public headers are in `include/`, implementation in `src/`. Metamod owns
 HLSDK under `metamod/include/HLSDK/` and its private Capstone/procmap submodules.
 
-Requirements: CMake 3.21+, Git, and Windows MSVC Win32 or Linux i386 GCC multilib.
+Requirements: CMake 3.21+, Git, Python 3.8+, and Windows MSVC Win32 or Linux i386 GCC multilib.
 
 ```sh
 git clone --recursive https://github.com/hzqst/metamod-fallguys
@@ -213,7 +216,7 @@ On Linux omit `-A Win32` and use `-DCMAKE_BUILD_TYPE=Release`; install `gcc-mult
 and `g++-multilib`. For Debug use `build/x86/Debug` and `--config Debug` on Windows,
 or `-DCMAKE_BUILD_TYPE=Debug` on Linux. Configure a separate tree for each configuration.
 Installation places the complete `addons/` payload under `install/x86/<Config>/`,
-including Windows PDBs and the default plugin list. Copy that directory's contents
+including Windows PDBs, the default plugin list and `addons/metamod/gamedata/`. Copy that directory's contents
 into the game's `svencoop/` directory. An explicit `CMAKE_INSTALL_PREFIX` or
 `cmake --install --prefix` overrides the default; existing trees retain their cached prefix.
 Release archives retain their existing `build/addons/` layout for installation.
@@ -221,12 +224,28 @@ The existing `scripts/build-*.bat` and `scripts/build-*.sh` names remain compati
 entry points to this unified build, independent of the caller's working directory.
 Dependencies are compiled within the same CMake tree; no `thirdparty/install` is needed.
 
+## Game data
+
+asext and fallguys no longer carry byte signatures. Their private engine and server
+symbols come from [GoldSrc_VibeSignatures](https://github.com/hlnd2t/GoldSrc_VibeSignatures)
+gamedata, which currently covers Sven Co-op `svencoop-8948` and `svencoop-10257` on
+Windows and Linux. At build time each plugin downloads the published snapshots, keeps the
+symbols listed in its `scripts/manifests/<plugin>.json` and installs them to
+`addons/metamod/gamedata/<plugin>/`. At run time metamod (interface 5:17) loads every
+`index.json` under `addons/metamod/gamedata/` and resolves a symbol by the CRC-64 of the
+loaded `hw`/`server` module plus its `symbolName`. On a game build that the gamedata does not
+cover, asext and fallguys log `Failed to resolve ...` and refuse to load.
+
+The first build needs network access to download the snapshots; later builds reuse the
+cache in the build tree. `-DMMFG_SYNC_GAMEDATA=OFF` skips the download and Python entirely.
+The synchronizer is covered by `python -B -m unittest discover -s metamod/scripts/tests`.
+
 ## Standalone components and dependencies
 
 Each component can be cloned and built directly; see its own README. Plugins accept
 `METAMOD_SOURCE_PATH` and `ASEXT_SOURCE_PATH` for local component clones. Additional
-source overrides are `ANGELSCRIPT_SOURCE_PATH`, `CAPSTONE_SOURCE_PATH`, and
-`PROCMAP_SOURCE_PATH`. FallGuys additionally accepts `BULLET3_SOURCE_PATH`, defaulting
+source overrides are `ANGELSCRIPT_SOURCE_PATH`, `CAPSTONE_SOURCE_PATH`,
+`RAPIDJSON_SOURCE_PATH`, `CHOCOBO1HASH_SOURCE_PATH`, and `PROCMAP_SOURCE_PATH`. FallGuys additionally accepts `BULLET3_SOURCE_PATH`, defaulting
 to its nested `thirdparty/bullet3_fork` submodule. Explicit CMake paths override
 environment defaults. Empty paths fetch fixed commits, preserving the customized
 AngelScript ABI. Invalid explicit paths fail; dependency source trees are read-only.
