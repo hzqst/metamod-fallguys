@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-set(MMFG_COMPONENTS metamod asext ascurl asqcvar asusermsg fallguys)
+set(MMFG_COMPONENTS metamod asext ascurl asqcvar asusermsg fallguys slowdl)
 option(FORMAT_VALIDATION_ONLY "Configure formatting without compilers or native dependencies" OFF)
 if(FORMAT_VALIDATION_ONLY)
     project(MetamodFallguysFormat LANGUAGES NONE)

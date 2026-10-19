@@ -132,6 +132,17 @@ Use macro `METAMOD_PLUGIN_ASUSERMSG` to detect its availability.
 
 [Documentation](https://github.com/metamod-fallguys/asusermsg)
 
+### slowdl.dll (slowdl.so)
+
+Monitors UDP download requests, including FastDL fallback. No ASExt dependency.
+
+* `sv_slowdl_kick` (default `0`) disconnects clients requesting ordinary files.
+* `sv_slowdl_console_log` and `sv_slowdl_file_log` (both default `1`) independently log requests to the console and `logs/slowdl_YYYYMMDD.log`.
+* Custom decals and Sven Co-op's current-map soundcache are exempt from kicking and remain visible in logs.
+* Includes gamedata for all 15 published engine/platform inputs; old Half-Life BLOB builds require the accompanying Metamod update.
+
+[Documentation and supported builds](https://github.com/metamod-fallguys/slowdl)
+
 # Installation
 
 tutorial video: https://www.youtube.com/watch?v=r2NRp5TZmUM
@@ -198,7 +209,7 @@ The edited `liblist.gam` should be something like this ![](/img/1.png)
 
 # Build
 
-The six components are independent repositories under the
+The seven components are independent repositories under the
 [metamod-fallguys organization](https://github.com/metamod-fallguys), tracked here as
 submodules. Public headers are in `include/`, implementation in `src/`. Metamod owns
 HLSDK under `metamod/include/HLSDK/` and its private Capstone/procmap submodules.
@@ -238,6 +249,11 @@ symbols listed in its `scripts/manifests/<plugin>.json` and installs them to
 loaded `hw`/`server` module plus its `symbolName`. On a game build that the gamedata does not
 cover, asext and fallguys log `Failed to resolve ...` and refuse to load.
 
+SlowDL uses the same resolver with a broader engine manifest. Install both its
+`slowdl` and `slowdl_windows` gamedata directories; see its supported-build matrix.
+For BLOB engines, Metamod verifies the loaded image against the original engine
+file before using that file's CRC and the registered section ranges.
+
 The first build needs network access to download the snapshots; later builds reuse the
 cache in the build tree. `-DMMFG_SYNC_GAMEDATA=OFF` skips the download and Python entirely.
 The synchronizer is covered by `python -B -m unittest discover -s metamod/scripts/tests`.
@@ -254,7 +270,7 @@ AngelScript ABI. Invalid explicit paths fail; dependency source trees are read-o
 
 The aggregate injects its initialized local dependency trees and reuses vendor targets.
 `MMFG_BUILD_METAMOD`, `MMFG_BUILD_ASEXT`, `MMFG_BUILD_ASCURL`, `MMFG_BUILD_ASQCVAR`,
-`MMFG_BUILD_ASUSERMSG`, and `MMFG_BUILD_FALLGUYS` may disable native components.
+`MMFG_BUILD_ASUSERMSG`, `MMFG_BUILD_FALLGUYS`, and `MMFG_BUILD_SLOWDL` may disable native components.
 SDK consumption does not compile dependency plugins; their runtime loading stays unchanged.
 
 ## Formatting
@@ -266,7 +282,7 @@ cmake --build build-cmake/format --target format-check
 cmake --build build-cmake/format --target format
 ```
 
-Formatting works without a native compiler. The aggregate targets cover all six
+Formatting works without a native compiler. The aggregate targets cover all seven
 components, including disabled native components; `<component>-format-check` and
 `<component>-format` select one. Normal native builds do not install or execute formatting.
 The shared FormatValidation commit is fixed at `13c9fabe058e1f887ad1b03bb6884de911192c6a`;

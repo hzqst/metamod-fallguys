@@ -32,7 +32,7 @@ jobs:
       - name: Build all
         working-directory: ${{env.GITHUB_WORKSPACE}}
         run: |
-          cmake -S . -B build/x86/${{ matrix.config }} -A Win32
+          cmake -S . -B build/x86/${{ matrix.config }} -A Win32 -DMMFG_METAMOD_BUILD_TESTS=ON
           cmake --build build/x86/${{ matrix.config }} --config ${{ matrix.config }} --parallel 6
           cmake --install build/x86/${{ matrix.config }} --config ${{ matrix.config }}
 
@@ -47,7 +47,8 @@ jobs:
             'fallguys.pdb',
             'ascurl.pdb',
             'asqcvar.pdb',
-            'asusermsg.pdb'
+            'asusermsg.pdb',
+            'slowdl.pdb'
           )
 
           $missingPdbs = @()
@@ -60,6 +61,11 @@ jobs:
           if ($missingPdbs.Count -gt 0) {
             throw "Missing component PDBs: $($missingPdbs -join ', ')"
           }
+
+      - name: Test components
+        run: |
+          ctest --test-dir build/x86/${{ matrix.config }}/metamod/tests -C ${{ matrix.config }} --output-on-failure
+          ctest --test-dir build/x86/${{ matrix.config }}/slowdl -C ${{ matrix.config }} --output-on-failure
 
       - name: Test release scripts
         working-directory: ${{env.GITHUB_WORKSPACE}}

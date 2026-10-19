@@ -13,7 +13,7 @@ tags:
 # gamedata — metamod 托管的 GoldSrc_VibeSignatures 符号目录
 
 ## 概述
-自 issue #55（2026-10）起，asext/fallguys 的所有引擎私有符号都从 [GoldSrc_VibeSignatures](https://github.com/hlnd2t/GoldSrc_VibeSignatures) 发布的 gamedata 解析，替代手写签名。实现是 MetaHookSv `MetaHook/src/GameData.cpp` 的精简移植：只保留 function/global 两种 kind，按当前平台（`windows`/`linux`）加载记录，去掉 blob/mirror/client alias。
+自 issue #55（2026-10）起，asext/fallguys 的所有引擎私有符号都从 [GoldSrc_VibeSignatures](https://github.com/hlnd2t/GoldSrc_VibeSignatures) 发布的 gamedata 解析，替代手写签名。实现是 MetaHookSv `MetaHook/src/GameData.cpp` 的精简移植：只保留 function/global 两种 kind，按当前平台（`windows`/`linux`）加载记录，不支持 mirror/client alias；BLOB 来源注册见下文 issue #34 补充。
 
 ## 涉及文件
 - `metamod/src/gamedata.h`、`metamod/src/gamedata.cpp`：运行时目录（namespace `GameData`）
@@ -75,3 +75,14 @@ tags:
 - relates_to [[PrivateSymbols]]
 - relates_to [[gamedata-signature-parity]]
 - relates_to [[asext]]
+
+## Issue #34：SlowDL 与 BLOB 来源注册（2026-10-20）
+
+- 触发信号：HL 3248/3266/3329/3647 的 BLOB 引擎不在普通 Windows 模块表内，旧 VAC 路径仅估算代码范围，不能提供原始文件 CRC 与可靠映像范围。
+- 正确做法：`src/blob.cpp` 只解析原始文件描述；`engineinfo.cpp` 从可执行文件目录查找候选，核对当前进程映射和公开 engine 函数代码后注册来源。候选缺失、不匹配或有歧义时失败；不加载引擎、不伪造 HMODULE。
+- `GameData::RegisterModuleFileSource` 关联运行时基址、原始文件路径、映像大小和有效节范围。CRC 仍来自原始 hw.dll，地址为已验证基址加 RVA；解析前优先查注册来源，返回地址须落入有效节。重注册及注销清除该基址 CRC 缓存，EngineInfo 关闭时注销来源。公共接口保持 5:17。
+- SlowDL 为独立插件，只依赖 Metamod SDK，解析下载入口、DropClient、host_client、cmd_source、sv_player 五个符号；客户端保持不透明。普通 UDP 下载可踢出，customdecal 与 Sven 当前地图 soundcache 豁免；两个日志开关独立。manifest 分成双平台 slowdl 与 Windows-only slowdl_windows，避免更改同步器契约。
+- Hook 生命周期经验：InlineHook 的事务只在启动插件加载后统一提交；PT_ANYTIME 插件在运行时加载必须立即启用 Hook。Metamod 注册插件 cvar 时复制结构，运行时值须通过 engine 的 CVarGetFloat 查询，不能读取原始 cvar_t.value。
+- 验证：Windows Debug/Release 各 9 个 Metamod 自动测试和 1 个 SlowDL 测试通过；Linux i386 各 16+1 通过（Metamod 带 ASan/UBSan）。四个真实原始 BLOB 文件的 CRC、解析及 20 个符号地址通过外部输入测试，测试映像不是运行中的游戏。15 个平台输入的 manifest 覆盖验证通过。
+- 实机边界：已有 Windows Sven 10257 的 FastDL 成功、HTTP 失败 UDP 回退、普通下载踢出及 soundcache 豁免证据；未对全部版本、customdecal 和最后的运行时加载修正做实机验证。用户要求停止后续实机测试，未测项目不记为实机通过。
+- 适用范围：Metamod 内部 BLOB 身份解析及使用事务 Hook/插件 cvar 的新插件。组件 CTest 使用构建树中的 metamod/tests 目录，避免混入第三方 procmap 的未构建 simple 示例。

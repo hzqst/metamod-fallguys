@@ -22,3 +22,6 @@
 [submodule "thirdparty/FormatValidation"]
 	path = thirdparty/FormatValidation
 	url = https://github.com/MetaHookSv/FormatValidation.git
+[submodule "slowdl"]
+	path = slowdl
+	url = https://github.com/metamod-fallguys/slowdl.git
