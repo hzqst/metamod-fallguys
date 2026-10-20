@@ -8,7 +8,7 @@ permalink: metamod-fallguys/project-structure
 
 The aggregate owns orchestration, packaging, documentation and the plugin list.
 `metamod/`, `asext/`, `ascurl/`, `asqcvar/`, `asusermsg/`, `fallguys/` are git submodules
-of independent repositories in the metamod-fallguys organization.
+of independent repositories in the metamod-svencoop organization.
 
 - Components: root CMakeLists.txt and cmake/, public include/, private src/.
 - Metamod: include/HLSDK/ is the preserved SDK tree; thirdparty/capstone_fork and

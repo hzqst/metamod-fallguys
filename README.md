@@ -1,4 +1,4 @@
-# metamod-fallguys
+# metamod-svencoop
 
 This is a modified version of metamod along with a group of metamod plugins mainly to provide server-side feature expansions for Sven Co-op.
 
@@ -22,7 +22,7 @@ This metamod is based on [Bots-United's metamod-p](https://github.com/Bots-Unite
 
 [Physics vehicle demo in Sven Co-op](https://github.com/hzqst/sven-vehicle)
 
-[AngelScript plugin template (astemplate)](https://github.com/metamod-fallguys/astemplate)
+[AngelScript plugin template (astemplate)](https://github.com/metamod-svencoop/astemplate)
 
 # Plugins
 
@@ -52,7 +52,7 @@ Features :
 
 Use macro `METAMOD_PLUGIN_FALLGUYS` to detect its availability.
 
-[Documentation](https://github.com/metamod-fallguys/fallguys)
+[Documentation](https://github.com/metamod-svencoop/fallguys)
 
 ### asext.dll (asext.so)
 
@@ -79,7 +79,7 @@ LOAD_PLUGIN(PLID, "addons/metamod/dlls/asext.dll", PLUG_LOADTIME::PT_ANYTIME, &a
 IMPORT_ASEXT_API(asext);
 ```
 
-[Documentation](https://github.com/metamod-fallguys/asext)
+[Documentation](https://github.com/metamod-svencoop/asext)
 
 ### ascurl.dll (ascurl.so)
 
@@ -97,7 +97,7 @@ Features :
 
 Use macro `METAMOD_PLUGIN_ASCURL` to detect its availability.
 
-[Documentation](https://github.com/metamod-fallguys/ascurl)
+[Documentation](https://github.com/metamod-svencoop/ascurl)
 
 ### asqcvar.dll (asqcvar.so)
 
@@ -113,7 +113,7 @@ Features :
 
 Use macro `METAMOD_PLUGIN_ASQCVAR` to detect its availability.
 
-[Documentation](https://github.com/metamod-fallguys/asqcvar)
+[Documentation](https://github.com/metamod-svencoop/asqcvar)
 
 ### asusermsg.dll (asusermsg.so)
 
@@ -130,7 +130,7 @@ Features :
 
 Use macro `METAMOD_PLUGIN_ASUSERMSG` to detect its availability.
 
-[Documentation](https://github.com/metamod-fallguys/asusermsg)
+[Documentation](https://github.com/metamod-svencoop/asusermsg)
 
 ### slowdl.dll (slowdl.so)
 
@@ -141,13 +141,13 @@ Monitors UDP download requests, including FastDL fallback. No ASExt dependency.
 * Custom decals and Sven Co-op's current-map soundcache are exempt from kicking and remain visible in logs.
 * Includes gamedata for all 15 published engine/platform inputs; old Half-Life BLOB builds require the accompanying Metamod update.
 
-[Documentation and supported builds](https://github.com/metamod-fallguys/slowdl)
+[Documentation and supported builds](https://github.com/metamod-svencoop/slowdl)
 
 # Installation
 
 tutorial video: https://www.youtube.com/watch?v=r2NRp5TZmUM
 
-1. Download latest build (-windows or -linux depending on your OS) from [GitHub Release](https://github.com/hzqst/metamod-fallguys/releases), then unzip it.
+1. Download latest build (-windows or -linux depending on your OS) from [GitHub Release](https://github.com/metamod-svencoop/metamod-svencoop/releases), then unzip it.
 
 2. Copy everything from the previously unarchived `build` directory into `\steamapps\common\Sven Co-op\svencoop` 
 
@@ -203,22 +203,22 @@ The edited `liblist.gam` should be something like this ![](/img/1.png)
 
 * `addons` must be installed into `/Sven Co-op/svencoop`, neither `/Sven Co-op/svencoop_addons` nor `/Sven Co-op/svencoop_download`
 
-* All plugins from this repository are not binary-compatible with `metamod-p` from other sources. You should always use metamod from [metamod-fallguys](https://github.com/hzqst/metamod-fallguys/tree/main/metamod) to load those plugins.
+* All plugins from this repository are not binary-compatible with `metamod-p` from other sources. You should always use metamod from [metamod-svencoop](https://github.com/metamod-svencoop/metamod-svencoop/tree/main/metamod) to load those plugins.
 
-* Other third-party plugins ( e.g [amxmodx](https://github.com/alliedmodders/amxmodx) ) are still binary-compatible with [metamod-fallguys](https://github.com/hzqst/metamod-fallguys/tree/main/metamod). You don't have to re-compile them. Just put them in the `plugins.ini`.
+* Other third-party plugins ( e.g [amxmodx](https://github.com/alliedmodders/amxmodx) ) are still binary-compatible with [metamod-svencoop](https://github.com/metamod-svencoop/metamod-svencoop/tree/main/metamod). You don't have to re-compile them. Just put them in the `plugins.ini`.
 
 # Build
 
 The seven components are independent repositories under the
-[metamod-fallguys organization](https://github.com/metamod-fallguys), tracked here as
+[metamod-svencoop organization](https://github.com/metamod-svencoop), tracked here as
 submodules. Public headers are in `include/`, implementation in `src/`. Metamod owns
 HLSDK under `metamod/include/HLSDK/` and its private Capstone/procmap submodules.
 
 Requirements: CMake 3.21+, Git, Python 3.8+, and Windows MSVC Win32 or Linux i386 GCC multilib.
 
 ```sh
-git clone --recursive https://github.com/hzqst/metamod-fallguys
-cd metamod-fallguys
+git clone --recursive https://github.com/metamod-svencoop/metamod-svencoop
+cd metamod-svencoop
 git submodule update --init --recursive
 cmake -S . -B build/x86/Release -A Win32
 cmake --build build/x86/Release --config Release --parallel 6

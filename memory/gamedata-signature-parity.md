@@ -45,7 +45,7 @@ Before migrating asext/fallguys private-symbol lookup to GoldSrc_VibeSignatures 
 - **The runtime looks up symbols primarily by `symbolName`** (the user's reason: C++ may later have same-name overloads, and the full signature disambiguates them). Plugins supply platform-specific `symbolName`s. Whether to fall back to `artifact` when `symbolName` misses is pending confirmation; default is no fallback (refuse to load on a miss).
 - The Linux dedicated server engine is `hw.so` (confirmed by the user), so the existing gamedata covers it; upstream does not need to add `engine_i686.so`.
 - The existing bugs (#1–#8) get no separate hotfix; they disappear when stage 2 migrates.
-- The stage 1 summary has been posted on issue #55: https://github.com/hzqst/metamod-fallguys/issues/55#issuecomment-6136255047
+- The stage 1 summary has been posted on issue #55: https://github.com/metamod-svencoop/metamod-svencoop/issues/55#issuecomment-6136255047
 
 ## Scope
 Sven Co-op svencoop-8948 (5.25) / svencoop-10257 (5.26), all 58 private symbols in asext/fallguys, Windows + Linux (hw.so). engine_i686.so not verified.

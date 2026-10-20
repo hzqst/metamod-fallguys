@@ -15,7 +15,7 @@ existing dependency revisions, author history and the addons/metamod installatio
 ## Repository ownership
 
 Six root component directories are gitlinks to their matching repositories under the
-metamod-fallguys organization. Public headers are in include/, private implementation
+metamod-svencoop organization. Public headers are in include/, private implementation
 in src/. Metamod owns include/HLSDK/ and nested thirdparty/capstone_fork/procmap_fork.
 ASExt owns include/asext_api.h and include/std_string.h. ASCurl retains curl/OpenSSL
 vendor trees and FallGuys retains FMOD headers and owns Bullet as a nested
@@ -67,3 +67,12 @@ each component. Build evidence does not replace an in-game Sven Co-op runtime ch
 Use this pattern when changing component boundaries, SDK include dependencies,
 FetchContent pins or aggregate build orchestration. Preserve fixed third-party revisions
 and vendor content unless a separate change explicitly updates them.
+
+## Organization and aggregate repository rename (2026-10-20)
+
+- Trigger: the organization was renamed to `metamod-svencoop`, and the aggregate moved from `hzqst/metamod-fallguys` to `metamod-svencoop/metamod-svencoop`.
+- Constraint: GitHub URL redirects do not update literal `github.repository` checks in workflows; the old checks skip Windows, Ubuntu and release build jobs after transfer.
+- Correct practice: use `https://github.com/metamod-svencoop/metamod-svencoop.git` for aggregate origin, update all four workflow checks, and migrate current documentation, plugin homepage URLs and component CMake dependency URLs. Keep existing pinned revisions and vendor sources. Commit component changes separately before updating aggregate gitlinks.
+- Local path: `D:/metamod-fallguys` remains in use. The user deferred renaming it to `D:/metamod-svencoop` because active workspace/MCP processes hold the directory open. After closing those processes, rename the directory, update the Basic Memory project path, and configure fresh build trees rather than reuse CMake caches containing the old absolute path. Preserve the existing Basic Memory project name/permalinks unless explicitly migrating them.
+- Verification: Windows Win32 Debug and Release configure/build succeeded; each CTest run passed 10 tests and skipped the optional blob catalog test. Release scripts passed 42 unit tests; actionlint passed for the three changed workflows; aggregate clang-format 23.1.3 checked 186 files with zero differences after aligning plugin-info comments. Linux and hosted GitHub Actions were not run locally.
+- Applicability: repository identity and URL migration; existing package names, CMake project identifiers and runtime plugin/API names are preserved.

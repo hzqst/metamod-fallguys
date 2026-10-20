@@ -14,11 +14,11 @@ concurrency:
 
 jobs:
   windows:
-    if: github.repository == 'hzqst/metamod-fallguys'
+    if: github.repository == 'metamod-svencoop/metamod-svencoop'
     uses: ./.github/workflows/windows.yml
 
   ubuntu:
-    if: github.repository == 'hzqst/metamod-fallguys'
+    if: github.repository == 'metamod-svencoop/metamod-svencoop'
     uses: ./.github/workflows/ubuntu.yml
 
   notes:

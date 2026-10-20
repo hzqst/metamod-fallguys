@@ -7,7 +7,7 @@ permalink: metamod-fallguys/suggested-commands
 # Suggested Commands
 
 ```sh
-git clone --recursive https://github.com/hzqst/metamod-fallguys
+git clone --recursive https://github.com/metamod-svencoop/metamod-svencoop
 git submodule update --init --recursive
 git submodule status --recursive
 cmake -S . -B build/x86/Release -A Win32

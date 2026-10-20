@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   build:
-    if: github.repository == 'hzqst/metamod-fallguys'
+    if: github.repository == 'metamod-svencoop/metamod-svencoop'
 
     runs-on: ubuntu-24.04
     strategy:
