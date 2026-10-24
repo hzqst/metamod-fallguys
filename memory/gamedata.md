@@ -86,3 +86,12 @@ tags:
 - 验证：Windows Debug/Release 各 9 个 Metamod 自动测试和 1 个 SlowDL 测试通过；Linux i386 各 16+1 通过（Metamod 带 ASan/UBSan）。四个真实原始 BLOB 文件的 CRC、解析及 20 个符号地址通过外部输入测试，测试映像不是运行中的游戏。15 个平台输入的 manifest 覆盖验证通过。
 - 实机边界：已有 Windows Sven 10257 的 FastDL 成功、HTTP 失败 UDP 回退、普通下载踢出及 soundcache 豁免证据；未对全部版本、customdecal 和最后的运行时加载修正做实机验证。用户要求停止后续实机测试，未测项目不记为实机通过。
 - 适用范围：Metamod 内部 BLOB 身份解析及使用事务 Hook/插件 cvar 的新插件。组件 CTest 使用构建树中的 metamod/tests 目录，避免混入第三方 procmap 的未构建 simple 示例。
+
+
+## Decay 索引兼容性（2026-10-24）
+
+- 触发信号：GoldSrc_VibeSignatures v20261024a 新增无版本标签 `decay`；默认 Pages 索引已发布 27 个条目。旧同步器报 `remote index version entry 14 contains an invalid gameVersion: 'decay'`。
+- 根因 / 约束：同步器先校验完整上游 index，再按 manifest 筛选。即使只选择 Sven Co-op，也会被未选中的 Decay 阻断。下载缓存回退不会捕获索引解析错误。
+- 正确做法：保留原版本化标签规则，显式追加唯一无版本例外 `decay`；不放开其他未知无版本标签。现有 ASExt、FallGuys、SlowDL、ASExtHook、HalflifeCLI manifest 无需选择 Decay 或客户端鼠标符号。astemplate 与 asexthook 通过更新 Metamod 子模块复用修复，HalflifeCLI 修复自身脚本副本。
+- 验证方式：新增 5 项行为测试先复现拒绝，再验证稳定/内容寻址文件名、manifest gameVersions/symbolExemptions/conditionalGroups.when/exempt，以及未选择的 Decay 不阻断筛选。Metamod Python 19 项通过；Windows Release 原生构建、格式检查通过；CTest 9 项通过、BLOB 外部样本测试跳过。8 组消费者在线同步和 validate-only 全通过，共 32 份裁剪快照；固定 `PYTHONHASHSEED=0` 后与旧裁剪逻辑逐字节一致。
+- 适用范围：消费完整 GoldSrc_VibeSignatures index 的构建期同步器；此次不改变运行时 API 和游戏支持范围。已有 `prune_snapshot` 遍历 used_modules 集合，跨 Python 进程的二进制对象键顺序可能受随机 hash seed 影响，因此逐字节对比要固定 seed；不能据此声称任意环境下字节顺序一致。
